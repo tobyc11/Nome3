@@ -1,15 +1,17 @@
 #pragma once
 
+#include <AutoPtr.h>
+
 #include <unordered_set>
 #include <functional>
 
 namespace Flow
 {
 
-class CFlowNode
+class CFlowNode : public tc::FRefCounted
 {
 public:
-    virtual ~CFlowNode() = default;
+    ~CFlowNode() override = default;
 };
 
 //Forward declaration
@@ -88,6 +90,11 @@ public:
     {
     }
 
+    ~TInput()
+    {
+        Disconnect();
+    }
+
     void NotifyDirty()
     {
         DirtyNotifyRoutine();
@@ -101,20 +108,28 @@ public:
 		if (pOut == ConnectedOutput)
 			return;
 
-		if (ConnectedOutput)
-		{
-			auto iter = ConnectedOutput->ConnectedInputs.find(this);
-			if (iter != ConnectedOutput->ConnectedInputs.end())
-				ConnectedOutput->ConnectedInputs.erase(iter);
-		}
+        Disconnect();
+
 		ConnectedOutput = pOut;
 		if (ConnectedOutput)
 		{
 			ConnectedOutput->ConnectedInputs.insert(this);
 		}
+        ConnectedOutput->Owner->AddRef();
 
 		NotifyDirty();
 	}
+
+	void Disconnect()
+    {
+        if (ConnectedOutput)
+        {
+            auto iter = ConnectedOutput->ConnectedInputs.find(this);
+            if (iter != ConnectedOutput->ConnectedInputs.end())
+                ConnectedOutput->ConnectedInputs.erase(iter);
+            ConnectedOutput->Owner->Release();
+        }
+    }
 
 	T GetValue(const T& defaultValue) const
 	{
@@ -150,12 +165,12 @@ void TOutput<T>::MarkDirty()
 
 #define DEFINE_INPUT_WITH_MARKDIRTY(Type, Name) \
 public:\
-Flow::TInput<Type> Name{ this, [=]() {this->Name##MarkedDirty(); } }; \
+    Flow::TInput<Type> Name{ this, [=]() {this->Name##MarkedDirty(); } }; \
 private:\
-void Name##MarkedDirty()
+    inline void Name##MarkedDirty()
 
 #define DEFINE_OUTPUT_WITH_UPDATE(Type, Name) \
 public:\
-Flow::TOutput<Type> Name{ this, [=]() {this->Name##Requested(); } }; \
+    Flow::TOutput<Type> Name{ this, [=]() {this->Name##Requested(); } }; \
 private:\
-void Name##Requested()
+    inline void Name##Requested()

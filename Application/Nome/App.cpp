@@ -128,10 +128,9 @@ int CApp::AppSingleFrame()
         if ((event.type & 0x300) && io.WantCaptureKeyboard)
             continue;
 
-        for (auto iter = GApp->ServicesInBootOrder.begin();
-             iter != GApp->ServicesInBootOrder.end(); ++iter)
+        for (auto& iter : GApp->ServicesInBootOrder)
         {
-            (*iter)->EventHook(&event);
+            iter->EventHook(&event);
         }
     }
 
@@ -159,10 +158,9 @@ int CApp::AppSingleFrame()
         ImGui::End();
     }
 
-    for (auto iter = GApp->ServicesInBootOrder.begin();
-         iter != GApp->ServicesInBootOrder.end(); ++iter)
+    for (auto& iter : GApp->ServicesInBootOrder)
     {
-        (*iter)->FrameUpdate();
+        iter->FrameUpdate();
     }
 
     // Rendering
@@ -172,10 +170,9 @@ int CApp::AppSingleFrame()
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    for (auto iter = GApp->ServicesInBootOrder.begin();
-         iter != GApp->ServicesInBootOrder.end(); ++iter)
+    for (auto& iter : GApp->ServicesInBootOrder)
     {
-        (*iter)->Render();
+        iter->Render();
     }
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

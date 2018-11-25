@@ -6,19 +6,19 @@
 TEST_CASE("Basic functionality of the dataflow graph")
 {
     using namespace Flow;
-    CFloatNumber input1{1.0f};
-    CFloatNumber input2{2.0f};
-    CFloatNumber input3{3.0f};
+    CFloatNumber input1{1.0f}; input1.AddRef();
+    CFloatNumber input2{2.0f}; input2.AddRef();
+    CFloatNumber input3{3.0f}; input3.AddRef();
 
-    CFloatAdd adder;
+    CFloatAdd adder; adder.AddRef();
     adder.Operand0.Connect(input1.Value);
     adder.Operand1.Connect(input2.Value);
 
-    CFloatAdd adder2;
+    CFloatAdd adder2; adder2.AddRef();
     adder2.Operand0.Connect(input2.Value);
     adder2.Operand1.Connect(input3.Value);
 
-    CFloatMul multiplier;
+    CFloatMul multiplier; multiplier.AddRef();
     multiplier.Operand0.Connect(adder.Result);
     multiplier.Operand1.Connect(adder2.Result);
 

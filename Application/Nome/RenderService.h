@@ -13,10 +13,7 @@ class CRenderService : public IAppService
 public:
 
 protected:
-    int Setup() override
-    {
-        return 0;
-    }
+    int Setup() override;
 
     int FrameUpdate() override
     {
@@ -27,6 +24,8 @@ protected:
     {
         return 0;
     }
+
+    void Render() override;
 };
 
 }

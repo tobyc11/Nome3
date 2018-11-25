@@ -163,7 +163,111 @@ void TOutput<T>::Connect(TInput<T>& input)
     input.Connect(*this);
 }
 
-}
+template <> class TInput<void>;
+
+template <>
+class TOutput<void>
+{
+public:
+    TOutput(CFlowNode* owner, std::function<void()> updateRoutine)
+        : Owner(owner), UpdateRoutine(std::move(updateRoutine))
+    {
+    }
+
+    //Mark this output dirty, and notify all connected inputs
+    void MarkDirty();
+
+    //Unmark dirty
+    void UnmarkDirty() { Dirty = false; }
+
+    bool IsDirty() const { return Dirty; }
+
+    size_t CountConnections() const
+    {
+        return ConnectedInputs.size();
+    }
+
+    //Trigger an update to the value, returns whether the update was successful
+    bool Update() const
+    {
+        if (!IsDirty())
+            return true;
+
+        UpdateRoutine();
+        return !IsDirty();
+    }
+
+    void Connect(TInput<void>& input);
+
+private:
+    CFlowNode* Owner;
+    std::function<void()> UpdateRoutine;
+
+    bool Dirty = true;
+
+    //Friend the corresponding input so that they can access our connections
+    friend class TInput<void>;
+    std::unordered_set<TInput<void>*> ConnectedInputs;
+};
+
+template <>
+class TInput<void>
+{
+public:
+    TInput(CFlowNode* owner, std::function<void()> dirtyNotifyRoutine)
+        : Owner(owner), DirtyNotifyRoutine(std::move(dirtyNotifyRoutine))
+    {
+    }
+
+    ~TInput()
+    {
+        Disconnect();
+    }
+
+    void NotifyDirty()
+    {
+        DirtyNotifyRoutine();
+    }
+
+    void Connect(TOutput<void>& output)
+    {
+        TOutput<void>* pOut = &output;
+
+        //Don't do anything if nothing changes
+        if (pOut == ConnectedOutput)
+            return;
+
+        Disconnect();
+
+        ConnectedOutput = pOut;
+        if (ConnectedOutput)
+        {
+            ConnectedOutput->ConnectedInputs.insert(this);
+        }
+        ConnectedOutput->Owner->AddRef();
+
+        NotifyDirty();
+    }
+
+    void Disconnect()
+    {
+        if (ConnectedOutput)
+        {
+            auto iter = ConnectedOutput->ConnectedInputs.find(this);
+            if (iter != ConnectedOutput->ConnectedInputs.end())
+                ConnectedOutput->ConnectedInputs.erase(iter);
+            ConnectedOutput->Owner->Release();
+        }
+    }
+
+private:
+    CFlowNode* Owner;
+    std::function<void()> DirtyNotifyRoutine;
+
+    TOutput<void>* ConnectedOutput = nullptr;
+};
+
+} /* namespace Flow */
 
 //Finally, macros to help implementing flow nodes
 

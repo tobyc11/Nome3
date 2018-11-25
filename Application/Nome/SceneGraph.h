@@ -26,7 +26,7 @@ public:
 
     //Dummy output used to notify associated scene tree nodes
     //  The bool value itself is never used
-    DEFINE_OUTPUT_WITH_UPDATE(bool, TransformDirty)
+    DEFINE_OUTPUT_WITH_UPDATE(void, TransformDirty)
     {
         TransformDirty.UnmarkDirty();
     }

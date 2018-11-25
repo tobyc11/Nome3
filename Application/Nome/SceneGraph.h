@@ -19,7 +19,7 @@ private:
 class CSceneNode : public Flow::CFlowNode
 {
 public:
-    DEFINE_INPUT_WITH_MARKDIRTY(Matrix3x4, Transform)
+    DEFINE_INPUT(Matrix3x4, Transform)
     {
         TransformDirty.MarkDirty();
     }

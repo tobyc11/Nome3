@@ -36,7 +36,7 @@ template <typename T, typename TOperator>
 class TUnaryOperator : public CFlowNode
 {
 public:
-	DEFINE_INPUT_WITH_MARKDIRTY(T, Operand0)
+	DEFINE_INPUT(T, Operand0)
 	{
 		Result.MarkDirty();
 	}
@@ -55,12 +55,12 @@ template <typename T, typename TOperator>
 class TBinaryOperator : public CFlowNode
 {
 public:
-	DEFINE_INPUT_WITH_MARKDIRTY(T, Operand0)
+	DEFINE_INPUT(T, Operand0)
 	{
 		Result.MarkDirty();
 	}
 
-	DEFINE_INPUT_WITH_MARKDIRTY(T, Operand1)
+	DEFINE_INPUT(T, Operand1)
 	{
 		Result.MarkDirty();
 	}

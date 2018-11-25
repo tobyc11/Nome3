@@ -163,7 +163,7 @@ void TOutput<T>::MarkDirty()
 
 //Finally, macros to help implemeting flow nodes
 
-#define DEFINE_INPUT_WITH_MARKDIRTY(Type, Name) \
+#define DEFINE_INPUT(Type, Name) \
 public:\
     Flow::TInput<Type> Name{ this, [=]() {this->Name##MarkedDirty(); } }; \
 private:\

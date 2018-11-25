@@ -14,9 +14,9 @@ public:
 
     void SetDefaultPosition(float x, float y, float z);
 
-    DEFINE_INPUT_WITH_MARKDIRTY(float, X) { MarkDirty(); }
-    DEFINE_INPUT_WITH_MARKDIRTY(float, Y) { MarkDirty(); }
-    DEFINE_INPUT_WITH_MARKDIRTY(float, Z) { MarkDirty(); }
+    DEFINE_INPUT(float, X) { MarkDirty(); }
+    DEFINE_INPUT(float, Y) { MarkDirty(); }
+    DEFINE_INPUT(float, Z) { MarkDirty(); }
 
     DEFINE_OUTPUT_WITH_UPDATE(Vector3, Position)
     {

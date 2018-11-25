@@ -14,22 +14,22 @@ using tc::Matrix3x4;
 class CTranslate : public Flow::CFlowNode
 {
 public:
-    DEFINE_INPUT_WITH_MARKDIRTY(Matrix3x4, Input)
+    DEFINE_INPUT(Matrix3x4, Input)
     {
         Output.MarkDirty();
     }
 
-    DEFINE_INPUT_WITH_MARKDIRTY(float, X)
+    DEFINE_INPUT(float, X)
     {
         Output.MarkDirty();
     }
 
-    DEFINE_INPUT_WITH_MARKDIRTY(float, Y)
+    DEFINE_INPUT(float, Y)
     {
         Output.MarkDirty();
     }
 
-    DEFINE_INPUT_WITH_MARKDIRTY(float, Z)
+    DEFINE_INPUT(float, Z)
     {
         Output.MarkDirty();
     }
@@ -46,27 +46,27 @@ private:
 class CRotate : public Flow::CFlowNode
 {
 public:
-    DEFINE_INPUT_WITH_MARKDIRTY(Matrix3x4, Input)
+    DEFINE_INPUT(Matrix3x4, Input)
     {
         Output.MarkDirty();
     }
 
-    DEFINE_INPUT_WITH_MARKDIRTY(float, AxisX)
+    DEFINE_INPUT(float, AxisX)
     {
         Output.MarkDirty();
     }
 
-    DEFINE_INPUT_WITH_MARKDIRTY(float, AxisY)
+    DEFINE_INPUT(float, AxisY)
     {
         Output.MarkDirty();
     }
 
-    DEFINE_INPUT_WITH_MARKDIRTY(float, AxisZ)
+    DEFINE_INPUT(float, AxisZ)
     {
         Output.MarkDirty();
     }
 
-    DEFINE_INPUT_WITH_MARKDIRTY(float, Angle)
+    DEFINE_INPUT(float, Angle)
     {
         Output.MarkDirty();
     }
@@ -83,22 +83,22 @@ private:
 class CScale : public Flow::CFlowNode
 {
 public:
-    DEFINE_INPUT_WITH_MARKDIRTY(Matrix3x4, Input)
+    DEFINE_INPUT(Matrix3x4, Input)
     {
         Output.MarkDirty();
     }
 
-    DEFINE_INPUT_WITH_MARKDIRTY(float, X)
+    DEFINE_INPUT(float, X)
     {
         Output.MarkDirty();
     }
 
-    DEFINE_INPUT_WITH_MARKDIRTY(float, Y)
+    DEFINE_INPUT(float, Y)
     {
         Output.MarkDirty();
     }
 
-    DEFINE_INPUT_WITH_MARKDIRTY(float, Z)
+    DEFINE_INPUT(float, Z)
     {
         Output.MarkDirty();
     }

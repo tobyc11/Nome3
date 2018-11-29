@@ -11,7 +11,12 @@ using tc::Vector3;
 using tc::Quaternion;
 using tc::Matrix3x4;
 
-class CTranslate : public Flow::CFlowNode
+class CTransform : public Flow::CFlowNode
+{
+public:
+};
+
+class CTranslate : public CTransform
 {
 public:
     DEFINE_INPUT(Matrix3x4, Input)
@@ -43,7 +48,7 @@ private:
     void RecomputeOutput();
 };
 
-class CRotate : public Flow::CFlowNode
+class CRotate : public CTransform
 {
 public:
     DEFINE_INPUT(Matrix3x4, Input)
@@ -80,7 +85,7 @@ private:
     void RecomputeOutput();
 };
 
-class CScale : public Flow::CFlowNode
+class CScale : public CTransform
 {
 public:
     DEFINE_INPUT(Matrix3x4, Input)

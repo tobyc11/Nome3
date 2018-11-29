@@ -11,6 +11,8 @@ file(GLOB PG2_SOURCES
 	Flow/*.h Flow/*.cpp
 	FlowViz/*.h FlowViz/*.cpp
     Nome/*.h Nome/*.cpp
+    DSLDemo/*.h DSLDemo/*.cpp
+    Scene/*.h Scene/*.cpp
 )
 
 file(GLOB PG2_TEST_SOURCES

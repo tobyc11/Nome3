@@ -52,7 +52,7 @@ public:
     {
         auto iter = Services.find(T::TypeHash());
         if (iter != Services.end())
-            return iter->second;
+            return static_cast<T*>(iter->second);
         return nullptr;
     }
 

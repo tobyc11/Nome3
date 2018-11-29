@@ -16,6 +16,8 @@ using tc::Frustum;
 class CCamera: public CSceneNode
 {
 public:
+    using CSceneNode::CSceneNode;
+
     void CalculateProjMatrix() const;
 
     Frustum GetFrustum() const;

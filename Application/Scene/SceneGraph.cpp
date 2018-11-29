@@ -51,6 +51,10 @@ CSceneNode::CSceneNode(std::string name, bool isRoot) : Name(std::move(name)), b
 {
 }
 
+CSceneNode::~CSceneNode()
+{
+}
+
 void CSceneNode::AddParent(CSceneNode* newParent)
 {
     //Don't do anything if it is already a parent

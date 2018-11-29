@@ -6,7 +6,7 @@
 namespace Nome::Scene
 {
 
-class CScene
+class CScene : public tc::FRefCounted
 {
 public:
     CScene();
@@ -20,6 +20,8 @@ public:
     {
         return MainCamera;
     }
+
+    void CreateDefaultCamera();
 
 private:
     TAutoPtr<CSceneNode> RootNode;

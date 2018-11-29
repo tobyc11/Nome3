@@ -29,6 +29,8 @@ void CRenderService::Render()
         return;
 
     auto camera = Scene->GetMainCamera();
+    if (!camera)
+        return;
     auto cameraTreeNode = camera->GetPrincipleTreeNode();
     if (!cameraTreeNode)
         return;

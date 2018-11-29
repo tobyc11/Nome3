@@ -66,6 +66,8 @@ class CSceneNode : public Flow::CFlowNode
 public:
     explicit CSceneNode(std::string name, bool isRoot = false);
 
+    ~CSceneNode() override;
+
     bool IsInScene() const
     {
         return bIsRoot || !Parents.empty();

@@ -84,7 +84,7 @@ class TAutoPtr
 {
 public:
 	//Null initialization
-	TAutoPtr() : Ptr(nullptr) {}
+	TAutoPtr() noexcept : Ptr(nullptr) {}
 
 	explicit TAutoPtr(std::nullptr_t ptr) : Ptr(nullptr) {}
 

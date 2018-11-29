@@ -75,6 +75,7 @@ public:
 
     void AddParent(CSceneNode* newParent);
     void RemoveParent(CSceneNode* parent);
+    CSceneNode* CreateChildNode(const std::string& name = "unnamed");
 
     const TAutoPtr<CEntity>& GetEntity() const;
     void SetEntity(const TAutoPtr<CEntity>& value);
@@ -83,6 +84,13 @@ public:
 
     std::set<TAutoPtr<CSceneTreeNode>> GetTreeNodes() const;
 
+    Matrix3x4 GetTransform() const;
+    void SetDefaultTransform(const Matrix3x4& val)
+    {
+        DefaultTransform = val;
+    }
+
+    ///Use GetTransform instead of accessing this directly
     DEFINE_INPUT(Matrix3x4, Transform)
     {
         for (auto& pair : AssocTreeNodes)
@@ -111,6 +119,9 @@ private:
 
     //Associated entity
     TAutoPtr<CEntity> Entity;
+
+    ///The transform used when the input is disconnected
+    Matrix3x4 DefaultTransform;
 };
 
 }

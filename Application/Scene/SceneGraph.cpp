@@ -35,11 +35,11 @@ const Matrix3x4& CSceneTreeNode::GetL2W() const
     {
         if (Parent)
         {
-            L2W = Owner->Transform.GetValue(Matrix3x4::IDENTITY) * Parent->GetL2W();
+            L2W = Owner->GetTransform() * Parent->GetL2W();
         }
         else
         {
-            L2W = Owner->Transform.GetValue(Matrix3x4::IDENTITY);
+            L2W = Owner->GetTransform();
         }
         L2WDirty = false;
     }
@@ -49,6 +49,13 @@ const Matrix3x4& CSceneTreeNode::GetL2W() const
 
 CSceneNode::CSceneNode(std::string name, bool isRoot) : Name(std::move(name)), bIsRoot(isRoot)
 {
+    if (isRoot)
+    {
+        //Create root tree node
+        auto* myTreeNode = CreateTreeNode();
+        AssocTreeNodes[nullptr] = std::set<TAutoPtr<CSceneTreeNode>>();
+        AssocTreeNodes[nullptr].insert(myTreeNode);
+    }
 }
 
 CSceneNode::~CSceneNode()
@@ -74,6 +81,7 @@ void CSceneNode::AddParent(CSceneNode* newParent)
     }
 
     Parents.insert(newParent);
+    newParent->Children.insert(this);
 }
 
 void CSceneNode::RemoveParent(CSceneNode* parent)
@@ -84,11 +92,21 @@ void CSceneNode::RemoveParent(CSceneNode* parent)
 
     Parents.erase(iter);
 
+    auto iter2 = parent->Children.find(this);
+    parent->Children.erase(iter2);
+
     for (auto& treeNode : AssocTreeNodes[parent])
     {
         treeNode->SetParent(nullptr);
     }
     AssocTreeNodes.erase(parent);
+}
+
+CSceneNode* CSceneNode::CreateChildNode(const std::string& name)
+{
+    auto* child = new CSceneNode(name);
+    child->AddParent(this);
+    return child;
 }
 
 const TAutoPtr<CEntity>& CSceneNode::GetEntity() const
@@ -120,6 +138,11 @@ std::set<TAutoPtr<CSceneTreeNode>> CSceneNode::GetTreeNodes() const
     for (auto& pair : AssocTreeNodes)
         result.insert(pair.second.begin(), pair.second.end());
     return result;
+}
+
+Matrix3x4 CSceneNode::GetTransform() const
+{
+    return Transform.GetValue(DefaultTransform);
 }
 
 }

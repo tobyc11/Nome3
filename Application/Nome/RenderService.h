@@ -23,10 +23,7 @@ protected:
         return 0;
     }
 
-    int Cleanup() override
-    {
-        return 0;
-    }
+    int Cleanup() override;
 
     void Render() override;
 

@@ -2,6 +2,8 @@
 
 #include <Vector3.h>
 
+#include <AutoPtr.h>
+
 #include <vector>
 #include <unordered_set>
 
@@ -121,7 +123,9 @@ private:
     uint32_t NextBucketSize = 256;
 };
 
-class CHEMesh
+//A good reference: http://kaba.hilvi.org/homepage/blog/halfedge/halfedge.htm
+
+class CHEMesh : public tc::FRefCounted
 {
 public:
     struct HalfEdge;
@@ -150,12 +154,17 @@ public:
         Face* Face;
         HalfEdge* Twin;
         HalfEdge* Next;
+
+        bool IsFree() const
+        {
+            return !Face || Face->bIsBoundary;
+        }
     };
 
     CHEMesh();
 
     //Low level memory allocation methods
-    Vertex* AllocateVertex(const Vector3& position);
+    Vertex* AllocateVertex();
     Edge* AllocateEdge();
     Face* AllocateFace();
     HalfEdge* AllocateHalfEdge();
@@ -174,6 +183,8 @@ public:
     /*
      * Operations
     */
+    ///Find an outgoing half-edge that doesn't have a face attached
+    HalfEdge* FindFreeIncident(Vertex* v);
 
     ///Creates an isolated vertex
     Vertex* MakeVertex(const Vector3& position);
@@ -182,7 +193,6 @@ public:
     Edge* MakeEdgeVertex(Vertex* v0, const Vector3& position, Face* left, Face* right);
     Edge* MakeEdgeFace(Face* face, Vertex* v0, Vertex* v1);
 
-private:
     void CreateHalfEdgePair(HalfEdge*& outPtr, HalfEdge*& outPtr2);
 
 public:
@@ -200,6 +210,13 @@ public:
     std::vector<Face*> FFQuery(Face* f);
     HalfEdge* NextAroundVertex(HalfEdge* he);
     HalfEdge* PrevAroundVertex(HalfEdge* he);
+    bool AreAdjacent(Vertex* v1, Vertex* v2);
+
+    std::unordered_set<HalfEdge*>::iterator HalfEdgesBegin() { return HalfEdges.begin(); }
+    std::unordered_set<HalfEdge*>::iterator HalfEdgesEnd() { return HalfEdges.end(); }
+
+    std::unordered_set<Face*>::iterator FacesBegin() { return Faces.begin(); }
+    std::unordered_set<Face*>::iterator FacesEnd() { return Faces.end(); }
 
 private:
     TGraduallyGrowingMemoryPool<Vertex> VertexPool;

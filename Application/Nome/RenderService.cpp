@@ -3,8 +3,14 @@
 
 #include <glad/glad.h>
 
+#include "Shader.h"
+
 namespace Nome
 {
+
+using tc::FGLSLProgram;
+
+static FGLSLProgram* MeshShader;
 
 Scene::CScene* CRenderService::GetScene() const
 {
@@ -18,6 +24,8 @@ void CRenderService::SetScene(Scene::CScene* value)
 
 int CRenderService::Setup()
 {
+    FGLSLProgram::SetShaderHeader("");
+    MeshShader = FGLSLProgram::CreateFromFiles("mesh.vert", "mesh.frag");
     return 0;
 }
 
@@ -36,6 +44,36 @@ void CRenderService::Render()
         return;
     const auto& frustum = camera->GetFrustum();
 
+    //Bind a simple pipeline right now
+    MeshShader->Enable();
+    MeshShader->SetUniformMatrix4fv("View", camera->GetViewMatrix().Data(), 1, true);
+    MeshShader->SetUniformMatrix4fv("Proj", camera->GetProjMatrix().Data(), 1, true);
+
+    /*
+    const auto& projInv = camera->GetProjMatrix().Inverse();
+    float ends[] = {-1.0f, 1.0f};
+    for (int i = 0; i < 2; i++)
+        for (int j = 0; j < 2; j++)
+            for (int k = 0; k < 2; k++)
+            {
+                Vector3 point(ends[i], ends[j], ends[k]);
+                Vector3 unProj = projInv * point;
+                std::cout << unProj.ToString() << std::endl;
+            }
+    */
+
+    //Rasterizer
+    glDisable(GL_CULL_FACE);
+    //glFrontFace(GL_CCW);
+    //glCullFace(GL_BACK);
+
+    //FB
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_STENCIL_TEST);
+    glDisable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glDisable(GL_BLEND);
+
     auto sceneRoot = Scene->GetRootNode();
     assert(sceneRoot->CountTreeNodes() == 1);
     auto sceneTreeRoot = *sceneRoot->GetTreeNodes().begin();
@@ -45,26 +83,17 @@ void CRenderService::Render()
         auto* graphNode = node->GetOwner();
         if (const auto& entity = graphNode->GetEntity())
         {
+            MeshShader->SetUniformMatrix4fv("Model", node->GetL2W().ToMatrix4().Data(), 1, true);
             entity->Draw();
         }
     });
+}
 
-    //Example pipeline setup
-    //VS
-
-    //Rasterizer
-//    glEnable(GL_CULL_FACE);
-//    glFrontFace(GL_CCW);
-//    glCullFace(GL_BACK);
-
-    //FS
-
-    //FB
-/*    glDisable(GL_SCISSOR_TEST);
-    glDisable(GL_STENCIL_TEST);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glDisable(GL_BLEND);*/
+int CRenderService::Cleanup()
+{
+    delete MeshShader;
+    MeshShader = nullptr;
+    return 0;
 }
 
 }

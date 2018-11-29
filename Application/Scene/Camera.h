@@ -20,6 +20,10 @@ public:
 
     void CalculateProjMatrix() const;
 
+    const Matrix4& GetProjMatrix() const;
+
+    Matrix4 GetViewMatrix() const;
+
     Frustum GetFrustum() const;
 
     CSceneTreeNode* GetPrincipleTreeNode() const;
@@ -58,13 +62,13 @@ private:
     float AspectRatio = 1.0f;
     ///The vertical field of view, the default is 59 degrees
     float FovY = 59.0f;
-    float NearClip = 1.0f;
+    float NearClip = 0.1f;
     float FarClip = 1000.0f;
     //float Zoom;
     //float OrthoSize;
 
     mutable Matrix4 ProjMatrix;
-    mutable bool bProjMatrixDirty;
+    mutable bool bProjMatrixDirty = true;
 };
 
 }

@@ -7,11 +7,10 @@ CHEMesh::CHEMesh()
 {
 }
 
-CHEMesh::Vertex* CHEMesh::AllocateVertex(const Vector3 & position)
+CHEMesh::Vertex* CHEMesh::AllocateVertex()
 {
     void* mem = VertexPool.Allocate();
     auto* ptr = new(mem) Vertex();
-    ptr->Position = position;
     return ptr;
 }
 
@@ -60,9 +59,28 @@ void CHEMesh::FreeHalfEdge(HalfEdge* p)
     HalfEdgePool.Free(p);
 }
 
+CHEMesh::HalfEdge* CHEMesh::FindFreeIncident(CHEMesh::Vertex* v)
+{
+    //Isolated vertex?
+    HalfEdge* he = v->OneHE;
+    if (!he)
+        return nullptr;
+
+    do
+    {
+        if (he->IsFree())
+            return he;
+
+        he = he->Twin->Next;
+    } while (he != v->OneHE);
+    return nullptr;
+}
+
 CHEMesh::Vertex* CHEMesh::MakeVertex(const Vector3& position)
 {
-    Vertex* v = AllocateVertex(position);
+    Vertex* v = AllocateVertex();
+    v->OneHE = nullptr;
+    v->Position = position;
     Vertices.insert(v);
     return v;
 }
@@ -72,7 +90,8 @@ CHEMesh::Edge* CHEMesh::MakeEdgeVertex(Vertex* v0, const Vector3& position, Face
     //If isolated vertex
     if (v0->OneHE == nullptr)
     {
-        Vertex* v1 = AllocateVertex(position);
+        Vertex* v1 = AllocateVertex();
+        v1->Position = position;
         Edge* edge = AllocateEdge();
         HalfEdge* v0v1;
         HalfEdge* v1v0;
@@ -100,7 +119,8 @@ CHEMesh::Edge* CHEMesh::MakeEdgeVertex(Vertex* v0, const Vector3& position, Face
     else if (left == right)
     {
         //We got a single faced graph, so just add one vertex and attach
-        Vertex* v1 = AllocateVertex(position);
+        Vertex* v1 = AllocateVertex();
+        v1->Position = position;
         Edge* edge = AllocateEdge();
         HalfEdge* v0v1;
         HalfEdge* v1v0;
@@ -231,7 +251,14 @@ std::vector<CHEMesh::Face*> CHEMesh::EFQuery(Edge* e)
 
 std::vector<CHEMesh::Vertex*> CHEMesh::FVQuery(Face* f)
 {
-    return std::vector<Vertex*>();
+    std::vector<Vertex*> result;
+    HalfEdge* he = f->OneHE;
+    do
+    {
+        result.push_back(he->Vert);
+        he = he->Next;
+    } while (he != f->OneHE);
+    return result;
 }
 
 std::vector<CHEMesh::Edge*> CHEMesh::FEQuery(Face* f)
@@ -259,6 +286,18 @@ CHEMesh::HalfEdge* CHEMesh::PrevAroundVertex(HalfEdge* he)
         next = NextAroundVertex(next);
     }
     return last;
+}
+
+bool CHEMesh::AreAdjacent(CHEMesh::Vertex* v1, CHEMesh::Vertex* v2)
+{
+    HalfEdge* he = v1->OneHE;
+    do
+    {
+        if (he->Twin->Vert == v2)
+            return true;
+        he = he->Twin->Next;
+    } while (he != v1->OneHE);
+    return false;
 }
 
 }

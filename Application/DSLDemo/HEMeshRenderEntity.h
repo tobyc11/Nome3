@@ -6,6 +6,8 @@
 namespace Nome
 {
 
+using tc::TAutoPtr;
+
 class CHEMeshRenderEntity : public Scene::CEntity
 {
 public:
@@ -16,7 +18,7 @@ public:
     void Draw() const override;
 
 private:
-    CHEMesh* Mesh;
+    TAutoPtr<CHEMesh> Mesh;
 };
 
 }

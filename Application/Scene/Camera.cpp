@@ -31,6 +31,18 @@ void CCamera::CalculateProjMatrix() const
     bProjMatrixDirty = false;
 }
 
+const Matrix4& CCamera::GetProjMatrix() const
+{
+    CalculateProjMatrix();
+    return ProjMatrix;
+}
+
+Matrix4 CCamera::GetViewMatrix() const
+{
+    const auto& viewMatrix = GetPrincipleTreeNode()->GetL2W();
+    return viewMatrix.Inverse().ToMatrix4();
+}
+
 Frustum CCamera::GetFrustum() const
 {
     const auto& viewMatrix = GetPrincipleTreeNode()->GetL2W();

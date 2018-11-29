@@ -12,7 +12,7 @@ void CCamera::CalculateProjMatrix() const
 
     if (true /*!bIsOrthographic*/)
     {
-        float h = 1.0f / tanf(FovY / 2);
+        float h = 1.0f / tanf(FovY * tc::M_DEGTORAD_2);
         float w = h / AspectRatio;
         float q = FarClip / (NearClip - FarClip);
         float qn = NearClip * q;
@@ -29,6 +29,21 @@ void CCamera::CalculateProjMatrix() const
     }
 
     bProjMatrixDirty = false;
+}
+
+Frustum CCamera::GetFrustum() const
+{
+    const auto& viewMatrix = GetPrincipleTreeNode()->GetL2W();
+    auto frustum = Frustum();
+    frustum.Define(FovY, AspectRatio, 1.0f, NearClip, FarClip, viewMatrix);
+    return frustum;
+}
+
+CSceneTreeNode* CCamera::GetPrincipleTreeNode() const
+{
+    for (auto treeNode : GetTreeNodes())
+        return treeNode;
+    return nullptr;
 }
 
 }

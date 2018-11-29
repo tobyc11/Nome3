@@ -26,21 +26,26 @@ class CSceneNode;
 class CEntity : public Flow::CFlowNode
 {
 public:
+    CEntity()
+    {
+        if (Name.empty())
+            Name = GenerateSequentialName();
+    }
+
     CEntity(CDocument* doc, std::string name)
         : Document(doc), Name(std::move(name))
     {
-        static unsigned int nameCounter = 1;
         if (Name.empty())
-        {
-            Name = "entity" + std::to_string(nameCounter++);
-        }
+            Name = GenerateSequentialName();
     }
 
-    ~CEntity()
+    ~CEntity() override
     {
         assert(Document == nullptr);
         assert(ParentSceneNode == nullptr);
     }
+
+    std::string GenerateSequentialName();
 
     const std::string& GetName() const
     {
@@ -52,6 +57,10 @@ public:
         Name = value;
     }
 
+    virtual void Draw() const
+    {
+    }
+
 protected:
     ///Marks the entity dirty, triggers a scene update (redraw)
     void MarkDirty();
@@ -60,7 +69,7 @@ private:
     std::string Name;
 
     ///Pointer to the document this entity belongs to
-    CDocument* Document;
+    CDocument* Document = nullptr;
 
     ///Indicates whether this entity is part of the scene
     CSceneNode* ParentSceneNode = nullptr;

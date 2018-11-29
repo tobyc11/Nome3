@@ -47,6 +47,10 @@ class IAppService
 public:
     DEFINE_APP_SERVICE_TYPE(IAppService)
 
+protected:
+    ///Only the generic application manager has access to services
+    friend class CApp;
+
     virtual ~IAppService() = default;
 
     virtual int Setup() = 0;

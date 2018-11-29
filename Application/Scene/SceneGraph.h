@@ -26,6 +26,16 @@ public:
         return Owner;
     }
 
+    template <typename T>
+    void ForEach(T fn)
+    {
+        fn(this);
+        for (auto child : Children)
+        {
+            child->ForEach(fn);
+        }
+    }
+
 private:
     //Ensure only CSceneNode can create instances of tree node
     friend class CSceneNode;
@@ -44,6 +54,7 @@ private:
     //Private fields
     CSceneNode* Owner;
     CSceneTreeNode* Parent = nullptr;
+    std::set<CSceneTreeNode*> Children;
 
     ///Local to world transform
     mutable Matrix3x4 L2W;
@@ -66,13 +77,9 @@ public:
     const TAutoPtr<CEntity>& GetEntity() const;
     void SetEntity(const TAutoPtr<CEntity>& value);
 
-    size_t CountTreeNodes() const
-    {
-        size_t count = 0;
-        for (auto& pair : AssocTreeNodes)
-            count += pair.second.size();
-        return count;
-    }
+    size_t CountTreeNodes() const;
+
+    std::set<TAutoPtr<CSceneTreeNode>> GetTreeNodes() const;
 
     DEFINE_INPUT(Matrix3x4, Transform)
     {

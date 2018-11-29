@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IAppService.h"
+#include "Scene/Scene.h"
 
 namespace Nome
 {
@@ -11,6 +12,8 @@ class CRenderService : public IAppService
     DEFINE_APP_SERVICE_TYPE_FLAGS(CRenderService, ASF_NONE)
 
 public:
+    Scene::CScene* GetScene() const;
+    void SetScene(Scene::CScene* Scene);
 
 protected:
     int Setup() override;
@@ -26,6 +29,9 @@ protected:
     }
 
     void Render() override;
+
+private:
+    Scene::CScene* Scene;
 };
 
 }

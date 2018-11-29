@@ -11,7 +11,17 @@ void CSceneTreeNode::AddChild(CSceneTreeNode* node)
 
 void CSceneTreeNode::SetParent(CSceneTreeNode* parNode)
 {
+    if (Parent == parNode)
+        return;
+
+    if (Parent)
+    {
+        auto iter = Parent->Children.find(this);
+        Parent->Children.erase(iter);
+    }
+
     Parent = parNode;
+    Parent->Children.insert(this);
 }
 
 void CSceneTreeNode::MarkTransformDirty()
@@ -90,6 +100,22 @@ void CSceneNode::SetEntity(const TAutoPtr<CEntity>& value)
 CSceneTreeNode* CSceneNode::CreateTreeNode()
 {
     return new CSceneTreeNode(this);
+}
+
+size_t CSceneNode::CountTreeNodes() const
+{
+    size_t count = 0;
+    for (auto& pair : AssocTreeNodes)
+        count += pair.second.size();
+    return count;
+}
+
+std::set<TAutoPtr<CSceneTreeNode>> CSceneNode::GetTreeNodes() const
+{
+    std::set<TAutoPtr<CSceneTreeNode>> result;
+    for (auto& pair : AssocTreeNodes)
+        result.insert(pair.second.begin(), pair.second.end());
+    return result;
 }
 
 }

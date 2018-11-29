@@ -2,10 +2,13 @@
 
 #include "SceneGraph.h"
 
+#include <Frustum.h>
+
 namespace Nome::Scene
 {
 
 using tc::Matrix4;
+using tc::Frustum;
 
 /*
  * Special scene node that also contains the view info
@@ -15,6 +18,11 @@ class CCamera: public CSceneNode
 public:
     void CalculateProjMatrix() const;
 
+    Frustum GetFrustum() const;
+
+    CSceneTreeNode* GetPrincipleTreeNode() const;
+
+    ///Property getter/setter
     float GetAspectRatio() const { return AspectRatio; }
     void SetAspectRatio(float value)
     {
@@ -46,8 +54,8 @@ public:
 private:
     //bool bIsOrthographic = false;
     float AspectRatio = 1.0f;
-    ///The vertical field of view, the default is approx. 59 degrees
-    float FovY = 1.02974f;
+    ///The vertical field of view, the default is 59 degrees
+    float FovY = 59.0f;
     float NearClip = 1.0f;
     float FarClip = 1000.0f;
     //float Zoom;

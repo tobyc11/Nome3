@@ -1,6 +1,6 @@
 #include "DocumentBuilder.h"
 
-#include "Point.h"
+#include "Scene/Point.h"
 
 namespace Nome
 {

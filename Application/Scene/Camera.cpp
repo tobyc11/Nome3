@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+#include "imgui.h"
+
 namespace Nome::Scene
 {
 
@@ -56,6 +58,39 @@ CSceneTreeNode* CCamera::GetPrincipleTreeNode() const
     for (auto treeNode : GetTreeNodes())
         return treeNode;
     return nullptr;
+}
+
+void CCamera::ShowDebugImGui()
+{
+	ImGui::Text("Camera:");
+	ImGui::SameLine();
+	if (ImGui::Button("<"))
+	{
+		auto currentTransform = GetTransform();
+		auto rotMat = Matrix3x4(Quaternion(-10.0f, Vector3::UP).RotationMatrix());
+		SetDefaultTransform(rotMat * currentTransform);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button(">"))
+	{
+		auto currentTransform = GetTransform();
+		auto rotMat = Matrix3x4(Quaternion(10.0f, Vector3::UP).RotationMatrix());
+		SetDefaultTransform(rotMat * currentTransform);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("^"))
+	{
+		auto currentTransform = GetTransform();
+		auto rotMat = Matrix3x4(Quaternion(-10.0f, Vector3::RIGHT).RotationMatrix());
+		SetDefaultTransform(rotMat * currentTransform);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("v"))
+	{
+		auto currentTransform = GetTransform();
+		auto rotMat = Matrix3x4(Quaternion(10.0f, Vector3::RIGHT).RotationMatrix());
+		SetDefaultTransform(rotMat * currentTransform);
+	}
 }
 
 }

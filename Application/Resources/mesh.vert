@@ -7,24 +7,10 @@ out VertexInterpolants
     vec3 Color;
 } outData;
 
-#ifdef USE_CONSTANT_BUFFER
-uniform ConstantPerObject
-{
-#endif
-    mat4 Model;
-#ifdef USE_CONSTANT_BUFFER
-};
-#endif
+uniform mat4 Model;
 
-#ifdef USE_CONSTANT_BUFFER
-uniform ConstantPerView
-{
-#endif
-    mat4 View;
-    mat4 Proj;
-#ifdef USE_CONSTANT_BUFFER
-};
-#endif
+uniform mat4 View;
+uniform mat4 Proj;
 
 void main()
 {

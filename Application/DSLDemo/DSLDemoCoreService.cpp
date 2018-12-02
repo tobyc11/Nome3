@@ -148,9 +148,10 @@ int CDSLDemoCoreService::FrameUpdate()
         if (ImGui::Button("Load Demo Patch"))
         {
             auto* node = DemoScene->GetRootNode()->CreateChildNode("patch");
-            auto* mesh = HalfEdgeMeshFromObj("../../Application/Resources/patch.obj");
+            auto* mesh = HalfEdgeMeshFromObj("Resources/patch.obj");
             node->SetEntity(new CHEMeshRenderEntity(mesh));
         }
+		DemoScene->GetMainCamera()->ShowDebugImGui();
         ImGui::End();
     }
     return 0;

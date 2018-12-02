@@ -5,8 +5,6 @@
 namespace Nome
 {
 
-REGISTER_APPLICATION(CNomeApp)
-
 void CNomeApp::Init()
 {
     BootService<CInputService>();

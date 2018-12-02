@@ -8,7 +8,7 @@ namespace tc
 std::string ReadTextFile(const std::string& file)
 {
 	//TODO: address hardcoded path
-	std::ifstream ifs("../../Application/Resources/" + file);
+	std::ifstream ifs("Resources/" + file);
 	if (!ifs)
 		return std::string();
 

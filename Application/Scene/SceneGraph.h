@@ -88,6 +88,17 @@ public:
     void SetDefaultTransform(const Matrix3x4& val)
     {
         DefaultTransform = val;
+
+		if (!Transform.IsConnected())
+		{
+			for (auto& pair : AssocTreeNodes)
+			{
+				for (auto& treeNode : pair.second)
+				{
+					treeNode->MarkTransformDirty();
+				}
+			}
+		}
     }
 
     ///Use GetTransform instead of accessing this directly

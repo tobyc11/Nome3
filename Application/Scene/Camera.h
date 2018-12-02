@@ -57,6 +57,8 @@ public:
         bProjMatrixDirty = true;
     }
 
+	void ShowDebugImGui();
+
 private:
     //bool bIsOrthographic = false;
     float AspectRatio = 1.0f;

@@ -129,6 +129,11 @@ public:
         }
     }
 
+	bool IsConnected() const
+	{
+		return ConnectedOutput;
+	}
+
     T GetValue(const T& defaultValue) const
     {
         if (ConnectedOutput)

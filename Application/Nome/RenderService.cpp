@@ -66,6 +66,7 @@ void CRenderService::Render()
     glDisable(GL_CULL_FACE);
     //glFrontFace(GL_CCW);
     //glCullFace(GL_BACK);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     //FB
     glDisable(GL_SCISSOR_TEST);

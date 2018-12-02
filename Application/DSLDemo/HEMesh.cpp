@@ -11,6 +11,7 @@ CHEMesh::Vertex* CHEMesh::AllocateVertex()
 {
     void* mem = VertexPool.Allocate();
     auto* ptr = new(mem) Vertex();
+	Vertices.insert(ptr);
     return ptr;
 }
 
@@ -18,6 +19,7 @@ CHEMesh::Edge* CHEMesh::AllocateEdge()
 {
     void* mem = EdgePool.Allocate();
     auto* ptr = new(mem) Edge();
+	Edges.insert(ptr);
     return ptr;
 }
 
@@ -25,6 +27,7 @@ CHEMesh::Face* CHEMesh::AllocateFace()
 {
     void* mem = FacePool.Allocate();
     auto* ptr = new(mem) Face();
+	Faces.insert(ptr);
     return ptr;
 }
 
@@ -32,29 +35,38 @@ CHEMesh::HalfEdge* CHEMesh::AllocateHalfEdge()
 {
     void* mem = HalfEdgePool.Allocate();
     auto* ptr = new(mem) HalfEdge();
+	HalfEdges.insert(ptr);
     return ptr;
 }
 
 void CHEMesh::FreeVertex(Vertex* p)
 {
+	auto iter = Vertices.find(p);
+	Vertices.erase(p);
     p->~Vertex();
     VertexPool.Free(p);
 }
 
 void CHEMesh::FreeEdge(Edge* p)
 {
+	auto iter = Edges.find(p);
+	Edges.erase(p);
     p->~Edge();
     EdgePool.Free(p);
 }
 
 void CHEMesh::FreeFace(Face* p)
 {
+	auto iter = Faces.find(p);
+	Faces.erase(p);
     p->~Face();
     FacePool.Free(p);
 }
 
 void CHEMesh::FreeHalfEdge(HalfEdge* p)
 {
+	auto iter = HalfEdges.find(p);
+	HalfEdges.erase(p);
     p->~HalfEdge();
     HalfEdgePool.Free(p);
 }
@@ -81,7 +93,6 @@ CHEMesh::Vertex* CHEMesh::MakeVertex(const Vector3& position)
     Vertex* v = AllocateVertex();
     v->OneHE = nullptr;
     v->Position = position;
-    Vertices.insert(v);
     return v;
 }
 
@@ -111,8 +122,6 @@ CHEMesh::Edge* CHEMesh::MakeEdgeVertex(Vertex* v0, const Vector3& position, Face
         v1->OneHE = v1v0;
         boundry->OneHE = v0v1;
 
-        Edges.insert(edge);
-        Vertices.insert(v1);
         BoundaryFaces.insert(boundry);
         return edge;
     }
@@ -138,9 +147,6 @@ CHEMesh::Edge* CHEMesh::MakeEdgeVertex(Vertex* v0, const Vector3& position, Face
         v1v0->Vert = v1; v1->OneHE = v1v0;
         v0v1->Face = left;
         v1v0->Face = left;
-
-        Edges.insert(edge);
-        Vertices.insert(v1);
         return edge;
     }
 
@@ -165,10 +171,8 @@ CHEMesh::Edge* CHEMesh::MakeEdgeFace(Face* face, Vertex* v0, Vertex* v1)
     HalfEdge* v0Out = v0In->Next;
 
     Face* newFace = AllocateFace();
-    Faces.insert(newFace);
 
     Edge* edge = AllocateEdge();
-    Edges.insert(edge);
 
     HalfEdge* fwd;
     HalfEdge* bkwd;
@@ -194,8 +198,6 @@ void CHEMesh::CreateHalfEdgePair(HalfEdge*& outPtr, HalfEdge*& outPtr2)
     outPtr2 = AllocateHalfEdge();
     outPtr->Twin = outPtr2;
     outPtr2->Twin = outPtr;
-    HalfEdges.insert(outPtr);
-    HalfEdges.insert(outPtr2);
 }
 
 std::vector<CHEMesh::Vertex*> CHEMesh::VVQuery(Vertex* v)

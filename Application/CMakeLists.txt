@@ -7,9 +7,9 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
 file(GLOB PG2_SOURCES
-	*.h *.cpp
-	Flow/*.h Flow/*.cpp
-	FlowViz/*.h FlowViz/*.cpp
+    *.h *.cpp
+    Flow/*.h Flow/*.cpp
+    FlowViz/*.h FlowViz/*.cpp
     Nome/*.h Nome/*.cpp
     DSLDemo/*.h DSLDemo/*.cpp
     Scene/*.h Scene/*.cpp

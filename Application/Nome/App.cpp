@@ -24,6 +24,8 @@ static SDL_GLContext gl_context;
 static bool show_demo_window = false;
 static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+static const GLubyte* DeviceName = nullptr;
+
 namespace Nome
 {
 
@@ -96,6 +98,10 @@ int CApp::AppSetup()
 
     // Load Fonts
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
+	
+	// Get OpenGL version info
+	SDL_GL_MakeCurrent(window, gl_context);
+	DeviceName = glGetString(GL_RENDERER);
 
     GApp->Init();
 
@@ -146,6 +152,8 @@ int CApp::AppSingleFrame()
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
     {
         ImGui::Begin("Info");
+
+		ImGui::Text("%s", DeviceName);
 
         ImGui::Checkbox("Demo Window", &show_demo_window);
 

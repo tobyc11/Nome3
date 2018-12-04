@@ -23,7 +23,7 @@ int CInputService::Cleanup()
     return 0;
 }
 
-void CInputService::EventHook(void* event)
+bool CInputService::EventHook(void* event)
 {
     auto* sdlEvent = static_cast<SDL_Event*>(event);
 
@@ -44,6 +44,8 @@ void CInputService::EventHook(void* event)
         default:
             break;
     }
+
+	return false;
 }
 
 }

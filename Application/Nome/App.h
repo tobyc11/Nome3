@@ -39,9 +39,9 @@ public:
         ServicesInBootOrder.push_back(svc);
 
         //Handle flags
-        if (T::Flags() & ASF_EVENT_HOOK)
+        if (svc->Flags() & ASF_EVENT_HOOK)
             EventSvcs.push_back(svc);
-        if (T::Flags() & ASF_RENDER)
+        if (svc->Flags() & ASF_RENDER)
             RenderSvcs.push_back(svc);
 
         svc->Setup();
@@ -58,7 +58,8 @@ public:
 
 private:
     void ShutdownServices();
-
+	
+	friend class CEventLoopDriver;
     std::unordered_map<uint32_t, IAppService*> Services;
     std::vector<IAppService*> ServicesInBootOrder;
 

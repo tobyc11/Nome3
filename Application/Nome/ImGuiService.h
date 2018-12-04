@@ -5,25 +5,18 @@
 namespace Nome
 {
 
-struct CMouseState
-{
-    int x, y;
-    int dx, dy;
-};
-
-class CInputService : public IAppService
+class CImGuiService : public IAppService
 {
 public:
-    DEFINE_APP_SERVICE_TYPE_FLAGS(CInputService, ASF_EVENT_HOOK)
+    DEFINE_APP_SERVICE_TYPE_FLAGS(CImGuiService, ASF_EVENT_HOOK | ASF_RENDER)
 
 protected:
     int Setup() override;
     int FrameUpdate() override;
     int Cleanup() override;
 	bool EventHook(void* event) override;
-
-private:
-    CMouseState MouseState;
+	void Render() override;
+	void RenderPhase2() override;
 };
 
 }

@@ -15,7 +15,8 @@ enum EAppServiceFlags
 {
     ASF_NONE = 0,
     ASF_EVENT_HOOK = 1,
-    ASF_RENDER = 2
+    ASF_RENDER = 2,
+	ASF_EVENT_LOOP_DRIVER = 4
 };
 
 #define DEFINE_APP_SERVICE_TYPE(Name)\
@@ -25,7 +26,7 @@ public:\
         return #Name##_hash;\
     }\
     \
-    static constexpr uint32_t Flags()\
+    virtual uint32_t Flags()\
     {\
         return ASF_NONE;\
     }
@@ -37,7 +38,7 @@ public:\
         return #Name##_hash;\
     }\
     \
-    static constexpr uint32_t Flags()\
+    virtual uint32_t Flags()\
     {\
         return SvcFlags;\
     }
@@ -50,6 +51,7 @@ public:
 protected:
     ///Only the generic application manager has access to services
     friend class CApp;
+	friend class CEventLoopDriver;
 
     virtual ~IAppService() = default;
 
@@ -58,8 +60,11 @@ protected:
     virtual int Cleanup() = 0;
 
     //Pointer to an implementation defined event structure
-    virtual void EventHook(void* event) {}
+	virtual bool EventHook(void* event) { return false; }
     virtual void Render() {}
+	virtual void RenderPhase2() {}
+	//Run the event loop once, pump all the events, etc. Returns true if app is closing
+	virtual bool EventLoopOnce() { return true; }
 };
 
 }

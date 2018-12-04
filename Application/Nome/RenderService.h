@@ -9,7 +9,7 @@ namespace Nome
 //A thin layer that wraps a Viewport
 class CRenderService : public IAppService
 {
-    DEFINE_APP_SERVICE_TYPE_FLAGS(CRenderService, ASF_NONE)
+    DEFINE_APP_SERVICE_TYPE_FLAGS(CRenderService, ASF_RENDER)
 
 public:
     Scene::CScene* GetScene() const;

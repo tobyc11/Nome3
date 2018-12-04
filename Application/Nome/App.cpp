@@ -11,19 +11,16 @@ int CApp::AppSetup()
 
 int CApp::AppSingleFrame()
 {
-	for (auto& iter : GApp->ServicesInBootOrder)
+	if (!GApp->EventLoopDriver)
 	{
-		if (iter->Flags() & ASF_EVENT_LOOP_DRIVER)
-		{
-			if (iter->EventLoopOnce())
-				return StatusWannaQuit;
-			else
-				return 0;
-		}
+		printf("%s\n", "Couldn't find an event loop driver");
+		return -1;
 	}
 
-	printf("%s\n", "Couldn't find an event loop driver");
-    return -1;
+	if (GApp->EventLoopDriver->EventLoopOnce())
+		return StatusWannaQuit;
+	else
+		return 0;
 }
 
 int CApp::AppCleanup()

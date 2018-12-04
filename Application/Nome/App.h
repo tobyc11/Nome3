@@ -39,6 +39,8 @@ public:
         ServicesInBootOrder.push_back(svc);
 
         //Handle flags
+		if (svc->Flags() & ASF_EVENT_LOOP_DRIVER)
+			EventLoopDriver = svc;
         if (svc->Flags() & ASF_EVENT_HOOK)
             EventSvcs.push_back(svc);
         if (svc->Flags() & ASF_RENDER)
@@ -64,6 +66,7 @@ private:
     std::vector<IAppService*> ServicesInBootOrder;
 
     //Memoized services satisfying certain conditions
+	IAppService* EventLoopDriver = nullptr;
     std::vector<IAppService*> EventSvcs;
     std::vector<IAppService*> RenderSvcs;
 };

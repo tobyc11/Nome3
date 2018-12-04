@@ -179,6 +179,12 @@ public:
     {
     }
 
+	//Workaround for lambda chicken egg problem
+	void SetUpdateRoutine(std::function<void()> updateRoutine)
+	{
+		UpdateRoutine = std::move(updateRoutine);
+	}
+
     //Mark this output dirty, and notify all connected inputs
     void MarkDirty();
 

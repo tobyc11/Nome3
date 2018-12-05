@@ -149,7 +149,7 @@ int CDSLDemoCoreService::Setup()
 		using namespace CppIRBuilder;
 		BuilderContext ctx;
 		SetVertAttr("pos") = InputAttr<Vector3>("pos");
-		SetVertAttr("normal") = Matrix3::IDENTITY * VertAttrRef("pos");
+		SetVertAttr("normal") = Matrix3::IDENTITY * VertAttrRef("pos") + Vector3(-0.1f, 0.1f, 0.05f);
 		MaterializeAttr("normal");
 		SetVertAttr("dir") = Matrix3{ 0, 1, 0, 1, 0, 0, 0, 0, 1 } * VertAttrRef("pos");
 		Offset("dir");

@@ -31,6 +31,26 @@ public:
 	IRExpr* ExprPtr;
 };
 
+Expr operator+(const Expr& left, const Expr& right);
+
+template <typename T>
+Expr operator+(const T& left, const Expr& right)
+{
+	Expr ret;
+	IRExpr* constExpr = new IRConstant<T>(left);
+	ret.ExprPtr = new IRAdd(constExpr, right.ExprPtr);
+	return ret;
+}
+
+template <typename T>
+Expr operator+(const Expr& left, const T& right)
+{
+	Expr ret;
+	IRExpr* constExpr = new IRConstant<T>(right);
+	ret.ExprPtr = new IRAdd(left.ExprPtr, constExpr);
+	return ret;
+}
+
 Expr operator*(const Expr& left, const Expr& right);
 
 template <typename T>

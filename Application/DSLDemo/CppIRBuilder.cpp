@@ -41,6 +41,13 @@ IRProgram* BuilderContext::GetProgram()
 	return new IRProgram(curr);
 }
 
+Expr operator+(const Expr& left, const Expr& right)
+{
+	Expr ret;
+	ret.ExprPtr = new IRAdd(left.ExprPtr, right.ExprPtr);
+	return ret;
+}
+
 Expr operator*(const Expr& left, const Expr& right)
 {
 	Expr ret;

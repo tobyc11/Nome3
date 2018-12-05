@@ -8,6 +8,8 @@ namespace Nome
 
 using tc::TAutoPtr;
 
+class CEffiContext;
+
 class CDSLDemoCoreService : public IAppService
 {
     DEFINE_APP_SERVICE_TYPE(CDSLDemoCoreService)
@@ -20,6 +22,7 @@ protected:
 
 private:
     TAutoPtr<Scene::CScene> DemoScene;
+	CEffiContext* EffiContext = nullptr;
 };
 
 }

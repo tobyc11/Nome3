@@ -1,6 +1,10 @@
 #include "DSLDemoCoreService.h"
 #include "HEMeshRenderEntity.h"
 
+//Testing out IR
+#include "CppIRBuilder.h"
+#include "EffiCompiler.h"
+
 #include "Nome/App.h"
 #include "Nome/RenderService.h"
 
@@ -138,6 +142,25 @@ int CDSLDemoCoreService::Setup()
     DemoScene = new Scene::CScene();
     DemoScene->CreateDefaultCamera();
     GApp->GetService<CRenderService>()->SetScene(DemoScene);
+
+	EffiContext = new CEffiContext();
+	IRProgram* program;
+	{
+		using namespace CppIRBuilder;
+		BuilderContext ctx;
+		SetVertAttr("pos") = InputAttr<Vector3>("pos");
+		SetVertAttr("normal") = Matrix3::IDENTITY * VertAttrRef("pos");
+		MaterializeAttr("normal");
+		SetVertAttr("dir") = Matrix3{ 0, 1, 0, 1, 0, 0, 0, 0, 1 } * VertAttrRef("pos");
+		Offset("dir");
+		SubdivideCatmullClark();
+
+		program = ctx.GetProgram();
+	}
+
+	CEffiCompiler compiler{ EffiContext };
+	compiler.Compile(program);
+
     return 0;
 }
 

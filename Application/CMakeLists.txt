@@ -35,6 +35,12 @@ macro(config_playground2 target)
 
     find_package(Qt5Widgets CONFIG REQUIRED)
     target_link_libraries(${target} PRIVATE Qt5::Widgets)
+
+    find_package(Lua REQUIRED)
+    target_include_directories(${target} PRIVATE ${LUA_INCLUDE_DIR})
+    target_link_libraries(${target} PRIVATE ${LUA_LIBRARIES})
+
+	target_link_libraries(${target} PRIVATE d3d11.lib d3dcompiler.lib dxgi.lib dxguid.lib)
 endmacro()
 
 add_executable (Nome3 ${PG2_SOURCES})

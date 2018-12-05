@@ -1,16 +1,9 @@
 #include "EffiCompiler.h"
 #include "MOMaterializeAttr.h"
 #include <StringPrintf.h>
-#include <stdexcept>
 
 namespace Nome
 {
-
-class CEffiCompileError : public CIRException
-{
-public:
-	using CIRException::CIRException;
-};
 
 std::string CHLSLCodeGen::CodeGen(IRExpr* node, const std::string& fnName)
 {
@@ -281,22 +274,6 @@ void CEffiCompiler::Visit(IRMaterializeAttr* node)
 	auto iter = VSymTab.find(node->Target->Name);
 	if (iter == VSymTab.end())
 		throw CEffiCompileError(tc::StringPrintf("Cannot materialize %s, reference not found.", node->Target->Name));
-	
-	//TODO: do stuff
-	//iter->second is the attribute to materialize
-	CHLSLCodeGen codegen;
-	auto shaderFunc = codegen.CodeGen(iter->second, "MaterializeAttr");
-
-	CHLSLInputStructGen vsinGen{ codegen.ReferredFields };
-	auto shaderVSIn = vsinGen.Result;
-
-	std::unordered_map<std::string, std::pair<EDataType, std::string>> outVars;
-	outVars.insert({ "Pos", {iter->second->DataType, "SV_Position"} });
-	CHLSLStructGen vsOutGen{ "VSOut", outVars };
-	auto shaderVSOut = vsOutGen.Result;
-
-	MOMaterializeAttr* meshOp = new MOMaterializeAttr(EffiContext->GetGraphicsDevice(), shaderFunc, shaderVSIn, shaderVSOut);
-	CompiledPipeline->AddOperator(meshOp);
 
 	switch (iter->second->DataType)
 	{
@@ -321,6 +298,11 @@ void CEffiCompiler::Visit(IRMaterializeAttr* node)
 			node->Target->Name.c_str()));
 		break;
 	}
+
+	//node->Target is the reference to the attribute
+	//iter->second is the IRExpr for the attribute
+	MOMaterializeAttr* meshOp = new MOMaterializeAttr(EffiContext->GetGraphicsDevice(), node->Target->Name, iter->second);
+	CompiledPipeline->AddOperator(meshOp);
 }
 
 void CEffiCompiler::Visit(IROffset* node)

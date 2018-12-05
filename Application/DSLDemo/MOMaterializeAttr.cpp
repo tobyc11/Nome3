@@ -1,12 +1,82 @@
 #include "MOMaterializeAttr.h"
 #include "ConvertToHLSLType.h"
+#include "EffiCompiler.h"
 #include <StringPrintf.h>
+
+#include <d3dcompiler.h>
+#include <utility>
+#include <sstream>
+#include <iostream>
 
 namespace Nome
 {
 
-MOMaterializeAttr::MOMaterializeAttr(CGraphicsDevice* gd, const std::string& mapFunc, const std::string& vsIn, const std::string& vsOut)
+MOMaterializeAttr::MOMaterializeAttr(CGraphicsDevice* gd, const std::string& attrName, IRExpr* targetExpr)
+	: GD(gd)
 {
+	CHLSLCodeGen codegen;
+	auto shaderFunc = codegen.CodeGen(targetExpr, "MaterializeAttr");
+
+	CHLSLInputStructGen vsinGen{ codegen.ReferredFields };
+	auto shaderVSIn = vsinGen.Result;
+
+	std::unordered_map<std::string, std::pair<EDataType, std::string>> outVars;
+	outVars.insert({ "Pos", {targetExpr->DataType, "OUT0"} });
+	CHLSLStructGen vsOutGen{ "VSOut", outVars };
+	auto shaderVSOut = vsOutGen.Result;
+
+	//Generate the full shader
+	std::stringstream ss;
+	ss << shaderVSIn << std::endl;
+	ss << shaderVSOut << std::endl;
+	ss << shaderFunc << std::endl;
+	ss << tc::StringPrintf("VSOut VSmain(VSIn input)\n"
+		"{\n"
+		"	VSOut output;\n"
+		"	output.Pos = MaterializeAttr(input);\n"
+		"	return output;\n"
+		"}\n");
+
+	std::cout << "Generated shader:" << std::endl;
+	std::cout << ss.str() << std::endl;
+
+	//Compile shader
+	auto sourceStr = ss.str();
+	ID3DBlob* CodeBlob;
+	ID3DBlob* ErrorBlob;
+	D3DCompile(sourceStr.c_str(), sourceStr.size(), "materialize_vs", nullptr, nullptr, "VSmain", "vs_5_0", 0, 0, &CodeBlob, &ErrorBlob);
+	if (ErrorBlob)
+	{
+		std::cout << "Shader compilation error:" << std::endl;
+		std::cout << reinterpret_cast<const char*>(ErrorBlob->GetBufferPointer()) << std::endl;
+		ErrorBlob->Release();
+
+		throw CEffiCompileError(tc::StringPrintf("Attribute %s cannot be materialized due to shader compilation error.",
+			attrName.c_str()));
+	}
+
+	//Create input signature
+	std::vector<D3D11_INPUT_ELEMENT_DESC> inputElements;
+	for (const auto& field : codegen.ReferredFields)
+	{
+		D3D11_INPUT_ELEMENT_DESC desc = {
+			"ATTRIBUTE", //LPCSTR SemanticName;
+			(UINT)field.second.second, //UINT SemanticIndex;
+			ConvertToDXGIFormat(field.second.first), //DXGI_FORMAT Format;
+			(UINT)field.second.second, //UINT InputSlot;
+			0, //UINT AlignedByteOffset;
+			D3D11_INPUT_PER_VERTEX_DATA, //D3D11_INPUT_CLASSIFICATION InputSlotClass;
+			0, //UINT InstanceDataStepRate;
+		};
+		inputElements.push_back(desc);
+	}
+	ID3D11InputLayout* inputLayout;
+	GD->GetDevice()->CreateInputLayout(inputElements.data(), (UINT)inputElements.size(),
+		CodeBlob->GetBufferPointer(), CodeBlob->GetBufferSize(), &inputLayout);
+	if (!inputLayout)
+		throw CEffiCompileError(tc::StringPrintf("Attribute %s cannot be materialized due to input layout error.",
+			attrName.c_str()));
+
 }
 
 void MOMaterializeAttr::operator()(CEffiMesh& mesh)
@@ -14,7 +84,6 @@ void MOMaterializeAttr::operator()(CEffiMesh& mesh)
 	auto* device = GD->GetDevice();
 	auto* ctx = GD->GetImmediateContext();
 
-	std::vector<D3D11_INPUT_ELEMENT_DESC> inputElements;
 	std::vector<ID3D11Buffer*> attrBuffers;
 	std::vector<UINT> offsets;
 	std::vector<UINT> strides;
@@ -38,16 +107,6 @@ void MOMaterializeAttr::operator()(CEffiMesh& mesh)
 			throw CMeshOpException(tc::StringPrintf("Attribute %s type mismatch.", referred.c_str()));
 		}
 
-		D3D11_INPUT_ELEMENT_DESC desc = {
-			"ATTRIBUTE", //LPCSTR SemanticName;
-			(UINT)inputElements.size(), //UINT SemanticIndex;
-			ConvertToDXGIFormat(iter->second.DataType), //DXGI_FORMAT Format;
-			(UINT)attrBuffers.size(), //UINT InputSlot;
-			0, //UINT AlignedByteOffset;
-			D3D11_INPUT_PER_VERTEX_DATA, //D3D11_INPUT_CLASSIFICATION InputSlotClass;
-			0, //UINT InstanceDataStepRate;
-		};
-		inputElements.push_back(desc);
 		attrBuffers.push_back(iter->second.GPUBuffer);
 		offsets.push_back(0);
 		strides.push_back((UINT)DataTypeToSize(iter->second.DataType));

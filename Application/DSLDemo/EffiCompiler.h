@@ -3,11 +3,18 @@
 #include "IRVisitor.h"
 #include "EffiCompiledPipeline.h"
 
+#include <stdexcept>
 #include <unordered_map>
 #include <utility>
 
 namespace Nome
 {
+
+class CEffiCompileError : public CIRException
+{
+public:
+	using CIRException::CIRException;
+};
 
 class CHLSLCodeGen : public IRVisitor
 {

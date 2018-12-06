@@ -141,7 +141,7 @@ int CDSLDemoCoreService::Setup()
 {
     DemoScene = new Scene::CScene();
     DemoScene->CreateDefaultCamera();
-    GApp->GetService<CRenderService>()->SetScene(DemoScene);
+    //GApp->GetService<CRenderService>()->SetScene(DemoScene);
 
 	EffiContext = new CEffiContext();
 	IRProgram* program;
@@ -182,7 +182,7 @@ int CDSLDemoCoreService::FrameUpdate()
 
 int CDSLDemoCoreService::Cleanup()
 {
-    GApp->GetService<CRenderService>()->SetScene(nullptr);
+    //GApp->GetService<CRenderService>()->SetScene(nullptr);
     return 0;
 }
 

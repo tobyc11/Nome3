@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EventLoopDriver.h"
+#include "RenderContext.h"
 #include <SDL_video.h>
 #include <string>
 
@@ -16,6 +17,11 @@ public:
 	SDL_GLContext GLContext;
 
 	std::string GLSLVersion;
+
+	static void SetOpenGLOff();
+
+	//TODO: move OpenGL support code here as well
+	CRenderContext* RenderContext = nullptr;
 
 protected:
     int Setup() override;

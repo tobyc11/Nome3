@@ -1,6 +1,6 @@
 #include "DSLDemoApp.h"
 #include "Nome/SDLService.h"
-#include "Nome/ImGuiService.h"
+#include "Nome/ImGuiServiceDX11.h"
 #include "Nome/InputService.h"
 #include "Nome/RenderService.h"
 #include "DSLDemoCoreService.h"
@@ -12,10 +12,11 @@ REGISTER_APPLICATION(CDSLDemoApp)
 
 void CDSLDemoApp::Init()
 {
+	CSDLService::SetOpenGLOff();
 	BootService<CSDLService>();
-	BootService<CImGuiService>();
+	BootService<CImGuiServiceDX11>();
     BootService<CInputService>();
-    BootService<CRenderService>();
+    //BootService<CRenderService>();
 
     BootService<CDSLDemoCoreService>();
 }

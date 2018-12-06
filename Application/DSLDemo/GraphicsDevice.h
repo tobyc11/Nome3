@@ -18,7 +18,11 @@ public:
 class CGraphicsDevice
 {
 public:
+	///Create a dvice from scratch (OS)
 	CGraphicsDevice();
+	///Create from existing device
+	CGraphicsDevice(ID3D11Device* device);
+
 	~CGraphicsDevice();
 
 	ID3D11Device* GetDevice() const

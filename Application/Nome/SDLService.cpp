@@ -3,8 +3,15 @@
 #include <SDL.h>
 #include <glad/glad.h>
 
+static bool bIsOpenGLOff = false;
+
 namespace Nome
 {
+
+void CSDLService::SetOpenGLOff()
+{
+	bIsOpenGLOff = true;
+}
 
 int CSDLService::Setup()
 {
@@ -13,6 +20,13 @@ int CSDLService::Setup()
 	{
 		printf("Error: %s\n", SDL_GetError());
 		return -1;
+	}
+
+	if (bIsOpenGLOff)
+	{
+		Window = SDL_CreateWindow("Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
+		RenderContext = new CRenderContext(Window);
+		return RenderContext->Init();
 	}
 
 	// Decide GL+GLSL versions
@@ -64,7 +78,13 @@ int CSDLService::FrameUpdate()
 
 int CSDLService::Cleanup()
 {
-	SDL_GL_DeleteContext(GLContext);
+	if (!bIsOpenGLOff)
+		SDL_GL_DeleteContext(GLContext);
+	else
+	{
+		RenderContext->Cleanup();
+		delete RenderContext; RenderContext = nullptr;
+	}
 	SDL_DestroyWindow(Window);
 	SDL_Quit();
     return 0;
@@ -83,6 +103,15 @@ bool CSDLService::EventLoopOnce()
 		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(Window))
 			done = true;
 
+		//Handle window resize
+		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED && event.window.windowID == SDL_GetWindowID(Window))
+		{
+			int width;
+			int height;
+			SDL_GetWindowSize(Window, &width, &height);
+			RenderContext->ResizeBackbuffer(width, height);
+		}
+
 		RunEventHook(&event);
 	}
 
@@ -90,7 +119,10 @@ bool CSDLService::EventLoopOnce()
 
 	RunRender();
 	RunRenderPhase2();
-	SDL_GL_SwapWindow(Window);
+	if (!bIsOpenGLOff)
+		SDL_GL_SwapWindow(Window);
+	else
+		RenderContext->Present();
 
 	return done;
 }

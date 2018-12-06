@@ -74,6 +74,15 @@ CGraphicsDevice::CGraphicsDevice()
 	ShaderManager = new CShaderManager(this);
 }
 
+CGraphicsDevice::CGraphicsDevice(ID3D11Device* device)
+{
+	D3dDevice = device;
+	D3dDevice->AddRef();
+	D3dDevice->GetImmediateContext(&ImmediateContext);
+
+	ShaderManager = new CShaderManager(this);
+}
+
 CGraphicsDevice::~CGraphicsDevice()
 {
 	delete ShaderManager;

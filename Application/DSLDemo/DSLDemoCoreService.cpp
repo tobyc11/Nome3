@@ -215,11 +215,8 @@ int CDSLDemoCoreService::FrameUpdate()
 {
     {
         ImGui::Begin("DSL");
-        if (ImGui::Button("Load Demo Patch"))
-        {
-            //auto* node = DemoScene->GetRootNode()->CreateChildNode("patch");
-            //auto* mesh = HalfEdgeMeshFromObj("Resources/patch.obj");
-            //node->SetEntity(new CHEMeshRenderEntity(mesh));
+		if (ImGui::Button("Load Demo Patch"))
+		{
 			if (GlobalMesh)
 			{
 				GApp->GetService<CDSLDemoRenderer>()->SetRenderMesh(nullptr);
@@ -228,6 +225,19 @@ int CDSLDemoCoreService::FrameUpdate()
 			}
 
 			CObjLoader loader{ "Resources/patch.obj" };
+			GlobalMesh = loader.LoadEffiMesh(GApp->GetService<CSDLService>()->RenderContext->GetGraphicsDevice());
+			GApp->GetService<CDSLDemoRenderer>()->SetRenderMesh(GlobalMesh);
+		}
+        if (ImGui::Button("Load Demo Mesh"))
+        {
+			if (GlobalMesh)
+			{
+				GApp->GetService<CDSLDemoRenderer>()->SetRenderMesh(nullptr);
+				delete GlobalMesh;
+				GlobalMesh = nullptr;
+			}
+
+			CObjLoader loader{ "Resources/monkey.obj" };
 			GlobalMesh = loader.LoadEffiMesh(GApp->GetService<CSDLService>()->RenderContext->GetGraphicsDevice());
 			GApp->GetService<CDSLDemoRenderer>()->SetRenderMesh(GlobalMesh);
         }

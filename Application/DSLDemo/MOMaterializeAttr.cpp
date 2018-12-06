@@ -142,7 +142,7 @@ void MOMaterializeAttr::operator()(CEffiMesh& mesh)
 
 	D3D11_BUFFER_DESC desc =
 	{
-		DataTypeToSize(OutputType) * mesh.NumIndices * 10,
+		DataTypeToSize(OutputType) * mesh.NumIndices,
 		D3D11_USAGE_DEFAULT,
 		D3D11_BIND_STREAM_OUTPUT | D3D11_BIND_VERTEX_BUFFER,
 		0,

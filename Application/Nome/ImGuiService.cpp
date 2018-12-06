@@ -9,6 +9,8 @@
 #include <SDL.h>
 #include <glad/glad.h>
 
+#include <filesystem>
+
 static bool show_demo_window = false;
 static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -65,7 +67,7 @@ int CImGuiService::FrameUpdate()
 		ImGui::ColorEdit3("clear color", (float*)&clear_color);
 
 		ImGui::TextWrapped("PATH=%s", getenv("PATH"));
-		ImGui::TextWrapped("CWD=%s", SDL_GetBasePath());
+		ImGui::TextWrapped("CWD=%s", std::filesystem::current_path().string().c_str());
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();

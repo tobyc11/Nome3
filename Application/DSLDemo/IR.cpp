@@ -29,5 +29,6 @@ void IRAssign::Accept(IRVisitor& v) { v.Visit(this); }
 void IRMaterializeAttr::Accept(IRVisitor& v) { v.Visit(this); }
 void IROffset::Accept(IRVisitor& v) { v.Visit(this); }
 void IRSubdivideCC::Accept(IRVisitor& v) { v.Visit(this); }
+void IRSubdivideAdHoc::Accept(IRVisitor& v) { v.Visit(this); }
 
 } /* namespace Nome */

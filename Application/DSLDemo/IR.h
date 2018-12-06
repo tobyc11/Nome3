@@ -225,6 +225,12 @@ public:
 	void Accept(IRVisitor& v) override;
 };
 
+class IRSubdivideAdHoc : public IRStmt
+{
+public:
+	void Accept(IRVisitor& v) override;
+};
+
 // Package
 class IRProgram
 {

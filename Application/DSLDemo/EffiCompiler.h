@@ -107,6 +107,7 @@ public:
 	void Visit(IRMaterializeAttr* node) override;
 	void Visit(IROffset* node) override;
 	void Visit(IRSubdivideCC* node) override;
+	void Visit(IRSubdivideAdHoc* node) override;
 
 private:
 	//Symbol table for vertix attributes

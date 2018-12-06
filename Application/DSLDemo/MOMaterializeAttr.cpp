@@ -157,6 +157,7 @@ CEffiUnindexedMesh* MOMaterializeAttr::operator()(CEffiMesh& mesh)
 
 	ctx->DrawIndexed(mesh.NumIndices, 0, 0);
 	ctx->GSSetShader(nullptr, nullptr, 0);
+	ctx->SOSetTargets(0, nullptr, nullptr);
 
 	CEffiUnindexedMesh* output = new CEffiUnindexedMesh();
 	output->NumVertices = mesh.NumIndices;
@@ -226,6 +227,7 @@ CEffiUnindexedMesh* MOMaterializeAttr::operator()(CEffiUnindexedMesh& mesh)
 
 	ctx->Draw(mesh.NumVertices, 0);
 	ctx->GSSetShader(nullptr, nullptr, 0);
+	ctx->SOSetTargets(0, nullptr, nullptr);
 
 	CEffiUnindexedMesh* output = new CEffiUnindexedMesh();
 	output->NumVertices = mesh.NumVertices;

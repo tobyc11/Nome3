@@ -173,4 +173,14 @@ public:
 	}
 };
 
+class SubdivideAdHoc
+{
+public:
+	SubdivideAdHoc()
+	{
+		IRStmt* stmt = new IRSubdivideAdHoc();
+		ScopedBuilderContext::Top().AddStatment(stmt);
+	}
+};
+
 } /* namespace Nome */

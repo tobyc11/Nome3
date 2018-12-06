@@ -38,6 +38,7 @@ public:
 	virtual void Visit(IRMaterializeAttr* node) {}
 	virtual void Visit(IROffset* node) {}
 	virtual void Visit(IRSubdivideCC* node) {}
+	virtual void Visit(IRSubdivideAdHoc* node) {}
 };
 
 } /* namespace Nome */

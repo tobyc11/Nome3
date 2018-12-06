@@ -1,5 +1,6 @@
 #include "EffiCompiler.h"
 #include "MOMaterializeAttr.h"
+#include "MOSubdivideAdHoc.h"
 #include <StringPrintf.h>
 
 namespace Nome
@@ -593,6 +594,21 @@ void CEffiCompiler::Visit(IROffset* node)
 
 void CEffiCompiler::Visit(IRSubdivideCC* node)
 {
+}
+
+void CEffiCompiler::Visit(IRSubdivideAdHoc* node)
+{
+	auto iter = VSymTab.find("pos");
+	if (iter == VSymTab.end())
+		throw CEffiCompileError(tc::StringPrintf("Cannot materialize %s, reference not found.", "pos"));
+
+	//node->Target is the reference to the attribute
+	//iter->second is the IRExpr for the attribute
+	MOSubdivideAdHoc* meshOp = new MOSubdivideAdHoc(EffiContext->GetGraphicsDevice(), iter->second);
+	CompiledPipeline->AddOperator(meshOp);
+
+	//Update the attribute table, must happen after building the Operator
+	VSymTab["pos"] = new IRInputAttr<Vector3>("pos");
 }
 
 } /* namespace Nome */

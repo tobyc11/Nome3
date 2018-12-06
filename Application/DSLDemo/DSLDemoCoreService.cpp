@@ -142,25 +142,53 @@ int CDSLDemoCoreService::Setup()
 {
     DemoScene = new Scene::CScene();
     DemoScene->CreateDefaultCamera();
+	//RenderService is broken rn
     //GApp->GetService<CRenderService>()->SetScene(DemoScene);
 
 	EffiContext = new CEffiContext(GApp->GetService<CSDLService>()->RenderContext->GetGraphicsDevice());
-	IRProgram* program;
+	IRProgram* program = nullptr;
 	{
 		using namespace CppIRBuilder;
-		BuilderContext ctx;
-		SetVertAttr("pos") = InputAttr<Vector3>("pos");
-		SetVertAttr("normal") = Matrix3::IDENTITY * VertAttrRef("pos") + Vector3(-0.1f, 0.1f, 0.05f);
-		MaterializeAttr("normal");
-		SetVertAttr("dir") = Matrix3{ 0, 1, 0, 1, 0, 0, 0, 0, 1 } * VertAttrRef("pos");
-		Offset("dir");
-		SubdivideCatmullClark();
+		ScopedBuilderContext ctx;
+
+		//Bend around origin
+		Attr("pos") = InputAttr<Vector3>("pos");
+		Attr("factor") = Const(0.5f) * Sqrt(Dot(Attr("pos"), Attr("pos")));
+		auto& co = Cos(Attr("factor"));
+		auto& si = Sin(Attr("factor"));
+		auto& rotation = Mat3(co, -si, Const(0.0f), si, co, Const(0.0f), Const(0.0f), Const(0.0f), Const(1.0f));
+		Attr("pos") = rotation * (Expr)Attr("pos");
+		MaterializeAttr("pos");
 
 		program = ctx.GetProgram();
 	}
+	//{
+	//	using namespace CppIRBuilder;
+	//	ScopedBuilderContext ctx;
+
+	//	//Collapse into a ball
+	//	Attr("pos") = InputAttr<Vector3>("pos");
+	//	Attr("dist_from_center") = Sqrt(Dot(Attr("pos"), Attr("pos")));
+	//	Attr("pos") = Attr("pos") / Attr("dist_from_center");
+	//	MaterializeAttr("pos");
+
+	//	program = ctx.GetProgram();
+	//}
+	//{
+	//	using namespace CppIRBuilder;
+	//	ScopedBuilderContext ctx;
+	//	Attr("pos") = InputAttr<Vector3>("pos");
+	//	Attr("normal") = Matrix3::IDENTITY * Attr("pos") + Vector3(-0.1f, 0.1f, 0.05f);
+	//	MaterializeAttr("normal");
+	//	Attr("dir") = Matrix3{ 0, 1, 0, 1, 0, 0, 0, 0, 1 } *Attr("pos");
+	//	Offset("dir");
+	//	SubdivideCatmullClark();
+
+	//	program = ctx.GetProgram();
+	//}
 
 	CEffiCompiler compiler{ EffiContext };
-	compiler.Compile(program);
+	CompiledPipeline = compiler.Compile(program);
 
     return 0;
 }

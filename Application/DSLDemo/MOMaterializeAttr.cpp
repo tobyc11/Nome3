@@ -21,7 +21,7 @@ MOMaterializeAttr::MOMaterializeAttr(CGraphicsDevice* gd, const std::string& att
 	auto shaderVSIn = vsinGen.Result;
 
 	std::unordered_map<std::string, std::pair<EDataType, std::string>> outVars;
-	outVars.insert({ "Pos", {targetExpr->DataType, "OUT0"} });
+	outVars.insert({ "Pos", {targetExpr->DataType, "TEXCOORD0"} });
 	CHLSLStructGen vsOutGen{ "VSOut", outVars };
 	auto shaderVSOut = vsOutGen.Result;
 
@@ -77,6 +77,17 @@ MOMaterializeAttr::MOMaterializeAttr(CGraphicsDevice* gd, const std::string& att
 		throw CEffiCompileError(tc::StringPrintf("Attribute %s cannot be materialized due to input layout error.",
 			attrName.c_str()));
 
+	ID3D11GeometryShader* geometryShader;
+	D3D11_SO_DECLARATION_ENTRY soDecl;
+	soDecl.Stream = 0;
+	soDecl.SemanticName = "TEXCOORD"; //See above
+	soDecl.SemanticIndex = 0;
+	soDecl.StartComponent = 0;
+	soDecl.ComponentCount = (BYTE)DataTypeToSize(targetExpr->DataType) / 4; //4 bytes per component
+	soDecl.OutputSlot = 0;
+	UINT soBufferStride = (UINT)DataTypeToSize(targetExpr->DataType);
+	GD->GetDevice()->CreateGeometryShaderWithStreamOutput(CodeBlob->GetBufferPointer(), CodeBlob->GetBufferSize(),
+		&soDecl, 1, &soBufferStride, 1, D3D11_SO_NO_RASTERIZED_STREAM, nullptr, &geometryShader);
 }
 
 void MOMaterializeAttr::operator()(CEffiMesh& mesh)

@@ -9,6 +9,7 @@ namespace Nome
 using tc::TAutoPtr;
 
 class CEffiContext;
+class CEffiCompiledPipeline;
 
 class CDSLDemoCoreService : public IAppService
 {
@@ -23,6 +24,7 @@ protected:
 private:
     TAutoPtr<Scene::CScene> DemoScene;
 	CEffiContext* EffiContext = nullptr;
+	CEffiCompiledPipeline* CompiledPipeline = nullptr;
 };
 
 }

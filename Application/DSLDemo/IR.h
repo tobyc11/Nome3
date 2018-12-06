@@ -44,8 +44,6 @@ public:
 typedef IRInputAttr<float> IRInputAttrFloat;
 typedef IRInputAttr<Vector3> IRInputAttrVec3;
 typedef IRInputAttr<Vector4> IRInputAttrVec4;
-typedef IRInputAttr<Matrix3> IRInputAttrMat3;
-typedef IRInputAttr<Matrix4> IRInputAttrMat4;
 
 class IRRef : public IRExpr
 {
@@ -83,6 +81,26 @@ typedef IRConstant<Vector4> IRConstantVec4;
 typedef IRConstant<Matrix3> IRConstantMat3;
 typedef IRConstant<Matrix4> IRConstantMat4;
 
+class IRUnaryOp : public IRExpr
+{
+public:
+	enum EOp
+	{
+		Invalid,
+		Neg,
+		Sqrt,
+		Sin,
+		Cos
+	};
+
+	IRUnaryOp(EOp op, IRExpr* right) : Op(op), Right(right) {}
+
+	void Accept(IRVisitor& v) override;
+
+	EOp Op;
+	IRExpr* Right;
+};
+
 class IRBinaryOp : public IRExpr
 {
 public:
@@ -102,12 +120,61 @@ public:
 	void Accept(IRVisitor& v) override;
 };
 
+class IRSub : public IRBinaryOp
+{
+public:
+	using IRBinaryOp::IRBinaryOp;
+
+	void Accept(IRVisitor& v) override;
+};
+
 class IRMul : public IRBinaryOp
 {
 public:
 	using IRBinaryOp::IRBinaryOp;
 
 	void Accept(IRVisitor& v) override;
+};
+
+class IRDiv : public IRBinaryOp
+{
+public:
+	using IRBinaryOp::IRBinaryOp;
+
+	void Accept(IRVisitor& v) override;
+};
+
+class IRDotProduct : public IRBinaryOp
+{
+public:
+	using IRBinaryOp::IRBinaryOp;
+
+	void Accept(IRVisitor& v) override;
+};
+
+class IRCrossProduct : public IRBinaryOp
+{
+public:
+	using IRBinaryOp::IRBinaryOp;
+
+	void Accept(IRVisitor& v) override;
+};
+
+class IRConstructMat3 : public IRExpr
+{
+public:
+	IRConstructMat3(IRExpr* m00, IRExpr* m01, IRExpr* m02,
+		IRExpr* m10, IRExpr* m11, IRExpr* m12,
+		IRExpr* m20, IRExpr* m21, IRExpr* m22)
+	{
+		Args[0] = m00; Args[1] = m01; Args[2] = m02;
+		Args[3] = m10; Args[4] = m11; Args[5] = m12;
+		Args[6] = m20; Args[7] = m21; Args[8] = m22;
+	}
+
+	void Accept(IRVisitor& v) override;
+
+	IRExpr* Args[9];
 };
 
 //Beginning of statements

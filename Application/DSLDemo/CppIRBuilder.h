@@ -29,47 +29,89 @@ class Expr
 {
 public:
 	IRExpr* ExprPtr;
+
+	Expr operator-();
 };
+
+template <typename T>
+Expr Const(T val)
+{
+	Expr ret;
+	IRExpr* constExpr = new IRConstant<T>(val);
+	ret.ExprPtr = constExpr;
+	return ret;
+}
 
 Expr operator+(const Expr& left, const Expr& right);
 
-template <typename T>
-Expr operator+(const T& left, const Expr& right)
-{
-	Expr ret;
-	IRExpr* constExpr = new IRConstant<T>(left);
-	ret.ExprPtr = new IRAdd(constExpr, right.ExprPtr);
-	return ret;
-}
-
-template <typename T>
-Expr operator+(const Expr& left, const T& right)
-{
-	Expr ret;
-	IRExpr* constExpr = new IRConstant<T>(right);
-	ret.ExprPtr = new IRAdd(left.ExprPtr, constExpr);
-	return ret;
-}
+//template <typename T>
+//Expr operator+(const T& left, const Expr& right)
+//{
+//	Expr ret;
+//	IRExpr* constExpr = new IRConstant<T>(left);
+//	ret.ExprPtr = new IRAdd(constExpr, right.ExprPtr);
+//	return ret;
+//}
+//
+//template <typename T>
+//Expr operator+(const Expr& left, const T& right)
+//{
+//	Expr ret;
+//	IRExpr* constExpr = new IRConstant<T>(right);
+//	ret.ExprPtr = new IRAdd(left.ExprPtr, constExpr);
+//	return ret;
+//}
 
 Expr operator*(const Expr& left, const Expr& right);
 
-template <typename T>
-Expr operator*(const T& left, const Expr& right)
-{
-	Expr ret;
-	IRExpr* constExpr = new IRConstant<T>(left);
-	ret.ExprPtr = new IRMul(constExpr, right.ExprPtr);
-	return ret;
-}
+//template <typename T>
+//Expr operator*(const T& left, const Expr& right)
+//{
+//	Expr ret;
+//	IRExpr* constExpr = new IRConstant<T>(left);
+//	ret.ExprPtr = new IRMul(constExpr, right.ExprPtr);
+//	return ret;
+//}
+//
+//template <typename T>
+//Expr operator*(const Expr& left, const T& right)
+//{
+//	Expr ret;
+//	IRExpr* constExpr = new IRConstant<T>(right);
+//	ret.ExprPtr = new IRMul(left.ExprPtr, constExpr);
+//	return ret;
+//}
 
-template <typename T>
-Expr operator*(const Expr& left, const T& right)
-{
-	Expr ret;
-	IRExpr* constExpr = new IRConstant<T>(right);
-	ret.ExprPtr = new IRMul(left.ExprPtr, constExpr);
-	return ret;
-}
+Expr operator/(const Expr& left, const Expr& right);
+
+//template <typename T>
+//Expr operator/(const T& left, const Expr& right)
+//{
+//	Expr ret;
+//	IRExpr* constExpr = new IRConstant<T>(left);
+//	ret.ExprPtr = new IRDiv(constExpr, right.ExprPtr);
+//	return ret;
+//}
+//
+//template <typename T>
+//Expr operator/(const Expr& left, const T& right)
+//{
+//	Expr ret;
+//	IRExpr* constExpr = new IRConstant<T>(right);
+//	ret.ExprPtr = new IRDiv(left.ExprPtr, constExpr);
+//	return ret;
+//}
+
+Expr Sqrt(const Expr& operand);
+Expr Sin(const Expr& operand);
+Expr Cos(const Expr& operand);
+
+Expr Dot(const Expr& left, const Expr& right);
+Expr Cross(const Expr& left, const Expr& right);
+
+Expr Mat3(const Expr& m00, const Expr& m01, const Expr& m02,
+	const Expr& m10, const Expr& m11, const Expr& m12,
+	const Expr& m20, const Expr& m21, const Expr& m22);
 
 template <typename T>
 class InputAttr : public Expr

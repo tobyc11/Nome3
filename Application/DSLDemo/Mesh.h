@@ -14,17 +14,24 @@ namespace Nome
 class CEffiMesh
 {
 public:
+	CEffiMesh() : GD(nullptr) {}
+
+	CEffiMesh(CGraphicsDevice* gd) : GD(gd) {}
+
 	using index_t = uint32_t;
 
 	struct AttributeBuffer
 	{
 		std::vector<uint8_t> AttrArr;
-		ID3D11Buffer* GPUBuffer;
+		ID3D11Buffer* GPUBuffer = nullptr;
 		EDataType DataType;
 	};
 
+	///A map from names to attribute buffers
 	std::unordered_map<std::string, AttributeBuffer> VertexAttrs;
-	std::unordered_map<std::string, AttributeBuffer> FaceAttrs;
+	
+	//never actually used, yet
+	//std::unordered_map<std::string, AttributeBuffer> FaceAttrs;
 	
 	struct FaceData
 	{
@@ -32,7 +39,7 @@ public:
 	};
 	
 	std::vector<FaceData> Faces;
-	ID3D11Buffer* TriangulatedIndexBuffer;
+	ID3D11Buffer* TriangulatedIndexBuffer = nullptr;
 
 	void SyncAttrToGPU(const std::string& name);
 	void SyncToGPU();

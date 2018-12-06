@@ -16,7 +16,8 @@ public:
         MeshOperators.push_back(oper);
     }
 
-	void operator()(CEffiMesh& mesh);
+	CEffiUnindexedMesh* operator()(CEffiMesh& mesh);
+	CEffiUnindexedMesh* operator()(CEffiUnindexedMesh& mesh);
 
 private:
     std::vector<CMeshOperator*> MeshOperators;

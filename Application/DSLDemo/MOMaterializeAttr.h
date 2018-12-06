@@ -14,7 +14,8 @@ class MOMaterializeAttr : public CMeshOperator
 public:
 	MOMaterializeAttr(CGraphicsDevice* gd, const std::string& attrName, IRExpr* targetExpr);
 
-    void operator()(CEffiMesh& mesh) override;
+	CEffiUnindexedMesh* operator()(CEffiMesh& mesh) override;
+	CEffiUnindexedMesh* operator()(CEffiUnindexedMesh& mesh) override;
 
 private:
 	CGraphicsDevice* GD;

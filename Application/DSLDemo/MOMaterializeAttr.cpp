@@ -95,7 +95,7 @@ MOMaterializeAttr::MOMaterializeAttr(CGraphicsDevice* gd, const std::string& att
 		&soDecl, 1, &soBufferStride, 1, D3D11_SO_NO_RASTERIZED_STREAM, nullptr, &GeometryShader);
 }
 
-void MOMaterializeAttr::operator()(CEffiMesh& mesh)
+CEffiUnindexedMesh* MOMaterializeAttr::operator()(CEffiMesh& mesh)
 {
 	auto* device = GD->GetDevice();
 	auto* ctx = GD->GetImmediateContext();
@@ -142,7 +142,7 @@ void MOMaterializeAttr::operator()(CEffiMesh& mesh)
 
 	D3D11_BUFFER_DESC desc =
 	{
-		DataTypeToSize(OutputType) * mesh.NumIndices,
+		(UINT)DataTypeToSize(OutputType) * mesh.NumIndices,
 		D3D11_USAGE_DEFAULT,
 		D3D11_BIND_STREAM_OUTPUT | D3D11_BIND_VERTEX_BUFFER,
 		0,
@@ -158,8 +158,79 @@ void MOMaterializeAttr::operator()(CEffiMesh& mesh)
 	ctx->DrawIndexed(mesh.NumIndices, 0, 0);
 	ctx->GSSetShader(nullptr, nullptr, 0);
 
-	mesh.VertexAttrs[AttrName].GPUBuffer->Release();
-	mesh.VertexAttrs[AttrName].GPUBuffer = outputBuffer;
+	CEffiUnindexedMesh* output = new CEffiUnindexedMesh();
+	output->NumVertices = mesh.NumIndices;
+	output->Attributes.emplace(AttrName, CMeshAttribute(outputBuffer, OutputType));
+	return output;
+}
+
+CEffiUnindexedMesh* MOMaterializeAttr::operator()(CEffiUnindexedMesh& mesh)
+{
+	auto* device = GD->GetDevice();
+	auto* ctx = GD->GetImmediateContext();
+
+	std::vector<ID3D11Buffer*> attrBuffers;
+	std::vector<UINT> offsets;
+	std::vector<UINT> strides;
+
+	//Make sure each of the referred attributes actually exist, and types match
+	for (const auto& pair : ReferredAttrs)
+	{
+		const std::string& referred = pair.second.first;
+		EDataType dataType = pair.second.second;
+
+		auto iter = mesh.Attributes.find(referred);
+		if (iter == mesh.Attributes.end())
+		{
+			//Doesn't exist in mesh
+			throw CMeshOpException(tc::StringPrintf("Attribute %s not found in mesh.", referred.c_str()));
+		}
+
+		//Found
+		if (iter->second.GetDataType() != dataType)
+		{
+			throw CMeshOpException(tc::StringPrintf("Attribute %s type mismatch.", referred.c_str()));
+		}
+		if (!iter->second.IsOnGPU())
+		{
+			throw CMeshOpException(tc::StringPrintf("Attribute %s is not on GPU.", referred.c_str()));
+		}
+
+		attrBuffers.push_back(iter->second.GetGPUBuffer());
+		offsets.push_back(0);
+		strides.push_back((UINT)DataTypeToSize(iter->second.GetDataType()));
+	}
+
+	ctx->IASetInputLayout(InputLayout);
+	ctx->IASetVertexBuffers(0, 1, attrBuffers.data(), strides.data(), offsets.data());
+	ctx->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
+	ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	ctx->VSSetShader(VertexShader, nullptr, 0);
+	ctx->GSSetShader(GeometryShader, nullptr, 0);
+
+	D3D11_BUFFER_DESC desc =
+	{
+		(UINT)DataTypeToSize(OutputType) * mesh.NumVertices,
+		D3D11_USAGE_DEFAULT,
+		D3D11_BIND_STREAM_OUTPUT,
+		0,
+		0,
+		0
+	};
+	ID3D11Buffer* outputBuffer;
+	device->CreateBuffer(&desc, nullptr, &outputBuffer);
+
+	UINT soOffset = 0;
+	ctx->SOSetTargets(1, &outputBuffer, &soOffset);
+
+	ctx->Draw(mesh.NumVertices, 0);
+	ctx->GSSetShader(nullptr, nullptr, 0);
+
+	CEffiUnindexedMesh* output = new CEffiUnindexedMesh();
+	output->NumVertices = mesh.NumVertices;
+	output->Attributes.emplace(AttrName, CMeshAttribute(outputBuffer, OutputType));
+	return output;
 }
 
 } /* namespace Nome */

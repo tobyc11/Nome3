@@ -17,7 +17,8 @@ class CMeshOperator
 public:
     virtual ~CMeshOperator() = default;
 
-    virtual void operator()(CEffiMesh& mesh) = 0;
+    virtual CEffiUnindexedMesh* operator()(CEffiMesh& mesh) = 0;
+	virtual CEffiUnindexedMesh* operator()(CEffiUnindexedMesh& mesh) = 0;
 };
 
 } /* namespace Nome */

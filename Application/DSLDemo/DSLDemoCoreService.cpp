@@ -22,6 +22,8 @@
 namespace Nome
 {
 
+static std::vector<CEffiMesh*> EffiMeshList;
+static std::vector<CEffiUnindexedMesh*> EffiUnidxMeshList;
 static CEffiMesh* GlobalMesh = nullptr;
 
 template <class key_t, class value_t>
@@ -147,28 +149,29 @@ int CDSLDemoCoreService::Setup()
     DemoScene = new Scene::CScene();
     DemoScene->CreateDefaultCamera();
 	GApp->GetService<CDSLDemoRenderer>()->SetCamera(DemoScene->GetMainCamera());
+	DemoScene->GetMainCamera()->SetAspectRatio((float)1280 / 768);
 	//RenderService is broken rn
     //GApp->GetService<CRenderService>()->SetScene(DemoScene);
 
 	EffiContext = new CEffiContext(GApp->GetService<CSDLService>()->RenderContext->GetGraphicsDevice());
 	IRProgram* program = nullptr;
-	//{
-	//	using namespace CppIRBuilder;
-	//	ScopedBuilderContext ctx;
+	{
+		using namespace CppIRBuilder;
+		ScopedBuilderContext ctx;
 
-	//	//Bend around origin
-	//	Attr("pos") = InputAttr<Vector3>("pos");
-	//	Attr("factor") = Const(0.5f) * Sqrt(Dot(Attr("pos"), Attr("pos")));
-	//	auto& co = Cos(Attr("factor"));
-	//	auto& si = Sin(Attr("factor"));
-	//	auto& rotation = Mat3(co, -si, Const(0.0f),
-	//		                  si, co, Const(0.0f),
-	//		                  Const(0.0f), Const(0.0f), Const(1.0f));
-	//	Attr("pos") = rotation * Attr("pos");
-	//	MaterializeAttr("pos");
+		//Bend around origin
+		Attr("pos") = InputAttr<Vector3>("pos");
+		Attr("factor") = Const(0.5f) * Sqrt(Dot(Attr("pos"), Attr("pos")));
+		auto& co = Cos(Attr("factor"));
+		auto& si = Sin(Attr("factor"));
+		auto& rotation = Mat3(co, -si, Const(0.0f),
+			                  si, co, Const(0.0f),
+			                  Const(0.0f), Const(0.0f), Const(1.0f));
+		Attr("pos") = rotation * Attr("pos");
+		MaterializeAttr("pos");
 
-	//	program = ctx.GetProgram();
-	//}
+		program = ctx.GetProgram();
+	}
 	//{
 	//	using namespace CppIRBuilder;
 	//	ScopedBuilderContext ctx;
@@ -193,17 +196,17 @@ int CDSLDemoCoreService::Setup()
 
 	//	program = ctx.GetProgram();
 	//}
-	{
-		using namespace CppIRBuilder;
-		ScopedBuilderContext ctx;
+	//{
+	//	using namespace CppIRBuilder;
+	//	ScopedBuilderContext ctx;
 
-		//Bend around origin
-		Attr("pos") = InputAttr<Vector3>("pos");
-		Attr("pos") = Const(Matrix3::IDENTITY * 2.0f) * Attr("pos");
-		MaterializeAttr("pos");
+	//	//Bend around origin
+	//	Attr("pos") = InputAttr<Vector3>("pos");
+	//	Attr("pos") = Const(Matrix3::IDENTITY * 2.0f) * Attr("pos");
+	//	MaterializeAttr("pos");
 
-		program = ctx.GetProgram();
-	}
+	//	program = ctx.GetProgram();
+	//}
 
 	CEffiCompiler compiler{ EffiContext };
 	CompiledPipeline = compiler.Compile(program);
@@ -219,7 +222,7 @@ int CDSLDemoCoreService::FrameUpdate()
 		{
 			if (GlobalMesh)
 			{
-				GApp->GetService<CDSLDemoRenderer>()->SetRenderMesh(nullptr);
+				GApp->GetService<CDSLDemoRenderer>()->ClearRenderMesh();
 				delete GlobalMesh;
 				GlobalMesh = nullptr;
 			}
@@ -232,7 +235,7 @@ int CDSLDemoCoreService::FrameUpdate()
         {
 			if (GlobalMesh)
 			{
-				GApp->GetService<CDSLDemoRenderer>()->SetRenderMesh(nullptr);
+				GApp->GetService<CDSLDemoRenderer>()->ClearRenderMesh();
 				delete GlobalMesh;
 				GlobalMesh = nullptr;
 			}
@@ -244,7 +247,23 @@ int CDSLDemoCoreService::FrameUpdate()
 		if (ImGui::Button("Apply Operator"))
 		{
 			if (GlobalMesh)
-				CompiledPipeline->operator()(*GlobalMesh);
+			{
+				CEffiUnindexedMesh* result = CompiledPipeline->operator()(*GlobalMesh);
+				EffiUnidxMeshList.push_back(result);
+				GApp->GetService<CDSLDemoRenderer>()->SetRenderMesh(result);
+
+				delete GlobalMesh;
+				GlobalMesh = nullptr;
+			}
+			else
+			{
+				if (!EffiUnidxMeshList.empty())
+				{
+					CEffiUnindexedMesh* result = CompiledPipeline->operator()(**EffiUnidxMeshList.rbegin());
+					EffiUnidxMeshList.push_back(result);
+					GApp->GetService<CDSLDemoRenderer>()->SetRenderMesh(result);
+				}
+			}
 		}
 		DemoScene->GetMainCamera()->ShowDebugImGui();
         ImGui::End();

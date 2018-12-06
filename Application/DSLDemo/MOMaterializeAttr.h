@@ -17,10 +17,14 @@ public:
     void operator()(CEffiMesh& mesh) override;
 
 private:
-	//TODO: add constructor for these
 	CGraphicsDevice* GD;
 	std::string AttrName;
-	std::map<std::string, EDataType> ReferredAttrs;
+	EDataType OutputType;
+	std::map<unsigned, std::pair<std::string, EDataType>> ReferredAttrs; //Ordered by attribute index
+
+	ID3D11InputLayout* InputLayout;
+	ID3D11VertexShader* VertexShader;
+	ID3D11GeometryShader* GeometryShader;
 };
 
 } /* namespace Nome */

@@ -152,24 +152,23 @@ int CDSLDemoCoreService::Setup()
 
 	EffiContext = new CEffiContext(GApp->GetService<CSDLService>()->RenderContext->GetGraphicsDevice());
 	IRProgram* program = nullptr;
-	{
-		using namespace CppIRBuilder;
-		ScopedBuilderContext ctx;
+	//{
+	//	using namespace CppIRBuilder;
+	//	ScopedBuilderContext ctx;
 
-		//Bend around origin
-		Attr("pos") = InputAttr<Vector3>("pos");
-		Attr("factor") = Const(0.5f) * Sqrt(Dot(Attr("pos"), Attr("pos")));
-		auto& co = Cos(Attr("factor"));
-		auto& si = Sin(Attr("factor"));
-		auto& rotation = Mat3(co, -si, Const(0.0f),
-			                  si, co, Const(0.0f),
-			                  Const(0.0f), Const(0.0f), Const(1.0f));
-		Attr("pos") = rotation * Attr("pos");
-		MaterializeAttr("pos");
-		MaterializeAttr("factor");
+	//	//Bend around origin
+	//	Attr("pos") = InputAttr<Vector3>("pos");
+	//	Attr("factor") = Const(0.5f) * Sqrt(Dot(Attr("pos"), Attr("pos")));
+	//	auto& co = Cos(Attr("factor"));
+	//	auto& si = Sin(Attr("factor"));
+	//	auto& rotation = Mat3(co, -si, Const(0.0f),
+	//		                  si, co, Const(0.0f),
+	//		                  Const(0.0f), Const(0.0f), Const(1.0f));
+	//	Attr("pos") = rotation * Attr("pos");
+	//	MaterializeAttr("pos");
 
-		program = ctx.GetProgram();
-	}
+	//	program = ctx.GetProgram();
+	//}
 	//{
 	//	using namespace CppIRBuilder;
 	//	ScopedBuilderContext ctx;
@@ -194,6 +193,17 @@ int CDSLDemoCoreService::Setup()
 
 	//	program = ctx.GetProgram();
 	//}
+	{
+		using namespace CppIRBuilder;
+		ScopedBuilderContext ctx;
+
+		//Bend around origin
+		Attr("pos") = InputAttr<Vector3>("pos");
+		Attr("pos") = Const(Matrix3::IDENTITY * 2.0f) * Attr("pos");
+		MaterializeAttr("pos");
+
+		program = ctx.GetProgram();
+	}
 
 	CEffiCompiler compiler{ EffiContext };
 	CompiledPipeline = compiler.Compile(program);
@@ -221,6 +231,11 @@ int CDSLDemoCoreService::FrameUpdate()
 			GlobalMesh = loader.LoadEffiMesh(GApp->GetService<CSDLService>()->RenderContext->GetGraphicsDevice());
 			GApp->GetService<CDSLDemoRenderer>()->SetRenderMesh(GlobalMesh);
         }
+		if (ImGui::Button("Apply Operator"))
+		{
+			if (GlobalMesh)
+				CompiledPipeline->operator()(*GlobalMesh);
+		}
 		DemoScene->GetMainCamera()->ShowDebugImGui();
         ImGui::End();
     }

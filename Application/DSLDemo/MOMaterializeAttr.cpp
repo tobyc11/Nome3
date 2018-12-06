@@ -12,13 +12,18 @@ namespace Nome
 {
 
 MOMaterializeAttr::MOMaterializeAttr(CGraphicsDevice* gd, const std::string& attrName, IRExpr* targetExpr)
-	: GD(gd)
+	: GD(gd), AttrName(attrName)
 {
 	CHLSLCodeGen codegen;
 	auto shaderFunc = codegen.CodeGen(targetExpr, "MaterializeAttr");
 
 	CHLSLInputStructGen vsinGen{ codegen.ReferredFields };
 	auto shaderVSIn = vsinGen.Result;
+
+	//Rearrange the input attrs
+	for (const auto& field : codegen.ReferredFields)
+		ReferredAttrs.insert({ field.second.second, { field.first, field.second.first } });
+	OutputType = targetExpr->DataType;
 
 	std::unordered_map<std::string, std::pair<EDataType, std::string>> outVars;
 	outVars.insert({ "Pos", {targetExpr->DataType, "TEXCOORD0"} });
@@ -70,14 +75,14 @@ MOMaterializeAttr::MOMaterializeAttr(CGraphicsDevice* gd, const std::string& att
 		};
 		inputElements.push_back(desc);
 	}
-	ID3D11InputLayout* inputLayout;
 	GD->GetDevice()->CreateInputLayout(inputElements.data(), (UINT)inputElements.size(),
-		CodeBlob->GetBufferPointer(), CodeBlob->GetBufferSize(), &inputLayout);
-	if (!inputLayout)
+		CodeBlob->GetBufferPointer(), CodeBlob->GetBufferSize(), &InputLayout);
+	if (!InputLayout)
 		throw CEffiCompileError(tc::StringPrintf("Attribute %s cannot be materialized due to input layout error.",
 			attrName.c_str()));
 
-	ID3D11GeometryShader* geometryShader;
+	GD->GetDevice()->CreateVertexShader(CodeBlob->GetBufferPointer(), CodeBlob->GetBufferSize(), nullptr, &VertexShader);
+
 	D3D11_SO_DECLARATION_ENTRY soDecl;
 	soDecl.Stream = 0;
 	soDecl.SemanticName = "TEXCOORD"; //See above
@@ -87,7 +92,7 @@ MOMaterializeAttr::MOMaterializeAttr(CGraphicsDevice* gd, const std::string& att
 	soDecl.OutputSlot = 0;
 	UINT soBufferStride = (UINT)DataTypeToSize(targetExpr->DataType);
 	GD->GetDevice()->CreateGeometryShaderWithStreamOutput(CodeBlob->GetBufferPointer(), CodeBlob->GetBufferSize(),
-		&soDecl, 1, &soBufferStride, 1, D3D11_SO_NO_RASTERIZED_STREAM, nullptr, &geometryShader);
+		&soDecl, 1, &soBufferStride, 1, D3D11_SO_NO_RASTERIZED_STREAM, nullptr, &GeometryShader);
 }
 
 void MOMaterializeAttr::operator()(CEffiMesh& mesh)
@@ -102,8 +107,8 @@ void MOMaterializeAttr::operator()(CEffiMesh& mesh)
 	//Make sure each of the referred attributes actually exist, and types match
 	for (const auto& pair : ReferredAttrs)
 	{
-		const std::string& referred = pair.first;
-		EDataType dataType = pair.second;
+		const std::string& referred = pair.second.first;
+		EDataType dataType = pair.second.second;
 
 		auto iter = mesh.VertexAttrs.find(referred);
 		if (iter == mesh.VertexAttrs.end())
@@ -118,13 +123,43 @@ void MOMaterializeAttr::operator()(CEffiMesh& mesh)
 			throw CMeshOpException(tc::StringPrintf("Attribute %s type mismatch.", referred.c_str()));
 		}
 
+		mesh.SyncAttrToGPU(referred);
+
 		attrBuffers.push_back(iter->second.GPUBuffer);
 		offsets.push_back(0);
 		strides.push_back((UINT)DataTypeToSize(iter->second.DataType));
 	}
 
-	//TODO:
-	//device->CreateInputLayout(inputElements.data(), inputElements.size(), nullptr, 0, nullptr);
+	mesh.SyncIndicesToGPU();
+
+	ctx->IASetInputLayout(InputLayout);
+	ctx->IASetVertexBuffers(0, 1, attrBuffers.data(), strides.data(), offsets.data());
+	ctx->IASetIndexBuffer(mesh.TriangulatedIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	ctx->VSSetShader(VertexShader, nullptr, 0);
+	ctx->GSSetShader(GeometryShader, nullptr, 0);
+
+	D3D11_BUFFER_DESC desc =
+	{
+		DataTypeToSize(OutputType) * mesh.NumIndices * 10,
+		D3D11_USAGE_DEFAULT,
+		D3D11_BIND_STREAM_OUTPUT | D3D11_BIND_VERTEX_BUFFER,
+		0,
+		0,
+		0
+	};
+	ID3D11Buffer* outputBuffer;
+	device->CreateBuffer(&desc, nullptr, &outputBuffer);
+
+	UINT soOffset = 0;
+	ctx->SOSetTargets(1, &outputBuffer, &soOffset);
+
+	ctx->DrawIndexed(mesh.NumIndices, 0, 0);
+	ctx->GSSetShader(nullptr, nullptr, 0);
+
+	mesh.VertexAttrs[AttrName].GPUBuffer->Release();
+	mesh.VertexAttrs[AttrName].GPUBuffer = outputBuffer;
 }
 
 } /* namespace Nome */

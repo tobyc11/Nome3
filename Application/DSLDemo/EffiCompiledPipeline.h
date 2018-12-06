@@ -6,6 +6,8 @@
 namespace Nome
 {
 
+class CEffiMesh;
+
 class CEffiCompiledPipeline
 {
 public:
@@ -13,6 +15,8 @@ public:
     {
         MeshOperators.push_back(oper);
     }
+
+	void operator()(CEffiMesh& mesh);
 
 private:
     std::vector<CMeshOperator*> MeshOperators;

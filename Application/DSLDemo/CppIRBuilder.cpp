@@ -3,24 +3,24 @@
 namespace Nome::CppIRBuilder
 {
 
-std::stack<BuilderContext*> BuilderContextStack;
+std::stack<ScopedBuilderContext*> ScopedBuilderContextStack;
 
-BuilderContext& BuilderContext::Top()
+ScopedBuilderContext& ScopedBuilderContext::Top()
 {
-	return *BuilderContextStack.top();
+	return *ScopedBuilderContextStack.top();
 }
 
-BuilderContext::BuilderContext()
+ScopedBuilderContext::ScopedBuilderContext()
 {
-	BuilderContextStack.push(this);
+	ScopedBuilderContextStack.push(this);
 }
 
-BuilderContext::~BuilderContext()
+ScopedBuilderContext::~ScopedBuilderContext()
 {
-	BuilderContextStack.pop();
+	ScopedBuilderContextStack.pop();
 }
 
-void BuilderContext::AddStatment(IRStmt* statment)
+void ScopedBuilderContext::AddStatment(IRStmt* statment)
 {
 	if (!LastStmt)
 	{
@@ -33,7 +33,7 @@ void BuilderContext::AddStatment(IRStmt* statment)
 	LastStmt = statment;
 }
 
-IRProgram* BuilderContext::GetProgram()
+IRProgram* ScopedBuilderContext::GetProgram()
 {
 	IRStmt* curr = LastStmt;
 	while (curr->Prev)

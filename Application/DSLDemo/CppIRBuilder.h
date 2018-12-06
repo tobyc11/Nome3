@@ -6,13 +6,13 @@
 namespace Nome::CppIRBuilder
 {
 
-class BuilderContext
+class ScopedBuilderContext
 {
 public:
-	static BuilderContext& Top();
+	static ScopedBuilderContext& Top();
 
-	BuilderContext();
-	~BuilderContext();
+	ScopedBuilderContext();
+	~ScopedBuilderContext();
 
 	void AddStatment(IRStmt* statment);
 
@@ -23,7 +23,7 @@ private:
 };
 
 //Stores all the builders currently on the stack
-extern std::stack<BuilderContext*> BuilderContextStack;
+extern std::stack<ScopedBuilderContext*> ScopedBuilderContextStack;
 
 class Expr
 {
@@ -92,14 +92,14 @@ public:
 	void operator=(const Expr& rhs)
 	{
 		auto* statment = new IRAssign(Ref, rhs.ExprPtr);
-		BuilderContext::Top().AddStatment(statment);
+		ScopedBuilderContext::Top().AddStatment(statment);
 	}
 
 private:
 	IRRef* Ref;
 };
 
-typedef VertAttrRef SetVertAttr;
+typedef VertAttrRef Attr;
 
 class MaterializeAttr
 {
@@ -107,7 +107,7 @@ public:
 	MaterializeAttr(const std::string& name)
 	{
 		IRStmt* stmt = new IRMaterializeAttr(new IRRef(name));
-		BuilderContext::Top().AddStatment(stmt);
+		ScopedBuilderContext::Top().AddStatment(stmt);
 	}
 };
 
@@ -117,7 +117,7 @@ public:
 	Offset(const std::string& dir)
 	{
 		IRStmt* stmt = new IROffset(new IRRef(dir));
-		BuilderContext::Top().AddStatment(stmt);
+		ScopedBuilderContext::Top().AddStatment(stmt);
 	}
 };
 
@@ -127,7 +127,7 @@ public:
 	SubdivideCatmullClark()
 	{
 		IRStmt* stmt = new IRSubdivideCC();
-		BuilderContext::Top().AddStatment(stmt);
+		ScopedBuilderContext::Top().AddStatment(stmt);
 	}
 };
 

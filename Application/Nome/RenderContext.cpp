@@ -214,7 +214,7 @@ void CRenderContext::ClearRenderTarget(const float* color)
 
 void CRenderContext::Present()
 {
-	SwapChain->Present(1, 0);
+	SwapChain->Present(0, 0);
 }
 
 } /* namespace Nome */

@@ -6,6 +6,7 @@
 #include "EffiCompiler.h"
 
 #include "Nome/App.h"
+#include "Nome/SDLService.h"
 #include "Nome/RenderService.h"
 
 #include "imgui.h"
@@ -143,7 +144,7 @@ int CDSLDemoCoreService::Setup()
     DemoScene->CreateDefaultCamera();
     //GApp->GetService<CRenderService>()->SetScene(DemoScene);
 
-	EffiContext = new CEffiContext();
+	EffiContext = new CEffiContext(GApp->GetService<CSDLService>()->RenderContext->GetGraphicsDevice());
 	IRProgram* program;
 	{
 		using namespace CppIRBuilder;

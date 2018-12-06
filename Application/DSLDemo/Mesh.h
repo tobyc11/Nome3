@@ -24,7 +24,7 @@ public:
 	{
 		std::vector<uint8_t> AttrArr;
 		ID3D11Buffer* GPUBuffer = nullptr;
-		EDataType DataType;
+		EDataType DataType = EDataType::Invalid;
 	};
 
 	///A map from names to attribute buffers
@@ -40,8 +40,10 @@ public:
 	
 	std::vector<FaceData> Faces;
 	ID3D11Buffer* TriangulatedIndexBuffer = nullptr;
+	unsigned int NumIndices = 0;
 
 	void SyncAttrToGPU(const std::string& name);
+	void SyncIndicesToGPU();
 	void SyncToGPU();
 
 private:

@@ -20,23 +20,33 @@ int main(int argc, char** argv)
 	if (int ret = Nome::CApp::AppSetup())
 		return ret;
 
-	// Setup Qt
-	QApplication application(argc, argv);
-	Flow::Viz::CFlowViz widget;
-	widget.show();
+	//// Setup Qt
+	//QApplication application(argc, argv);
+	//Flow::Viz::CFlowViz widget;
+	//widget.show();
 
-    // Main loop
-	QTimer timer;
-	QObject::connect(&timer, &QTimer::timeout, [&]() {
+ //   // Main loop
+	//QTimer timer;
+	//QObject::connect(&timer, &QTimer::timeout, [&]() {
+	//	int flags = Nome::CApp::AppSingleFrame();
+	//	if (flags & Nome::CApp::StatusWannaQuit)
+ //       {
+	//	    application.quit();
+ //       }
+	//});
+	//timer.start();
+
+	//int ret = application.exec();
+
+	int ret = 0;
+	while (1)
+	{
 		int flags = Nome::CApp::AppSingleFrame();
 		if (flags & Nome::CApp::StatusWannaQuit)
-        {
-		    application.quit();
-        }
-	});
-	timer.start();
-
-	int ret = application.exec();
+		{
+			break;
+		}
+	}
 
 	// Cleanup
     Nome::CApp::AppCleanup();

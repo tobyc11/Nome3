@@ -6,6 +6,8 @@
 
 #include <d3dcompiler.h>
 
+#include <iostream>
+
 namespace Nome
 {
 
@@ -16,17 +18,42 @@ std::string ConstantBufferMeta::ToString() const
 	result += "{\n";
 	for (size_t i = 0; i < MemberNames.size(); i++)
 	{
-		result += tc::StringPrintf("%s %s;\n", MemberTypes[i].c_str(), MemberNames[i].c_str());
+		result += tc::StringPrintf("%s %s;\n", ConvertToHLSLType(MemberTypes[i]).c_str(), MemberNames[i].c_str());
 	}
 	result += "}\n";
+	return result;
+}
+
+size_t ConstantBufferMeta::GetSize() const
+{
+	size_t result = 0;
+	for (size_t i = 0; i < MemberNames.size(); i++)
+	{
+		result += DataTypeToSize(MemberTypes[i]);
+	}
+	return result;
+}
+
+ID3D11Buffer* ConstantBufferMeta::CreateConstantBuffer(ID3D11Device* dev) const
+{
+	D3D11_BUFFER_DESC desc = {
+		/* ByteWidth */ static_cast<UINT>(GetSize()),
+		/* Usage */ D3D11_USAGE_DYNAMIC,
+		/* BindFlags */ D3D11_BIND_CONSTANT_BUFFER,
+		/* CPUAccessFlags */ D3D11_CPU_ACCESS_WRITE,
+		/* MiscFlags */ 0,
+		/* StructureByteStride */ 0,
+	};
+	ID3D11Buffer* result;
+	dev->CreateBuffer(&desc, nullptr, &result);
 	return result;
 }
 
 void CShaderManager::CompileFromFile(const std::string& fileName, const D3D_SHADER_MACRO* pDefines,
 	LPCSTR pEntrypoint, LPCSTR pTarget, UINT Flags1, UINT Flags2, ID3DBlob** ppCode)
 {
-	std::string filePath = CResourceManager::LocateFile(fileName);
-	auto filePathW = tc::FStringUtils::UTF8to16(filePath.c_str());
+	//std::string filePath = CResourceManager::LocateFile(fileName);
+	auto filePathW = tc::FStringUtils::UTF8to16(fileName.c_str());
 
 #if defined( DEBUG ) || defined( _DEBUG )
 	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
@@ -48,6 +75,7 @@ void CShaderManager::CompileFromFile(const std::string& fileName, const D3D_SHAD
 #pragma warning( suppress : 6102 )
 	if (pErrorBlob)
 	{
+		std::cout << reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()) << std::endl;
 		OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
 		pErrorBlob->Release();
 	}

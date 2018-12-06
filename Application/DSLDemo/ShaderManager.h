@@ -17,30 +17,28 @@ struct ConstantBufferMeta
 
 	std::string Name;
 	unsigned int Slot;
-	std::vector<std::string> MemberTypes;
+	std::vector<EDataType> MemberTypes;
 	std::vector<std::string> MemberNames;
 
 	std::string ToString() const;
+	size_t GetSize() const;
+	ID3D11Buffer* CreateConstantBuffer(ID3D11Device* dev) const;
 };
 
 struct ConstantBufferAddMember
 {
-	ConstantBufferAddMember(ConstantBufferMeta& meta, const std::string& type, const std::string& name)
+	ConstantBufferAddMember(ConstantBufferMeta& meta, EDataType dataType, const std::string& name)
 	{
-		meta.MemberTypes.push_back(type);
+		meta.MemberTypes.push_back(dataType);
 		meta.MemberNames.push_back(name);
 	}
 };
 
-#define DEFINE_CBUFFER(Name, Slot) struct Name { ConstantBufferMeta _Meta{ #Name, Slot };
+#define DEFINE_CBUFFER(Name, Slot) struct Name { //static ConstantBufferMeta _Meta{ #Name, Slot };
 #define DEFINE_CBUFFER_MEMBER(Type, Name) \
 Type Name;\
-ConstantBufferAddMember _Adder##Name{ _Meta, TConvertToHLSLType<Type>::Get(), #Name };
+//static ConstantBufferAddMember _Adder##Name{ _Meta, ToDataType<Type>::Result, #Name };
 #define END_CBUFFER() };
-
-DEFINE_CBUFFER(StageParams, 0)
-DEFINE_CBUFFER_MEMBER(Matrix4, MatMul)
-END_CBUFFER()
 
 class CShaderManager
 {

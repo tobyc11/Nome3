@@ -93,4 +93,36 @@ void CCamera::ShowDebugImGui()
 	}
 }
 
+bool COrbitCameraController::MouseMoved(const CMouseState& state)
+{
+	if (bIsMouseDown)
+	{
+		auto currentTransform = Subject->GetTransform();
+		auto rotMat = Matrix3x4(Quaternion(-1.0f * state.dx, Vector3::UP).RotationMatrix());
+		Subject->SetDefaultTransform(rotMat * currentTransform);
+		return true;
+	}
+	return false;
+}
+
+bool COrbitCameraController::MouseButtonPressed(int index)
+{
+	if (index == 0 || index == 2)
+	{
+		bIsMouseDown = true;
+		return true;
+	}
+	return false;
+}
+
+bool COrbitCameraController::MouseButtonReleased(int index)
+{
+	if (index == 0 || index == 2)
+	{
+		bIsMouseDown = false;
+		return true;
+	}
+	return false;
+}
+
 }

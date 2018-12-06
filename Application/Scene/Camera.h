@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SceneGraph.h"
+#include "Nome/InputListener.h"
 
 #include <Frustum.h>
 
@@ -13,7 +14,7 @@ using tc::Frustum;
 /*
  * Special scene node that also contains the view info
  */
-class CCamera: public CSceneNode
+class CCamera : public CSceneNode
 {
 public:
     using CSceneNode::CSceneNode;
@@ -71,6 +72,21 @@ private:
 
     mutable Matrix4 ProjMatrix;
     mutable bool bProjMatrixDirty = true;
+};
+
+class COrbitCameraController : public IMouseListener
+{
+public:
+	COrbitCameraController(CCamera* cameraToControl) : Subject(cameraToControl) {}
+
+	bool MouseMoved(const CMouseState & state) override;
+	bool MouseButtonPressed(int index) override;
+	bool MouseButtonReleased(int index) override;
+
+private:
+	TAutoPtr<CCamera> Subject;
+
+	bool bIsMouseDown = false;
 };
 
 }

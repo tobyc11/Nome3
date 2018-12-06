@@ -4,6 +4,7 @@
 #include "Nome/InputService.h"
 #include "Nome/RenderService.h"
 #include "DSLDemoCoreService.h"
+#include "DSLDemoRenderer.h"
 
 namespace Nome
 {
@@ -18,7 +19,8 @@ void CDSLDemoApp::Init()
     BootService<CInputService>();
     //BootService<CRenderService>();
 
-    BootService<CDSLDemoCoreService>();
+	BootService<CDSLDemoRenderer>();
+	BootService<CDSLDemoCoreService>();
 }
 
 void CDSLDemoApp::Shutdown()

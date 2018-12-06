@@ -1,5 +1,7 @@
 #include "DSLDemoCoreService.h"
 #include "HEMeshRenderEntity.h"
+#include "DSLDemoRenderer.h"
+#include "ObjLoader.h"
 
 //Testing out IR
 #include "CppIRBuilder.h"
@@ -19,6 +21,8 @@
 
 namespace Nome
 {
+
+static CEffiMesh* GlobalMesh = nullptr;
 
 template <class key_t, class value_t>
 bool nested_key_exists(std::unordered_map<key_t, std::unordered_map<key_t, value_t>> const& data, key_t const a, key_t const b)
@@ -142,6 +146,7 @@ int CDSLDemoCoreService::Setup()
 {
     DemoScene = new Scene::CScene();
     DemoScene->CreateDefaultCamera();
+	GApp->GetService<CDSLDemoRenderer>()->SetCamera(DemoScene->GetMainCamera());
 	//RenderService is broken rn
     //GApp->GetService<CRenderService>()->SetScene(DemoScene);
 
@@ -156,9 +161,12 @@ int CDSLDemoCoreService::Setup()
 		Attr("factor") = Const(0.5f) * Sqrt(Dot(Attr("pos"), Attr("pos")));
 		auto& co = Cos(Attr("factor"));
 		auto& si = Sin(Attr("factor"));
-		auto& rotation = Mat3(co, -si, Const(0.0f), si, co, Const(0.0f), Const(0.0f), Const(0.0f), Const(1.0f));
-		Attr("pos") = rotation * (Expr)Attr("pos");
+		auto& rotation = Mat3(co, -si, Const(0.0f),
+			                  si, co, Const(0.0f),
+			                  Const(0.0f), Const(0.0f), Const(1.0f));
+		Attr("pos") = rotation * Attr("pos");
 		MaterializeAttr("pos");
+		MaterializeAttr("factor");
 
 		program = ctx.GetProgram();
 	}
@@ -199,9 +207,19 @@ int CDSLDemoCoreService::FrameUpdate()
         ImGui::Begin("DSL");
         if (ImGui::Button("Load Demo Patch"))
         {
-            auto* node = DemoScene->GetRootNode()->CreateChildNode("patch");
-            auto* mesh = HalfEdgeMeshFromObj("Resources/patch.obj");
-            node->SetEntity(new CHEMeshRenderEntity(mesh));
+            //auto* node = DemoScene->GetRootNode()->CreateChildNode("patch");
+            //auto* mesh = HalfEdgeMeshFromObj("Resources/patch.obj");
+            //node->SetEntity(new CHEMeshRenderEntity(mesh));
+			if (GlobalMesh)
+			{
+				GApp->GetService<CDSLDemoRenderer>()->SetRenderMesh(nullptr);
+				delete GlobalMesh;
+				GlobalMesh = nullptr;
+			}
+
+			CObjLoader loader{ "Resources/patch.obj" };
+			GlobalMesh = loader.LoadEffiMesh(GApp->GetService<CSDLService>()->RenderContext->GetGraphicsDevice());
+			GApp->GetService<CDSLDemoRenderer>()->SetRenderMesh(GlobalMesh);
         }
 		DemoScene->GetMainCamera()->ShowDebugImGui();
         ImGui::End();

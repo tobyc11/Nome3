@@ -1,5 +1,5 @@
 #pragma once
-#include "DSLDemo/GraphicsDevice.h"
+#include "Render/GraphicsDevice.h"
 #include <SDL_video.h>
 
 namespace Nome

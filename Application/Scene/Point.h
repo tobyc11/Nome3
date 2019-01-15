@@ -1,31 +1,38 @@
 #pragma once
-
 #include "Entity.h"
 
 namespace Nome::Scene
 {
 
+struct CVertexInfo
+{
+    Vector3 Position;
+    std::string Name;
+};
+
 class CPoint : public CEntity
 {
-public:
-    CPoint(CDocument* doc, std::string name) : CEntity(doc, std::move(name))
-    {
-    }
-
-    void SetDefaultPosition(float x, float y, float z);
-
     DEFINE_INPUT(float, X) { MarkDirty(); }
     DEFINE_INPUT(float, Y) { MarkDirty(); }
     DEFINE_INPUT(float, Z) { MarkDirty(); }
 
-    DEFINE_OUTPUT_WITH_UPDATE(Vector3, Position)
+    DEFINE_OUTPUT_WITH_UPDATE(CVertexInfo*, Point)
     {
-        Position.UpdateValue({X.GetValue(DefaultX), Y.GetValue(DefaultY), Z.GetValue(DefaultZ)});
+		UpdateEntity();
+    }
+
+	void MarkDirty() override;
+	void UpdateEntity() override;
+
+public:
+	using Super = CEntity;
+
+    CPoint(std::string name) : CEntity(std::move(name))
+    {
     }
 
 private:
-    //Position used when no input is connected
-    float DefaultX = 0.0f, DefaultY = 0.0f, DefaultZ = 0.0f;
+	CVertexInfo VI;
 };
 
 }

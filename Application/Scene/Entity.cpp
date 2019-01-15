@@ -3,16 +3,13 @@
 namespace Nome::Scene
 {
 
-std::string CEntity::GenerateSequentialName()
+CEntity::CEntity()
 {
-    static unsigned int nameCounter = 1;
-    return "entity" + std::to_string(nameCounter++);
-}
-
-void CEntity::MarkDirty()
-{
-    bIsDirty = true;
-    //TODO: notify the scene
+    if (Name.empty())
+    {
+        static unsigned int nameCounter = 1;
+        Name = "entity" + std::to_string(nameCounter++);
+    }
 }
 
 }

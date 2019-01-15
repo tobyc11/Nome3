@@ -80,4 +80,14 @@ typedef TBinaryOperator<float, std::multiplies<float>> CFloatMul;
 typedef TBinaryOperator<float, std::divides<float>> CFloatDiv;
 typedef TBinaryOperator<float, std::modulus<float>> CFloatMod;
 
+template <typename T> class TPowOp
+{
+public:
+	constexpr T operator()(const T& _Left, const T& _Right) const
+	{
+		return std::pow(_Left, _Right);
+	}
+};
+typedef TBinaryOperator<float, TPowOp<float>> CFloatPow;
+
 }

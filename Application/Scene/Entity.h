@@ -1,81 +1,54 @@
 #pragma once
-
 #include "Flow/FlowNode.h"
-
-//For convenience
-#include <Matrix3x4.h>
-
+#include <Matrix3x4.h> //For convenience
 #include <string>
-#include <cassert>
 
-namespace Nome
-{
-
-class CDocument;
-
-namespace Scene
+namespace Nome::Scene
 {
 
 //For convenience, so that all sub-classes can use unqualified names
 using tc::Vector3;
 using tc::Quaternion;
 using tc::Matrix3x4;
+using tc::TAutoPtr;
 
-class CSceneNode;
-
+//Represents an object in the scene, can be attached to a SceneNode
 class CEntity : public Flow::CFlowNode
 {
-public:
-    CEntity()
+	//This output represents the entity
+    DEFINE_OUTPUT_WITH_UPDATE(CEntity*, This)
     {
-        if (Name.empty())
-            Name = GenerateSequentialName();
+        UpdateEntity();
     }
 
-    CEntity(CDocument* doc, std::string name)
-        : Document(doc), Name(std::move(name))
-    {
-        if (Name.empty())
-            Name = GenerateSequentialName();
-    }
+public:
+    CEntity();
+
+    CEntity(std::string name) : Name(std::move(name)) {}
 
     ~CEntity() override
     {
-        assert(Document == nullptr);
-        assert(ParentSceneNode == nullptr);
     }
 
-    std::string GenerateSequentialName();
+    const std::string& GetName() const { return Name; }
+    //Don't use this, otherwise the Scene's EntityLibrary won't be updated with the new name
+    void SetName(const std::string& value) { Name = value; }
 
-    const std::string& GetName() const
-    {
-        return Name;
-    }
+	//Handle update of the entire entity, intended to be overridden by subclasses
+    virtual void MarkDirty() { This.MarkDirty(); }
+	virtual void UpdateEntity() { This.UnmarkDirty(); }
 
-    void SetName(const std::string& value)
-    {
-        Name = value;
-    }
+    bool IsEntityValid() const { return bIsValid; }
+    void SetValid(bool value) { bIsValid = value; }
 
-    virtual void Draw() const
-    {
-    }
-
-protected:
-    ///Marks the entity dirty, triggers a scene update (redraw)
-    void MarkDirty();
+	//Some entities(generators) allow actual instance objects for each scene tree node
+	//  so that each instance can be customized, like delete face
+	virtual bool IsInstantiable() { return false; }
+	virtual CEntity* Instantiate() { return nullptr; }
 
 private:
     std::string Name;
-
-    ///Pointer to the document this entity belongs to
-    CDocument* Document = nullptr;
-
-    ///Indicates whether this entity is part of the scene
-    CSceneNode* ParentSceneNode = nullptr;
-
-    bool bIsDirty = true;
+    bool bIsValid = false;
 };
 
-} /* namespace Scene */
-} /* namespace Nome */
+} /* namespace Nome::Scene */

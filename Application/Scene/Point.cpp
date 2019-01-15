@@ -3,12 +3,18 @@
 namespace Nome::Scene
 {
 
-void CPoint::SetDefaultPosition(float x, float y, float z)
+void CPoint::MarkDirty()
 {
-    DefaultX = x;
-    DefaultY = y;
-    DefaultZ = z;
-    MarkDirty();
+	Super::MarkDirty();
+	Point.MarkDirty();
+}
+
+void CPoint::UpdateEntity()
+{
+	Super::UpdateEntity();
+	VI.Position = { X.GetValue(0.0f), Y.GetValue(0.0f), Z.GetValue(0.0f) };
+	VI.Name = GetName();
+	Point.UnmarkDirty();
 }
 
 }

@@ -2,7 +2,8 @@
 
 #include "Nome/App.h"
 
-#include "FlowViz/FlowViz.h"
+//#include "FlowViz/FlowViz.h"
+#include "QtFrontend/MainWindow.h"
 #include <QApplication>
 #include <QTimer>
 
@@ -14,44 +15,47 @@
 int main(int argc, char** argv)
 {
 #if WIN32
-	SetProcessDPIAware();
+    SetProcessDPIAware();
 #endif
 
-	if (int ret = Nome::CApp::AppSetup())
-		return ret;
+//    if (int ret = Nome::CApp::AppSetup())
+//        return ret;
 
-	//// Setup Qt
-	//QApplication application(argc, argv);
-	//Flow::Viz::CFlowViz widget;
-	//widget.show();
+    // Setup Qt
+    QApplication application(argc, argv);
+    Nome::CMainWindow mainWindow;
+    mainWindow.show();
+    //Flow::Viz::CFlowViz widget;
+    //widget.show();
 
- //   // Main loop
-	//QTimer timer;
-	//QObject::connect(&timer, &QTimer::timeout, [&]() {
-	//	int flags = Nome::CApp::AppSingleFrame();
-	//	if (flags & Nome::CApp::StatusWannaQuit)
- //       {
-	//	    application.quit();
- //       }
-	//});
-	//timer.start();
+    //   // Main loop
+    //QTimer timer;
+    //QObject::connect(&timer, &QTimer::timeout, [&]() {
+    //	int flags = Nome::CApp::AppSingleFrame();
+    //	if (flags & Nome::CApp::StatusWannaQuit)
+    //       {
+    //	    application.quit();
+    //       }
+    //});
+    //timer.start();
 
-	//int ret = application.exec();
+    return application.exec();
+    //int ret = application.exec();
 
-	int ret = 0;
-	while (1)
-	{
-		int flags = Nome::CApp::AppSingleFrame();
-		if (flags & Nome::CApp::StatusWannaQuit)
-		{
-			break;
-		}
-	}
+    int ret = 0;
+    while (1)
+    {
+        int flags = Nome::CApp::AppSingleFrame();
+        if (flags & Nome::CApp::StatusWannaQuit)
+        {
+            break;
+        }
+    }
 
-	// Cleanup
+    // Cleanup
     Nome::CApp::AppCleanup();
 
-	return ret;
+    return ret;
 }
 
 #endif

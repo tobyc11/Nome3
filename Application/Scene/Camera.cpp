@@ -41,65 +41,39 @@ const Matrix4& CCamera::GetProjMatrix() const
 
 Matrix4 CCamera::GetViewMatrix() const
 {
-    const auto& viewMatrix = GetPrincipleTreeNode()->GetL2W();
-    return viewMatrix.Inverse().ToMatrix4();
+	if (SceneTreeNode)
+	{
+		auto viewInv = SceneTreeNode->L2WTransform.GetValue(Matrix3x4::IDENTITY);
+		return viewInv.Inverse().ToMatrix4();
+	}
+	return Matrix4::IDENTITY;
 }
 
 Frustum CCamera::GetFrustum() const
 {
-    const auto& viewMatrix = GetPrincipleTreeNode()->GetL2W();
-    auto frustum = Frustum();
-    frustum.Define(FovY, AspectRatio, 1.0f, NearClip, FarClip, viewMatrix);
-    return frustum;
-}
+	auto frustum = Frustum();
+	if (SceneTreeNode)
+	{
+		const auto& viewMatrix = SceneTreeNode->L2WTransform.GetValue(Matrix3x4::IDENTITY);
 
-CSceneTreeNode* CCamera::GetPrincipleTreeNode() const
-{
-    for (auto treeNode : GetTreeNodes())
-        return treeNode;
-    return nullptr;
+		frustum.Define(FovY, AspectRatio, 1.0f, NearClip, FarClip, viewMatrix);
+		return frustum;
+	}
+
+	return frustum;
 }
 
 void CCamera::ShowDebugImGui()
 {
-	ImGui::Text("Camera:");
-	ImGui::SameLine();
-	if (ImGui::Button("<"))
-	{
-		auto currentTransform = GetTransform();
-		auto rotMat = Matrix3x4(Quaternion(-10.0f, Vector3::UP).RotationMatrix());
-		SetDefaultTransform(rotMat * currentTransform);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(">"))
-	{
-		auto currentTransform = GetTransform();
-		auto rotMat = Matrix3x4(Quaternion(10.0f, Vector3::UP).RotationMatrix());
-		SetDefaultTransform(rotMat * currentTransform);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("^"))
-	{
-		auto currentTransform = GetTransform();
-		auto rotMat = Matrix3x4(Quaternion(-10.0f, Vector3::RIGHT).RotationMatrix());
-		SetDefaultTransform(rotMat * currentTransform);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("v"))
-	{
-		auto currentTransform = GetTransform();
-		auto rotMat = Matrix3x4(Quaternion(10.0f, Vector3::RIGHT).RotationMatrix());
-		SetDefaultTransform(rotMat * currentTransform);
-	}
 }
 
 bool COrbitCameraController::MouseMoved(const CMouseState& state)
 {
 	if (bIsMouseDown)
 	{
-		auto currentTransform = Subject->GetTransform();
+		//auto currentTransform = Subject->GetTransform();
 		auto rotMat = Matrix3x4(Quaternion(-1.0f * state.dx, Vector3::UP).RotationMatrix());
-		Subject->SetDefaultTransform(rotMat * currentTransform);
+		//Subject->SetDefaultTransform(rotMat * currentTransform);
 		return true;
 	}
 	return false;

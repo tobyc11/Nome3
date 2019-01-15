@@ -5,6 +5,12 @@
 
 #include "Shader.h"
 
+//Optimus enablement
+extern "C"
+{
+	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
+
 namespace Nome
 {
 
@@ -39,9 +45,6 @@ void CRenderService::Render()
     auto camera = Scene->GetMainCamera();
     if (!camera)
         return;
-    auto cameraTreeNode = camera->GetPrincipleTreeNode();
-    if (!cameraTreeNode)
-        return;
     const auto& frustum = camera->GetFrustum();
 
     //Bind a simple pipeline right now
@@ -75,19 +78,19 @@ void CRenderService::Render()
     glDepthFunc(GL_LEQUAL);
     glDisable(GL_BLEND);
 
-    auto sceneRoot = Scene->GetRootNode();
-    assert(sceneRoot->CountTreeNodes() == 1);
-    auto sceneTreeRoot = *sceneRoot->GetTreeNodes().begin();
-    sceneTreeRoot->ForEach([](CSceneTreeNode* node){
-        //TODO: efficient frustum testing
+    //auto sceneRoot = Scene->GetRootNode();
+    //assert(sceneRoot->CountTreeNodes() == 1);
+    //auto sceneTreeRoot = *sceneRoot->GetTreeNodes().begin();
+    //sceneTreeRoot->ForEach([](CSceneTreeNode* node){
+    //    //TODO: efficient frustum testing
 
-        auto* graphNode = node->GetOwner();
-        if (const auto& entity = graphNode->GetEntity())
-        {
-            MeshShader->SetUniformMatrix4fv("Model", node->GetL2W().ToMatrix4().Data(), 1, true);
-            entity->Draw();
-        }
-    });
+    //    auto* graphNode = node->GetOwner();
+    //    if (const auto& entity = graphNode->GetEntity())
+    //    {
+    //        MeshShader->SetUniformMatrix4fv("Model", node->GetL2W().ToMatrix4().Data(), 1, true);
+    //        entity->Draw();
+    //    }
+    //});
 }
 
 int CRenderService::Cleanup()

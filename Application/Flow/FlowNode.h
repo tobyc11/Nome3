@@ -146,6 +146,13 @@ private:
     std::function<void()> DirtyNotifyRoutine;
 
     TOutput<T>* ConnectedOutput = nullptr;
+
+    //Only used by InputArray
+    template <typename TT> friend class TInputArray;
+    void SetDirtyNotifyRoutine(std::function<void()> routine)
+    {
+        DirtyNotifyRoutine = std::move(routine);
+    }
 };
 
 template <typename T>
@@ -292,6 +299,6 @@ private:\
 ///Define an output slot, the function is called when the value is requested
 #define DEFINE_OUTPUT_WITH_UPDATE(Type, Name) \
 public:\
-    Flow::TOutput<Type> Name{ this, [=]() {this->Name##Requested(); } }; \
+    Flow::TOutput<Type> Name{ this, [=]() {this->Name##Update(); } }; \
 private:\
-    inline void Name##Requested()
+    inline void Name##Update()

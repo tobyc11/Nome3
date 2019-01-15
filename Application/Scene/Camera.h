@@ -14,20 +14,18 @@ using tc::Frustum;
 /*
  * Special scene node that also contains the view info
  */
-class CCamera : public CSceneNode
+class CCamera : public tc::FRefCounted
 {
 public:
-    using CSceneNode::CSceneNode;
+	CCamera(CSceneTreeNode* treeNode) : SceneTreeNode(treeNode) {}
 
-    void CalculateProjMatrix() const;
+	void CalculateProjMatrix() const;
 
     const Matrix4& GetProjMatrix() const;
 
     Matrix4 GetViewMatrix() const;
 
     Frustum GetFrustum() const;
-
-    CSceneTreeNode* GetPrincipleTreeNode() const;
 
     ///Property getter/setter
     float GetAspectRatio() const { return AspectRatio; }
@@ -61,6 +59,9 @@ public:
 	void ShowDebugImGui();
 
 private:
+	//This is where the view transform comes from
+	TAutoPtr<CSceneTreeNode> SceneTreeNode;
+
     //bool bIsOrthographic = false;
     float AspectRatio = 1.0f;
     ///The vertical field of view, the default is 59 degrees

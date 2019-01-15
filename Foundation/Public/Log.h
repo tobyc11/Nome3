@@ -48,3 +48,16 @@ protected:
 #define LOGWARN(...) do{tc::FLog::DispatchLog(tc::LogLevels::Warn, __VA_ARGS__);}while(false)
 #define LOGERROR(...) do{tc::FLog::DispatchLog(tc::LogLevels::Error, __VA_ARGS__);}while(false)
 #define LOGFATAL(...) do{tc::FLog::DispatchLog(tc::LogLevels::Fatal, __VA_ARGS__);}while(false)
+
+//Compatibility with ALOG
+
+#ifndef LOG_ALWAYS_FATAL_IF
+#define LOG_ALWAYS_FATAL_IF(cond, ...) \
+    ( (cond) \
+    ? ((void)tc::FLog::DispatchLog(tc::LogLevels::Fatal, __VA_ARGS__)) \
+    : (void)0 )
+#endif
+
+#define ALOG_ASSERT(cond, ...)
+
+#define ALOGW LOGWARN

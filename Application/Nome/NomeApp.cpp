@@ -7,12 +7,14 @@
 namespace Nome
 {
 
+REGISTER_APPLICATION(CNomeApp);
+
 void CNomeApp::Init()
 {
 	BootService<CSDLService>();
 	BootService<CImGuiService>();
     BootService<CInputService>();
-    BootService<CRenderService>();
+    //BootService<CRenderService>();
 }
 
 void CNomeApp::Shutdown()

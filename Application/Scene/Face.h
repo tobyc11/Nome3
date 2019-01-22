@@ -5,6 +5,8 @@
 namespace Nome::Scene
 {
 
+class CMesh;
+
 class CFace : public CEntity
 {
     //Face points, in order
@@ -21,6 +23,8 @@ public:
 	void UpdateEntity() override;
 
     size_t CountVertices() const;
+
+	void AddFaceIntoMesh(CMesh* mesh) const;
 };
 
 }

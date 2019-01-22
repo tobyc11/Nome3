@@ -84,6 +84,14 @@ ABinaryOp::ABinaryOp(ABinaryOp::EOperator type, AExpr* left, AExpr* right, AKeyw
     ClassId = EClassId::BinaryOp;
 }
 
+ATransform* ATransform::Create(CASTContext& ctx)
+{
+	void* mem = ctx.Alloc(alignof(ATransform), sizeof(ATransform));
+	auto result = new (mem) ATransform();
+	result->ClassId = EClassId::Transform;
+	return result;
+}
+
 ACommand* ACommand::Create(CASTContext& ctx, AIdent* name, AKeyword* beginKeyword, AKeyword* endKeyword)
 {
     void* mem = ctx.Alloc(alignof(ACommand), sizeof(ACommand));
@@ -94,12 +102,14 @@ ACommand* ACommand::Create(CASTContext& ctx, AIdent* name, AKeyword* beginKeywor
     return result;
 }
 
-ATransform* ATransform::Create(CASTContext& ctx)
+AExpr* ACommand::FindNamedArg(const std::string& name) const
 {
-    void* mem = ctx.Alloc(alignof(ATransform), sizeof(ATransform));
-    auto result = new (mem) ATransform();
-    result->ClassId = EClassId::Transform;
-    return result;
+	for (const auto& pair : NamedArgs)
+	{
+		if (pair.first->Keyword == name)
+			return pair.second;
+	}
+	return nullptr;
 }
 
 }

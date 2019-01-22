@@ -8,90 +8,164 @@ namespace Nome::Scene
 
 //Note:
 //  Parser, AST, and the scene builder all have to match for any command
-void CASTSceneBuilder::BeginCommand(ACommand* cmd)
+void CASTSceneBuilder::VisitCommand(ACommand* cmd)
 {
-	printf("%s\n", cmd->BeginKeyword->Keyword.c_str());
-	if (cmd->BeginKeyword->Keyword == "bank")
+	Visit(cmd);
+}
+
+void CASTSceneBuilder::VisitPoint(AIdent* name, AExpr* x, AExpr* y, AExpr* z)
+{
+	auto* point = new CPoint(name->Identifier);
+	CExprToNodeGraph arg0Conv{ x, Scene->GetBankAndSet() };
+	arg0Conv.Connect(point->X);
+	CExprToNodeGraph arg1Conv{ y, Scene->GetBankAndSet() };
+	arg1Conv.Connect(point->Y);
+	CExprToNodeGraph arg2Conv{ z, Scene->GetBankAndSet() };
+	arg2Conv.Connect(point->Z);
+	Scene->AddEntity(point);
+}
+
+void CASTSceneBuilder::VisitPolyline(AIdent* name, const std::vector<AIdent*>& points, bool closed)
+{
+	TAutoPtr<CPolyline> polyline = new CPolyline(name->Identifier);
+	for (auto* ident : points)
 	{
-		BankName = cmd->Name->Identifier;
+		Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
+		if (!pointOutput)
+		{
+			throw std::runtime_error("Cannot find point");
+		}
+		polyline->Points.Connect(*pointOutput);
 	}
-	else if (cmd->BeginKeyword->Keyword == "set")
+	Scene->AddEntity(polyline.Get());
+	//TODO: handle closed
+}
+
+void CASTSceneBuilder::VisitFace(AIdent* name, const std::vector<AIdent*>& points, AIdent* surface)
+{
+	TAutoPtr<CFace> face = new CFace(EntityNamePrefix + name->Identifier);
+	for (auto* ident : points)
+	{
+		Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
+		if (!pointOutput)
+		{
+			throw std::runtime_error("Cannot find point");
+		}
+		face->Points.Connect(*pointOutput);
+	}
+	Scene->AddEntity(face.Get());
+
+	if (InMesh)
+	{
+		InMesh->Faces.Connect(face->Face);
+	}
+	//TODO: handle surface
+}
+
+void CASTSceneBuilder::VisitObject(AIdent* name, const std::vector<AIdent*>& faceRefs)
+{
+	TAutoPtr<CMesh> mesh = new CMesh(name->Identifier);
+	for (auto* ident : faceRefs)
+	{
+		TAutoPtr<CEntity> entity = Scene->FindEntity(ident->Identifier);
+		if (!entity)
+		{
+			throw std::runtime_error("Cannot find entity");
+		}
+		CFace* face = dynamic_cast<CFace*>(entity.Get());
+		if (!face)
+			throw std::runtime_error("Entity is not a face");
+		mesh->Faces.Connect(face->Face);
+	}
+	Scene->AddEntity(mesh.Get());
+}
+
+void CASTSceneBuilder::VisitMesh(AIdent* name, const std::vector<ACommand*>& faces)
+{
+	InMesh = new CMesh(name->Identifier);
+	Scene->AddEntity(InMesh);
+	EntityNamePrefix = name->Identifier + ".";
+	for (ACommand* cmd : faces)
+		Visit(cmd);
+	EntityNamePrefix = "";
+	InMesh = nullptr;
+}
+
+void CASTSceneBuilder::VisitGroup(AIdent* name, const std::vector<ACommand*>& instances)
+{
+	InstanciateUnder = Scene->CreateGroup(name->Identifier);
+	for (ACommand* cmd : instances)
+		Visit(cmd);
+	InstanciateUnder = Scene->GetRootNode();
+}
+
+void CASTSceneBuilder::VisitCircle(AIdent* name, AExpr* n, AExpr* ro)
+{
+}
+
+void CASTSceneBuilder::VisitFunnel(AIdent* name, AExpr* n, AExpr* ro, AExpr* ratio, AExpr* h)
+{
+}
+
+void CASTSceneBuilder::VisitTunnel(AIdent* name, AExpr* n, AExpr* ro, AExpr* ratio, AExpr* h)
+{
+}
+
+void CASTSceneBuilder::VisitBezierCurve(AIdent* name, const std::vector<AIdent*>& points, AExpr* nSlices)
+{
+}
+
+void CASTSceneBuilder::VisitBSpline(AIdent* name, const std::vector<AIdent*>& points, AExpr* order, AExpr* nSlices, bool closed)
+{
+}
+
+void CASTSceneBuilder::VisitInstance(AIdent* name, AIdent* entityName, const std::vector<ATransform*>& transformList, AIdent* surface)
+{
+	auto entity = Scene->FindEntity(entityName->Identifier);
+	if (entity)
+	{
+		auto* sceneNode = InstanciateUnder->CreateChildNode(name->Identifier);
+		sceneNode->SetEntity(entity);
+	}
+	else if (auto group = Scene->FindGroup(entityName->Identifier))
+	{
+		auto* sceneNode = InstanciateUnder->CreateChildNode(name->Identifier);
+		group->AddParent(sceneNode);
+	}
+	else
+	{
+		throw std::runtime_error("Instantiation failed, unknown generator");
+	}
+}
+
+void CASTSceneBuilder::VisitSurface(AIdent* name, AExpr* r, AExpr* g, AExpr* b)
+{
+	auto* surface = new CSurface();
+	surface->SetName(name->Identifier);
+	CExprToNodeGraph arg0Conv{ r, Scene->GetBankAndSet() };
+	arg0Conv.Connect(surface->ColorR);
+	CExprToNodeGraph arg1Conv{ g, Scene->GetBankAndSet() };
+	arg1Conv.Connect(surface->ColorG);
+	CExprToNodeGraph arg2Conv{ b, Scene->GetBankAndSet() };
+	arg2Conv.Connect(surface->ColorB);
+	Scene->AddEntity(surface);
+}
+
+void CASTSceneBuilder::VisitBank(AIdent* name, const std::vector<ACommand*>& sets)
+{
+	for (auto* cmd : sets)
 	{
 		auto* value = ast_as<ANumber*>(cmd->Args[0]);
 		auto* min = ast_as<ANumber*>(cmd->Args[1]);
 		auto* max = ast_as<ANumber*>(cmd->Args[2]);
 		auto* step = ast_as<ANumber*>(cmd->Args[3]);
-        Scene->GetBankAndSet().AddSlider(BankName + "." + cmd->Name->Identifier, cmd,
-                                         (float)value->GetValue(), (float)min->GetValue(),
-                                         (float)max->GetValue(), (float)step->GetValue());
-	}
-	else if (cmd->BeginKeyword->Keyword == "surface")
-	{
-		auto* surface = new CSurface();
-		surface->SetName(cmd->Name->Identifier);
-        CExprToNodeGraph arg0Conv{ cmd->Args[0], Scene->GetBankAndSet() };
-		arg0Conv.Connect(surface->ColorR);
-        CExprToNodeGraph arg1Conv{ cmd->Args[1], Scene->GetBankAndSet() };
-		arg1Conv.Connect(surface->ColorG);
-        CExprToNodeGraph arg2Conv{ cmd->Args[2], Scene->GetBankAndSet() };
-		arg2Conv.Connect(surface->ColorB);
-		Scene->AddEntity(surface);
-	}
-	else if (cmd->BeginKeyword->Keyword == "point")
-	{
-		auto* point = new CPoint(cmd->Name->Identifier);
-        CExprToNodeGraph arg0Conv{ cmd->Args[0], Scene->GetBankAndSet() };
-		arg0Conv.Connect(point->X);
-        CExprToNodeGraph arg1Conv{ cmd->Args[1], Scene->GetBankAndSet() };
-		arg1Conv.Connect(point->Y);
-        CExprToNodeGraph arg2Conv{ cmd->Args[2], Scene->GetBankAndSet() };
-		arg2Conv.Connect(point->Z);
-		Scene->AddEntity(point);
-	}
-	else if (cmd->BeginKeyword->Keyword == "polyline")
-	{
-        TAutoPtr<CPolyline> polyline = new CPolyline(cmd->Name->Identifier);
-        for (auto* expr : cmd->Args)
-        {
-            auto* ident = ast_as<AIdent*>(expr);
-            Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
-            if (!pointOutput)
-            {
-                throw std::runtime_error("Cannot find point");
-            }
-            polyline->Points.Connect(*pointOutput);
-        }
-        Scene->AddEntity(polyline.Get());
-	}
-	else if (cmd->BeginKeyword->Keyword == "instance")
-	{
-        //Args[0] is the generator(entity) name, could also be a group
-        auto* entityId = ast_as<AIdent*>(cmd->Args[0]);
-        auto entity = Scene->FindEntity(entityId->Identifier);
-        if (entity)
-        {
-            auto* sceneNode = Scene->GetRootNode()->CreateChildNode(cmd->Name->Identifier);
-			sceneNode->SetEntity(entity);
-        }
-        else if (false /* is a group */)
-        {
-        }
-        else
-        {
-            throw std::runtime_error("Instantiation failed, unknown generator");
-        }
-	}
-	else if (cmd->BeginKeyword->Keyword == "group")
-	{
-
-	}
-	else
-	{
-		printf("Encountered unknown command %s\n", cmd->BeginKeyword->Keyword.c_str());
+		Scene->GetBankAndSet().AddSlider(name->Identifier + "." + cmd->Name->Identifier, cmd,
+			(float)value->GetValue(), (float)min->GetValue(),
+			(float)max->GetValue(), (float)step->GetValue());
 	}
 }
 
-void CASTSceneBuilder::EndCommand(ACommand* cmd)
+void CASTSceneBuilder::VisitDelete(const std::vector<ACommand*>& faceCmds)
 {
 }
 

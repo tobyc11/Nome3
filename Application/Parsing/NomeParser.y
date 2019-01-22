@@ -125,16 +125,17 @@ polyline: POLYLINE IDENT '(' ident_list ')' polyline_ext ENDPOLYLINE
     driver->Ext.MoveTo($$);
 };
 
-polyline_ext: %empty | CLOSED { driver->Ext.NamedArgs[$1] = nullptr; };
+polyline_ext: %empty | CLOSED { driver->Ext.NamedArgs[$1] = $1; };
 
 face: FACE IDENT '(' ident_list ')' face_ext ENDFACE
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $2, $FACE, $ENDFACE);
     $$->Args.insert($$->Args.begin(), driver->IdentList.begin(), driver->IdentList.end());
     driver->IdentList.clear();
+    driver->Ext.MoveTo($$);
 };
 
-face_ext: %empty | SURFACE IDENT {};
+face_ext: %empty | SURFACE IDENT { driver->Ext.NamedArgs[$1] = $2; };
 
 object: OBJECT IDENT '(' ident_list ')' ENDOBJECT
 {
@@ -186,21 +187,29 @@ tunnel: TUNNEL IDENT '(' num_exp num_exp num_exp num_exp ')' ENDTUNNEL
     $$->Args.push_back($7);
 };
 
-bezier_curve: BEZIERCURVE IDENT '(' ident_list ')' SLICES num_exp ENDBEZIERCURVE
+bezier_curve: BEZIERCURVE IDENT '(' ident_list ')' bezier_curve_ext ENDBEZIERCURVE
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $BEZIERCURVE, $ENDBEZIERCURVE);
     $$->Args.insert($$->Args.begin(), driver->IdentList.begin(), driver->IdentList.end());
     driver->IdentList.clear();
-    //TODO: dont ignore slices
+    driver->Ext.MoveTo($$);
 };
 
-bspline: BSPLINE IDENT '(' ident_list ')' CLOSED SLICES num_exp ENDBSPLINE
+bezier_curve_ext: %empty | SLICES num_exp { driver->Ext.NamedArgs[$1] = $2; };
+
+bspline: BSPLINE IDENT '(' ident_list ')' bspline_ext ENDBSPLINE
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $BSPLINE, $ENDBSPLINE);
     $$->Args.insert($$->Args.begin(), driver->IdentList.begin(), driver->IdentList.end());
     driver->IdentList.clear();
-    //TODO: dont ignore slices/closed
+    driver->Ext.MoveTo($$);
 };
+
+bspline_ext: %empty
+ | bspline_ext CLOSED { driver->Ext.NamedArgs[$2] = $2; }
+ | bspline_ext SLICES num_exp { driver->Ext.NamedArgs[$2] = $3; }
+ | bspline_ext ORDER num_exp { driver->Ext.NamedArgs[$2] = $3; }
+ ;
 
 instance: INSTANCE IDENT IDENT instance_ext ENDINSTANCE
 {
@@ -209,7 +218,9 @@ instance: INSTANCE IDENT IDENT instance_ext ENDINSTANCE
     driver->Ext.MoveTo($$);
 };
 
-instance_ext: %empty | instance_ext SURFACE IDENT | instance_ext transform { driver->Ext.Args.push_back($2); };
+instance_ext: %empty
+ | instance_ext SURFACE IDENT { driver->Ext.NamedArgs[$2] = $3; }
+ | instance_ext transform { driver->Ext.Args.push_back($2); };
 
 transform:
   ROTATE '(' num_exp num_exp num_exp ')' '(' num_exp ')'

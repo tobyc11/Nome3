@@ -164,11 +164,15 @@ public:
     EClassId ClassId = EClassId::Command;
 	inline static EClassId StaticId() { return EClassId::Command; }
 	static ACommand* Create(CASTContext& ctx, AIdent* name, AKeyword* beginKeyword, AKeyword* endKeyword);
+
+	AExpr* FindNamedArg(const std::string& name) const;
 };
 
-template <typename TTo, typename TFrom, typename TToPlain = std::remove_pointer<TTo>::type>
+template <typename TTo, typename TFrom, typename TToPlain = typename std::remove_pointer<TTo>::type>
 TTo ast_as(TFrom* node)
 {
+	if (!node)
+		return nullptr;
 	if (node->ClassId == TToPlain::StaticId())
 		return static_cast<TTo>(node);
 	return nullptr;

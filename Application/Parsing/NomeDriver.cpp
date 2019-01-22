@@ -5,7 +5,7 @@ namespace Nome
 
 void ACommandExtHelper::MoveTo(ACommand* dest)
 {
-    dest->Args.insert(dest->Args.begin(), Args.begin(), Args.end());
+    dest->Args.insert(dest->Args.end(), Args.begin(), Args.end());
     dest->NamedArgs.insert(NamedArgs.begin(), NamedArgs.end());
     *this = ACommandExtHelper();
 }

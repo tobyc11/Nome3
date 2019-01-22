@@ -36,7 +36,6 @@ public:
     {
         for (TInput<T>* input : InputArray)
         {
-            input->Disconnect();
             delete input;
         }
         InputArray.clear();

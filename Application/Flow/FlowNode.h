@@ -127,6 +127,7 @@ public:
                 ConnectedOutput->ConnectedInputs.erase(iter);
             ConnectedOutput->Owner->Release();
         }
+		ConnectedOutput = nullptr;
     }
 
 	bool IsConnected() const

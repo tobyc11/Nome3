@@ -6,6 +6,10 @@ set(CMAKE_AUTOMOC ON)
 # Create code from a list of Qt designer ui files
 set(CMAKE_AUTOUIC ON)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY Binaries)
+
+option(NOME_BUILD_TESTS "Build tests" OFF)
+
 file(GLOB PG2_SOURCES
     *.h *.cpp
     #DSLDemo/*.h DSLDemo/*.cpp
@@ -58,15 +62,30 @@ macro(config_playground2 target)
     target_include_directories(${target} PRIVATE ${LUA_INCLUDE_DIR})
     target_link_libraries(${target} PRIVATE ${LUA_LIBRARIES})
 
-	find_package(OpenMesh REQUIRED)
-	target_include_directories(${target} PRIVATE ${OPENMESH_INCLUDE_DIRS})
-	target_link_libraries(${target} PRIVATE ${OPENMESH_LIBRARIES})
+    find_package(OpenMesh REQUIRED)
+    target_include_directories(${target} PRIVATE ${OPENMESH_INCLUDE_DIRS})
+    target_link_libraries(${target} PRIVATE ${OPENMESH_LIBRARIES})
 
     target_link_libraries(${target} PRIVATE d3d11.lib d3dcompiler.lib dxgi.lib dxguid.lib)
 endmacro()
 
-add_executable (Nome3 ${PG2_SOURCES} ${PG2_GENERATED_SOURCES})
+add_executable(Nome3 ${PG2_SOURCES} ${PG2_GENERATED_SOURCES})
 config_playground2(Nome3)
-add_executable (Nome3_test ${PG2_SOURCES} ${PG2_GENERATED_SOURCES} ${PG2_TEST_SOURCES})
-config_playground2(Nome3_test)
-target_compile_definitions(Nome3_test PRIVATE DISABLE_MAIN_FOR_TESTS)
+if(NOME_BUILD_TESTS)
+    add_executable(Nome3_test ${PG2_SOURCES} ${PG2_GENERATED_SOURCES} ${PG2_TEST_SOURCES})
+    config_playground2(Nome3_test)
+    target_compile_definitions(Nome3_test PRIVATE DISABLE_MAIN_FOR_TESTS)
+endif()
+
+#Attempt to windeployqt
+get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
+get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
+if(WINDEPLOYQT_EXECUTABLE)
+    add_custom_command(TARGET Nome3 POST_BUILD
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:Nome3>
+    )
+endif()
+
+install(DIRECTORY Resources DESTINATION .)
+install(DIRECTORY $<TARGET_FILE_DIR:Nome3>/ DESTINATION .)

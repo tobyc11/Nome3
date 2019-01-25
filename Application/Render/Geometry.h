@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-typedef OpenMesh::PolyMesh_ArrayKernelT<> CNomeMesh;
+typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
 
 namespace Nome
 {
@@ -27,12 +27,17 @@ class CVertexBuffer : public tc::FRefCounted
 {
 public:
 	CVertexBuffer(size_t size);
-	CVertexBuffer(size_t size, void* data);
+	CVertexBuffer(size_t size, const void* data);
 	~CVertexBuffer();
 
 	bool IsOnCPU() const { return CPUBuffer; }
 	bool IsOnGPU() const;
 	void UploadToGPU();
+
+    ID3D11Buffer* GetD3D11Buffer() const
+    {
+        return GPUBuffer.Get();
+    }
 
 private:
 	size_t CPUSize = 0;
@@ -44,6 +49,16 @@ class CIndexBuffer : public tc::FRefCounted
 {
 public:
 	CIndexBuffer(size_t size, size_t elementWidth, void* data);
+
+    void Bind(ID3D11DeviceContext* ctx)
+    {
+        DXGI_FORMAT format = DXGI_FORMAT_R16_UINT;
+        if (ElementWidth == 4)
+            format = DXGI_FORMAT_R32_UINT;
+        else if (ElementWidth == 2)
+            format = DXGI_FORMAT_R16_UINT;
+        ctx->IASetIndexBuffer(GPUBuffer.Get(), format, 0);
+    }
 	
 private:
 	size_t ElementWidth;
@@ -74,13 +89,25 @@ public:
 	};
 
 	CStaticMeshGeometry();
-	CStaticMeshGeometry(const CNomeMesh& fromMesh);
+	CStaticMeshGeometry(const CMeshImpl& fromMesh);
+	CStaticMeshGeometry(const std::vector<Vector3>& positions);
 
-	void Reconstruct(const CNomeMesh& fromMesh);
+	void Reconstruct(const CMeshImpl& fromMesh);
+
+    CAttribute* GetAttribute(const std::string& name, int index = 0);
+
+    TAutoPtr<CIndexBuffer> GetIndexBuffer() const;
+
+    uint32_t GetElementCount() const;
+
+	D3D11_PRIMITIVE_TOPOLOGY GetPrimitiveTopology() const;
+	void SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY value);
 
 private:
-	std::vector<CAttribute> Attribs;
+    std::vector<CAttribute> Attribs;
 	TAutoPtr<CIndexBuffer> IB;
+    uint32_t ElementCount = 0;
+	D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 };
 
 }

@@ -1,7 +1,5 @@
 #pragma once
 #include "AST.h"
-#include "Rope.h"
-#include "SourceManager.h"
 
 namespace Nome
 {
@@ -20,14 +18,16 @@ class CNomeDriver
 {
 public:
     CNomeDriver(const std::string& sourceString);
-    CNomeDriver(CASTContext* context, CRope* source);
+    CNomeDriver(CASTContext* context, CSourceManager* sourceMgr, CSourceFile* sourceFile);
 
     void ParseToAST();
 
     CASTContext* GetASTContext() const { return Context; }
-    CRope::CLocation OffsetToLocation(int offset)
+    CSourceLocation OffsetToLocation(int offset)
     {
-        return CRope::CLocation();
+		if (SourceMgr)
+			return SourceMgr->GetLocation(SourceFile, offset);
+		return CSourceLocation();
     }
 
     //Global vars used by the lexer
@@ -47,8 +47,9 @@ private:
 
     CASTContext* Context;
 
-    //Only one of the following is active
-	CRope* Source = nullptr;
+    //Either the sourcemgr+file or the string is active
+	CSourceManager* SourceMgr = nullptr;
+	CSourceFile* SourceFile = nullptr;
     std::string SourceString;
 };
 

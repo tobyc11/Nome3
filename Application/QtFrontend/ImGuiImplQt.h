@@ -23,7 +23,7 @@ private:
 	void onMousePressedChange(QMouseEvent* event);
 	void onWheel(QWheelEvent* event);
 	void onKeyPressRelease(QKeyEvent* event);
-	void onMouseMove(QMouseEvent* event);
+	bool onMouseMove(QMouseEvent* event);
 
 	QWidget* Parent;
 

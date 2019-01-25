@@ -3,6 +3,7 @@
 #include <d3d11_1.h>
 
 #include <stdexcept>
+#include <string>
 
 namespace Nome
 {
@@ -40,13 +41,19 @@ public:
 		return ShaderManager;
 	}
 
+	const std::string& GetDescription() const { return Description; }
+
 private:
+	void RetrieveDesc();
+
 	D3D_DRIVER_TYPE DriverType = D3D_DRIVER_TYPE_NULL;
 	D3D_FEATURE_LEVEL FeatureLevel = D3D_FEATURE_LEVEL_11_0;
 	ID3D11Device* D3dDevice;
 	ID3D11DeviceContext* ImmediateContext;
 
 	CShaderManager* ShaderManager;
+
+	std::string Description;
 };
 
 } // namespace Nome

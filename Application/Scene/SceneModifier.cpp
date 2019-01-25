@@ -2,6 +2,7 @@
 #include "ASTSceneBuilder.h"
 #include "Point.h"
 #include <Parsing/NomeDriver.h>
+#include <sstream>
 
 namespace Nome::Scene
 {
@@ -10,6 +11,7 @@ void CSceneModifier::AddPoint(const std::string& name, const std::string& x, con
 {
 	auto* point = new CPoint(name);
 
+	//TODO: AST nodes produced this way do not have associated source locations
 	auto parseAndConn = [this](const std::string& expr, Flow::TInput<float>& input)
 	{
 		CNomeDriver xD{ expr };
@@ -25,6 +27,10 @@ void CSceneModifier::AddPoint(const std::string& name, const std::string& x, con
 	parseAndConn(z, point->Z);
 
 	Scene->AddEntity(point);
+
+	std::stringstream ss;
+	ss << "point " << name << " " << x << " " << y << " " << z << " endpoint";
+	SourceManager->WriteLine(File, ss.str());
 }
 
 void CSceneModifier::AddInstance(const std::string& name, const std::string& entityName)
@@ -32,6 +38,10 @@ void CSceneModifier::AddInstance(const std::string& name, const std::string& ent
 	auto ent = Scene->FindEntity(entityName);
 	auto* node = Scene->GetRootNode()->CreateChildNode(name);
 	node->SetEntity(ent);
+
+	std::stringstream ss;
+	ss << "instance " << name << " " << entityName << " endinstance";
+	SourceManager->WriteLine(File, ss.str());
 }
 
 }

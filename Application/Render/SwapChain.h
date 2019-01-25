@@ -1,12 +1,17 @@
 #pragma once
 #include "Renderer.h"
 #include <d3d11_1.h>
+#include <wrl/client.h>
 
 namespace Nome
 {
 
+using Microsoft::WRL::ComPtr;
+
 class CSwapChain
 {
+	friend class CViewport;
+
 public:
 	CSwapChain(CRenderer* renderer, HWND hWnd);
 	~CSwapChain();
@@ -16,6 +21,9 @@ public:
 
 	void ClearRenderTarget(const float* color);
 	void Present();
+
+	int GetWidth() const;
+	int GetHeight() const;
 
 private:
 	CRenderer* Renderer;

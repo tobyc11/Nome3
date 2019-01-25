@@ -1,7 +1,20 @@
 #include "Mesh.h"
+//Render related
+#include "SceneGraph.h"
+#include <Render/Material.h>
+#include <Render/Geometry.h>
+#include <Render/Renderer.h>
 
 namespace Nome::Scene
 {
+
+class CMeshRenderPrivateData
+{
+public:
+	TAutoPtr<CStaticMeshGeometry> RenderGeometry;
+	TAutoPtr<CStaticMeshGeometry> LineGeometry;
+	TAutoPtr<CMaterial> Material;
+};
 
 CMesh::CMesh()
 {
@@ -11,24 +24,57 @@ CMesh::CMesh(std::string name) : CEntity(std::move(name))
 {
 }
 
-void CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
+void CMesh::MarkDirty()
 {
-	CNomeMesh::VertexHandle vertex;
-	vertex = Mesh.add_vertex(CNomeMesh::Point(pos.x, pos.y, pos.z));
+	if (IsDirty())
+		return;
+
+	Super::MarkDirty();
+
+	for (auto* inst : InstanceSet)
+		inst->MarkDirty();
+}
+
+void CMesh::UpdateEntity()
+{
+	if (!IsDirty())
+		return;
+
+	ClearMesh();
+	for (size_t i = 0; i < Faces.GetSize(); i++)
+	{
+		//We assume the nullptr value is never returned, of course
+		auto* face = Faces.GetValue(i, nullptr);
+		face->AddFaceIntoMesh(this);
+	}
+
+	Super::UpdateEntity();
+}
+
+CMeshImpl::VertexHandle CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
+{
+	//Silently fail if the name already exists
+	auto iter = NameToVert.find(name);
+	if (iter != NameToVert.end())
+		return iter->second;
+
+	CMeshImpl::VertexHandle vertex;
+	vertex = Mesh.add_vertex(CMeshImpl::Point(pos.x, pos.y, pos.z));
 	NameToVert.emplace(name, vertex);
+	return vertex;
 }
 
 Vector3 CMesh::GetVertexPos(const std::string& name) const
 {
 	auto iter = NameToVert.find(name);
-	CNomeMesh::VertexHandle vertex = iter->second;
+	CMeshImpl::VertexHandle vertex = iter->second;
 	const auto& pos = Mesh.point(vertex);
 	return Vector3(pos[0], pos[1], pos[2]);
 }
 
 void CMesh::AddFace(const std::string& name, const std::vector<std::string>& facePoints)
 {
-	std::vector<CNomeMesh::VertexHandle> faceVHandles;
+	std::vector<CMeshImpl::VertexHandle> faceVHandles;
 	for (const std::string& name : facePoints)
 	{
 		faceVHandles.push_back(NameToVert[name]);
@@ -37,10 +83,23 @@ void CMesh::AddFace(const std::string& name, const std::vector<std::string>& fac
 	NameToFace.emplace(name, faceHandle);
 }
 
+void CMesh::AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints)
+{
+	auto faceHandle = Mesh.add_face(facePoints);
+	NameToFace.emplace(name, faceHandle);
+}
+
+void CMesh::AddLineStrip(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& points)
+{
+	LineStrip = points;
+}
+
 void CMesh::ClearMesh()
 {
 	Mesh.clear();
 	NameToVert.clear();
+	NameToFace.clear();
+	LineStrip.clear();
 }
 
 bool CMesh::IsInstantiable()
@@ -48,17 +107,92 @@ bool CMesh::IsInstantiable()
 	return true;
 }
 
-CEntity* CMesh::Instantiate()
+CEntity* CMesh::Instantiate(CSceneTreeNode* treeNode)
 {
-	return new CMeshInstance(this);
+	return new CMeshInstance(this, treeNode);
 }
 
-CMeshInstance::CMeshInstance(CMesh* generator) : MeshGenerator(generator)
+CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
+	: MeshGenerator(generator), SceneTreeNode(stn), Priv(new CMeshRenderPrivateData())
 {
+	MeshGenerator->InstanceSet.insert(this);
 }
 
-CMeshInstance::CMeshInstance(CMesh* generator, std::string name) : CEntity(name), MeshGenerator(generator)
+CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn, std::string name)
+	: CEntity(name), MeshGenerator(generator), SceneTreeNode(stn), Priv(new CMeshRenderPrivateData())
 {
+	MeshGenerator->InstanceSet.insert(this);
+}
+
+CMeshInstance::~CMeshInstance()
+{
+	MeshGenerator->InstanceSet.erase(this);
+	delete Priv;
+}
+
+void CMeshInstance::MarkDirty()
+{
+	Super::MarkDirty();
+	SelectorSignal.MarkDirty();
+}
+
+void CMeshInstance::UpdateEntity()
+{
+	if (!IsDirty())
+		return;
+	MeshGenerator->UpdateEntity();
+	CopyFromGenerator();
+
+	if (!Priv->Material)
+	{
+		Priv->Material = new CMaterial();
+	}
+
+	if (!Mesh.faces_empty())
+	{
+		Mesh.request_face_normals();
+		Mesh.request_vertex_normals();
+		Mesh.update_face_normals();
+		Mesh.update_vertex_normals();
+		Priv->RenderGeometry = new CStaticMeshGeometry(Mesh);
+	}
+	else
+		Priv->RenderGeometry = nullptr;
+
+	//The upstream mesh contains a polyline of some sort
+	if (!MeshGenerator->LineStrip.empty())
+	{
+		std::vector<Vector3> positions;
+		for (auto vHandle : MeshGenerator->LineStrip)
+		{
+			const auto& vPos = MeshGenerator->Mesh.point(vHandle);
+			positions.emplace_back(vPos[0], vPos[1], vPos[2]);
+		}
+		Priv->LineGeometry = new CStaticMeshGeometry(positions);
+		Priv->LineGeometry->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+	}
+
+	Super::UpdateEntity();
+}
+
+void CMeshInstance::Draw(CSceneTreeNode* treeNode)
+{
+	tc::Matrix4 modelMat = treeNode->L2WTransform.GetValue(Matrix3x4::IDENTITY).ToMatrix4();
+	if (Priv->RenderGeometry)
+	{
+		GRenderer->Draw(modelMat, Priv->RenderGeometry, Priv->Material);
+	}
+	if (Priv->LineGeometry)
+	{
+		GRenderer->Draw(modelMat, Priv->LineGeometry, Priv->Material);
+	}
+}
+
+CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name, const std::string& outputName)
+{
+	auto* selector = new CVertexSelector(name, outputName);
+	SelectorSignal.Connect(selector->MeshInstance);
+	return selector;
 }
 
 void CMeshInstance::CopyFromGenerator()
@@ -68,7 +202,31 @@ void CMeshInstance::CopyFromGenerator()
 	NameToFace.clear();
 
 	Mesh = MeshGenerator->Mesh;
-	//TODO
+	//Since the handle only contains an index, we can just copy
+	NameToVert = MeshGenerator->NameToVert;
+	NameToFace = MeshGenerator->NameToFace;
+}
+
+void CVertexSelector::PointUpdate()
+{
+	//Assume MeshInstance is connected
+	auto* mi = MeshInstance.GetValue(nullptr);
+	if (!mi)
+	{
+		printf("Vertex %s names non-existent mesh instance", TargetName.c_str());
+		return;
+	}
+	auto iter = mi->NameToVert.find(TargetName);
+	if (iter == mi->NameToVert.end())
+	{
+		printf("Vertex %s does not exist in entity %s", TargetName.c_str(), mi->GetName().c_str());
+		return;
+	}
+	auto vertHandle = iter->second;
+	const auto& p = mi->Mesh.point(vertHandle);
+	VI.Position = { p[0], p[1], p[2] };
+	VI.Position = mi->GetSceneTreeNode()->L2WTransform.GetValue(Matrix3x4::IDENTITY) * VI.Position;
+	Point.UpdateValue(&VI);
 }
 
 }

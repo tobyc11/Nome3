@@ -63,40 +63,32 @@ Frustum CCamera::GetFrustum() const
 	return frustum;
 }
 
-void CCamera::ShowDebugImGui()
+void COrbitCameraController::MouseMoved(int deltaX, int deltaY)
 {
+	if (bIsActive)
+	{
+		const float kCameraSpeed = 0.05f;
+		Yaw += deltaX * kCameraSpeed;
+		Pitch += deltaY * kCameraSpeed;
+		Transform.MarkDirty();
+	}
 }
 
-bool COrbitCameraController::MouseMoved(const CMouseState& state)
+void COrbitCameraController::WheelMoved(int degree)
 {
-	if (bIsMouseDown)
-	{
-		//auto currentTransform = Subject->GetTransform();
-		auto rotMat = Matrix3x4(Quaternion(-1.0f * state.dx, Vector3::UP).RotationMatrix());
-		//Subject->SetDefaultTransform(rotMat * currentTransform);
-		return true;
-	}
-	return false;
+	const float kZoomSpeed = 1.0f / 15.0f * 0.25f;
+	float delta = -degree * kZoomSpeed;
+	if (Location.z + delta < 0.0f)
+		Location.z /= 2.0f;
+	else
+		Location.z += delta;
+	Transform.MarkDirty();
 }
 
-bool COrbitCameraController::MouseButtonPressed(int index)
+void COrbitCameraController::CalcTransform()
 {
-	if (index == 0 || index == 2)
-	{
-		bIsMouseDown = true;
-		return true;
-	}
-	return false;
-}
-
-bool COrbitCameraController::MouseButtonReleased(int index)
-{
-	if (index == 0 || index == 2)
-	{
-		bIsMouseDown = false;
-		return true;
-	}
-	return false;
+	auto rot = Quaternion(-Pitch, -Yaw, 0.0f);
+	Transform.UpdateValue(Matrix3x4(rot.RotationMatrix()) * Matrix3x4(Location, Quaternion::IDENTITY, 1.0f));
 }
 
 }

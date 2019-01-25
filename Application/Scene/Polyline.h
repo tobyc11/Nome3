@@ -1,7 +1,5 @@
 #pragma once
 #include "Mesh.h"
-#include "Point.h"
-#include <Flow/FlowNodeArray.h>
 
 namespace Nome::Scene
 {

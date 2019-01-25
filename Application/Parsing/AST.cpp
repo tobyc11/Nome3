@@ -3,7 +3,7 @@
 namespace Nome
 {
 
-AExpr* AExpr::Create(CASTContext& ctx, CRope::CLocation beginLoc, CRope::CLocation endLoc)
+AExpr* AExpr::Create(CASTContext& ctx, CSourceLocation beginLoc, CSourceLocation endLoc)
 {
     void* mem = reinterpret_cast<AExpr*>(ctx.Alloc(alignof(AExpr), sizeof(AExpr)));
     auto* result = new (mem) AExpr(beginLoc, endLoc);
@@ -14,44 +14,44 @@ AExpr::AExpr() : ClassId(EClassId::Expr)
 {
 }
 
-AExpr::AExpr(CRope::CLocation beginLoc, CRope::CLocation endLoc) : ClassId(EClassId::Expr), BeginLoc(beginLoc), EndLoc(endLoc)
+AExpr::AExpr(CSourceLocation beginLoc, CSourceLocation endLoc) : ClassId(EClassId::Expr), BeginLoc(beginLoc), EndLoc(endLoc)
 {
 }
 
-AKeyword::AKeyword(const std::string& keyword, CRope::CLocation beginLoc, CRope::CLocation endLoc)
+AKeyword::AKeyword(const std::string& keyword, CSourceLocation beginLoc, CSourceLocation endLoc)
     : AExpr(beginLoc, endLoc), Keyword(keyword)
 {
     ClassId = EClassId::Keyword;
 }
 
-AKeyword* AKeyword::Create(CASTContext& ctx, const std::string& kwd, CRope::CLocation beginLoc, CRope::CLocation endLoc)
+AKeyword* AKeyword::Create(CASTContext& ctx, const std::string& kwd, CSourceLocation beginLoc, CSourceLocation endLoc)
 {
 	void* mem = reinterpret_cast<AKeyword*>(ctx.Alloc(alignof(AKeyword), sizeof(AKeyword)));
 	auto* result = new (mem) AKeyword(kwd, beginLoc, endLoc);
 	return result;
 }
 
-AIdent::AIdent(const std::string& ident, CRope::CLocation beginLoc, CRope::CLocation endLoc)
+AIdent::AIdent(const std::string& ident, CSourceLocation beginLoc, CSourceLocation endLoc)
     : AExpr(beginLoc, endLoc), Identifier(ident)
 {
     ClassId = EClassId::Ident;
 }
 
-AIdent* AIdent::Create(CASTContext& ctx, const std::string& id, CRope::CLocation beginLoc, CRope::CLocation endLoc)
+AIdent* AIdent::Create(CASTContext& ctx, const std::string& id, CSourceLocation beginLoc, CSourceLocation endLoc)
 {
 	void* mem = reinterpret_cast<AIdent*>(ctx.Alloc(alignof(AIdent), sizeof(AIdent)));
 	auto* result = new (mem) AIdent(id, beginLoc, endLoc);
 	return result;
 }
 
-ANumber::ANumber(const std::string& stringVal, CRope::CLocation beginLoc, CRope::CLocation endLoc)
+ANumber::ANumber(const std::string& stringVal, CSourceLocation beginLoc, CSourceLocation endLoc)
     : AExpr(beginLoc, endLoc), String(stringVal)
 {
     ClassId = EClassId::Number;
     Value = std::stod(String);
 }
 
-ANumber* ANumber::Create(CASTContext& ctx, const std::string& stringVal, CRope::CLocation beginLoc, CRope::CLocation endLoc)
+ANumber* ANumber::Create(CASTContext& ctx, const std::string& stringVal, CSourceLocation beginLoc, CSourceLocation endLoc)
 {
 	void* mem = ctx.Alloc(alignof(ANumber), sizeof(ANumber));
 	auto result = new (mem) ANumber(stringVal, beginLoc, endLoc);

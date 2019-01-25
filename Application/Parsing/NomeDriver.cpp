@@ -15,7 +15,8 @@ CNomeDriver::CNomeDriver(const std::string& sourceString) : SourceString(sourceS
     Context = new CASTContext();
 }
 
-CNomeDriver::CNomeDriver(CASTContext* context, CRope* source) : Context(context), Source(source)
+CNomeDriver::CNomeDriver(CASTContext* context, CSourceManager* sourceMgr, CSourceFile* sourceFile)
+	: Context(context), SourceMgr(sourceMgr), SourceFile(sourceFile)
 {
 }
 

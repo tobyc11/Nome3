@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Flow/FlowNode.h"
+#include <Flow/FlowNode.h>
 
 #include <Matrix3x4.h>
 
@@ -13,17 +13,24 @@ using tc::Matrix3x4;
 
 class CTransform : public Flow::CFlowNode
 {
+	DEFINE_INPUT(Matrix3x4, Input)
+	{
+		Output.MarkDirty();
+	}
+
+	DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Output)
+	{
+		RecomputeOutput();
+	}
+
 public:
+	virtual ~CTransform() = default;
+	virtual void RecomputeOutput() = 0;
 };
 
 class CTranslate : public CTransform
 {
 public:
-    DEFINE_INPUT(Matrix3x4, Input)
-    {
-        Output.MarkDirty();
-    }
-
     DEFINE_INPUT(float, X)
     {
         Output.MarkDirty();
@@ -39,23 +46,13 @@ public:
         Output.MarkDirty();
     }
 
-    DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Output)
-    {
-        RecomputeOutput();
-    }
-
 private:
-    void RecomputeOutput();
+    void RecomputeOutput() override;
 };
 
 class CRotate : public CTransform
 {
 public:
-    DEFINE_INPUT(Matrix3x4, Input)
-    {
-        Output.MarkDirty();
-    }
-
     DEFINE_INPUT(float, AxisX)
     {
         Output.MarkDirty();
@@ -76,23 +73,13 @@ public:
         Output.MarkDirty();
     }
 
-    DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Output)
-    {
-        RecomputeOutput();
-    }
-
 private:
-    void RecomputeOutput();
+    void RecomputeOutput() override;
 };
 
 class CScale : public CTransform
 {
 public:
-    DEFINE_INPUT(Matrix3x4, Input)
-    {
-        Output.MarkDirty();
-    }
-
     DEFINE_INPUT(float, X)
     {
         Output.MarkDirty();
@@ -108,13 +95,8 @@ public:
         Output.MarkDirty();
     }
 
-    DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Output)
-    {
-        RecomputeOutput();
-    }
-
 private:
-    void RecomputeOutput();
+    void RecomputeOutput() override;
 };
 
 }

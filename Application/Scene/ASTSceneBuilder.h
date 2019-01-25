@@ -11,7 +11,8 @@ class CMesh;
 class CASTSceneBuilder : public TASTConsumer<CASTSceneBuilder>, public TCommandVisitor<CASTSceneBuilder>
 {
 public:
-	CASTSceneBuilder(CASTContext& ast) : TASTConsumer(ast)
+	CASTSceneBuilder(CASTContext& ast, CSourceManager* sm, CSourceFile* sf)
+		: TASTConsumer(ast), SourceManager(sm), SourceFile(sf)
 	{
 		Scene = new CScene();
 		InstanciateUnder = Scene->GetRootNode();
@@ -38,6 +39,11 @@ public:
 	TAutoPtr<CScene> GetScene() const;
 
 private:
+	CTransform* ConvertASTTransform(ATransform* t) const;
+
+	sp<CSourceManager> SourceManager;
+	CSourceFile* SourceFile;
+
 	TAutoPtr<CScene> Scene;
 
 	//temporary variables used in traverse

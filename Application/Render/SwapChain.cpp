@@ -158,4 +158,24 @@ void CSwapChain::Present()
 	SwapChain->Present(0, 0);
 }
 
+int CSwapChain::GetWidth() const
+{
+	ID3D11Texture2D* pBackBuffer;
+	SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	D3D11_TEXTURE2D_DESC desc;
+	pBackBuffer->GetDesc(&desc);
+	pBackBuffer->Release();
+	return desc.Width;
+}
+
+int CSwapChain::GetHeight() const
+{
+	ID3D11Texture2D* pBackBuffer;
+	SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	D3D11_TEXTURE2D_DESC desc;
+	pBackBuffer->GetDesc(&desc);
+	pBackBuffer->Release();
+	return desc.Height;
+}
+
 } /* namespace Nome */

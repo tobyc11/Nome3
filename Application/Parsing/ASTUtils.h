@@ -6,18 +6,26 @@ namespace Nome
 {
 
 //One layer of indirection just in case when we modify the AST structure
-typedef ACommand* CCommandHandle;
+struct CCommandHandle
+{
+	CCommandHandle(ACommand* cmd, CSourceManager* sm, CSourceFile* sf);
 
-//TODO: implement this in terms of SourceManager and AST
+	ACommand* Cmd;
+	sp<CSourceManager> SourceManager;
+	CSourceFile* SourceFile;
+};
+
 class CCommandRewriter
 {
 public:
-	CCommandRewriter(CCommandHandle handle);
+	CCommandRewriter(CCommandHandle& handle);
 
 	void Rename(const std::string& newName);
 
-	void ClearArgs();
-	void AppendArgs(const std::string& args);
+	void ReplaceArg(int index, const std::string& content);
+
+private:
+	CCommandHandle& CmdHandle;
 };
 
 }

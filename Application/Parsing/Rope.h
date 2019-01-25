@@ -9,6 +9,7 @@ namespace Nome
 {
 
 //A data structure that holds a list of strings to allow fast update
+//Note: this is not yet a proper implementation of the rope ADT. Will change in the future.
 class CRope : public tc::TLightRefBase<CRope>
 {
     class CRealLocation

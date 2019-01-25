@@ -1,0 +1,40 @@
+version: 3.0.{build}
+image: Visual Studio 2017
+shallow_clone: true
+
+install:
+  # update msys2
+  - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Sy"
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm --needed -S bison flex"
+  # setup envionment
+  - set PATH=C:\Qt\5.11\msvc2017_64\bin;%PATH%
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+  # update glm
+  - vcpkg --triplet x64-windows install sdl2 lua luabridge openmesh
+
+build_script:
+- cmd: >-
+    md build-appveyor
+    
+    cd build-appveyor
+    
+    cmake .. -G "NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DFLEX_EXECUTABLE=C:/msys64/usr/bin/flex.exe -DBISON_EXECUTABLE=C:/msys64/usr/bin/bison.exe -DCMAKE_BUILD_TYPE=Release
+    
+    type CMakeCache.txt
+    
+    cmake --build .
+    
+    cd ..
+
+after_build:
+- cmd: dir build-appveyor\Application\Release
+- cmd: windeployqt build-appveyor\Application\Release\Nome3.exe
+- cmd: xcopy Application\Resources build-appveyor\Application\Release\Resources /E
+- cmd: del /f build-appveyor\Application\Release\opengl32sw.dll
+- cmd: 7z a Nome3-%APPVEYOR_BUILD_VERSION%-win64.zip build-appveyor\Application\Release
+- cmd: 7z rn Nome3-%APPVEYOR_BUILD_VERSION%-win64.zip Release Nome3-%APPVEYOR_BUILD_VERSION%-win64
+
+artifacts:
+- path: Nome3-%APPVEYOR_BUILD_VERSION%-win64.zip
+  name: Nome

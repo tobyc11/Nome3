@@ -24,15 +24,13 @@ public:
 	//Public APIs
 	CSceneNode* GetOwner() const { return Owner; }
 	bool IsValid() const { return Owner; }
+	CEntity* GetInstanceEntity() const { return InstanceEntity; }
 
 	//Note: linear time is prob too slow
-	CSceneTreeNode* FindChildOfOwner(CSceneNode* owner) const
-	{
-		for (auto* child : Children)
-			if (child->GetOwner() == owner)
-				return child;
-		return nullptr;
-	}
+	CSceneTreeNode* FindChildOfOwner(CSceneNode* owner) const;
+	CSceneTreeNode* FindChild(const std::string& name) const;
+
+    const std::set<CSceneTreeNode*>& GetChildren() const { return Children; }
 
 private:
 	//Only CSceneNode manages the tree nodes
@@ -40,8 +38,7 @@ private:
 
 	explicit CSceneTreeNode(CSceneNode* owner);
 
-	//Copy the entire tree, the copy of this node will not have a parent
-	CSceneTreeNode* CopyTree();
+	static CSceneTreeNode* CreateTree(CSceneNode* dagNode);
 	void RemoveTree();
 	void MarkTreeL2WDirty();
 
@@ -56,13 +53,14 @@ private:
 
 class CSceneNode : public Flow::CFlowNode
 {
-	DEFINE_INPUT(Matrix3x4, Transform)
-	{
-	}
+	DEFINE_INPUT(Matrix3x4, Transform);
 
 public:
-	explicit CSceneNode(std::string name);
+	explicit CSceneNode(std::string name, bool isRoot = false);
     ~CSceneNode() override;
+
+    const std::string& GetName() const { return Name; }
+    void SetName(std::string name) { Name = std::move(name); }
 
 	//Hierarchy management
     void AddParent(CSceneNode* newParent);

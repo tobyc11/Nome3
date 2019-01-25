@@ -9,15 +9,17 @@ namespace Nome::Scene
 class CSlider : public Flow::CFloatNumber
 {
 public:
-	CSlider(CCommandHandle handle, float min, float max, float step);
+	CSlider(CCommandHandle handle, float value, float min, float max, float step);
 
-	void DrawImGui();
+	void DrawImGui(const std::string& name);
+	void WriteValue();
 
 private:
 	CCommandHandle Handle;
 	float Min;
 	float Max;
 	float Step;
+	float GuiValue;
 };
 
 //Manages all the sliders
@@ -28,6 +30,7 @@ public:
 	CSlider* GetSlider(const std::string& name);
 
 	void DrawImGui();
+	void WriteSliderValues();
 
 private:
 	std::map<std::string, tc::TAutoPtr<CSlider>> Sliders;

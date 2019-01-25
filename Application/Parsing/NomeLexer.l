@@ -152,9 +152,9 @@ void CNomeDriver::ParseToAST()
 	yyscan_t scanner;
 	yylex_init(&scanner);
     YY_BUFFER_STATE buffer;
-    if (Source)
+    if (SourceMgr && SourceFile)
     {
-        std::string inputString = Source->Assemble();
+		std::string inputString = SourceFile->GetAsString();
         buffer = yy_scan_bytes(inputString.data(), (int)inputString.size(), scanner);
     }
     else

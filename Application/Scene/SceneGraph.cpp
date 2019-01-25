@@ -12,32 +12,44 @@ void CSceneTreeNode::L2WTransformUpdate()
 		return;
 	}
 	L2WTransform.UpdateValue(
-		Owner->Transform.GetValue(Matrix3x4::IDENTITY) * Parent->L2WTransform.GetValue(Matrix3x4::IDENTITY));
+		Parent->L2WTransform.GetValue(Matrix3x4::IDENTITY) * Owner->Transform.GetValue(Matrix3x4::IDENTITY));
+}
+
+CSceneTreeNode* CSceneTreeNode::FindChildOfOwner(CSceneNode* owner) const
+{
+	for (auto* child : Children)
+		if (child->GetOwner() == owner)
+			return child;
+	return nullptr;
+}
+
+CSceneTreeNode* CSceneTreeNode::FindChild(const std::string& name) const
+{
+	for (auto* child : Children)
+		if (child->GetOwner()->GetName() == name)
+			return child;
+	return nullptr;
 }
 
 CSceneTreeNode::CSceneTreeNode(CSceneNode* owner) : Owner(owner)
 {
 }
 
-CSceneTreeNode* CSceneTreeNode::CopyTree()
+CSceneTreeNode* CSceneTreeNode::CreateTree(CSceneNode* dagNode)
 {
-	std::set<CSceneTreeNode*> childrenOfCopy;
-	for (CSceneTreeNode* child : Children)
+	CSceneTreeNode* treeNode = new CSceneTreeNode(dagNode);
+	for (CSceneNode* dagChild : dagNode->Children)
 	{
-		//Copy child
-		childrenOfCopy.insert(child->CopyTree());
+		CSceneTreeNode* treeChild = CreateTree(dagChild);
+		treeNode->Children.insert(treeChild);
+		treeChild->Parent = treeNode;
 	}
 
-	CSceneTreeNode* myCopy = new CSceneTreeNode(Owner);
-	myCopy->Children = childrenOfCopy;
-	for (CSceneTreeNode* childOfCopy : myCopy->Children)
-		childOfCopy->Parent = myCopy;
 	//Tell the owner, and instantiate
-	Owner->TreeNodes.insert(myCopy);
-	if (Owner->Entity && Owner->Entity->IsInstantiable())
-		myCopy->InstanceEntity = Owner->Entity->Instantiate();
-		
-	return myCopy;
+	treeNode->Owner->TreeNodes.insert(treeNode);
+	if (treeNode->Owner->Entity && treeNode->Owner->Entity->IsInstantiable())
+		treeNode->InstanceEntity = treeNode->Owner->Entity->Instantiate(treeNode);
+	return treeNode;
 }
 
 void CSceneTreeNode::RemoveTree()
@@ -62,10 +74,21 @@ void CSceneTreeNode::MarkTreeL2WDirty()
 	L2WTransform.MarkDirty();
 }
 
-CSceneNode::CSceneNode(std::string name) : Name(std::move(name)) 
+void CSceneNode::TransformMarkedDirty()
 {
-	auto* treeNode = new CSceneTreeNode(this);
-	TreeNodes.insert(treeNode);
+	for (CSceneTreeNode* treeNode : TreeNodes)
+	{
+		treeNode->MarkTreeL2WDirty();
+	}
+}
+
+CSceneNode::CSceneNode(std::string name, bool isRoot) : Name(std::move(name))
+{
+	if (isRoot)
+	{
+		auto* treeNode = new CSceneTreeNode(this);
+		TreeNodes.insert(treeNode);
+	}
 }
 
 CSceneNode::~CSceneNode()
@@ -74,15 +97,15 @@ CSceneNode::~CSceneNode()
 
 void CSceneNode::AddParent(CSceneNode* newParent)
 {
-    //Don't do anything if it is already a parent
+    //Don't do anything if it is already a parent, conceptually, this checks for multiedges
     if (Parents.find(newParent) != Parents.end())
         return;
 
 	for (CSceneTreeNode* parentTreeNode : newParent->TreeNodes)
 	{
-		CSceneTreeNode* myTreeCopy = (*TreeNodes.begin())->CopyTree();
-		myTreeCopy->Parent = parentTreeNode;
-		parentTreeNode->Children.insert(myTreeCopy);
+		CSceneTreeNode* myTree = CSceneTreeNode::CreateTree(this);
+		myTree->Parent = parentTreeNode;
+		parentTreeNode->Children.insert(myTree);
 	}
 
     Parents.insert(newParent);
@@ -155,7 +178,7 @@ void CSceneNode::SetEntity(CEntity* ent)
 		{
 			for (CSceneTreeNode* treeNode : TreeNodes)
 			{
-				treeNode->InstanceEntity = Entity->Instantiate();
+				treeNode->InstanceEntity = Entity->Instantiate(treeNode);
 			}
 		}
 	}

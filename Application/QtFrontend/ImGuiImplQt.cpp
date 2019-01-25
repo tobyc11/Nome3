@@ -140,6 +140,7 @@ bool CImGuiImplQt::eventFilter(QObject* watched, QEvent* event)
 	{
 	case QEvent::MouseButtonPress:
 	case QEvent::MouseButtonRelease:
+	case QEvent::MouseButtonDblClick:
 		this->onMousePressedChange(static_cast<QMouseEvent*>(event));
 		break;
 	case QEvent::Wheel:
@@ -150,7 +151,7 @@ bool CImGuiImplQt::eventFilter(QObject* watched, QEvent* event)
 		this->onKeyPressRelease(static_cast<QKeyEvent*>(event));
 		break;
 	case QEvent::MouseMove:
-		this->onMouseMove(static_cast<QMouseEvent*>(event));
+		return this->onMouseMove(static_cast<QMouseEvent*>(event));
 		break;
 	default:
 		break;
@@ -202,10 +203,15 @@ void CImGuiImplQt::onKeyPressRelease(QKeyEvent* event)
 #endif
 }
 
-void CImGuiImplQt::onMouseMove(QMouseEvent* event)
+bool CImGuiImplQt::onMouseMove(QMouseEvent* event)
 {
 	MouseX = event->x();
 	MouseY = event->y();
+
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.WantCaptureMouse)
+		return true;
+	return false;
 }
 
 }

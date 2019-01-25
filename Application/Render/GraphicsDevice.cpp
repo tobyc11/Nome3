@@ -1,6 +1,7 @@
 #include "GraphicsDevice.h"
 
 #include <StringPrintf.h>
+#include <StringUtils.h>
 
 namespace Nome
 {
@@ -50,25 +51,7 @@ CGraphicsDevice::CGraphicsDevice()
 	if (FAILED(hr))
 		throw CGraphicsException(tc::StringPrintf("HRESULT = %d", hr));
 
-	// Obtain DXGI factory from device (since we used nullptr for pAdapter above)
-	//IDXGIFactory1* dxgiFactory = nullptr;
-	//{
-	//	IDXGIDevice* dxgiDevice = nullptr;
-	//	hr = D3dDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
-	//	if (SUCCEEDED(hr))
-	//	{
-	//		IDXGIAdapter* adapter = nullptr;
-	//		hr = dxgiDevice->GetAdapter(&adapter);
-	//		if (SUCCEEDED(hr))
-	//		{
-	//			hr = adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&dxgiFactory));
-	//			adapter->Release();
-	//		}
-	//		dxgiDevice->Release();
-	//	}
-	//}
-	//if (FAILED(hr))
-    //	throw CGraphicsException(tc::StringPrintf("HRESULT = %d", hr));
+	RetrieveDesc();
 }
 
 CGraphicsDevice::CGraphicsDevice(ID3D11Device* device)
@@ -76,6 +59,8 @@ CGraphicsDevice::CGraphicsDevice(ID3D11Device* device)
 	D3dDevice = device;
 	D3dDevice->AddRef();
     D3dDevice->GetImmediateContext(&ImmediateContext);
+
+	RetrieveDesc();
 }
 
 CGraphicsDevice::~CGraphicsDevice()
@@ -84,6 +69,40 @@ CGraphicsDevice::~CGraphicsDevice()
 
 	if (ImmediateContext) ImmediateContext->Release();
 	if (D3dDevice) D3dDevice->Release();
+}
+
+void CGraphicsDevice::RetrieveDesc()
+{
+	HRESULT hr = S_OK;
+
+	// Obtain DXGI factory from device (since we used nullptr for pAdapter above)
+	IDXGIFactory1* dxgiFactory = nullptr;
+	{
+		IDXGIDevice* dxgiDevice = nullptr;
+		hr = D3dDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
+		if (SUCCEEDED(hr))
+		{
+			IDXGIAdapter* adapter = nullptr;
+			hr = dxgiDevice->GetAdapter(&adapter);
+			if (SUCCEEDED(hr))
+			{
+				hr = adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&dxgiFactory));
+
+				DXGI_ADAPTER_DESC desc;
+				hr = adapter->GetDesc(&desc);
+				if (SUCCEEDED(hr))
+				{
+					Description = tc::FStringUtils::UTF16to8(desc.Description);
+				}
+
+				adapter->Release();
+			}
+			dxgiDevice->Release();
+		}
+	}
+	if (FAILED(hr))
+		throw CGraphicsException(tc::StringPrintf("HRESULT = %d", hr));
+	dxgiFactory->Release();
 }
 
 } // namespace Nome

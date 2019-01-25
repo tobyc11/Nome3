@@ -11,7 +11,7 @@ file(GLOB PG2_SOURCES
     #DSLDemo/*.h DSLDemo/*.cpp
     Flow/*.h Flow/*.cpp
     FlowViz/*.h FlowViz/*.cpp
-    Nome/*.h Nome/*.cpp
+    #Nome/*.h Nome/*.cpp
     Parsing/*.h Parsing/*.cpp Parsing/*.l Parsing/*.y
     QtFrontend/*.h QtFrontend/*.cpp QtFrontend/*.ui
     Render/*.h Render/*.cpp

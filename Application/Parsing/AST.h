@@ -1,6 +1,6 @@
 #pragma once
-#include "Rope.h"
 #include "ASTContext.h"
+#include "SourceManager.h"
 #include <vector>
 #include <map>
 #include <type_traits>
@@ -24,46 +24,46 @@ class AExpr
 {
 public:
 	inline static EClassId StaticId() { return EClassId::Expr; }
-    static AExpr* Create(CASTContext& ctx, CRope::CLocation beginLoc, CRope::CLocation endLoc);
+    static AExpr* Create(CASTContext& ctx, CSourceLocation beginLoc, CSourceLocation endLoc);
     EClassId ClassId;
-	CRope::CLocation BeginLoc;
-	CRope::CLocation EndLoc;
+	CSourceLocation BeginLoc;
+	CSourceLocation EndLoc;
 
 protected:
     AExpr();
-    AExpr(CRope::CLocation beginLoc, CRope::CLocation endLoc);
+    AExpr(CSourceLocation beginLoc, CSourceLocation endLoc);
 };
 
 //Not really an expression. Inherits AExpr as a convenience.
 class AKeyword : public AExpr
 {
-	AKeyword(const std::string& keyword, CRope::CLocation beginLoc, CRope::CLocation endLoc);
+	AKeyword(const std::string& keyword, CSourceLocation beginLoc, CSourceLocation endLoc);
 
 public:
 	inline static EClassId StaticId() { return EClassId::Keyword; }
-	static AKeyword* Create(CASTContext& ctx, const std::string& kwd, CRope::CLocation beginLoc, CRope::CLocation endLoc);
+	static AKeyword* Create(CASTContext& ctx, const std::string& kwd, CSourceLocation beginLoc, CSourceLocation endLoc);
 
 	std::string Keyword;
 };
 
 class AIdent : public AExpr
 {
-	AIdent(const std::string& ident, CRope::CLocation beginLoc, CRope::CLocation endLoc);
+	AIdent(const std::string& ident, CSourceLocation beginLoc, CSourceLocation endLoc);
 
 public:
 	inline static EClassId StaticId() { return EClassId::Ident; }
-	static AIdent* Create(CASTContext& ctx, const std::string& id, CRope::CLocation beginLoc, CRope::CLocation endLoc);
+	static AIdent* Create(CASTContext& ctx, const std::string& id, CSourceLocation beginLoc, CSourceLocation endLoc);
 
 	std::string Identifier;
 };
 
 class ANumber : public AExpr
 {
-	ANumber(const std::string& stringVal, CRope::CLocation beginLoc, CRope::CLocation endLoc);
+	ANumber(const std::string& stringVal, CSourceLocation beginLoc, CSourceLocation endLoc);
 
 public:
 	inline static EClassId StaticId() { return EClassId::Number; }
-	static ANumber* Create(CASTContext& ctx, const std::string& stringVal, CRope::CLocation beginLoc, CRope::CLocation endLoc);
+	static ANumber* Create(CASTContext& ctx, const std::string& stringVal, CSourceLocation beginLoc, CSourceLocation endLoc);
 
 	double GetValue() const { return Value; }
 

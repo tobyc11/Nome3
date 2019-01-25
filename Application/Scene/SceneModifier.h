@@ -8,8 +8,8 @@ namespace Nome::Scene
 class CSceneModifier
 {
 public:
-	CSceneModifier(CScene* scene, CSourceFile* file, CASTContext* syntaxTree)
-		: Scene(scene), File(file), AST(syntaxTree)
+	CSceneModifier(CScene* scene, CSourceManager* sm, CSourceFile* file, CASTContext* syntaxTree)
+		: Scene(scene), SourceManager(sm), File(file), AST(syntaxTree)
 	{
 	}
 
@@ -19,6 +19,7 @@ public:
 
 private:
 	CScene* Scene;
+	CSourceManager* SourceManager;
 	CSourceFile* File;
 	CASTContext* AST;
 };

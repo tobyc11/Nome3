@@ -223,7 +223,7 @@ float Quaternion::RollAngle() const
 
 tc::Vector3 Quaternion::Axis() const
 {
-    return Vector3(x, y, z) / sqrt(1. - w * w);
+    return Vector3(x, y, z) / sqrt(1.f - w * w);
 }
 
 float Quaternion::Angle() const

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SceneGraph.h"
-#include "Nome/InputListener.h"
 
 #include <Frustum.h>
 
@@ -11,9 +10,6 @@ namespace Nome::Scene
 using tc::Matrix4;
 using tc::Frustum;
 
-/*
- * Special scene node that also contains the view info
- */
 class CCamera : public tc::FRefCounted
 {
 public:
@@ -56,8 +52,6 @@ public:
         bProjMatrixDirty = true;
     }
 
-	void ShowDebugImGui();
-
 private:
 	//This is where the view transform comes from
 	TAutoPtr<CSceneTreeNode> SceneTreeNode;
@@ -75,19 +69,28 @@ private:
     mutable bool bProjMatrixDirty = true;
 };
 
-class COrbitCameraController : public IMouseListener
+class COrbitCameraController : public Flow::CFlowNode
 {
-public:
-	COrbitCameraController(CCamera* cameraToControl) : Subject(cameraToControl) {}
+	//A transform whose inverse is the view matrix
+	DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Transform)
+	{
+		CalcTransform();
+	}
 
-	bool MouseMoved(const CMouseState & state) override;
-	bool MouseButtonPressed(int index) override;
-	bool MouseButtonReleased(int index) override;
+public:
+	void Activate() { bIsActive = true; }
+	void Inactivate() { bIsActive = false; }
+
+	void MouseMoved(int deltaX, int deltaY);
+	void WheelMoved(int degree);
 
 private:
-	TAutoPtr<CCamera> Subject;
+	void CalcTransform();
 
-	bool bIsMouseDown = false;
+	bool bIsActive = false;
+
+	Vector3 Location = { 0.0f, 0.0f, 10.0f };
+	float Yaw = 0.0f, Pitch = 0.0f;
 };
 
 }

@@ -30,9 +30,12 @@ public:
 
 private slots:
 	void on_actionNew_triggered();
-    void on_actionOpen_triggered();
+	void on_actionOpen_triggered();
+	void on_actionReload_triggered();
+	void on_actionSave_triggered();
     void on_actionPoint_triggered();
     void on_actionInstance_triggered();
+	void on_actionAbout_triggered();
 	void IdleProcess();
 
 private:
@@ -46,13 +49,13 @@ private:
     bool bIsBlankFile;
 
     //UI components
-    CCodeWindow* CodeWindow;
-	CNomeViewWidget* ViewWidget;
-	QTimer* IdleTimer;
+    CCodeWindow* CodeWindow = nullptr;
+	CNomeViewWidget* ViewWidget = nullptr;
+	QTimer* IdleTimer = nullptr;
 
     //Nome Context
     sp<CSourceManager> SourceManager;
-	sp<CSourceFile> SourceFile;
+	CSourceFile* SourceFile = nullptr;
     sp<CASTContext> ASTContext;
 	tc::TAutoPtr<Scene::CScene> Scene;
 };

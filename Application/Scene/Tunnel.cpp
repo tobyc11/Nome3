@@ -49,14 +49,14 @@ void CTunnel::UpdateEntity()
 		AddFace("f2_" + std::to_string(i), lowerFace);
 	}
 	//Two caps
-	std::vector<std::string> upperCap, lowerCap;
-	for (int i = 0; i < n; i++)
-	{
-		upperCap.push_back("v1_" + std::to_string(i));
-		lowerCap.push_back("v3_" + std::to_string(n - 1 - i));
-	}
-	AddFace("top", upperCap);
-	AddFace("bottom", lowerCap);
+	//std::vector<std::string> upperCap, lowerCap;
+	//for (int i = 0; i < n; i++)
+	//{
+	//	upperCap.push_back("v1_" + std::to_string(i));
+	//	lowerCap.push_back("v3_" + std::to_string(n - 1 - i));
+	//}
+	//AddFace("top", upperCap);
+	//AddFace("bottom", lowerCap);
 }
 
 }

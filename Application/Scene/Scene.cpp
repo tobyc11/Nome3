@@ -122,12 +122,16 @@ void DFSTreeNode(CSceneTreeNode* treeNode)
 		if (CEntity* instEnt = treeNode->GetInstanceEntity())
 		{
 			ImGui::Text("Instance Entity=%s", instEnt->GetName().c_str());
+			bool validity = instEnt->IsEntityValid();
+			ImGui::Checkbox("Validity", &validity);
 			ImGui::Text("Update count %d", instEnt->GetUpdateCount());
 		}
-		else if (CEntity* ent = treeNode->GetOwner()->GetEntity())
+		if (CEntity* ent = treeNode->GetOwner()->GetEntity())
 		{
 			ImGui::Text("Entity=%s", ent->GetName().c_str());
-			ImGui::Text("Update count %d", instEnt->GetUpdateCount());
+			bool validity = ent->IsEntityValid();
+			ImGui::Checkbox("Validity", &validity);
+			ImGui::Text("Update count %d", ent->GetUpdateCount());
 		}
 
         const auto& childNodes = treeNode->GetChildren();

@@ -17,6 +17,7 @@ void CFace::UpdateEntity()
 {
 	Super::UpdateEntity();
 	Face.UpdateValue(this);
+	SetValid(true);
 }
 
 size_t CFace::CountVertices() const
@@ -24,12 +25,18 @@ size_t CFace::CountVertices() const
 	return Points.GetSize();
 }
 
-void CFace::AddFaceIntoMesh(CMesh* mesh) const
+bool CFace::AddFaceIntoMesh(CMesh* mesh) const
 {
 	std::vector<std::string> nameList;
 	for (size_t i = 0; i < Points.GetSize(); i++)
 	{
 		auto* point = Points.GetValue(i, nullptr);
+
+		//point update failed etc
+		if (!point)
+		{
+			return false;
+		}
 
 		std::string newName = point->Name;
 		if (mesh->HasVertex(point->Name))
@@ -55,6 +62,7 @@ void CFace::AddFaceIntoMesh(CMesh* mesh) const
 		nameList.push_back(newName);
 	}
 	mesh->AddFace(GetName(), nameList);
+	return true;
 }
 
 }

@@ -41,14 +41,20 @@ void CMesh::UpdateEntity()
 		return;
 
 	ClearMesh();
+	bool isValid = true;
 	for (size_t i = 0; i < Faces.GetSize(); i++)
 	{
 		//We assume the nullptr value is never returned, of course
 		auto* face = Faces.GetValue(i, nullptr);
-		face->AddFaceIntoMesh(this);
+		bool successful = face->AddFaceIntoMesh(this);
+		if (!successful)
+		{
+			isValid = false;
+		}
 	}
 
 	Super::UpdateEntity();
+	SetValid(isValid);
 }
 
 CMeshImpl::VertexHandle CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
@@ -173,6 +179,7 @@ void CMeshInstance::UpdateEntity()
 	}
 
 	Super::UpdateEntity();
+	SetValid(MeshGenerator->IsEntityValid());
 }
 
 void CMeshInstance::Draw(CSceneTreeNode* treeNode)
@@ -213,13 +220,13 @@ void CVertexSelector::PointUpdate()
 	auto* mi = MeshInstance.GetValue(nullptr);
 	if (!mi)
 	{
-		printf("Vertex %s names non-existent mesh instance", TargetName.c_str());
+		printf("Vertex %s does not have a mesh instance\n", TargetName.c_str());
 		return;
 	}
 	auto iter = mi->NameToVert.find(TargetName);
 	if (iter == mi->NameToVert.end())
 	{
-		printf("Vertex %s does not exist in entity %s", TargetName.c_str(), mi->GetName().c_str());
+		printf("Vertex %s does not exist in entity %s\n", TargetName.c_str(), mi->GetName().c_str());
 		return;
 	}
 	auto vertHandle = iter->second;

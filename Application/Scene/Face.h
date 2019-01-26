@@ -24,7 +24,8 @@ public:
 
     size_t CountVertices() const;
 
-	void AddFaceIntoMesh(CMesh* mesh) const;
+	//Returns whether successful
+	bool AddFaceIntoMesh(CMesh* mesh) const;
 };
 
 }

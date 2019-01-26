@@ -14,7 +14,7 @@ install:
   - cd C:\Tools\vcpkg
   - git pull
   - .\bootstrap-vcpkg.bat
-  - vcpkg --triplet x64-windows install sdl2 lua luabridge openmesh
+  - vcpkg --triplet x64-windows install openmesh
 
 build_script:
 - cmd: >-
@@ -38,6 +38,7 @@ build_script:
     cd ..
 
 after_build:
+- cmd: del /f install\opengl32sw.dll
 - cmd: 7z a Nome3-%APPVEYOR_BUILD_VERSION%-win64.zip install
 - cmd: 7z rn Nome3-%APPVEYOR_BUILD_VERSION%-win64.zip install Nome3-%APPVEYOR_BUILD_VERSION%-win64
 

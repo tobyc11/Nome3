@@ -58,9 +58,9 @@ macro(config_playground2 target)
     #find_package(Boost REQUIRED)
     #target_link_libraries(${target} PRIVATE Boost::boost)
 
-    find_package(Lua REQUIRED)
-    target_include_directories(${target} PRIVATE ${LUA_INCLUDE_DIR})
-    target_link_libraries(${target} PRIVATE ${LUA_LIBRARIES})
+    #find_package(Lua REQUIRED)
+    #target_include_directories(${target} PRIVATE ${LUA_INCLUDE_DIR})
+    #target_link_libraries(${target} PRIVATE ${LUA_LIBRARIES})
 
     find_package(OpenMesh REQUIRED)
     target_include_directories(${target} PRIVATE ${OPENMESH_INCLUDE_DIRS})

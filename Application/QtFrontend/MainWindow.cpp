@@ -11,8 +11,6 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include <QInputDialog>
-#include <imgui.h>
-#include <imgui_impl_dx11.h>
 
 namespace Nome
 {
@@ -128,34 +126,7 @@ void CMainWindow::on_actionAbout_triggered()
 
 void CMainWindow::IdleProcess()
 {
-	/* Frame order:
-		 Handle input events
-		 Update scene
-		 Render
-	*/
-	ImGui_ImplDX11_NewFrame();
-	ViewWidget->NewFrame();
-
-	{
-		ImGui::Begin("Nome Debug");
-		ImGui::Text("Display Adapter:");
-		ImGui::Text("%s", GRenderer->GetGD()->GetDescription().c_str());
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::End();
-	}
-	Scene->ImGuiUpdate();
-
-	Scene->Update();
-
-	// Rendering
-	ImGui::Render();
-	float color[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	ViewWidget->GetSwapChain()->ClearRenderTarget(color);
-	Scene->Render();
-	GRenderer->Render();
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
-	ViewWidget->GetSwapChain()->Present();
+	ViewWidget->UpdateAndDraw();
 }
 
 void CMainWindow::LoadEmptyNomeFile()
@@ -166,13 +137,10 @@ void CMainWindow::LoadEmptyNomeFile()
 
 	Scene = new Scene::CScene();
 
+	ViewportClient = new CEditorViewportClient(Scene);
 	CodeWindow = new CCodeWindow(this);
-	ViewWidget = new CNomeViewWidget(this, Scene);
-	//Note: since the render logic is here, we also handle ImGui rendering
-	ImGui_ImplDX11_Init(GRenderer->GetGD()->GetDevice(), GRenderer->GetGD()->GetImmediateContext());
+	ViewWidget = new CNomeViewWidget(this, ViewportClient);
 	setCentralWidget(ViewWidget);
-
-	Scene->SetMainCameraViewport(ViewWidget->GetViewport());
 
 	setWindowFilePath("untitled.nom");
 
@@ -225,13 +193,10 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
 
     bIsBlankFile = false;
 
+	ViewportClient = new CEditorViewportClient(Scene);
 	CodeWindow = new CCodeWindow(this);
-	ViewWidget = new CNomeViewWidget(this, Scene);
-	//Note: since the render logic is here, we also handle ImGui rendering
-	ImGui_ImplDX11_Init(GRenderer->GetGD()->GetDevice(), GRenderer->GetGD()->GetImmediateContext());
+	ViewWidget = new CNomeViewWidget(this, ViewportClient);
 	setCentralWidget(ViewWidget);
-
-	Scene->SetMainCameraViewport(ViewWidget->GetViewport());
 
 	IdleTimer = new QTimer(this);
 	//Limit to 200 fps
@@ -249,9 +214,9 @@ void CMainWindow::UnloadNomeFile()
 		delete IdleTimer; IdleTimer = nullptr;
 	}
 
-	ImGui_ImplDX11_Shutdown();
 	delete ViewWidget; ViewWidget = nullptr;
 	delete CodeWindow; CodeWindow = nullptr;
+	delete ViewportClient; ViewportClient = nullptr;
 
 	Scene = nullptr;
 	ASTContext = nullptr;

@@ -1,5 +1,6 @@
 #pragma once
 #include "NomeViewWidget.h"
+#include "EditorViewportClient.h"
 #include <Parsing/SourceManager.h>
 #include <Parsing/ASTContext.h>
 #include <StrongPointer.h>
@@ -58,6 +59,7 @@ private:
 	CSourceFile* SourceFile = nullptr;
     sp<CASTContext> ASTContext;
 	tc::TAutoPtr<Scene::CScene> Scene;
+	CEditorViewportClient* ViewportClient = nullptr;
 };
 
 }

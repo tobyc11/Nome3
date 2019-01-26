@@ -4,28 +4,35 @@
 namespace Nome
 {
 
-//Encapsulates a swapchain and its associated window
+class CViewportClient;
+
+//Represents a window, widget, offscreen buffer, etc.
 class CViewport
 {
 public:
-	CViewport(CSwapChain* swapChain);
+	CViewport(CViewportClient* client) : Client(client) {}
+	virtual ~CViewport() = default;
 
-	float GetAspectRatio() const;
-	float GetWidth() const;
-	float GetHeight() const;
+	virtual float GetAspectRatio() = 0;
+	virtual float GetWidth() = 0;
+	virtual float GetHeight() = 0;
 
-	void BindAndClear(ID3D11DeviceContext* ctx);
+	virtual void BindAndClear(ID3D11DeviceContext* ctx) = 0;
 
-	void OnWindowResize(int width, int height);
+protected:
+	CViewportClient* Client;
+};
 
-private:
-	void RecreateDSV();
+//Something that draws and possibly receives inputs from a viewport
+class CViewportClient
+{
+public:
+	virtual void Draw(CViewport* vp) = 0;
 
-	CSwapChain* SwapChain;
-
-	ComPtr<ID3D11DepthStencilView> DepthBufferView;
-
-	D3D11_VIEWPORT ViewportDesc;
+	virtual bool OnMousePress(CViewport* vp, uint32_t buttons, int x, int y) = 0;
+	virtual bool OnMouseRelease(CViewport* vp, uint32_t buttons, int x, int y) = 0;
+	virtual bool OnMouseMove(CViewport* vp, int x, int y) = 0;
+	virtual bool OnMouseWheel(CViewport* vp, int degrees) = 0;
 };
 
 } /* namespace Nome */

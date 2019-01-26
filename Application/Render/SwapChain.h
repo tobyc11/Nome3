@@ -25,6 +25,8 @@ public:
 	int GetWidth() const;
 	int GetHeight() const;
 
+	ID3D11RenderTargetView* GetRenderTargetView() const { return RenderTargetView; }
+
 private:
 	CRenderer* Renderer;
 

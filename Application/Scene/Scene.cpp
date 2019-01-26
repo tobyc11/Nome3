@@ -142,6 +142,7 @@ void CScene::ImGuiUpdate()
 	BankAndSet.DrawImGui();
 
     ImGui::Begin("Scene Viewer");
+	ImGui::ColorEdit4("Clear Color", const_cast<float*>(ClearColor.Data()));
     if (ImGui::CollapsingHeader("Entity"))
     {
         for (const auto& ent : EntityLibrary)
@@ -212,7 +213,7 @@ void CScene::Render()
 	if (!Viewport)
 		return;
 
-	GRenderer->BeginView(MainCamera->GetViewMatrix(), MainCamera->GetProjMatrix(), Viewport);
+	GRenderer->BeginView(MainCamera->GetViewMatrix(), MainCamera->GetProjMatrix(), Viewport, ClearColor);
 	const auto& rootTreeNodes = RootNode->GetTreeNodes();
 	assert(rootTreeNodes.size() == 1); //There is only one way to the root, thus only one tree node
 	DFSTreeNodeRender(*rootTreeNodes.begin());

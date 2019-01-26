@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "BankAndSet.h"
 #include "Point.h"
+#include <Color.h>
 
 namespace Nome
 {
@@ -52,6 +53,7 @@ private:
 	TAutoPtr<CSceneNode> CameraNode;
     TAutoPtr<CCamera> MainCamera;
 	CViewport* Viewport = nullptr;
+	tc::Color ClearColor;
 	TAutoPtr<Flow::TNumber<Matrix3x4>> CameraView;
 
     std::map<std::string, TAutoPtr<CEntity>> EntityLibrary;

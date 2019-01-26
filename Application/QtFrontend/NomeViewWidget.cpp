@@ -86,7 +86,7 @@ float CNomeViewWidget::GetHeight()
 	return (float)height();
 }
 
-void CNomeViewWidget::BindAndClear(ID3D11DeviceContext* ctx)
+void CNomeViewWidget::BindAndClear(ID3D11DeviceContext* ctx, const float* color)
 {
 	if (!DepthBufferView)
 		RecreateDSV();
@@ -103,28 +103,35 @@ void CNomeViewWidget::BindAndClear(ID3D11DeviceContext* ctx)
 	ctx->RSSetViewports(1, &desc);
 	ctx->OMSetRenderTargets(1, &rtv, DepthBufferView.Get());
 	ctx->ClearDepthStencilView(DepthBufferView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	const float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	ctx->ClearRenderTargetView(rtv, color);
+	const float defaultColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	if (color)
+		ctx->ClearRenderTargetView(rtv, color);
+	else
+		ctx->ClearRenderTargetView(rtv, defaultColor);
 }
 
 void CNomeViewWidget::mousePressEvent(QMouseEvent* event)
 {
-	Client->OnMousePress(this, event->button(), event->x(), event->y());
+	if (Client->OnMousePress(this, event->button(), event->x(), event->y()))
+		event->accept();
 }
 
 void CNomeViewWidget::mouseReleaseEvent(QMouseEvent* event)
 {
-	Client->OnMouseRelease(this, event->button(), event->x(), event->y());
+	if (Client->OnMouseRelease(this, event->button(), event->x(), event->y()))
+		event->accept();
 }
 
 void CNomeViewWidget::mouseMoveEvent(QMouseEvent* event)
 {
-	Client->OnMouseMove(this, event->x(), event->y());
+	if (Client->OnMouseMove(this, event->x(), event->y()))
+		event->accept();
 }
 
 void CNomeViewWidget::wheelEvent(QWheelEvent* event)
 {
-	Client->OnMouseWheel(this, event->angleDelta().y() / 8);
+	if (Client->OnMouseWheel(this, event->angleDelta().y() / 8))
+		event->accept();
 }
 
 void CNomeViewWidget::RecreateDSV()

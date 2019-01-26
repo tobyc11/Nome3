@@ -1,5 +1,6 @@
 #pragma once
 #include <Matrix4.h>
+#include <Color.h>
 #include <utility>
 #include <set>
 #include <memory>
@@ -25,7 +26,7 @@ public:
 
 	CGraphicsDevice* GetGD() const { return GD; }
 
-	void BeginView(const tc::Matrix4& view, const tc::Matrix4& proj, CViewport* viewport);
+	void BeginView(const tc::Matrix4& view, const tc::Matrix4& proj, CViewport* viewport, const tc::Color& clearColor);
 	void EndView();
 
     void Draw(const tc::Matrix4& modelMat, CGeometry* geometry, CMaterial* material);
@@ -40,6 +41,7 @@ private:
         tc::Matrix4 ViewMat;
         tc::Matrix4 ProjMat;
 		CViewport* Viewport;
+		tc::Color ClearColor;
 
         struct CObjectData
         {

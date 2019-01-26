@@ -24,12 +24,13 @@ CRenderer::~CRenderer()
 	delete GD;
 }
 
-void CRenderer::BeginView(const tc::Matrix4& view, const tc::Matrix4& proj, CViewport* viewport)
+void CRenderer::BeginView(const tc::Matrix4& view, const tc::Matrix4& proj, CViewport* viewport, const tc::Color& clearColor)
 {
     CViewData viewData;
     viewData.ViewMat = view;
     viewData.ProjMat = proj;
 	viewData.Viewport = viewport;
+	viewData.ClearColor = clearColor;
     Views.push_back(viewData);
 }
 
@@ -289,7 +290,7 @@ void CRenderer::Render()
 		cbBasic.Proj = view.ProjMat;
         cbEverything.View = view.ViewMat;
         cbEverything.Proj = view.ProjMat;
-		view.Viewport->BindAndClear(ctx);
+		view.Viewport->BindAndClear(ctx, view.ClearColor.Data());
 		BasicShader->Bind(ctx);
 		for (const CViewData::CObjectData& obj : view.DrawListBasic)
 		{

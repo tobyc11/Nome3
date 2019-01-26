@@ -17,7 +17,7 @@ public:
 	virtual float GetWidth() = 0;
 	virtual float GetHeight() = 0;
 
-	virtual void BindAndClear(ID3D11DeviceContext* ctx) = 0;
+	virtual void BindAndClear(ID3D11DeviceContext* ctx, const float* color) = 0;
 
 protected:
 	CViewportClient* Client;

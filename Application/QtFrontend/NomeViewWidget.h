@@ -24,7 +24,7 @@ public:
 	float GetAspectRatio() override;
 	float GetWidth() override;
 	float GetHeight() override;
-	void BindAndClear(ID3D11DeviceContext* ctx) override;
+	void BindAndClear(ID3D11DeviceContext* ctx, const float* color) override;
 	
 protected:
 	void resizeEvent(QResizeEvent* event) override

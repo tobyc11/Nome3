@@ -53,48 +53,44 @@ QHash<int, ImGuiKey> keyMap =
 	{ Qt::Key_Z, ImGuiKey_Z },
 };
 
+static Qt::CursorShape MouseCursors[ImGuiMouseCursor_COUNT] =
+{
+	Qt::ArrowCursor,
+	Qt::IBeamCursor,
+	Qt::SizeAllCursor,
+	Qt::SizeVerCursor,
+	Qt::SizeHorCursor,
+	Qt::SizeBDiagCursor,
+	Qt::SizeFDiagCursor,
+	Qt::PointingHandCursor
+};
+
 CImGuiImplQt::CImGuiImplQt(QWidget* parent) : Parent(parent)
 {
-	// Setup Dear ImGui binding
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-
-	// Setup style
-	ImGui::StyleColorsDark();
-
-	// Load Fonts
-	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them. 
-	// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple. 
-	// - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-	// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-	// - Read 'misc/fonts/README.txt' for more instructions and details.
-	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-	//io.Fonts->AddFontDefault();
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-	//IM_ASSERT(font != NULL);
+	ImGuiIO& io = ImGui::GetIO();
+	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;       // We can honor GetMouseCursor() values (optional)
+	io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;        // We can honor io.WantSetMousePos requests (optional, rarely used)
 
 	for (ImGuiKey key : keyMap.values()) {
 		io.KeyMap[key] = key;
 	}
 
-	parent->installEventFilter(this);
+#ifdef _WIN32
+	io.ImeWindowHandle = (HWND)Parent->winId();
+#endif
+
+	Parent->installEventFilter(this);
 }
 
 CImGuiImplQt::~CImGuiImplQt()
 {
-	ImGui::DestroyContext();
 	Parent->removeEventFilter(this);
 }
 
 void CImGuiImplQt::NewFrame()
 {
 	ImGuiIO& io = ImGui::GetIO();
+	IM_ASSERT(io.Fonts->IsBuilt());     // Font atlas needs to be built, call renderer _NewFrame() function e.g. ImGui_ImplOpenGL3_NewFrame() 
 
 	// Setup display size (every frame to accommodate for window resizing)
 	io.DisplaySize = ImVec2(Parent->size().width(), Parent->size().height());
@@ -115,23 +111,8 @@ void CImGuiImplQt::NewFrame()
 	//{
 	//	io.MousePos = ImVec2(-1, -1);
 	//}
-	io.MousePos = ImVec2(MouseX, MouseY);
-
-	for (int i = 0; i < 3; i++)
-	{
-		io.MouseDown[i] = MousePressed[i];
-	}
-
-	io.MouseWheelH = MouseWheelH;
-	io.MouseWheel = MouseWheel;
-	MouseWheelH = 0;
-	MouseWheel = 0;
-
-	// Hide OS mouse cursor if ImGui is drawing it
-	// glfwSetInputMode(g_Window, GLFW_CURSOR, io.MouseDrawCursor ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
-
-	// Start the frame
-	ImGui::NewFrame();
+	UpdateMousePosAndButtons();
+	UpdateMouseCursor();
 }
 
 bool CImGuiImplQt::eventFilter(QObject* watched, QEvent* event)
@@ -144,7 +125,7 @@ bool CImGuiImplQt::eventFilter(QObject* watched, QEvent* event)
 		this->onMousePressedChange(static_cast<QMouseEvent*>(event));
 		break;
 	case QEvent::Wheel:
-		this->onWheel(static_cast<QWheelEvent*>(event));
+		return this->onWheel(static_cast<QWheelEvent*>(event));
 		break;
 	case QEvent::KeyPress:
 	case QEvent::KeyRelease:
@@ -166,11 +147,17 @@ void CImGuiImplQt::onMousePressedChange(QMouseEvent* event)
 	MousePressed[2] = event->buttons() & Qt::MiddleButton;
 }
 
-void CImGuiImplQt::onWheel(QWheelEvent* event)
+bool CImGuiImplQt::onWheel(QWheelEvent* event)
 {
-	// 5 lines per unit
-	MouseWheelH += event->pixelDelta().x() / (ImGui::GetTextLineHeight());
-	MouseWheel += event->pixelDelta().y() / (5.0 * ImGui::GetTextLineHeight());
+	ImGuiIO& io = ImGui::GetIO();
+	if (event->angleDelta().x() > 0) io.MouseWheelH += 1;
+	if (event->angleDelta().x() < 0) io.MouseWheelH -= 1;
+	if (event->angleDelta().y() > 0) io.MouseWheel += 1;
+	if (event->angleDelta().y() < 0) io.MouseWheel -= 1;
+
+	if (io.WantCaptureMouse)
+		return true;
+	return false;
 }
 
 void CImGuiImplQt::onKeyPressRelease(QKeyEvent* event)
@@ -212,6 +199,50 @@ bool CImGuiImplQt::onMouseMove(QMouseEvent* event)
 	if (io.WantCaptureMouse)
 		return true;
 	return false;
+}
+
+void CImGuiImplQt::UpdateMousePosAndButtons()
+{
+	ImGuiIO& io = ImGui::GetIO();
+
+	// Set OS mouse position if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
+	if (io.WantSetMousePos)
+	{
+		QCursor c = Parent->cursor();
+		c.setPos(Parent->mapToGlobal(QPoint((int)io.MousePos.x, (int)io.MousePos.y)));
+		Parent->setCursor(c);
+	}
+	else
+		io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+
+	for (int i = 0; i < 3; i++)
+	{
+		io.MouseDown[i] = MousePressed[i];
+	}
+
+	io.MousePos = ImVec2(MouseX, MouseY);
+}
+
+void CImGuiImplQt::UpdateMouseCursor()
+{
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)
+		return;
+
+	QCursor c = Parent->cursor();
+	ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
+	if (io.MouseDrawCursor || imgui_cursor == ImGuiMouseCursor_None)
+	{
+		// Hide OS mouse cursor if imgui is drawing it or if it wants no cursor
+		c.setShape(Qt::BlankCursor);
+		Parent->setCursor(c);
+	}
+	else
+	{
+		// Show OS mouse cursor
+		c.setShape(MouseCursors[imgui_cursor]);
+		Parent->setCursor(c);
+	}
 }
 
 }

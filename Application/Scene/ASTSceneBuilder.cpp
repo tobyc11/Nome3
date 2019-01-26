@@ -44,8 +44,8 @@ void CASTSceneBuilder::VisitPolyline(AIdent* name, const std::vector<AIdent*>& p
 		}
 		polyline->Points.Connect(*pointOutput);
 	}
+	polyline->SetClosed(closed);
 	Scene->AddEntity(polyline.Get());
-	//TODO: handle closed
 }
 
 void CASTSceneBuilder::VisitFace(AIdent* name, const std::vector<AIdent*>& points, AIdent* surface)

@@ -17,6 +17,11 @@ public:
     CPolyline(const std::string& name) : CMesh(std::move(name)) {}
 
     void UpdateEntity() override;
+
+	void SetClosed(bool closed);
+
+private:
+	bool bClosed = false;
 };
 
 }

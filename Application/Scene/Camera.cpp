@@ -67,7 +67,7 @@ void COrbitCameraController::MouseMoved(int deltaX, int deltaY)
 {
 	if (bIsActive)
 	{
-		const float kCameraSpeed = 0.05f;
+		const float kCameraSpeed = 0.1f;
 		Yaw += deltaX * kCameraSpeed;
 		Pitch += deltaY * kCameraSpeed;
 		Transform.MarkDirty();

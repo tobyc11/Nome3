@@ -202,7 +202,20 @@ void CASTSceneBuilder::VisitBank(AIdent* name, const std::vector<ACommand*>& set
 
 void CASTSceneBuilder::VisitDelete(const std::vector<ACommand*>& faceCmds)
 {
-	throw std::runtime_error("Sorry, delete is not yet supported");
+	for (auto* cmd : faceCmds)
+	{
+		if (cmd->BeginKeyword->Keyword != "face")
+			throw std::runtime_error("Delete command can only contain faces.");
+		auto node_face = Scene->WalkPath(cmd->Name->Identifier);
+		CEntity* instEnt = node_face.first->GetInstanceEntity();
+		if (!instEnt)
+			throw std::runtime_error("Delete face names an invalid mesh instance");
+		auto* meshInst = dynamic_cast<CMeshInstance*>(instEnt);
+		if (!meshInst)
+			throw std::runtime_error("Delete face names an invalid mesh instance");
+		meshInst->GetFacesToDelete().insert(node_face.second);
+		printf("[Debug] %s", node_face.second.c_str());
+	}
 }
 
 TAutoPtr<CScene> CASTSceneBuilder::GetScene() const

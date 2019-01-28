@@ -148,6 +148,21 @@ void CMeshInstance::UpdateEntity()
 		return;
 	MeshGenerator->UpdateEntity();
 	CopyFromGenerator();
+	Mesh.request_vertex_status();
+	Mesh.request_edge_status();
+	Mesh.request_face_status();
+	for (const std::string& face : FacesToDelete)
+	{
+		auto iter = NameToFace.find(face);
+		if (iter != NameToFace.end())
+		{
+			Mesh.delete_face(iter->second, false);
+		}
+		else
+		{
+			printf("Couldn't find face %s for deletion in mesh instance %s\n", face.c_str(), GetName().c_str());
+		}
+	}
 
 	if (!Priv->Material)
 	{

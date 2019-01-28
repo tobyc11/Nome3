@@ -5,6 +5,7 @@
 #include "BankAndSet.h"
 #include "Point.h"
 #include <Color.h>
+#include <utility>
 
 namespace Nome
 {
@@ -39,6 +40,9 @@ public:
 	TAutoPtr<CSceneNode> FindGroup(const std::string& name) const;
 
     Flow::TOutput<CVertexInfo*>* FindPointOutput(const std::string& id) const;
+
+	///Walks the scene tree along a path, return the last matching node and the rest of path
+	std::pair<CSceneTreeNode*, std::string> WalkPath(const std::string& path) const;
 
     void ImGuiUpdate();
 

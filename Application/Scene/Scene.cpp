@@ -2,6 +2,7 @@
 #include "Mesh.h"
 #include <Render/Renderer.h>
 #include <Render/Viewport.h>
+#include <StringUtils.h>
 #include <imgui.h>
 
 namespace Nome::Scene
@@ -113,6 +114,23 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
 		charsToIgnore = nextDot + 1;
 	}
     return nullptr;
+}
+
+std::pair<CSceneTreeNode*, std::string> CScene::WalkPath(const std::string& path) const
+{
+	auto pathComps = tc::FStringUtils::Split(path, ".");
+	auto iter = pathComps.begin();
+	if (iter->empty())
+		++iter;
+	CSceneTreeNode* currNode = *RootNode->GetTreeNodes().begin();
+	for (; iter != pathComps.end(); ++iter)
+	{
+		CSceneTreeNode* childNode = currNode->FindChild(*iter);
+		if (!childNode)
+			break;
+		currNode = childNode;
+	}
+	return { currNode, tc::FStringUtils::Combine(iter, pathComps.end(), ".") };
 }
 
 void DFSTreeNode(CSceneTreeNode* treeNode)

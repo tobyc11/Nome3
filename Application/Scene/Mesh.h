@@ -77,6 +77,9 @@ public:
 	void MarkDirty() override;
 	void UpdateEntity() override;
 
+	std::set<std::string>& GetFacesToDelete() { return FacesToDelete; }
+	const std::set<std::string>& GetFacesToDelete() const { return FacesToDelete; }
+
 	void Draw(CSceneTreeNode* treeNode);
 	CVertexSelector* CreateVertexSelector(const std::string& name, const std::string& outputName);
 
@@ -92,6 +95,9 @@ private:
 	CMeshImpl Mesh;
 	std::map<std::string, CMeshImpl::VertexHandle> NameToVert;
 	std::map<std::string, CMeshImpl::FaceHandle> NameToFace;
+
+	//Instance specific data
+	std::set<std::string> FacesToDelete;
 
 	CMeshRenderPrivateData* Priv;
 };

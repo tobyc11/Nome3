@@ -40,6 +40,7 @@ public:
 	std::vector<Nome::ACommand*> FaceList;
     std::vector<Nome::ACommand*> InstanceList;
     std::vector<Nome::ACommand*> SetList;
+	std::vector<Nome::ACommand*> FaceForDeletionList;
     ACommandExtHelper Ext;
 
 private:

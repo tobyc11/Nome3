@@ -122,7 +122,7 @@ void CStaticMeshGeometry::Reconstruct(const CMeshImpl& fromMesh)
 		//Generate index buffer data from every face
 		std::vector<uint32_t> indexBuffer;
 		CMeshImpl::FaceIter fIter, fEnd = fromMesh.faces_end();
-		for (fIter = fromMesh.faces_begin(); fIter != fEnd; ++fIter)
+		for (fIter = fromMesh.faces_sbegin(); fIter != fEnd; ++fIter)
 		{
 			int v0, vPrev, vCurr;
 			int faceVCount = 0;
@@ -157,7 +157,7 @@ void CStaticMeshGeometry::Reconstruct(const CMeshImpl& fromMesh)
 		//Per face normal, thus no shared vertices between faces
 		std::vector<CVertexData> vertBuffer;
 		CMeshImpl::FaceIter fIter, fEnd = fromMesh.faces_end();
-		for (fIter = fromMesh.faces_begin(); fIter != fEnd; ++fIter)
+		for (fIter = fromMesh.faces_sbegin(); fIter != fEnd; ++fIter)
 		{
 			CVertexData v0, vPrev, vCurr;
 			int faceVCount = 0;

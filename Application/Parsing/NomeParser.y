@@ -64,7 +64,7 @@ void yyerror(YYLTYPE* loc, yyscan_t scanner, Nome::CNomeDriver* driver, const ch
 %token <Keyword> OFFSET ENDOFFSET MIN MAX STEP
 %type <Command> command
 %type <Expr> exp num_exp
-%type <Command> point polyline face object mesh group circle funnel tunnel bezier_curve bspline instance surface background foreground insidefaces outsidefaces offsetfaces frontfaces backfaces rimfaces bank set delete subdivision offset
+%type <Command> point polyline face object mesh group circle funnel tunnel bezier_curve bspline instance surface background foreground insidefaces outsidefaces offsetfaces frontfaces backfaces rimfaces bank set delete face_for_deletion subdivision offset
 %type <Transform> transform
 
 %%
@@ -318,12 +318,19 @@ set: SET IDENT num_exp num_exp num_exp num_exp
     $$->Args.push_back($6);
 };
 
-delete: DELETE face_list ENDDELETE
+delete: DELETE face_for_deletion_list ENDDELETE
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), nullptr, $DELETE, $ENDDELETE);
-    $$->SubCommands.insert($$->SubCommands.begin(), driver->FaceList.begin(), driver->FaceList.end());
-    driver->FaceList.clear();
+    $$->SubCommands.insert($$->SubCommands.begin(), driver->FaceForDeletionList.begin(), driver->FaceForDeletionList.end());
+    driver->FaceForDeletionList.clear();
 };
+
+face_for_deletion: FACE IDENT ENDFACE
+{
+    $$ = Nome::ACommand::Create(*driver->GetASTContext(), $2, $FACE, $ENDFACE);
+};
+
+face_for_deletion_list: %empty | face_for_deletion_list face_for_deletion { driver->FaceForDeletionList.push_back($2); };
 
 subdivision: SUBDIVISION IDENT TYPE IDENT SUBDIVISIONS num_exp ENDSUBDIVISION
 {

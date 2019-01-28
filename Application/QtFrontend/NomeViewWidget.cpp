@@ -11,6 +11,8 @@ namespace Nome
 CNomeViewWidget::CNomeViewWidget(QWidget* parent, CViewportClient* client) : CD3DWidget(parent), CViewport(client)
 {
 	setMouseTracking(true);
+	setFocusPolicy(Qt::StrongFocus);
+
 	HWND hWnd = (HWND) this->winId();
 	SwapChain = new CSwapChain(GRenderer, hWnd);
 

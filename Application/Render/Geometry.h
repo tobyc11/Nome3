@@ -1,9 +1,7 @@
 #pragma once
 #include <AutoPtr.h>
 #include <Vector3.h>
-
-#include <d3d11_1.h>
-#include <wrl/client.h>
+#include "IncludeD3D11.h"
 
 #define _USE_MATH_DEFINES
 #undef min
@@ -20,7 +18,6 @@ namespace Nome
 
 using tc::Vector3;
 
-using Microsoft::WRL::ComPtr;
 using tc::TAutoPtr;
 
 class CVertexBuffer : public tc::FRefCounted

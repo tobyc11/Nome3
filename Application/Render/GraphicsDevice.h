@@ -1,6 +1,5 @@
 #pragma once
-
-#include <d3d11_1.h>
+#include "IncludeD3D11.h"
 
 #include <stdexcept>
 #include <string>

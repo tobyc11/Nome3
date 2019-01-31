@@ -1,14 +1,12 @@
 #pragma once
+#include "IncludeD3D11.h"
 #include <Vector3.h>
 #include <AutoPtr.h>
-#include <d3d11_1.h>
-#include <wrl/client.h>
 
 namespace Nome
 {
 
 using tc::Vector3;
-using Microsoft::WRL::ComPtr;
 
 //Minimally featured. Extend later when we have time.
 class CMaterial : public tc::FRefCounted

@@ -1,12 +1,9 @@
 #pragma once
 #include "Renderer.h"
-#include <d3d11_1.h>
-#include <wrl/client.h>
+#include "IncludeD3D11.h"
 
 namespace Nome
 {
-
-using Microsoft::WRL::ComPtr;
 
 class CSwapChain
 {

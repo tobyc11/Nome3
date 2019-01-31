@@ -139,7 +139,7 @@ max                         { yylval->Keyword = NewKeyword(driver, yytext); retu
 step                        { yylval->Keyword = NewKeyword(driver, yytext); return STEP; }
 \$[a-zA-Z\.][a-zA-Z0-9_\.]* { yylval->Ident = NewIdent(driver, yytext); return IDENT; }
 [a-zA-Z\.][a-zA-Z0-9_\.]*   { yylval->Ident = NewIdent(driver, yytext); return IDENT; }
-[+-]?([0-9]*[.])?[0-9]+     { yylval->Expr = NewNumber(driver, yytext); return NUMBER; }
+-?([0-9]*[.])?[0-9]+        { yylval->Expr = NewNumber(driver, yytext); return NUMBER; }
 [ \t\n]+                    ;
 .                           { return yytext[0]; }
 %%

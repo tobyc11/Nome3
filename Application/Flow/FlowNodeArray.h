@@ -21,8 +21,6 @@ public:
 
     void Connect(TOutput<T>& output)
     {
-        TOutput<T>* out = &output;
-
         TInput<T>* input = new TInput<T>(Owner, std::function<void()>());
         input->SetDirtyNotifyRoutine([this, input]()
                                      {

@@ -43,6 +43,7 @@ macro(config_playground2 target)
     #target_link_libraries(${target} PRIVATE glad)
     target_link_libraries(${target} PRIVATE Foundation)
     target_link_libraries(${target} PRIVATE Math)
+    target_compile_options(${target} ${DEFAULT_COMPILE_OPTIONS})
 
     #find_package(SDL2 REQUIRED)
     #if(TARGET SDL2::SDL2)

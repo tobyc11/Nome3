@@ -267,13 +267,13 @@ public:
         __m128 v = _mm_set_ps(0.f, rhs.z, rhs.y, rhs.x);
         const __m128 W = _mm_shuffle_ps(q, q, _MM_SHUFFLE(3, 3, 3, 3));
         const __m128 a_yzx = _mm_shuffle_ps(q, q, _MM_SHUFFLE(3, 0, 2, 1));
-        __m128 x = _mm_mul_ps(q, _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 0, 2, 1)));
-        __m128 qxv = _mm_sub_ps(x, _mm_mul_ps(a_yzx, v));
+        __m128 xx = _mm_mul_ps(q, _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 0, 2, 1)));
+        __m128 qxv = _mm_sub_ps(xx, _mm_mul_ps(a_yzx, v));
         __m128 Wv = _mm_mul_ps(W, v);
         __m128 s = _mm_add_ps(qxv, _mm_shuffle_ps(Wv, Wv, _MM_SHUFFLE(3, 1, 0, 2)));
         __m128 qs = _mm_mul_ps(q, s);
-        __m128 y = _mm_shuffle_ps(qs, qs, _MM_SHUFFLE(3, 1, 0, 2));
-        s = _mm_sub_ps(_mm_mul_ps(a_yzx, s), y);
+        __m128 yy = _mm_shuffle_ps(qs, qs, _MM_SHUFFLE(3, 1, 0, 2));
+        s = _mm_sub_ps(_mm_mul_ps(a_yzx, s), yy);
         s = _mm_add_ps(s, s);
         s = _mm_add_ps(s, v);
 

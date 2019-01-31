@@ -200,7 +200,7 @@ void CStaticMeshGeometry::Reconstruct(const CMeshImpl& fromMesh)
 	}
 }
 
-CStaticMeshGeometry::CAttribute* CStaticMeshGeometry::GetAttribute(const std::string& name, int index)
+CStaticMeshGeometry::CAttribute* CStaticMeshGeometry::GetAttribute(const std::string& name, unsigned int index)
 {
     //TODO: O(n) is suboptimal
     for (auto& attr : Attribs)

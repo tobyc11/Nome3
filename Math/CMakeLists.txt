@@ -14,3 +14,5 @@ generate_export_header(${MODULE_NAME} EXPORT_FILE_NAME MathAPI.h)
 
 target_include_directories(${MODULE_NAME} PUBLIC .)
 target_compile_definitions(${MODULE_NAME} PUBLIC URHO3D_SSE)
+
+target_compile_options(${MODULE_NAME} ${DEFAULT_COMPILE_OPTIONS})

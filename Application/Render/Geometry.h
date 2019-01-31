@@ -91,7 +91,7 @@ public:
 
 	void Reconstruct(const CMeshImpl& fromMesh);
 
-    CAttribute* GetAttribute(const std::string& name, int index = 0);
+    CAttribute* GetAttribute(const std::string& name, unsigned int index = 0);
 
     TAutoPtr<CIndexBuffer> GetIndexBuffer() const;
 

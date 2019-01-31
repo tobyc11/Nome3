@@ -11,3 +11,4 @@
 	imstb_truetype.h
 )
 target_include_directories(imgui INTERFACE .)
+target_compile_options(imgui ${DEFAULT_COMPILE_OPTIONS})

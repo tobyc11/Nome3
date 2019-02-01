@@ -4,6 +4,7 @@
 #include <Render/Material.h>
 #include <Render/Geometry.h>
 #include <Render/Renderer.h>
+#include <StringPrintf.h>
 
 namespace Nome::Scene
 {
@@ -121,13 +122,7 @@ CEntity* CMesh::Instantiate(CSceneTreeNode* treeNode)
 CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
 	: MeshGenerator(generator), SceneTreeNode(stn), Priv(new CMeshRenderPrivateData())
 {
-	MeshGenerator->InstanceSet.insert(this);
-    SceneTreeNode->OnTransformChange.Connect(std::bind(&CMeshInstance::MarkOnlyDownstreamDirty, this));
-}
-
-CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn, std::string name)
-	: CEntity(name), MeshGenerator(generator), SceneTreeNode(stn), Priv(new CMeshRenderPrivateData())
-{
+    SetName(tc::StringPrintf("_%s_%s", MeshGenerator->GetName().c_str(), GetName().c_str()));
 	MeshGenerator->InstanceSet.insert(this);
     SceneTreeNode->OnTransformChange.Connect(std::bind(&CMeshInstance::MarkOnlyDownstreamDirty, this));
 }

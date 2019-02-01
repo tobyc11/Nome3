@@ -71,7 +71,6 @@ public:
 	using Super = CEntity;
 
 	CMeshInstance(CMesh* generator, CSceneTreeNode* stn);
-	CMeshInstance(CMesh* generator, CSceneTreeNode* stn, std::string name);
 	~CMeshInstance();
 
 	void MarkDirty() override;

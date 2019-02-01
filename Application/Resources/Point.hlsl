@@ -48,7 +48,7 @@ VSOut VSmain(VSIn input)
 	output.Pos = mul(mul(worldPos, View), Proj);
     if (bColorCodeByWorldPos)
     {
-        output.Color = (sin(worldPos) + 1) / 2;
+        output.Color = (sin(worldPos) + 1) / 3;
     }
     else
     {

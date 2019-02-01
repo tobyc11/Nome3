@@ -35,6 +35,7 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionAboutQt"/>
    </widget>
    <widget class="QMenu" name="menuAdd">
     <property name="title">
@@ -98,6 +99,11 @@
   <action name="actionReload">
    <property name="text">
     <string>&amp;Reload</string>
+   </property>
+  </action>
+  <action name="actionAboutQt">
+   <property name="text">
+    <string>About Qt</string>
    </property>
   </action>
  </widget>

@@ -21,6 +21,7 @@ CMainWindow::CMainWindow(QWidget *parent) : QMainWindow(parent),
 {
     ui->setupUi(this);
 	connect(ui->actionExit, &QAction::triggered, this, &CMainWindow::close);
+    connect(ui->actionAboutQt, &QAction::triggered, this, &QApplication::aboutQt);
     LoadEmptyNomeFile();
 }
 
@@ -31,6 +32,7 @@ CMainWindow::CMainWindow(const std::string& fileToOpen, QWidget* parent)
 {
     ui->setupUi(this);
 	connect(ui->actionExit, &QAction::triggered, this, &CMainWindow::close);
+    connect(ui->actionAboutQt, &QAction::triggered, this, &QApplication::aboutQt);
     LoadNomeFile(fileToOpen);
 }
 

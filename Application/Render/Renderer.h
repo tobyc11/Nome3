@@ -29,7 +29,8 @@ public:
 
 	CGraphicsDevice* GetGD() const { return GD; }
 
-	void BeginView(const tc::Matrix4& view, const tc::Matrix4& proj, CViewport* viewport, const tc::Color& clearColor);
+	void BeginView(const tc::Matrix4& view, const tc::Matrix4& proj, CViewport* viewport, const tc::Color& clearColor,
+        float lineWidth, float pointRadius);
 	void EndView();
 
     void Draw(const tc::Matrix4& modelMat, CGeometry* geometry, CMaterial* material);
@@ -45,6 +46,7 @@ private:
         tc::Matrix4 ProjMat;
 		CViewport* Viewport;
 		tc::Color ClearColor;
+        float LineWidth, PointRadius;
 
         struct CObjectData
         {

@@ -58,6 +58,7 @@ private:
     TAutoPtr<CCamera> MainCamera;
 	CViewport* Viewport = nullptr;
 	tc::Color ClearColor;
+    float LineWidth = 2.0f, PointSize = 24.0f;
 	TAutoPtr<Flow::TNumber<Matrix3x4>> CameraView;
 
     std::map<std::string, TAutoPtr<CEntity>> EntityLibrary;

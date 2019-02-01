@@ -165,6 +165,8 @@ void CScene::ImGuiUpdate()
 
     ImGui::Begin("Scene Viewer");
 	ImGui::ColorEdit4("Clear Color", const_cast<float*>(ClearColor.Data()));
+    ImGui::SliderFloat("Line Width", &LineWidth, 0.5f, 10.0f);
+    ImGui::SliderFloat("Point Size", &PointSize, 1.0f, 32.0f);
     if (ImGui::CollapsingHeader("Entity"))
     {
         for (const auto& ent : EntityLibrary)
@@ -235,7 +237,7 @@ void CScene::Render()
 	if (!Viewport)
 		return;
 
-	GRenderer->BeginView(MainCamera->GetViewMatrix(), MainCamera->GetProjMatrix(), Viewport, ClearColor);
+	GRenderer->BeginView(MainCamera->GetViewMatrix(), MainCamera->GetProjMatrix(), Viewport, ClearColor, LineWidth, PointSize / 2.0f);
 	const auto& rootTreeNodes = RootNode->GetTreeNodes();
 	assert(rootTreeNodes.size() == 1); //There is only one way to the root, thus only one tree node
 	DFSTreeNodeRender(*rootTreeNodes.begin());

@@ -112,13 +112,16 @@ CRenderer::~CRenderer()
 	delete GD;
 }
 
-void CRenderer::BeginView(const tc::Matrix4& view, const tc::Matrix4& proj, CViewport* viewport, const tc::Color& clearColor)
+void CRenderer::BeginView(const tc::Matrix4& view, const tc::Matrix4& proj, CViewport* viewport, const tc::Color& clearColor,
+    float lineWidth, float pointRadius)
 {
     CViewData viewData;
     viewData.ViewMat = view;
     viewData.ProjMat = proj;
 	viewData.Viewport = viewport;
 	viewData.ClearColor = clearColor;
+    viewData.LineWidth = lineWidth;
+    viewData.PointRadius = pointRadius;
     Views.push_back(viewData);
 }
 
@@ -449,7 +452,7 @@ void CRenderer::Render()
 
                 cbEverything.Model = obj.ModelMat;
                 cbEverything.Color = tc::Vector4(obj.Material->GetColor(), 1.0f);
-				cbEverything.LineWidth = 2.5;
+                cbEverything.LineWidth = view.LineWidth;
 				cbEverything.Width = view.Viewport->GetWidth();
 				cbEverything.Height = view.Viewport->GetHeight();
 				WireShader->UpdateCBEverything(ctx);
@@ -483,7 +486,7 @@ void CRenderer::Render()
         cbPerView.Height = view.Viewport->GetHeight();
         auto cbPerViewRef = PointShader->CreateUniformBuffer(&cbPerView);
         CBPoint cbPoint;
-        cbPoint.PointRadius = 16.0f;
+        cbPoint.PointRadius = view.PointRadius;
         cbPoint.bColorCodeByWorldPos = true;
         auto cbPointRef = PointShader->CreateUniformBuffer(&cbPoint);
         for (const CViewData::CObjectData& obj : view.DrawListBasic)

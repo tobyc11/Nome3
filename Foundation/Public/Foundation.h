@@ -5,4 +5,3 @@
 #include "Pointer.h"
 #include "StringUtils.h"
 #include "LangUtils.h"
-#include "UsingStl.h"

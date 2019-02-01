@@ -72,6 +72,7 @@ void CSceneTreeNode::MarkTreeL2WDirty()
 		child->MarkTreeL2WDirty();
 
 	L2WTransform.MarkDirty();
+    OnTransformChange();
 }
 
 void CSceneNode::TransformMarkedDirty()

@@ -75,6 +75,7 @@ public:
 	~CMeshInstance();
 
 	void MarkDirty() override;
+    void MarkOnlyDownstreamDirty();
 	void UpdateEntity() override;
 
 	std::set<std::string>& GetFacesToDelete() { return FacesToDelete; }

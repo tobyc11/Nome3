@@ -122,12 +122,14 @@ CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
 	: MeshGenerator(generator), SceneTreeNode(stn), Priv(new CMeshRenderPrivateData())
 {
 	MeshGenerator->InstanceSet.insert(this);
+    SceneTreeNode->OnTransformChange.Connect(std::bind(&CMeshInstance::MarkOnlyDownstreamDirty, this));
 }
 
 CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn, std::string name)
 	: CEntity(name), MeshGenerator(generator), SceneTreeNode(stn), Priv(new CMeshRenderPrivateData())
 {
 	MeshGenerator->InstanceSet.insert(this);
+    SceneTreeNode->OnTransformChange.Connect(std::bind(&CMeshInstance::MarkOnlyDownstreamDirty, this));
 }
 
 CMeshInstance::~CMeshInstance()
@@ -140,6 +142,11 @@ void CMeshInstance::MarkDirty()
 {
 	Super::MarkDirty();
 	SelectorSignal.MarkDirty();
+}
+
+void CMeshInstance::MarkOnlyDownstreamDirty()
+{
+    SelectorSignal.MarkDirty();
 }
 
 void CMeshInstance::UpdateEntity()

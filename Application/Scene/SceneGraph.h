@@ -1,6 +1,6 @@
 #pragma once
 #include "Transforms.h"
-
+#include <Signal.h>
 #include <map>
 #include <set>
 #include <string>
@@ -10,6 +10,7 @@ namespace Nome::Scene
 {
 
 using tc::TAutoPtr;
+using tc::FSignal;
 
 //Forward declaration
 class CSceneNode;
@@ -31,6 +32,8 @@ public:
 	CSceneTreeNode* FindChild(const std::string& name) const;
 
     const std::set<CSceneTreeNode*>& GetChildren() const { return Children; }
+
+    FSignal<void()> OnTransformChange;
 
 private:
 	//Only CSceneNode manages the tree nodes

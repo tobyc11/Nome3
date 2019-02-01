@@ -4,6 +4,9 @@
 #include "Material.h"
 #include "Viewport.h"
 #include "ShaderCommon.h"
+#include "UniformBuffer.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 namespace Nome
 {
@@ -11,13 +14,101 @@ namespace Nome
 static CRenderer StaticRenderer;
 CRenderer* GRenderer = &StaticRenderer;
 
+//TODO: put this somewhere else
+struct CRendererPrivData
+{
+    ComPtr<ID3D11ShaderResourceView> DotSRV;
+    ComPtr<ID3D11SamplerState> DefaultSampler;
+
+    ComPtr<ID3D11RasterizerState> PointRast;
+    ComPtr<ID3D11DepthStencilState> PointDepthStencil;
+    ComPtr<ID3D11BlendState> PointBlend;
+};
+
 CRenderer::CRenderer()
 {
 	GD = new CGraphicsDevice();
+    auto* dev = GetGD()->GetDevice();
+
+    Pd = new CRendererPrivData();
+
+    //Load dot texture
+    int x, y, n;
+    unsigned char* data = stbi_load("Resources/Textures/dot16.png", &x, &y, &n, 4);
+    CD3D11_TEXTURE2D_DESC desc{ DXGI_FORMAT_R8G8B8A8_UNORM, (uint32_t)x, (uint32_t)y, 1, 1 };
+    D3D11_SUBRESOURCE_DATA initialData;
+    initialData.pSysMem = data;
+    initialData.SysMemPitch = x * 4;
+    initialData.SysMemSlicePitch = 0;
+    ComPtr<ID3D11Texture2D> texture;
+    dev->CreateTexture2D(&desc, &initialData, texture.GetAddressOf());
+    CD3D11_SHADER_RESOURCE_VIEW_DESC sdesc{ texture.Get(), D3D11_SRV_DIMENSION_TEXTURE2D };
+    dev->CreateShaderResourceView(texture.Get(), &sdesc, Pd->DotSRV.GetAddressOf());
+    stbi_image_free(data);
+
+    D3D11_SAMPLER_DESC samplerDesc;
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.MipLODBias = 0;
+    samplerDesc.MaxAnisotropy = 1;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    samplerDesc.BorderColor[0] = 1.0f;
+    samplerDesc.BorderColor[1] = 1.0f;
+    samplerDesc.BorderColor[2] = 1.0f;
+    samplerDesc.BorderColor[3] = 1.0f;
+    samplerDesc.MinLOD = -3.402823466e+38F; // -FLT_MAX
+    samplerDesc.MaxLOD = 3.402823466e+38F; // FLT_MAX
+    dev->CreateSamplerState(&samplerDesc, Pd->DefaultSampler.GetAddressOf());
+
+    {
+        D3D11_RASTERIZER_DESC desc;
+        desc.FillMode = D3D11_FILL_SOLID;
+        desc.CullMode = D3D11_CULL_NONE;
+        desc.FrontCounterClockwise = true;
+        desc.DepthBias = -1000;
+        desc.DepthBiasClamp = 0.0f;
+        desc.SlopeScaledDepthBias = 0.0f;
+        desc.DepthClipEnable = true;
+        desc.ScissorEnable = false;
+        desc.MultisampleEnable = false;
+        desc.AntialiasedLineEnable = false;
+        dev->CreateRasterizerState(&desc, Pd->PointRast.GetAddressOf());
+    }
+    {
+        D3D11_DEPTH_STENCIL_DESC desc = {};
+        desc.DepthEnable = true;
+        desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        desc.DepthFunc = D3D11_COMPARISON_LESS;
+        desc.StencilEnable = false;
+        desc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+        desc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+        desc.FrontFace.StencilFailOp = desc.FrontFace.StencilDepthFailOp = desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+        desc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+        desc.BackFace = desc.FrontFace;
+        dev->CreateDepthStencilState(&desc, Pd->PointDepthStencil.GetAddressOf());
+    }
+    {
+        D3D11_BLEND_DESC desc = {};
+        desc.AlphaToCoverageEnable = false;
+        desc.IndependentBlendEnable = false;
+        const D3D11_RENDER_TARGET_BLEND_DESC targetBlendDesc =
+        {
+            true,
+            D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_OP_ADD,
+            D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_OP_ADD,
+            D3D11_COLOR_WRITE_ENABLE_ALL,
+        };
+        for (UINT i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+            desc.RenderTarget[i] = targetBlendDesc;
+        dev->CreateBlendState(&desc, Pd->PointBlend.GetAddressOf());
+    }
 }
 
 CRenderer::~CRenderer()
 {
+    delete Pd;
 	delete GD;
 }
 
@@ -223,6 +314,83 @@ private:
 	ComPtr<ID3D11Buffer> CBEverything;
 };
 
+//Point rendering
+BEGIN_UNIFORM_BUFFER(CBPerView)
+    MEMBER(Matrix4, View)
+    MEMBER(Matrix4, Proj)
+    MEMBER(float, Width)
+    MEMBER(float, Height)
+END_UNIFORM_BUFFER()
+
+BEGIN_UNIFORM_BUFFER(CBPerObject)
+    MEMBER(Matrix4, Model)
+END_UNIFORM_BUFFER()
+
+BEGIN_UNIFORM_BUFFER(CBPoint)
+    MEMBER(float, PointRadius)
+    MEMBER(bool, bColorCodeByWorldPos)
+END_UNIFORM_BUFFER()
+
+class CPointShader : public CShaderCommon
+{
+public:
+    CPointShader()
+    {
+        auto* dev = GRenderer->GetGD()->GetDevice();
+        CompileFile("Resources/Point.hlsl", "VSmain", "vs_5_0");
+        //Create input layout
+        D3D11_INPUT_ELEMENT_DESC ilDesc[] = {
+            { "ATTRIBUTE", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "ATTRIBUTE", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+        };
+        dev->CreateInputLayout(ilDesc, sizeof(ilDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+            VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), DefaultInputLayout.GetAddressOf());
+        dev->CreateVertexShader(VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), nullptr, VS.GetAddressOf());
+        CompileFile("Resources/Point.hlsl", "GSmain", "gs_5_0");
+        dev->CreateGeometryShader(GSBytecode->GetBufferPointer(), GSBytecode->GetBufferSize(), nullptr, GS.GetAddressOf());
+        GSBytecode = nullptr;
+        CompileFile("Resources/Point.hlsl", "PSmain", "ps_5_0");
+        dev->CreatePixelShader(PSBytecode->GetBufferPointer(), PSBytecode->GetBufferSize(), nullptr, PS.GetAddressOf());
+        PSBytecode = nullptr;
+    }
+
+    void Bind(ID3D11DeviceContext* ctx, bool bindInputLayout = true)
+    {
+        ctx->VSSetShader(VS.Get(), nullptr, 0);
+        ctx->GSSetShader(GS.Get(), nullptr, 0);
+        ctx->PSSetShader(PS.Get(), nullptr, 0);
+
+        if (bindInputLayout)
+            ctx->IASetInputLayout(DefaultInputLayout.Get());
+    }
+
+    //TODO: move this somewhere else
+    template <typename T>
+    static TTypedUniformBufferRef<T> CreateUniformBuffer(T* data)
+    {
+        auto* dev = GRenderer->GetGD()->GetDevice();
+
+        //Create constant buffer
+        ComPtr<ID3D11Buffer> buffer;
+
+        D3D11_BUFFER_DESC desc;
+        desc.ByteWidth = sizeof(T) / 16 * 16 + 16; //TODO: verify this
+        desc.Usage = D3D11_USAGE_DYNAMIC;
+        desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        desc.MiscFlags = 0;
+        desc.StructureByteStride = 0;
+        D3D11_SUBRESOURCE_DATA initData = {};
+        initData.pSysMem = data;
+        dev->CreateBuffer(&desc, &initData, buffer.GetAddressOf());
+
+        return { buffer };
+    }
+
+private:
+    ComPtr<ID3D11InputLayout> DefaultInputLayout;
+};
+
 void CRenderer::Render()
 {
     //Once upon a time, there was drawing policy and shader manager and such...
@@ -231,6 +399,8 @@ void CRenderer::Render()
         BasicShader.reset(new CBasicShader());
 	if (!WireShader)
 		WireShader.reset(new CWireShader());
+    if (!PointShader)
+        PointShader.reset(new CPointShader());
 
     auto* ctx = GetGD()->GetImmediateContext();
 	auto& cbBasic = BasicShader->GetCBEverything();
@@ -284,6 +454,7 @@ void CRenderer::Render()
 				cbEverything.Height = view.Viewport->GetHeight();
 				WireShader->UpdateCBEverything(ctx);
                 obj.Material->Bind(ctx);
+                ctx->RSSetState(Pd->PointRast.Get());
 
                 //Bind vertex buffers
                 auto* posAttr = geometry->GetAttribute("POSITION");
@@ -300,6 +471,57 @@ void CRenderer::Render()
 					ctx->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
 					ctx->Draw(geometry->GetElementCount(), 0);
 				}
+            }
+        }
+
+        //Render points
+        PointShader->Bind(ctx);
+        CBPerView cbPerView;
+        cbPerView.View = view.ViewMat;
+        cbPerView.Proj = view.ProjMat;
+        cbPerView.Width = view.Viewport->GetWidth();
+        cbPerView.Height = view.Viewport->GetHeight();
+        auto cbPerViewRef = PointShader->CreateUniformBuffer(&cbPerView);
+        CBPoint cbPoint;
+        cbPoint.PointRadius = 16.0f;
+        cbPoint.bColorCodeByWorldPos = true;
+        auto cbPointRef = PointShader->CreateUniformBuffer(&cbPoint);
+        for (const CViewData::CObjectData& obj : view.DrawListBasic)
+        {
+            if (auto* geometry = dynamic_cast<CStaticMeshGeometry*>(obj.Geom))
+            {
+                CBPerObject cbPerObject;
+                cbPerObject.Model = obj.ModelMat;
+                auto cbPerObjectRef = PointShader->CreateUniformBuffer(&cbPerObject);
+
+                ID3D11Buffer* constBuffers[] = { cbPerViewRef.Get(), cbPerObjectRef.Get(), cbPointRef.Get() };
+                ctx->VSSetConstantBuffers(0, 3, constBuffers);
+                ctx->GSSetConstantBuffers(0, 3, constBuffers);
+                ctx->PSSetConstantBuffers(0, 3, constBuffers);
+                ctx->PSSetSamplers(0, 1, Pd->DefaultSampler.GetAddressOf());
+                ctx->PSSetShaderResources(0, 1, Pd->DotSRV.GetAddressOf());
+
+                ctx->RSSetState(Pd->PointRast.Get());
+                ctx->OMSetDepthStencilState(Pd->PointDepthStencil.Get(), 0);
+                float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+                UINT sampleMask = 0xffffffff;
+                ctx->OMSetBlendState(Pd->PointBlend.Get(), blendFactor, sampleMask);
+
+                //Bind vertex buffers
+                auto* posAttr = geometry->GetAttribute("POSITION");
+                ID3D11Buffer* vertexBuffer = posAttr->Buffer->GetD3D11Buffer();
+                ctx->IASetVertexBuffers(0, 1, &vertexBuffer, &posAttr->Stride, &posAttr->Offset);
+                ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+                if (TAutoPtr<CIndexBuffer> indexBuffer = geometry->GetIndexBuffer())
+                {
+                    indexBuffer->Bind(ctx);
+                    ctx->DrawIndexed(geometry->GetElementCount(), 0, 0);
+                }
+                else
+                {
+                    ctx->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
+                    ctx->Draw(geometry->GetElementCount(), 0);
+                }
             }
         }
     }

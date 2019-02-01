@@ -1,16 +1,12 @@
 #pragma once
 #include "Geometry.h"
+#include <Color.h>
 
 namespace Nome
 {
 
-class CPointBuffer
-{
-public:
-    CPointBuffer();
+using tc::Color;
 
-    void NewPoint();
-    void DeletePoint();
-};
+//TODO
 
 }

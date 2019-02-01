@@ -16,7 +16,10 @@ extern CRenderer* GRenderer;
 
 class CBasicShader;
 class CWireShader;
+class CPointShader;
 class CViewport;
+
+struct CRendererPrivData;
 
 class CRenderer
 {
@@ -59,6 +62,9 @@ private:
 
     std::unique_ptr<CBasicShader> BasicShader;
 	std::unique_ptr<CWireShader> WireShader;
+    std::unique_ptr<CPointShader> PointShader;
+
+    CRendererPrivData* Pd;
 };
 
 }

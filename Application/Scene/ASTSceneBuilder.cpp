@@ -40,7 +40,7 @@ void CASTSceneBuilder::VisitPolyline(AIdent* name, const std::vector<AIdent*>& p
 		Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
 		if (!pointOutput)
 		{
-			throw std::runtime_error("Cannot find point");
+			throw std::runtime_error(tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()));
 		}
 		polyline->Points.Connect(*pointOutput);
 	}
@@ -56,7 +56,7 @@ void CASTSceneBuilder::VisitFace(AIdent* name, const std::vector<AIdent*>& point
 		Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
 		if (!pointOutput)
 		{
-			throw std::runtime_error("Cannot find point");
+			throw std::runtime_error(tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()));
 		}
 		face->Points.Connect(*pointOutput);
 	}

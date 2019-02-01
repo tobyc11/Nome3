@@ -82,7 +82,7 @@ void CSceneNode::TransformMarkedDirty()
 	}
 }
 
-CSceneNode::CSceneNode(std::string name, bool isRoot) : Name(std::move(name))
+CSceneNode::CSceneNode(std::string name, bool isRoot, bool isGroup) : Name(std::move(name)), bIsGroup(isGroup)
 {
 	if (isRoot)
 	{

@@ -54,7 +54,7 @@ TAutoPtr<CSceneNode> CScene::CreateGroup(const std::string& name)
 	if (Groups.find(name) != Groups.end())
 		return {};
 
-	auto* node = new CSceneNode(name);
+	auto* node = new CSceneNode(name, false, true);
 	Groups[name] = node;
 	return node;
 }
@@ -111,6 +111,13 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
 				return nullptr;
 		}
 		currNode = nextNode;
+        //If the current node has only 1 child, it might be a group instance
+        if (currNode->GetChildren().size() == 1)
+        {
+            CSceneTreeNode* onlyChild = *currNode->GetChildren().begin();
+            if (onlyChild->GetOwner()->IsGroup())
+                currNode = onlyChild;
+        }
 		charsToIgnore = nextDot + 1;
 	}
     return nullptr;
@@ -125,6 +132,14 @@ std::pair<CSceneTreeNode*, std::string> CScene::WalkPath(const std::string& path
 	CSceneTreeNode* currNode = *RootNode->GetTreeNodes().begin();
 	for (; iter != pathComps.end(); ++iter)
 	{
+        //If the current node has only 1 child, it might be a group instance
+        if (currNode->GetChildren().size() == 1)
+        {
+            CSceneTreeNode* onlyChild = *currNode->GetChildren().begin();
+            if (onlyChild->GetOwner()->IsGroup())
+                currNode = onlyChild;
+        }
+
 		CSceneTreeNode* childNode = currNode->FindChild(*iter);
 		if (!childNode)
 			break;

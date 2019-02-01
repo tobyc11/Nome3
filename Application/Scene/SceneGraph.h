@@ -56,11 +56,12 @@ class CSceneNode : public Flow::CFlowNode
 	DEFINE_INPUT(Matrix3x4, Transform);
 
 public:
-	explicit CSceneNode(std::string name, bool isRoot = false);
+	explicit CSceneNode(std::string name, bool isRoot = false, bool isGroup = false);
     ~CSceneNode() override;
 
     const std::string& GetName() const { return Name; }
     void SetName(std::string name) { Name = std::move(name); }
+    bool IsGroup() const { return bIsGroup; }
 
 	//Hierarchy management
     void AddParent(CSceneNode* newParent);
@@ -77,6 +78,8 @@ public:
 
 private:
     std::string Name;
+    ///Denotes whether this node is a group. Group names can be skipped in a path
+    bool bIsGroup = false;
 
 	friend class CSceneTreeNode;
     //Parents and associated tree nodes organized by parent

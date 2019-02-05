@@ -1,6 +1,7 @@
 #include "NomeViewWidget.h"
 #include <Render/Renderer.h>
 #include <Render/GraphicsDevice.h>
+#include <Render/ResourceMgr.h>
 
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
@@ -38,8 +39,8 @@ CNomeViewWidget::CNomeViewWidget(QWidget* parent, CViewportClient* client) : CD3
 	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
 	//io.Fonts->AddFontDefault();
 	//io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto-Medium.ttf", 16.0f);
-	io.Fonts->AddFontFromFileTTF("Resources/Fonts/DroidSans.ttf", 16.0f);
-	io.Fonts->AddFontFromFileTTF("Resources/Fonts/Cousine-Regular.ttf", 15.0f);
+	io.Fonts->AddFontFromFileTTF(CResourceMgr::Get().Find("Fonts/DroidSans.ttf").c_str(), 16.0f);
+	io.Fonts->AddFontFromFileTTF(CResourceMgr::Get().Find("Fonts/Cousine-Regular.ttf").c_str(), 15.0f);
 	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
 	//IM_ASSERT(font != NULL);
 }

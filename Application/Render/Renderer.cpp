@@ -5,6 +5,7 @@
 #include "Viewport.h"
 #include "ShaderCommon.h"
 #include "UniformBuffer.h"
+#include "ResourceMgr.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -34,7 +35,7 @@ CRenderer::CRenderer()
 
     //Load dot texture
     int x, y, n;
-    unsigned char* data = stbi_load("Resources/Textures/dot16.png", &x, &y, &n, 4);
+    unsigned char* data = stbi_load(CResourceMgr::Get().Find("Textures/dot16.png").c_str(), &x, &y, &n, 4);
     CD3D11_TEXTURE2D_DESC desc{ DXGI_FORMAT_R8G8B8A8_UNORM, (uint32_t)x, (uint32_t)y, 1, 1 };
     D3D11_SUBRESOURCE_DATA initialData;
     initialData.pSysMem = data;
@@ -145,7 +146,7 @@ public:
     CBasicShader()
     {
         //Read the shader template from disk
-        std::ifstream ifs("Resources/Basic.hlsl");
+        std::ifstream ifs(CResourceMgr::Get().Find("Basic.hlsl"));
         std::string str;
 
         ifs.seekg(0, std::ios::end);
@@ -250,7 +251,7 @@ public:
 	CWireShader()
 	{
 		auto* dev = GRenderer->GetGD()->GetDevice();
-		CompileFile("Resources/Wire.hlsl", "VSmain", "vs_5_0");
+		CompileFile(CResourceMgr::Get().Find("Wire.hlsl"), "VSmain", "vs_5_0");
 		//Create input layout
 		D3D11_INPUT_ELEMENT_DESC ilDesc[] = {
 			{ "ATTRIBUTE", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
@@ -258,10 +259,10 @@ public:
 		dev->CreateInputLayout(ilDesc, sizeof(ilDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC),
 			VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), DefaultInputLayout.GetAddressOf());
 		dev->CreateVertexShader(VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), nullptr, VS.GetAddressOf());
-		CompileFile("Resources/Wire.hlsl", "GSmain", "gs_5_0");
+		CompileFile(CResourceMgr::Get().Find("Wire.hlsl"), "GSmain", "gs_5_0");
 		dev->CreateGeometryShader(GSBytecode->GetBufferPointer(), GSBytecode->GetBufferSize(), nullptr, GS.GetAddressOf());
 		GSBytecode = nullptr;
-		CompileFile("Resources/Wire.hlsl", "PSmain", "ps_5_0");
+		CompileFile(CResourceMgr::Get().Find("Wire.hlsl"), "PSmain", "ps_5_0");
 		dev->CreatePixelShader(PSBytecode->GetBufferPointer(), PSBytecode->GetBufferSize(), nullptr, PS.GetAddressOf());
 		PSBytecode = nullptr;
 
@@ -340,7 +341,7 @@ public:
     CPointShader()
     {
         auto* dev = GRenderer->GetGD()->GetDevice();
-        CompileFile("Resources/Point.hlsl", "VSmain", "vs_5_0");
+        CompileFile(CResourceMgr::Get().Find("Point.hlsl"), "VSmain", "vs_5_0");
         //Create input layout
         D3D11_INPUT_ELEMENT_DESC ilDesc[] = {
             { "ATTRIBUTE", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -349,10 +350,10 @@ public:
         dev->CreateInputLayout(ilDesc, sizeof(ilDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC),
             VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), DefaultInputLayout.GetAddressOf());
         dev->CreateVertexShader(VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), nullptr, VS.GetAddressOf());
-        CompileFile("Resources/Point.hlsl", "GSmain", "gs_5_0");
+        CompileFile(CResourceMgr::Get().Find("Point.hlsl"), "GSmain", "gs_5_0");
         dev->CreateGeometryShader(GSBytecode->GetBufferPointer(), GSBytecode->GetBufferSize(), nullptr, GS.GetAddressOf());
         GSBytecode = nullptr;
-        CompileFile("Resources/Point.hlsl", "PSmain", "ps_5_0");
+        CompileFile(CResourceMgr::Get().Find("Point.hlsl"), "PSmain", "ps_5_0");
         dev->CreatePixelShader(PSBytecode->GetBufferPointer(), PSBytecode->GetBufferSize(), nullptr, PS.GetAddressOf());
         PSBytecode = nullptr;
     }

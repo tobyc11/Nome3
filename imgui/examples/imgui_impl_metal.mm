@@ -1,4 +1,4 @@
-// ImGui Renderer for: Metal
+// dear imgui: Renderer for Metal
 // This needs to be used along with a Platform Binding (e.g. OSX)
 
 // Implemented features:
@@ -10,13 +10,14 @@
 
 // CHANGELOG
 // (minor and older changes stripped away, please see git history for details)
+//  2018-11-30: Misc: Setting up io.BackendRendererName so it can be displayed in the About Window.
 //  2018-07-05: Metal: Added new Metal backend implementation.
 
 #include "imgui.h"
 #include "imgui_impl_metal.h"
 
 #import <Metal/Metal.h>
-#import <QuartzCore/CAMetalLayer.h>
+// #import <QuartzCore/CAMetalLayer.h> // Not suported in XCode 9.2. Maybe a macro to detect the SDK version can be used (something like #if MACOS_SDK >= 10.13 ...)
 #import <simd/simd.h>
 
 #pragma mark - Support classes
@@ -65,6 +66,9 @@ static MetalContext *g_sharedMetalContext = nil;
 
 bool ImGui_ImplMetal_Init(id<MTLDevice> device)
 {
+    ImGuiIO& io = ImGui::GetIO();
+    io.BackendRendererName = "imgui_impl_metal";
+
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         g_sharedMetalContext = [[MetalContext alloc] init];
@@ -408,7 +412,7 @@ void ImGui_ImplMetal_DestroyDeviceObjects()
     [commandEncoder setDepthStencilState:g_sharedMetalContext.depthStencilState];
     
     // Setup viewport, orthographic projection matrix
-    // Our visible imgui space lies from draw_data->DisplayPps (top left) to
+    // Our visible imgui space lies from draw_data->DisplayPos (top left) to
     // draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayMin is typically (0,0) for single viewport apps.
     MTLViewport viewport = 
     {   

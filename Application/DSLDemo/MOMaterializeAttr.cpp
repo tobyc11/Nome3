@@ -2,6 +2,7 @@
 #include "ConvertToHLSLType.h"
 #include "EffiCompiler.h"
 #include <StringPrintf.h>
+#include <PathTools.h>
 
 #include <d3dcompiler.h>
 #include <utility>
@@ -35,12 +36,7 @@ MOMaterializeAttr::MOMaterializeAttr(CGraphicsDevice* gd, const std::string& att
 	ss << shaderVSIn << std::endl;
 	ss << shaderVSOut << std::endl;
 	ss << shaderFunc << std::endl;
-	ss << tc::StringPrintf("VSOut VSmain(VSIn input)\n"
-		"{\n"
-		"	VSOut output;\n"
-		"	output.Pos = MaterializeAttr(input);\n"
-		"	return output;\n"
-		"}\n");
+	ss << tc::FPathTools::ReadTextFile("Resources/materialize_attr_template.hlsl");
 
 	std::cout << "Generated shader:" << std::endl;
 	std::cout << ss.str() << std::endl;
@@ -231,7 +227,8 @@ CEffiUnindexedMesh* MOMaterializeAttr::operator()(CEffiUnindexedMesh& mesh)
 
 	CEffiUnindexedMesh* output = new CEffiUnindexedMesh();
 	output->NumVertices = mesh.NumVertices;
-	output->Attributes.emplace(AttrName, CMeshAttribute(outputBuffer, OutputType));
+	output->Attributes = mesh.Attributes;
+	output->Attributes.insert_or_assign(AttrName, CMeshAttribute(outputBuffer, OutputType));
 	return output;
 }
 

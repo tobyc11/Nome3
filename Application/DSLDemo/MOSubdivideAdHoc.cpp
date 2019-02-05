@@ -248,7 +248,8 @@ CEffiUnindexedMesh* MOSubdivideAdHoc::operator()(CEffiUnindexedMesh& mesh)
 
 	CEffiUnindexedMesh* output = new CEffiUnindexedMesh();
 	output->NumVertices = mesh.NumVertices * 3;
-	output->Attributes.emplace("pos", CMeshAttribute(outputBuffer, EDataType::Float3));
+	output->Attributes = mesh.Attributes;
+	output->Attributes.insert_or_assign("pos", CMeshAttribute(outputBuffer, EDataType::Float3));
 	return output;
 }
 

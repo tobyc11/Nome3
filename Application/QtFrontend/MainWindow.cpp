@@ -11,6 +11,7 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QSettings>
 
 namespace Nome
 {
@@ -64,12 +65,17 @@ void CMainWindow::on_actionNew_triggered()
 
 void CMainWindow::on_actionOpen_triggered()
 {
+	QSettings appSettings;
+	const QString kDefaultDir("DefaultDir");
+
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open Nome File"), "",
+                                                    tr("Open Nome File"), appSettings.value(kDefaultDir).toString(),
                                                     tr("Nome Code (*.nom);;All Files (*)"));
     if (fileName.isEmpty())
         return;
 
+    QDir currentDir;
+    appSettings.setValue(kDefaultDir, currentDir.absoluteFilePath(fileName));
     if (true /*bIsBlankFile*/)
     {
 		UnloadNomeFile();

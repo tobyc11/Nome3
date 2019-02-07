@@ -18,10 +18,10 @@ public:
 
     void UpdateEntity() override;
 
-	void SetClosed(bool closed);
+    void SetClosed(bool closed);
 
 private:
-	bool bClosed = false;
+    bool bClosed = false;
 };
 
 }

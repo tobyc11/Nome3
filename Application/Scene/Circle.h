@@ -6,8 +6,8 @@ namespace Nome::Scene
 
 class CCircle : public CMesh
 {
-	DEFINE_INPUT(float, Segments) { MarkDirty(); }
-	DEFINE_INPUT(float, Radius) { MarkDirty(); }
+    DEFINE_INPUT(float, Segments) { MarkDirty(); }
+    DEFINE_INPUT(float, Radius) { MarkDirty(); }
 
 public:
     using Super = CMesh;

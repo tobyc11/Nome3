@@ -29,7 +29,7 @@ public:
     class CLocation
     {
     public:
-		CLocation() {}
+        CLocation() {}
 
         CLocation(RealLocRef ref) : Reference(ref)
         {
@@ -43,10 +43,10 @@ public:
                 Reference->RefCount--;
         }
 
-		bool IsValid() const
-		{
-			return Reference.IsValid();
-		}
+        bool IsValid() const
+        {
+            return Reference.IsValid();
+        }
 
     private:
         friend class CRope;

@@ -13,19 +13,19 @@ using tc::Matrix3x4;
 
 class CTransform : public Flow::CFlowNode
 {
-	DEFINE_INPUT(Matrix3x4, Input)
-	{
-		Output.MarkDirty();
-	}
+    DEFINE_INPUT(Matrix3x4, Input)
+    {
+        Output.MarkDirty();
+    }
 
-	DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Output)
-	{
-		RecomputeOutput();
-	}
+    DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Output)
+    {
+        RecomputeOutput();
+    }
 
 public:
-	virtual ~CTransform() = default;
-	virtual void RecomputeOutput() = 0;
+    virtual ~CTransform() = default;
+    virtual void RecomputeOutput() = 0;
 };
 
 class CTranslate : public CTransform

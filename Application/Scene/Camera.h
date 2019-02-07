@@ -13,9 +13,9 @@ using tc::Frustum;
 class CCamera : public tc::FRefCounted
 {
 public:
-	CCamera(CSceneTreeNode* treeNode) : SceneTreeNode(treeNode) {}
+    CCamera(CSceneTreeNode* treeNode) : SceneTreeNode(treeNode) {}
 
-	void CalculateProjMatrix() const;
+    void CalculateProjMatrix() const;
 
     const Matrix4& GetProjMatrix() const;
 
@@ -53,8 +53,8 @@ public:
     }
 
 private:
-	//This is where the view transform comes from
-	TAutoPtr<CSceneTreeNode> SceneTreeNode;
+    //This is where the view transform comes from
+    TAutoPtr<CSceneTreeNode> SceneTreeNode;
 
     //bool bIsOrthographic = false;
     float AspectRatio = 1.0f;
@@ -71,26 +71,26 @@ private:
 
 class COrbitCameraController : public Flow::CFlowNode
 {
-	//A transform whose inverse is the view matrix
-	DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Transform)
-	{
-		CalcTransform();
-	}
+    //A transform whose inverse is the view matrix
+    DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Transform)
+    {
+        CalcTransform();
+    }
 
 public:
-	void Activate() { bIsActive = true; }
-	void Inactivate() { bIsActive = false; }
+    void Activate() { bIsActive = true; }
+    void Inactivate() { bIsActive = false; }
 
-	void MouseMoved(int deltaX, int deltaY);
-	void WheelMoved(int degree);
+    void MouseMoved(int deltaX, int deltaY);
+    void WheelMoved(int degree);
 
 private:
-	void CalcTransform();
+    void CalcTransform();
 
-	bool bIsActive = false;
+    bool bIsActive = false;
 
-	Vector3 Location = { 0.0f, 0.0f, 10.0f };
-	float Yaw = 0.0f, Pitch = 0.0f;
+    Vector3 Location = { 0.0f, 0.0f, 10.0f };
+    float Yaw = 0.0f, Pitch = 0.0f;
 };
 
 }

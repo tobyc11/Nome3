@@ -118,6 +118,11 @@ public:
         NotifyDirty();
     }
 
+    //template <typename TDerived>
+    //std::enable_if_t<std::is_convertible<TDerived, T>::value> Connect(TOutput<TDerived>& output)
+    //{
+    //}
+
     void Disconnect()
     {
         if (ConnectedOutput)
@@ -127,13 +132,13 @@ public:
                 ConnectedOutput->ConnectedInputs.erase(iter);
             ConnectedOutput->Owner->Release();
         }
-		ConnectedOutput = nullptr;
+        ConnectedOutput = nullptr;
     }
 
-	bool IsConnected() const
-	{
-		return ConnectedOutput;
-	}
+    bool IsConnected() const
+    {
+        return ConnectedOutput;
+    }
 
     T GetValue(const T& defaultValue) const
     {
@@ -187,11 +192,11 @@ public:
     {
     }
 
-	//Workaround for lambda chicken egg problem
-	void SetUpdateRoutine(std::function<void()> updateRoutine)
-	{
-		UpdateRoutine = std::move(updateRoutine);
-	}
+    //Workaround for lambda chicken egg problem
+    void SetUpdateRoutine(std::function<void()> updateRoutine)
+    {
+        UpdateRoutine = std::move(updateRoutine);
+    }
 
     //Mark this output dirty, and notify all connected inputs
     void MarkDirty();

@@ -3,10 +3,10 @@
 
 class CD3DWidget : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	CD3DWidget(QWidget* parent);
+    CD3DWidget(QWidget* parent);
 
-	QPaintEngine* paintEngine() const override;
+    QPaintEngine* paintEngine() const override;
 };

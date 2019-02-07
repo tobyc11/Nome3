@@ -23,13 +23,13 @@ using tc::TAutoPtr;
 class CVertexBuffer : public tc::FRefCounted
 {
 public:
-	CVertexBuffer(size_t size);
-	CVertexBuffer(size_t size, const void* data);
-	~CVertexBuffer();
+    CVertexBuffer(size_t size);
+    CVertexBuffer(size_t size, const void* data);
+    ~CVertexBuffer();
 
-	bool IsOnCPU() const { return CPUBuffer; }
-	bool IsOnGPU() const;
-	void UploadToGPU();
+    bool IsOnCPU() const { return CPUBuffer; }
+    bool IsOnGPU() const;
+    void UploadToGPU();
 
     ID3D11Buffer* GetD3D11Buffer() const
     {
@@ -37,15 +37,15 @@ public:
     }
 
 private:
-	size_t CPUSize = 0;
-	void* CPUBuffer = nullptr;
-	ComPtr<ID3D11Buffer> GPUBuffer;
+    size_t CPUSize = 0;
+    void* CPUBuffer = nullptr;
+    ComPtr<ID3D11Buffer> GPUBuffer;
 };
 
 class CIndexBuffer : public tc::FRefCounted
 {
 public:
-	CIndexBuffer(size_t size, size_t elementWidth, void* data);
+    CIndexBuffer(size_t size, size_t elementWidth, void* data);
 
     void Bind(ID3D11DeviceContext* ctx)
     {
@@ -56,10 +56,10 @@ public:
             format = DXGI_FORMAT_R16_UINT;
         ctx->IASetIndexBuffer(GPUBuffer.Get(), format, 0);
     }
-	
+    
 private:
-	size_t ElementWidth;
-	ComPtr<ID3D11Buffer> GPUBuffer;
+    size_t ElementWidth;
+    ComPtr<ID3D11Buffer> GPUBuffer;
 };
 
 class CGeometry : public tc::FRefCounted
@@ -70,26 +70,26 @@ public:
 class CStaticMeshGeometry : public CGeometry
 {
 public:
-	struct CAttribute
-	{
-		CAttribute(const std::string& name, uint32_t index, DXGI_FORMAT format, CVertexBuffer* buffer, uint32_t offset, uint32_t stride);
+    struct CAttribute
+    {
+        CAttribute(const std::string& name, uint32_t index, DXGI_FORMAT format, CVertexBuffer* buffer, uint32_t offset, uint32_t stride);
 
-		std::string Name;
-		uint32_t Index;
+        std::string Name;
+        uint32_t Index;
 
-		DXGI_FORMAT Format;
+        DXGI_FORMAT Format;
 
-		//Buffer view
-		TAutoPtr<CVertexBuffer> Buffer;
-		uint32_t Offset;
-		uint32_t Stride;
-	};
+        //Buffer view
+        TAutoPtr<CVertexBuffer> Buffer;
+        uint32_t Offset;
+        uint32_t Stride;
+    };
 
-	CStaticMeshGeometry();
-	CStaticMeshGeometry(const CMeshImpl& fromMesh);
-	CStaticMeshGeometry(const std::vector<Vector3>& positions);
+    CStaticMeshGeometry();
+    CStaticMeshGeometry(const CMeshImpl& fromMesh);
+    CStaticMeshGeometry(const std::vector<Vector3>& positions);
 
-	void Reconstruct(const CMeshImpl& fromMesh);
+    void Reconstruct(const CMeshImpl& fromMesh);
 
     CAttribute* GetAttribute(const std::string& name, unsigned int index = 0);
 
@@ -97,14 +97,14 @@ public:
 
     uint32_t GetElementCount() const;
 
-	D3D11_PRIMITIVE_TOPOLOGY GetPrimitiveTopology() const;
-	void SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY value);
+    D3D11_PRIMITIVE_TOPOLOGY GetPrimitiveTopology() const;
+    void SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY value);
 
 private:
     std::vector<CAttribute> Attribs;
-	TAutoPtr<CIndexBuffer> IB;
+    TAutoPtr<CIndexBuffer> IB;
     uint32_t ElementCount = 0;
-	D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 };
 
 }

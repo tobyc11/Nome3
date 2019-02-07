@@ -10,10 +10,10 @@ TEST_CASE("FlowNode specializations")
     bool target = false;
 
     TAutoPtr<CFlowNode> flowNode = new CFlowNode();
-	TOutput<void> Signal(flowNode, {});
-	Signal.SetUpdateRoutine([&]() {
-		Signal.UnmarkDirty();
-	});
+    TOutput<void> Signal(flowNode, {});
+    Signal.SetUpdateRoutine([&]() {
+        Signal.UnmarkDirty();
+    });
 
     TInput<void> Slot(flowNode, [&](){
         target = true;

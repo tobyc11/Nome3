@@ -40,10 +40,10 @@ public:
 
     void* Alloc(size_t align, size_t size);
 
-	void AppendCommand(ACommand* command)
-	{
-		Commands.push_back(command);
-	}
+    void AppendCommand(ACommand* command)
+    {
+        Commands.push_back(command);
+    }
 
     const std::vector<ACommand*>& GetCommands() const
     {
@@ -58,7 +58,7 @@ private:
     size_t NextBlockSize = 1024;
 
     //The AST represents a file, which consists of a list of commands
-	std::vector<ACommand*> Commands;
+    std::vector<ACommand*> Commands;
 
     //An ASTContext can also represent a single expression
     AExpr* Expr;

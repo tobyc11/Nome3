@@ -25,9 +25,9 @@ public:
     CASTContext* GetASTContext() const { return Context; }
     CSourceLocation OffsetToLocation(int offset)
     {
-		if (SourceMgr)
-			return SourceMgr->GetLocation(SourceFile, offset);
-		return CSourceLocation();
+        if (SourceMgr)
+            return SourceMgr->GetLocation(SourceFile, offset);
+        return CSourceLocation();
     }
 
     //Global vars used by the lexer
@@ -35,22 +35,22 @@ public:
     int tokenEnd = 0;
     int currOffset = 0;
 
-	//Global vars used by the parser
-	std::vector<Nome::AIdent*> IdentList;
-	std::vector<Nome::ACommand*> FaceList;
+    //Global vars used by the parser
+    std::vector<Nome::AIdent*> IdentList;
+    std::vector<Nome::ACommand*> FaceList;
     std::vector<Nome::ACommand*> InstanceList;
     std::vector<Nome::ACommand*> SetList;
-	std::vector<Nome::ACommand*> FaceForDeletionList;
+    std::vector<Nome::ACommand*> FaceForDeletionList;
     ACommandExtHelper Ext;
 
 private:
-	void InvokeParser(void* scanner);
+    void InvokeParser(void* scanner);
 
     CASTContext* Context;
 
     //Either the sourcemgr+file or the string is active
-	CSourceManager* SourceMgr = nullptr;
-	CSourceFile* SourceFile = nullptr;
+    CSourceManager* SourceMgr = nullptr;
+    CSourceFile* SourceFile = nullptr;
     std::string SourceString;
 };
 

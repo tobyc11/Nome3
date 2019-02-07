@@ -6,32 +6,32 @@
 
 #define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, Nome::CNomeDriver* driver)
 #define YY_USER_ACTION { \
-	yylloc->first_line = yylineno; \
-	yylloc->last_line = yylineno; \
-	yylloc->first_column = yycolumn; \
-	yylloc->last_column = yycolumn + yyleng - 1; \
-	yycolumn += yyleng; \
-	driver->tokenBegin = driver->currOffset; driver->tokenEnd = driver->currOffset + yyleng - 1; driver->currOffset += yyleng; }
+    yylloc->first_line = yylineno; \
+    yylloc->last_line = yylineno; \
+    yylloc->first_column = yycolumn; \
+    yylloc->last_column = yycolumn + yyleng - 1; \
+    yycolumn += yyleng; \
+    driver->tokenBegin = driver->currOffset; driver->tokenEnd = driver->currOffset + yyleng - 1; driver->currOffset += yyleng; }
 
 Nome::AKeyword* NewKeyword(Nome::CNomeDriver* driver, const char* string)
 {
-	auto* astNode = Nome::AKeyword::Create(*driver->GetASTContext(), string,
+    auto* astNode = Nome::AKeyword::Create(*driver->GetASTContext(), string,
         driver->OffsetToLocation(driver->tokenBegin), driver->OffsetToLocation(driver->tokenEnd));
-	return astNode;
+    return astNode;
 }
 
 Nome::AIdent* NewIdent(Nome::CNomeDriver* driver, const char* string)
 {
-	auto* astNode = Nome::AIdent::Create(*driver->GetASTContext(), string,
+    auto* astNode = Nome::AIdent::Create(*driver->GetASTContext(), string,
         driver->OffsetToLocation(driver->tokenBegin), driver->OffsetToLocation(driver->tokenEnd));
-	return astNode;
+    return astNode;
 }
 
 Nome::ANumber* NewNumber(Nome::CNomeDriver* driver, const char* string)
 {
-	auto* astNode = Nome::ANumber::Create(*driver->GetASTContext(), string,
+    auto* astNode = Nome::ANumber::Create(*driver->GetASTContext(), string,
         driver->OffsetToLocation(driver->tokenBegin), driver->OffsetToLocation(driver->tokenEnd));
-	return astNode;
+    return astNode;
 }
 
 int isatty(int fd) { return 0; }
@@ -49,17 +49,17 @@ ID [a-z][a-zA-Z0-9]*
 
 %%
 <INITIAL>{
-	"(*"                    BEGIN(MULTI_COMMENT);
-	"#"                     BEGIN(LINE_COMMENT);
+    "(*"                    BEGIN(MULTI_COMMENT);
+    "#"                     BEGIN(LINE_COMMENT);
 }
 <MULTI_COMMENT>{
-	"*)"                    BEGIN(INITIAL);
-	.                       ;
-	\n                      ;
+    "*)"                    BEGIN(INITIAL);
+    .                       ;
+    \n                      ;
 }
 <LINE_COMMENT>{
-	\n                      BEGIN(INITIAL);
-	.                       ;
+    \n                      BEGIN(INITIAL);
+    .                       ;
 }
 expr                        { yylval->Keyword = NewKeyword(driver, yytext); return EXPR; }
 sin                         { yylval->Keyword = NewKeyword(driver, yytext); return SIN; }
@@ -149,23 +149,23 @@ namespace Nome
 
 void CNomeDriver::ParseToAST()
 {
-	yyscan_t scanner;
-	yylex_init(&scanner);
+    yyscan_t scanner;
+    yylex_init(&scanner);
     YY_BUFFER_STATE buffer;
     if (SourceMgr && SourceFile)
     {
-		std::string inputString = SourceFile->GetAsString();
+        std::string inputString = SourceFile->GetAsString();
         buffer = yy_scan_bytes(inputString.data(), (int)inputString.size(), scanner);
     }
     else
     {
         buffer = yy_scan_bytes(SourceString.data(), (int)SourceString.size(), scanner);
     }
-	yyset_lineno(1, scanner);
-	yyset_column(1, scanner);
-	InvokeParser(scanner);
-	yy_delete_buffer(buffer, scanner);
-	yylex_destroy(scanner);
+    yyset_lineno(1, scanner);
+    yyset_column(1, scanner);
+    InvokeParser(scanner);
+    yy_delete_buffer(buffer, scanner);
+    yylex_destroy(scanner);
 }
 
 }

@@ -26,9 +26,9 @@ AKeyword::AKeyword(const std::string& keyword, CSourceLocation beginLoc, CSource
 
 AKeyword* AKeyword::Create(CASTContext& ctx, const std::string& kwd, CSourceLocation beginLoc, CSourceLocation endLoc)
 {
-	void* mem = reinterpret_cast<AKeyword*>(ctx.Alloc(alignof(AKeyword), sizeof(AKeyword)));
-	auto* result = new (mem) AKeyword(kwd, beginLoc, endLoc);
-	return result;
+    void* mem = reinterpret_cast<AKeyword*>(ctx.Alloc(alignof(AKeyword), sizeof(AKeyword)));
+    auto* result = new (mem) AKeyword(kwd, beginLoc, endLoc);
+    return result;
 }
 
 AIdent::AIdent(const std::string& ident, CSourceLocation beginLoc, CSourceLocation endLoc)
@@ -39,9 +39,9 @@ AIdent::AIdent(const std::string& ident, CSourceLocation beginLoc, CSourceLocati
 
 AIdent* AIdent::Create(CASTContext& ctx, const std::string& id, CSourceLocation beginLoc, CSourceLocation endLoc)
 {
-	void* mem = reinterpret_cast<AIdent*>(ctx.Alloc(alignof(AIdent), sizeof(AIdent)));
-	auto* result = new (mem) AIdent(id, beginLoc, endLoc);
-	return result;
+    void* mem = reinterpret_cast<AIdent*>(ctx.Alloc(alignof(AIdent), sizeof(AIdent)));
+    auto* result = new (mem) AIdent(id, beginLoc, endLoc);
+    return result;
 }
 
 ANumber::ANumber(const std::string& stringVal, CSourceLocation beginLoc, CSourceLocation endLoc)
@@ -53,8 +53,8 @@ ANumber::ANumber(const std::string& stringVal, CSourceLocation beginLoc, CSource
 
 ANumber* ANumber::Create(CASTContext& ctx, const std::string& stringVal, CSourceLocation beginLoc, CSourceLocation endLoc)
 {
-	void* mem = ctx.Alloc(alignof(ANumber), sizeof(ANumber));
-	auto result = new (mem) ANumber(stringVal, beginLoc, endLoc);
+    void* mem = ctx.Alloc(alignof(ANumber), sizeof(ANumber));
+    auto result = new (mem) ANumber(stringVal, beginLoc, endLoc);
     return result;
 }
 
@@ -86,10 +86,10 @@ ABinaryOp::ABinaryOp(ABinaryOp::EOperator type, AExpr* left, AExpr* right, AKeyw
 
 ATransform* ATransform::Create(CASTContext& ctx)
 {
-	void* mem = ctx.Alloc(alignof(ATransform), sizeof(ATransform));
-	auto result = new (mem) ATransform();
-	result->ClassId = EClassId::Transform;
-	return result;
+    void* mem = ctx.Alloc(alignof(ATransform), sizeof(ATransform));
+    auto result = new (mem) ATransform();
+    result->ClassId = EClassId::Transform;
+    return result;
 }
 
 ACommand* ACommand::Create(CASTContext& ctx, AIdent* name, AKeyword* beginKeyword, AKeyword* endKeyword)
@@ -104,12 +104,12 @@ ACommand* ACommand::Create(CASTContext& ctx, AIdent* name, AKeyword* beginKeywor
 
 AExpr* ACommand::FindNamedArg(const std::string& name) const
 {
-	for (const auto& pair : NamedArgs)
-	{
-		if (pair.first->Keyword == name)
-			return pair.second;
-	}
-	return nullptr;
+    for (const auto& pair : NamedArgs)
+    {
+        if (pair.first->Keyword == name)
+            return pair.second;
+    }
+    return nullptr;
 }
 
 }

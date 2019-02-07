@@ -18,21 +18,21 @@ class CPoint : public CEntity
 
     DEFINE_OUTPUT_WITH_UPDATE(CVertexInfo*, Point)
     {
-		UpdateEntity();
+        UpdateEntity();
     }
 
-	void MarkDirty() override;
-	void UpdateEntity() override;
+    void MarkDirty() override;
+    void UpdateEntity() override;
 
 public:
-	using Super = CEntity;
+    using Super = CEntity;
 
     CPoint(std::string name) : CEntity(std::move(name))
     {
     }
 
 private:
-	CVertexInfo VI;
+    CVertexInfo VI;
 };
 
 }

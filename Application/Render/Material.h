@@ -12,7 +12,7 @@ using tc::Vector3;
 class CMaterial : public tc::FRefCounted
 {
 public:
-	Vector3 GetColor() const { return Color; }
+    Vector3 GetColor() const { return Color; }
     void SetColor(const Vector3& value) { Color = value; }
 
     bool IsWireframe() const;

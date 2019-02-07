@@ -30,31 +30,31 @@ public:
     //Don't use this, otherwise the Scene's EntityLibrary won't be updated with the new name
     void SetName(const std::string& value) { Name = value; }
 
-	//The entity itself can also be considered an output, the following 2 functions handle the update thereof
-	virtual void MarkDirty() { bEntityDirty = true; }
-	//Update the entity, doesn't do anything if not dirty
-	virtual void UpdateEntity() { if (!IsDirty()) return; bEntityDirty = false; UpdateCount++; }
-	bool IsDirty() const { return bEntityDirty; }
+    //The entity itself can also be considered an output, the following 2 functions handle the update thereof
+    virtual void MarkDirty() { bEntityDirty = true; }
+    //Update the entity, doesn't do anything if not dirty
+    virtual void UpdateEntity() { if (!IsDirty()) return; bEntityDirty = false; UpdateCount++; }
+    bool IsDirty() const { return bEntityDirty; }
 
-	uint32_t GetUpdateCount() const { return UpdateCount; }
+    uint32_t GetUpdateCount() const { return UpdateCount; }
 
     bool IsEntityValid() const { return bIsValid; }
     void SetValid(bool value) { bIsValid = value; }
 
-	virtual void Draw(CSceneTreeNode* treeNode) {};
+    virtual void Draw(CSceneTreeNode* treeNode) {};
 
-	//Some entities(generators) allow actual instance objects for each scene tree node
-	//  so that each instance can be customized, like delete face
-	virtual bool IsInstantiable() { return false; }
-	virtual CEntity* Instantiate(CSceneTreeNode* treeNode) { return nullptr; }
+    //Some entities(generators) allow actual instance objects for each scene tree node
+    //  so that each instance can be customized, like delete face
+    virtual bool IsInstantiable() { return false; }
+    virtual CEntity* Instantiate(CSceneTreeNode* treeNode) { return nullptr; }
 
 private:
     std::string Name;
     bool bIsValid = false;
-	bool bEntityDirty = true;
+    bool bEntityDirty = true;
 
-	//For profiling
-	uint32_t UpdateCount = 0;
+    //For profiling
+    uint32_t UpdateCount = 0;
 };
 
 } /* namespace Nome::Scene */

@@ -24,7 +24,7 @@ SamplerState PointSampler : register(s0);
 
 struct VSIn
 {
-	float3 Pos : ATTRIBUTE0;
+    float3 Pos : ATTRIBUTE0;
     float3 Color : ATTRIBUTE1;
 };
 
@@ -43,9 +43,9 @@ struct GSOut
 
 VSOut VSmain(VSIn input)
 {
-	VSOut output;
+    VSOut output;
     float4 worldPos = mul(float4(input.Pos, 1), Model);
-	output.Pos = mul(mul(worldPos, View), Proj);
+    output.Pos = mul(mul(worldPos, View), Proj);
     if (bColorCodeByWorldPos)
     {
         output.Color = (sin(worldPos) + 1) / 3;

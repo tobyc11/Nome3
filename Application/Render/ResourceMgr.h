@@ -7,15 +7,15 @@ namespace Nome
 class CResourceMgr
 {
 public:
-	static CResourceMgr& Get();
+    static CResourceMgr& Get();
 
-	CResourceMgr();
-	~CResourceMgr();
+    CResourceMgr();
+    ~CResourceMgr();
 
-	std::string Find(const std::string& filename);
+    std::string Find(const std::string& filename);
 
 private:
-	std::string ResourcesDir;
+    std::string ResourcesDir;
 };
 
 }

@@ -1,6 +1,6 @@
 struct VSIn
 {
-	float3 Pos : ATTRIBUTE0;
+    float3 Pos : ATTRIBUTE0;
     float3 Normal : ATTRIBUTE1;
 };
 
@@ -20,8 +20,8 @@ cbuffer CBEverything : register(b0)
 
 VSOut VSmain(VSIn input)
 {
-	VSOut output;
-	output.Pos = mul(mul(mul(float4(input.Pos, 1), Model), View), Proj);
+    VSOut output;
+    output.Pos = mul(mul(mul(float4(input.Pos, 1), Model), View), Proj);
     output.Normal = input.Normal;
     return output;
 }

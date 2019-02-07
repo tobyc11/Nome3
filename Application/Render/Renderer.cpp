@@ -28,7 +28,7 @@ struct CRendererPrivData
 
 CRenderer::CRenderer()
 {
-	GD = new CGraphicsDevice();
+    GD = new CGraphicsDevice();
     auto* dev = GetGD()->GetDevice();
 
     Pd = new CRendererPrivData();
@@ -110,7 +110,7 @@ CRenderer::CRenderer()
 CRenderer::~CRenderer()
 {
     delete Pd;
-	delete GD;
+    delete GD;
 }
 
 void CRenderer::BeginView(const tc::Matrix4& view, const tc::Matrix4& proj, CViewport* viewport, const tc::Color& clearColor,
@@ -119,8 +119,8 @@ void CRenderer::BeginView(const tc::Matrix4& view, const tc::Matrix4& proj, CVie
     CViewData viewData;
     viewData.ViewMat = view;
     viewData.ProjMat = proj;
-	viewData.Viewport = viewport;
-	viewData.ClearColor = clearColor;
+    viewData.Viewport = viewport;
+    viewData.ClearColor = clearColor;
     viewData.LineWidth = lineWidth;
     viewData.PointRadius = pointRadius;
     Views.push_back(viewData);
@@ -176,10 +176,10 @@ public:
             //Create input layout
             D3D11_INPUT_ELEMENT_DESC desc[] = {
                 { "ATTRIBUTE", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				{ "ATTRIBUTE", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+                { "ATTRIBUTE", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
             };
             dev->CreateInputLayout(desc, sizeof(desc) / sizeof(D3D11_INPUT_ELEMENT_DESC),
-				vsCode->GetBufferPointer(), vsCode->GetBufferSize(), DefaultInputLayout.GetAddressOf());
+                vsCode->GetBufferPointer(), vsCode->GetBufferSize(), DefaultInputLayout.GetAddressOf());
         }
 
         {
@@ -248,74 +248,74 @@ private:
 class CWireShader : public CShaderCommon
 {
 public:
-	CWireShader()
-	{
-		auto* dev = GRenderer->GetGD()->GetDevice();
-		CompileFile(CResourceMgr::Get().Find("Wire.hlsl"), "VSmain", "vs_5_0");
-		//Create input layout
-		D3D11_INPUT_ELEMENT_DESC ilDesc[] = {
-			{ "ATTRIBUTE", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-		};
-		dev->CreateInputLayout(ilDesc, sizeof(ilDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC),
-			VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), DefaultInputLayout.GetAddressOf());
-		dev->CreateVertexShader(VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), nullptr, VS.GetAddressOf());
-		CompileFile(CResourceMgr::Get().Find("Wire.hlsl"), "GSmain", "gs_5_0");
-		dev->CreateGeometryShader(GSBytecode->GetBufferPointer(), GSBytecode->GetBufferSize(), nullptr, GS.GetAddressOf());
-		GSBytecode = nullptr;
-		CompileFile(CResourceMgr::Get().Find("Wire.hlsl"), "PSmain", "ps_5_0");
-		dev->CreatePixelShader(PSBytecode->GetBufferPointer(), PSBytecode->GetBufferSize(), nullptr, PS.GetAddressOf());
-		PSBytecode = nullptr;
+    CWireShader()
+    {
+        auto* dev = GRenderer->GetGD()->GetDevice();
+        CompileFile(CResourceMgr::Get().Find("Wire.hlsl"), "VSmain", "vs_5_0");
+        //Create input layout
+        D3D11_INPUT_ELEMENT_DESC ilDesc[] = {
+            { "ATTRIBUTE", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+        };
+        dev->CreateInputLayout(ilDesc, sizeof(ilDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+            VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), DefaultInputLayout.GetAddressOf());
+        dev->CreateVertexShader(VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), nullptr, VS.GetAddressOf());
+        CompileFile(CResourceMgr::Get().Find("Wire.hlsl"), "GSmain", "gs_5_0");
+        dev->CreateGeometryShader(GSBytecode->GetBufferPointer(), GSBytecode->GetBufferSize(), nullptr, GS.GetAddressOf());
+        GSBytecode = nullptr;
+        CompileFile(CResourceMgr::Get().Find("Wire.hlsl"), "PSmain", "ps_5_0");
+        dev->CreatePixelShader(PSBytecode->GetBufferPointer(), PSBytecode->GetBufferSize(), nullptr, PS.GetAddressOf());
+        PSBytecode = nullptr;
 
-		//Create constant buffer
-		D3D11_BUFFER_DESC desc;
-		desc.ByteWidth = sizeof(CBEverythingBuf);
-		desc.Usage = D3D11_USAGE_DYNAMIC;
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		desc.MiscFlags = 0;
-		desc.StructureByteStride = 0;
-		dev->CreateBuffer(&desc, nullptr, CBEverything.GetAddressOf());
-	}
+        //Create constant buffer
+        D3D11_BUFFER_DESC desc;
+        desc.ByteWidth = sizeof(CBEverythingBuf);
+        desc.Usage = D3D11_USAGE_DYNAMIC;
+        desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        desc.MiscFlags = 0;
+        desc.StructureByteStride = 0;
+        dev->CreateBuffer(&desc, nullptr, CBEverything.GetAddressOf());
+    }
 
-	//TODO: abstract constant buffers into a generic class
-	struct CBEverythingDef
-	{
-		tc::Matrix4 Model;
-		tc::Matrix4 View;
-		tc::Matrix4 Proj;
-		tc::Vector4 Color;
-		float LineWidth;
-		float Width;
-		float Height;
-		float Padding;
-	} CBEverythingBuf;
+    //TODO: abstract constant buffers into a generic class
+    struct CBEverythingDef
+    {
+        tc::Matrix4 Model;
+        tc::Matrix4 View;
+        tc::Matrix4 Proj;
+        tc::Vector4 Color;
+        float LineWidth;
+        float Width;
+        float Height;
+        float Padding;
+    } CBEverythingBuf;
 
-	CBEverythingDef& GetCBEverything() { return CBEverythingBuf; }
-	void UpdateCBEverything(ID3D11DeviceContext* ctx)
-	{
-		D3D11_MAPPED_SUBRESOURCE cbMapped;
-		ctx->Map(CBEverything.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &cbMapped);
-		memcpy(cbMapped.pData, &CBEverythingBuf, sizeof(CBEverythingBuf));
-		ctx->Unmap(CBEverything.Get(), 0);
-	}
+    CBEverythingDef& GetCBEverything() { return CBEverythingBuf; }
+    void UpdateCBEverything(ID3D11DeviceContext* ctx)
+    {
+        D3D11_MAPPED_SUBRESOURCE cbMapped;
+        ctx->Map(CBEverything.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &cbMapped);
+        memcpy(cbMapped.pData, &CBEverythingBuf, sizeof(CBEverythingBuf));
+        ctx->Unmap(CBEverything.Get(), 0);
+    }
 
-	void Bind(ID3D11DeviceContext* ctx, bool bindInputLayout = true)
-	{
-		ID3D11Buffer* buffersToBind[] = { CBEverything.Get() };
-		ctx->VSSetShader(VS.Get(), nullptr, 0);
-		ctx->VSSetConstantBuffers(0, 1, buffersToBind);
-		ctx->GSSetShader(GS.Get(), nullptr, 0);
-		ctx->GSSetConstantBuffers(0, 1, buffersToBind);
-		ctx->PSSetShader(PS.Get(), nullptr, 0);
-		ctx->PSSetConstantBuffers(0, 1, buffersToBind);
+    void Bind(ID3D11DeviceContext* ctx, bool bindInputLayout = true)
+    {
+        ID3D11Buffer* buffersToBind[] = { CBEverything.Get() };
+        ctx->VSSetShader(VS.Get(), nullptr, 0);
+        ctx->VSSetConstantBuffers(0, 1, buffersToBind);
+        ctx->GSSetShader(GS.Get(), nullptr, 0);
+        ctx->GSSetConstantBuffers(0, 1, buffersToBind);
+        ctx->PSSetShader(PS.Get(), nullptr, 0);
+        ctx->PSSetConstantBuffers(0, 1, buffersToBind);
 
-		if (bindInputLayout)
-			ctx->IASetInputLayout(DefaultInputLayout.Get());
-	}
+        if (bindInputLayout)
+            ctx->IASetInputLayout(DefaultInputLayout.Get());
+    }
 
 private:
-	ComPtr<ID3D11InputLayout> DefaultInputLayout;
-	ComPtr<ID3D11Buffer> CBEverything;
+    ComPtr<ID3D11InputLayout> DefaultInputLayout;
+    ComPtr<ID3D11Buffer> CBEverything;
 };
 
 //Point rendering
@@ -401,62 +401,62 @@ void CRenderer::Render()
     //  But I am lazy.
     if (!BasicShader)
         BasicShader.reset(new CBasicShader());
-	if (!WireShader)
-		WireShader.reset(new CWireShader());
+    if (!WireShader)
+        WireShader.reset(new CWireShader());
     if (!PointShader)
         PointShader.reset(new CPointShader());
 
     auto* ctx = GetGD()->GetImmediateContext();
-	auto& cbBasic = BasicShader->GetCBEverything();
+    auto& cbBasic = BasicShader->GetCBEverything();
     auto& cbEverything = WireShader->GetCBEverything();
     for (const CViewData& view : Views)
     {
-		cbBasic.View = view.ViewMat;
-		cbBasic.Proj = view.ProjMat;
+        cbBasic.View = view.ViewMat;
+        cbBasic.Proj = view.ProjMat;
         cbEverything.View = view.ViewMat;
         cbEverything.Proj = view.ProjMat;
-		view.Viewport->BindAndClear(ctx, view.ClearColor.Data());
-		BasicShader->Bind(ctx);
-		for (const CViewData::CObjectData& obj : view.DrawListBasic)
-		{
-			if (auto* geometry = dynamic_cast<CStaticMeshGeometry*>(obj.Geom))
-			{
-				cbBasic.Model = obj.ModelMat;
-				cbBasic.Color = tc::Vector4(obj.Material->GetColor(), 1.0f);
-				BasicShader->UpdateCBEverything(ctx);
-				obj.Material->Bind(ctx);
-
-				//Bind vertex buffers
-				auto* posAttr = geometry->GetAttribute("POSITION");
-				ID3D11Buffer* vertexBuffer = posAttr->Buffer->GetD3D11Buffer();
-				ctx->IASetVertexBuffers(0, 1, &vertexBuffer, &posAttr->Stride, &posAttr->Offset);
-				ctx->IASetPrimitiveTopology(geometry->GetPrimitiveTopology());
-				if (TAutoPtr<CIndexBuffer> indexBuffer = geometry->GetIndexBuffer())
-				{
-					indexBuffer->Bind(ctx);
-					ctx->DrawIndexed(geometry->GetElementCount(), 0, 0);
-				}
-				else
-				{
-					ctx->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
-					ctx->Draw(geometry->GetElementCount(), 0);
-				}
-			}
-		}
-		WireShader->Bind(ctx);
+        view.Viewport->BindAndClear(ctx, view.ClearColor.Data());
+        BasicShader->Bind(ctx);
         for (const CViewData::CObjectData& obj : view.DrawListBasic)
         {
             if (auto* geometry = dynamic_cast<CStaticMeshGeometry*>(obj.Geom))
             {
-				if (geometry->GetPrimitiveTopology() == D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP)
-					continue; //Wireshader currently does not support line primitive types
+                cbBasic.Model = obj.ModelMat;
+                cbBasic.Color = tc::Vector4(obj.Material->GetColor(), 1.0f);
+                BasicShader->UpdateCBEverything(ctx);
+                obj.Material->Bind(ctx);
+
+                //Bind vertex buffers
+                auto* posAttr = geometry->GetAttribute("POSITION");
+                ID3D11Buffer* vertexBuffer = posAttr->Buffer->GetD3D11Buffer();
+                ctx->IASetVertexBuffers(0, 1, &vertexBuffer, &posAttr->Stride, &posAttr->Offset);
+                ctx->IASetPrimitiveTopology(geometry->GetPrimitiveTopology());
+                if (TAutoPtr<CIndexBuffer> indexBuffer = geometry->GetIndexBuffer())
+                {
+                    indexBuffer->Bind(ctx);
+                    ctx->DrawIndexed(geometry->GetElementCount(), 0, 0);
+                }
+                else
+                {
+                    ctx->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
+                    ctx->Draw(geometry->GetElementCount(), 0);
+                }
+            }
+        }
+        WireShader->Bind(ctx);
+        for (const CViewData::CObjectData& obj : view.DrawListBasic)
+        {
+            if (auto* geometry = dynamic_cast<CStaticMeshGeometry*>(obj.Geom))
+            {
+                if (geometry->GetPrimitiveTopology() == D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP)
+                    continue; //Wireshader currently does not support line primitive types
 
                 cbEverything.Model = obj.ModelMat;
                 cbEverything.Color = tc::Vector4(obj.Material->GetColor(), 1.0f);
                 cbEverything.LineWidth = view.LineWidth;
-				cbEverything.Width = view.Viewport->GetWidth();
-				cbEverything.Height = view.Viewport->GetHeight();
-				WireShader->UpdateCBEverything(ctx);
+                cbEverything.Width = view.Viewport->GetWidth();
+                cbEverything.Height = view.Viewport->GetHeight();
+                WireShader->UpdateCBEverything(ctx);
                 obj.Material->Bind(ctx);
                 ctx->RSSetState(Pd->PointRast.Get());
 
@@ -464,17 +464,17 @@ void CRenderer::Render()
                 auto* posAttr = geometry->GetAttribute("POSITION");
                 ID3D11Buffer* vertexBuffer = posAttr->Buffer->GetD3D11Buffer();
                 ctx->IASetVertexBuffers(0, 1, &vertexBuffer, &posAttr->Stride, &posAttr->Offset);
-				ctx->IASetPrimitiveTopology(geometry->GetPrimitiveTopology());
-				if (TAutoPtr<CIndexBuffer> indexBuffer = geometry->GetIndexBuffer())
-				{
-					indexBuffer->Bind(ctx);
-					ctx->DrawIndexed(geometry->GetElementCount(), 0, 0);
-				}
-				else
-				{
-					ctx->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
-					ctx->Draw(geometry->GetElementCount(), 0);
-				}
+                ctx->IASetPrimitiveTopology(geometry->GetPrimitiveTopology());
+                if (TAutoPtr<CIndexBuffer> indexBuffer = geometry->GetIndexBuffer())
+                {
+                    indexBuffer->Bind(ctx);
+                    ctx->DrawIndexed(geometry->GetElementCount(), 0, 0);
+                }
+                else
+                {
+                    ctx->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
+                    ctx->Draw(geometry->GetElementCount(), 0);
+                }
             }
         }
 
@@ -529,8 +529,8 @@ void CRenderer::Render()
             }
         }
     }
-	ctx->GSSetShader(nullptr, nullptr, 0);
-	Views.clear();
+    ctx->GSSetShader(nullptr, nullptr, 0);
+    Views.clear();
 }
 
 }

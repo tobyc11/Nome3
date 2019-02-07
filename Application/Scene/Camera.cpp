@@ -41,54 +41,54 @@ const Matrix4& CCamera::GetProjMatrix() const
 
 Matrix4 CCamera::GetViewMatrix() const
 {
-	if (SceneTreeNode)
-	{
-		auto viewInv = SceneTreeNode->L2WTransform.GetValue(Matrix3x4::IDENTITY);
-		return viewInv.Inverse().ToMatrix4();
-	}
-	return Matrix4::IDENTITY;
+    if (SceneTreeNode)
+    {
+        auto viewInv = SceneTreeNode->L2WTransform.GetValue(Matrix3x4::IDENTITY);
+        return viewInv.Inverse().ToMatrix4();
+    }
+    return Matrix4::IDENTITY;
 }
 
 Frustum CCamera::GetFrustum() const
 {
-	auto frustum = Frustum();
-	if (SceneTreeNode)
-	{
-		const auto& viewMatrix = SceneTreeNode->L2WTransform.GetValue(Matrix3x4::IDENTITY);
+    auto frustum = Frustum();
+    if (SceneTreeNode)
+    {
+        const auto& viewMatrix = SceneTreeNode->L2WTransform.GetValue(Matrix3x4::IDENTITY);
 
-		frustum.Define(FovY, AspectRatio, 1.0f, NearClip, FarClip, viewMatrix);
-		return frustum;
-	}
+        frustum.Define(FovY, AspectRatio, 1.0f, NearClip, FarClip, viewMatrix);
+        return frustum;
+    }
 
-	return frustum;
+    return frustum;
 }
 
 void COrbitCameraController::MouseMoved(int deltaX, int deltaY)
 {
-	if (bIsActive)
-	{
-		const float kCameraSpeed = 0.1f;
-		Yaw += deltaX * kCameraSpeed;
-		Pitch += deltaY * kCameraSpeed;
-		Transform.MarkDirty();
-	}
+    if (bIsActive)
+    {
+        const float kCameraSpeed = 0.1f;
+        Yaw += deltaX * kCameraSpeed;
+        Pitch += deltaY * kCameraSpeed;
+        Transform.MarkDirty();
+    }
 }
 
 void COrbitCameraController::WheelMoved(int degree)
 {
-	const float kZoomSpeed = 1.0f / 15.0f * 0.25f;
-	float delta = -degree * kZoomSpeed;
-	if (Location.z + delta < 0.0f)
-		Location.z /= 2.0f;
-	else
-		Location.z += delta;
-	Transform.MarkDirty();
+    const float kZoomSpeed = 1.0f / 15.0f * 0.25f;
+    float delta = -degree * kZoomSpeed;
+    if (Location.z + delta < 0.0f)
+        Location.z /= 2.0f;
+    else
+        Location.z += delta;
+    Transform.MarkDirty();
 }
 
 void COrbitCameraController::CalcTransform()
 {
-	auto rot = Quaternion(-Pitch, -Yaw, 0.0f);
-	Transform.UpdateValue(Matrix3x4(rot.RotationMatrix()) * Matrix3x4(Location, Quaternion::IDENTITY, 1.0f));
+    auto rot = Quaternion(-Pitch, -Yaw, 0.0f);
+    Transform.UpdateValue(Matrix3x4(rot.RotationMatrix()) * Matrix3x4(Location, Quaternion::IDENTITY, 1.0f));
 }
 
 }

@@ -30,20 +30,20 @@ public:
     ~CMainWindow();
 
 private slots:
-	void on_actionNew_triggered();
-	void on_actionOpen_triggered();
-	void on_actionReload_triggered();
-	void on_actionSave_triggered();
+    void on_actionNew_triggered();
+    void on_actionOpen_triggered();
+    void on_actionReload_triggered();
+    void on_actionSave_triggered();
     void on_actionPoint_triggered();
     void on_actionInstance_triggered();
-	void on_actionAbout_triggered();
-	void IdleProcess();
+    void on_actionAbout_triggered();
+    void IdleProcess();
 
 private:
-	//Load nome files into the current window, only call one of them
+    //Load nome files into the current window, only call one of them
     void LoadEmptyNomeFile();
     void LoadNomeFile(const std::string& filePath);
-	void UnloadNomeFile();
+    void UnloadNomeFile();
 
     Ui::MainWindow *ui;
 
@@ -51,15 +51,15 @@ private:
 
     //UI components
     CCodeWindow* CodeWindow = nullptr;
-	CNomeViewWidget* ViewWidget = nullptr;
-	QTimer* IdleTimer = nullptr;
+    CNomeViewWidget* ViewWidget = nullptr;
+    QTimer* IdleTimer = nullptr;
 
     //Nome Context
     sp<CSourceManager> SourceManager;
-	CSourceFile* SourceFile = nullptr;
+    CSourceFile* SourceFile = nullptr;
     sp<CASTContext> ASTContext;
-	tc::TAutoPtr<Scene::CScene> Scene;
-	CEditorViewportClient* ViewportClient = nullptr;
+    tc::TAutoPtr<Scene::CScene> Scene;
+    CEditorViewportClient* ViewportClient = nullptr;
 };
 
 }

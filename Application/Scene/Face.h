@@ -10,22 +10,22 @@ class CMesh;
 class CFace : public CEntity
 {
     //Face points, in order
-	DEFINE_INPUT_ARRAY(CVertexInfo*, Points) { MarkDirty(); }
+    DEFINE_INPUT_ARRAY(CVertexInfo*, Points) { MarkDirty(); }
 
-	DEFINE_OUTPUT_WITH_UPDATE(CFace*, Face) { UpdateEntity(); }
+    DEFINE_OUTPUT_WITH_UPDATE(CFace*, Face) { UpdateEntity(); }
 
 public:
-	using Super = CEntity;
+    using Super = CEntity;
     CFace() {}
     CFace(std::string name) : CEntity(std::move(name)) {}
 
-	void MarkDirty() override;
-	void UpdateEntity() override;
+    void MarkDirty() override;
+    void UpdateEntity() override;
 
     size_t CountVertices() const;
 
-	//Returns whether successful
-	bool AddFaceIntoMesh(CMesh* mesh) const;
+    //Returns whether successful
+    bool AddFaceIntoMesh(CMesh* mesh) const;
 };
 
 }

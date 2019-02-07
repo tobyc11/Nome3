@@ -16,9 +16,14 @@ public:
     FSignal(const FSignal&) = delete;
     FSignal& operator=(const FSignal&) = delete;
 
-    //Disallow move
-    FSignal(FSignal&&) = delete;
-    FSignal& operator=(FSignal&&) = delete;
+    //Can move
+    FSignal(FSignal&& other) : Slots(std::move(other.Slots)), CurrentId(other.CurrentId) {};
+    FSignal& operator=(FSignal&&)
+    {
+        Slots = std::move(other.Slots);
+        CurrentId = other.CurrentId;
+        return *this;
+    }
 
     unsigned int Connect(std::function<Signature> slot)
     {

@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 #include <map>
+#include <type_traits>
 
 namespace tc
 {
@@ -36,11 +37,11 @@ public:
     }
 
     template <typename... Args>
-    void operator()(const Args&... args)
+    void operator()(const Args&&... args)
     {
         for (auto pair : Slots)
         {
-            pair.second(args...);
+            pair.second(std::forward<Args>(args)...);
         }
     }
         

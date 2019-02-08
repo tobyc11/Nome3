@@ -6,6 +6,7 @@
 #include "ShaderCommon.h"
 #include "UniformBuffer.h"
 #include "ResourceMgr.h"
+#include "StateBlocks.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -19,11 +20,6 @@ CRenderer* GRenderer = &StaticRenderer;
 struct CRendererPrivData
 {
     ComPtr<ID3D11ShaderResourceView> DotSRV;
-    ComPtr<ID3D11SamplerState> DefaultSampler;
-
-    ComPtr<ID3D11RasterizerState> PointRast;
-    ComPtr<ID3D11DepthStencilState> PointDepthStencil;
-    ComPtr<ID3D11BlendState> PointBlend;
 };
 
 CRenderer::CRenderer()
@@ -46,65 +42,6 @@ CRenderer::CRenderer()
     CD3D11_SHADER_RESOURCE_VIEW_DESC sdesc{ texture.Get(), D3D11_SRV_DIMENSION_TEXTURE2D };
     dev->CreateShaderResourceView(texture.Get(), &sdesc, Pd->DotSRV.GetAddressOf());
     stbi_image_free(data);
-
-    D3D11_SAMPLER_DESC samplerDesc;
-    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-    samplerDesc.MipLODBias = 0;
-    samplerDesc.MaxAnisotropy = 1;
-    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-    samplerDesc.BorderColor[0] = 1.0f;
-    samplerDesc.BorderColor[1] = 1.0f;
-    samplerDesc.BorderColor[2] = 1.0f;
-    samplerDesc.BorderColor[3] = 1.0f;
-    samplerDesc.MinLOD = -3.402823466e+38F; // -FLT_MAX
-    samplerDesc.MaxLOD = 3.402823466e+38F; // FLT_MAX
-    dev->CreateSamplerState(&samplerDesc, Pd->DefaultSampler.GetAddressOf());
-
-    {
-        D3D11_RASTERIZER_DESC desc;
-        desc.FillMode = D3D11_FILL_SOLID;
-        desc.CullMode = D3D11_CULL_NONE;
-        desc.FrontCounterClockwise = true;
-        desc.DepthBias = -1000;
-        desc.DepthBiasClamp = 0.0f;
-        desc.SlopeScaledDepthBias = 0.0f;
-        desc.DepthClipEnable = true;
-        desc.ScissorEnable = false;
-        desc.MultisampleEnable = false;
-        desc.AntialiasedLineEnable = false;
-        dev->CreateRasterizerState(&desc, Pd->PointRast.GetAddressOf());
-    }
-    {
-        D3D11_DEPTH_STENCIL_DESC desc = {};
-        desc.DepthEnable = true;
-        desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-        desc.DepthFunc = D3D11_COMPARISON_LESS;
-        desc.StencilEnable = false;
-        desc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-        desc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-        desc.FrontFace.StencilFailOp = desc.FrontFace.StencilDepthFailOp = desc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-        desc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-        desc.BackFace = desc.FrontFace;
-        dev->CreateDepthStencilState(&desc, Pd->PointDepthStencil.GetAddressOf());
-    }
-    {
-        D3D11_BLEND_DESC desc = {};
-        desc.AlphaToCoverageEnable = false;
-        desc.IndependentBlendEnable = false;
-        const D3D11_RENDER_TARGET_BLEND_DESC targetBlendDesc =
-        {
-            true,
-            D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_OP_ADD,
-            D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_OP_ADD,
-            D3D11_COLOR_WRITE_ENABLE_ALL,
-        };
-        for (UINT i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
-            desc.RenderTarget[i] = targetBlendDesc;
-        dev->CreateBlendState(&desc, Pd->PointBlend.GetAddressOf());
-    }
 }
 
 CRenderer::~CRenderer()
@@ -458,7 +395,7 @@ void CRenderer::Render()
                 cbEverything.Height = view.Viewport->GetHeight();
                 WireShader->UpdateCBEverything(ctx);
                 obj.Material->Bind(ctx);
-                ctx->RSSetState(Pd->PointRast.Get());
+                ctx->RSSetState(NoCullBiasedRasterizerState.Get());
 
                 //Bind vertex buffers
                 auto* posAttr = geometry->GetAttribute("POSITION");
@@ -502,14 +439,12 @@ void CRenderer::Render()
                 ctx->VSSetConstantBuffers(0, 3, constBuffers);
                 ctx->GSSetConstantBuffers(0, 3, constBuffers);
                 ctx->PSSetConstantBuffers(0, 3, constBuffers);
-                ctx->PSSetSamplers(0, 1, Pd->DefaultSampler.GetAddressOf());
+                ctx->PSSetSamplers(0, 1, &DefaultSamplerState.Get());
                 ctx->PSSetShaderResources(0, 1, Pd->DotSRV.GetAddressOf());
 
-                ctx->RSSetState(Pd->PointRast.Get());
-                ctx->OMSetDepthStencilState(Pd->PointDepthStencil.Get(), 0);
-                float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-                UINT sampleMask = 0xffffffff;
-                ctx->OMSetBlendState(Pd->PointBlend.Get(), blendFactor, sampleMask);
+                ctx->RSSetState(NoCullBiasedRasterizerState.Get());
+                ctx->OMSetDepthStencilState(PointDepthStencilState.Get(), 0);
+                ctx->OMSetBlendState(PointBlendState.Get(), nullptr, 0xffffffff);
 
                 //Bind vertex buffers
                 auto* posAttr = geometry->GetAttribute("POSITION");

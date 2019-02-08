@@ -105,4 +105,20 @@ void CGraphicsDevice::RetrieveDesc()
     dxgiFactory->Release();
 }
 
+std::list<CRenderResource*> CRenderResource::GlobalList;
+
+CRenderResource::CRenderResource()
+{
+    //Insert into global linked list and fetch a reference
+    GlobalList.push_front(this);
+    ListRef = GlobalList.begin();
+}
+
+CRenderResource::~CRenderResource()
+{
+    //Remove itself from global linked list
+    GlobalList.erase(ListRef);
+}
+
+
 } // namespace Nome

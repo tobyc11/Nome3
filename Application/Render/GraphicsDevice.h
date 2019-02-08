@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <list>
 
 namespace Nome
 {
@@ -53,6 +54,22 @@ private:
     CShaderManager* ShaderManager;
 
     std::string Description;
+};
+
+class CRenderResource
+{
+public:
+    CRenderResource();
+
+    virtual void InitDeviceResources() = 0;
+    virtual void ReleaseDeviceResources() = 0;
+
+protected:
+    ~CRenderResource();
+
+private:
+    static std::list<CRenderResource*> GlobalList;
+    std::list<CRenderResource*>::iterator ListRef;
 };
 
 } // namespace Nome

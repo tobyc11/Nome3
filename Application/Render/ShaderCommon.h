@@ -1,5 +1,5 @@
 #pragma once
-#include "IncludeD3D11.h"
+#include "GraphicsDevice.h"
 #include <d3dcompiler.h>
 #include <string>
 #include <fstream>
@@ -8,7 +8,7 @@
 namespace Nome
 {
 
-class CShaderCommon
+class CShaderCommon : private CRenderResource
 {
 protected:
     bool CompileFile(const std::string& fileName, const char* entry, const char* target)
@@ -52,6 +52,15 @@ protected:
     ComPtr<ID3D11GeometryShader> GS;
     ComPtr<ID3DBlob> PSBytecode;
     ComPtr<ID3D11PixelShader> PS;
+
+private:
+    void InitDeviceResources() override {}
+    void ReleaseDeviceResources() override
+    {
+        VS.Reset();
+        GS.Reset();
+        PS.Reset();
+    }
 };
 
 }

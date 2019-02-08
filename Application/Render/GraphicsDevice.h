@@ -43,6 +43,8 @@ public:
 
     const std::string& GetDescription() const { return Description; }
 
+    void ReleaseAllResources() const;
+
 private:
     void RetrieveDesc();
 
@@ -56,6 +58,9 @@ private:
     std::string Description;
 };
 
+//This is an interface to ensure proper resource management and destruction
+//All classes that contain device objects (especially classes that have static lifetime)
+//  should inherit this and override the Init/Release methods.
 class CRenderResource
 {
 public:
@@ -68,6 +73,8 @@ protected:
     ~CRenderResource();
 
 private:
+    //Allow the device to access resources
+    friend class CGraphicsDevice;
     static std::list<CRenderResource*> GlobalList;
     std::list<CRenderResource*>::iterator ListRef;
 };

@@ -67,8 +67,25 @@ CGraphicsDevice::~CGraphicsDevice()
 {
     if (ImmediateContext) ImmediateContext->ClearState();
 
+    ReleaseAllResources();
+
+#ifdef _DEBUG
+    ID3D11Debug* debug = nullptr;
+    D3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&debug));
+    debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+    debug->Release();
+#endif
+
     if (ImmediateContext) ImmediateContext->Release();
     if (D3dDevice) D3dDevice->Release();
+}
+
+void CGraphicsDevice::ReleaseAllResources() const
+{
+    for (auto resource : CRenderResource::GlobalList)
+    {
+        resource->ReleaseDeviceResources();
+    }
 }
 
 void CGraphicsDevice::RetrieveDesc()

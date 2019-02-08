@@ -51,7 +51,7 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
                 continue;
             }
 
-            //Not close enough, rename and add
+            //Not close enough, rename and add the vertex
             int suffix = 1;
             while (mesh->HasVertex(newName))
                 newName = point->Name + std::to_string(suffix++);

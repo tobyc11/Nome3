@@ -124,11 +124,15 @@ CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
 {
     SetName(tc::StringPrintf("_%s_%s", MeshGenerator->GetName().c_str(), GetName().c_str()));
     MeshGenerator->InstanceSet.insert(this);
-    SceneTreeNode->OnTransformChange.Connect(std::bind(&CMeshInstance::MarkOnlyDownstreamDirty, this));
+
+    //We listen to the transformation changes of the associated tree node
+    TransformChangeConnection = SceneTreeNode->OnTransformChange.Connect(
+        std::bind(&CMeshInstance::MarkOnlyDownstreamDirty, this));
 }
 
 CMeshInstance::~CMeshInstance()
 {
+    SceneTreeNode->OnTransformChange.Disconnect(TransformChangeConnection);
     MeshGenerator->InstanceSet.erase(this);
     delete Priv;
 }

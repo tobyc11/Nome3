@@ -57,8 +57,12 @@ private:
     std::vector<CMeshImpl::VertexHandle> LineStrip;
 };
 
+//This is the entity class for a mesh instance
+//Why is this needed?
+//  The same mesh might get instanciated multiple times and get separately edited by the user.
 class CMeshInstance : public CEntity
 {
+    //This connects to all the vertex selectors naming a vertex from this mesh instance
     DEFINE_OUTPUT_WITH_UPDATE(CMeshInstance*, SelectorSignal)
     {
         UpdateEntity();
@@ -73,16 +77,22 @@ public:
     CMeshInstance(CMesh* generator, CSceneTreeNode* stn);
     ~CMeshInstance();
 
+    //Called when the mesh entity is updated
     void MarkDirty() override;
+    //Nothing changed about this mesh except its transformations and such
     void MarkOnlyDownstreamDirty();
+    //Copy the actual mesh from the mesh entity and notify selectors
     void UpdateEntity() override;
 
     std::set<std::string>& GetFacesToDelete() { return FacesToDelete; }
     const std::set<std::string>& GetFacesToDelete() const { return FacesToDelete; }
 
     void Draw(CSceneTreeNode* treeNode);
+
+    //Create a vertex selector with a vertex name, and a name for the resulting vertex
     CVertexSelector* CreateVertexSelector(const std::string& name, const std::string& outputName);
 
+    //Get the scene tree node associated with this mesh instance
     CSceneTreeNode* GetSceneTreeNode() const { return SceneTreeNode; }
 
     void CopyFromGenerator();
@@ -91,6 +101,8 @@ private:
     TAutoPtr<CMesh> MeshGenerator;
     ///A weak pointer to the owning scene tree node
     CSceneTreeNode* SceneTreeNode;
+
+    unsigned int TransformChangeConnection;
 
     CMeshImpl Mesh;
     std::map<std::string, CMeshImpl::VertexHandle> NameToVert;

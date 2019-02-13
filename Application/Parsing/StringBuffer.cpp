@@ -16,13 +16,12 @@ CStringBuffer::CLocation CStringBuffer::GetLocation(size_t offset)
     if (offset > Buffer.size())
         return {};
 
-    for (auto iter = LocationTable.begin(); iter != LocationTable.end(); ++iter)
-    {
-        if (*iter == offset)
-            return iter.ToReference();
-    }
+    auto iter = LocationMap.find(offset);
+    if (iter != LocationMap.end())
+        return iter->second;
 
     CLocation loc = LocationTable.GetNewElement(tc::kAddToBack);
+    LocationMap[offset] = loc;
     *loc = offset;
     return loc;
 }
@@ -47,6 +46,8 @@ void CStringBuffer::ReplaceRange(size_t begin, size_t end, const std::string& co
                 loc += deltaLen;
         }
     }
+    RebuildLocationMap();
+
     //Now replace the actual content
     Buffer.replace(begin, lenBefore, content);
 }
@@ -60,6 +61,15 @@ void CStringBuffer::WriteLine(const std::string& what)
 {
     Buffer += what;
     Buffer += '\n';
+}
+
+void CStringBuffer::RebuildLocationMap()
+{
+    LocationMap.clear();
+    for (auto iter = LocationTable.begin(); iter != LocationTable.end(); ++iter)
+    {
+        LocationMap[*iter] = iter.ToReference();
+    }
 }
 
 }

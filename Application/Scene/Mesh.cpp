@@ -82,17 +82,18 @@ Vector3 CMesh::GetVertexPos(const std::string& name) const
 void CMesh::AddFace(const std::string& name, const std::vector<std::string>& facePoints)
 {
     std::vector<CMeshImpl::VertexHandle> faceVHandles;
-    for (const std::string& name : facePoints)
+    for (const std::string& pointName : facePoints)
     {
-        faceVHandles.push_back(NameToVert[name]);
+        faceVHandles.push_back(NameToVert[pointName]);
     }
-    auto faceHandle = Mesh.add_face(faceVHandles);
-    NameToFace.emplace(name, faceHandle);
+    AddFace(name, faceVHandles);
 }
 
 void CMesh::AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints)
 {
     auto faceHandle = Mesh.add_face(facePoints);
+    if (!faceHandle.is_valid())
+        printf("Could not add face %s into mesh %s\n", name.c_str(), GetName().c_str());
     NameToFace.emplace(name, faceHandle);
 }
 

@@ -40,7 +40,7 @@ void CASTSceneBuilder::VisitPolyline(AIdent* name, const std::vector<AIdent*>& p
         Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
         if (!pointOutput)
         {
-            throw std::runtime_error(tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()));
+            throw CSemanticError(tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), name);
         }
         polyline->Points.Connect(*pointOutput);
     }
@@ -56,7 +56,7 @@ void CASTSceneBuilder::VisitFace(AIdent* name, const std::vector<AIdent*>& point
         Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
         if (!pointOutput)
         {
-            throw std::runtime_error(tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()));
+            throw CSemanticError(tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), name);
         }
         face->Points.Connect(*pointOutput);
     }
@@ -77,11 +77,11 @@ void CASTSceneBuilder::VisitObject(AIdent* name, const std::vector<AIdent*>& fac
         TAutoPtr<CEntity> entity = Scene->FindEntity(ident->Identifier);
         if (!entity)
         {
-            throw std::runtime_error(tc::StringPrintf("Cannot find entity %s", ident->Identifier.c_str()));
+            throw CSemanticError(tc::StringPrintf("Cannot find entity %s", ident->Identifier.c_str()), ident);
         }
         CFace* face = dynamic_cast<CFace*>(entity.Get());
         if (!face)
-            throw std::runtime_error(tc::StringPrintf("Entity %s is not a face", ident->Identifier.c_str()));
+            throw CSemanticError(tc::StringPrintf("Entity %s is not a face", ident->Identifier.c_str()), ident);
         mesh->Faces.Connect(face->Face);
     }
     Scene->AddEntity(mesh.Get());
@@ -140,7 +140,7 @@ void CASTSceneBuilder::VisitBezierCurve(AIdent* name, const std::vector<AIdent*>
 
 void CASTSceneBuilder::VisitBSpline(AIdent* name, const std::vector<AIdent*>& points, AExpr* order, AExpr* nSlices, bool closed)
 {
-    throw std::runtime_error("Sorry, bspline is not yet supported");
+    throw CSemanticError("Sorry, bspline is not yet supported", name);
 }
 
 void CASTSceneBuilder::VisitInstance(AIdent* name, AIdent* entityName, const std::vector<ATransform*>& transformList, AIdent* surface)
@@ -171,7 +171,7 @@ void CASTSceneBuilder::VisitInstance(AIdent* name, AIdent* entityName, const std
     }
     else
     {
-        throw std::runtime_error(tc::StringPrintf("Instantiation failed, unknown generator: %s", entityName->Identifier.c_str()));
+        throw CSemanticError(tc::StringPrintf("Instantiation failed, unknown generator: %s", entityName->Identifier.c_str()), entityName);
     }
 }
 
@@ -205,14 +205,14 @@ void CASTSceneBuilder::VisitDelete(const std::vector<ACommand*>& faceCmds)
     for (auto* cmd : faceCmds)
     {
         if (cmd->BeginKeyword->Keyword != "face")
-            throw std::runtime_error("Delete command can only contain faces.");
+            throw CSemanticError("Delete command can only contain faces.", cmd);
         auto node_face = Scene->WalkPath(cmd->Name->Identifier);
         CEntity* instEnt = node_face.first->GetInstanceEntity();
         if (!instEnt)
-            throw std::runtime_error("Delete face names an invalid mesh instance");
+            throw CSemanticError("Delete face names an invalid mesh instance", cmd);
         auto* meshInst = dynamic_cast<CMeshInstance*>(instEnt);
         if (!meshInst)
-            throw std::runtime_error("Delete face names an invalid mesh instance");
+            throw CSemanticError("Delete face names an invalid mesh instance", cmd);
         meshInst->GetFacesToDelete().insert(node_face.second);
         printf("[Debug] %s", node_face.second.c_str());
     }
@@ -265,7 +265,7 @@ void CExprToNodeGraph::VisitIdent(AIdent* ident)
 {
     SliderVal = BankAndSet.GetSlider(ident->Identifier);
     if (!SliderVal)
-        throw std::runtime_error("wtf no such slider");
+        throw CSemanticError(tc::StringPrintf("Could not find slider %s", ident->Identifier.c_str()), ident);
     WhichOne = 7;
 }
 
@@ -288,6 +288,7 @@ void CExprToNodeGraph::VisitUnaryOp(AUnaryOp* op)
         WhichOne = 1;
         break;
     }
+    //TODO: implement trig functions
     default:
         throw std::runtime_error("wtf unary operator unheard of");
         break;

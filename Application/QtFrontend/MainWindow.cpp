@@ -183,6 +183,20 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
     {
         builder.Traverse();
     }
+    catch (const Scene::CSemanticError& exception)
+    {
+        printf("Semantic error encountered during scene building:\n");
+        printf("%s\n", exception.what());
+
+        auto reply = QMessageBox::question(this, "Error", "See console for details. Continue anyway?",
+            QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::No)
+        {
+            UnloadNomeFile();
+            LoadEmptyNomeFile();
+            return;
+        }
+    }
     catch (const std::runtime_error& exception)
     {
         printf("Exception thrown during scene building (file parsing):\n");

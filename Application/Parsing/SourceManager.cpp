@@ -1,4 +1,5 @@
 #include "SourceManager.h"
+#include <StringPrintf.h>
 #include <fstream>
 #include <streambuf>
 
@@ -15,6 +16,11 @@ CSourceLocation::CSourceLocation()
 }
 
 CSourceLocation::CSourceLocation(CStringBuffer::CLocation inLocation) : Location(inLocation)
+{
+}
+
+CSourceLocation::CSourceLocation(CStringBuffer::CLocation inLocation, uint16_t line, uint16_t col)
+    : Location(inLocation), DebugLine(line), DebugCol(col)
 {
 }
 
@@ -49,6 +55,11 @@ bool CSourceLocation::operator<=(const CSourceLocation& rhs) const
 bool CSourceLocation::IsValid() const
 {
     return Location.IsValid();
+}
+
+std::string CSourceLocation::ToString() const
+{
+    return tc::StringPrintf("%d:%d", DebugLine, DebugCol);
 }
 
 CSourceRange::CSourceRange()

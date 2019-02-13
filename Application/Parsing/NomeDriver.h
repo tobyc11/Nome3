@@ -23,10 +23,17 @@ public:
     void ParseToAST();
 
     CASTContext* GetASTContext() const { return Context; }
-    CSourceLocation OffsetToLocation(int offset)
+    CSourceLocation OffsetToLocation(int offset, int line = 0, int col = 0)
     {
+        assert(line <= UINT16_MAX && line >= 0);
+        assert(col <= UINT16_MAX && col >= 0);
         if (SourceMgr)
-            return SourceMgr->GetLocation(SourceFile, offset);
+        {
+            auto srcLoc = SourceMgr->GetLocation(SourceFile, offset);
+            srcLoc.DebugLine = (uint16_t)line;
+            srcLoc.DebugCol = (uint16_t)col;
+            return srcLoc;
+        }
         return CSourceLocation();
     }
 

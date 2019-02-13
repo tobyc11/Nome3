@@ -32,6 +32,7 @@ class CSourceLocation
 public:
     CSourceLocation();
     CSourceLocation(CStringBuffer::CLocation inLocation);
+    CSourceLocation(CStringBuffer::CLocation inLocation, uint16_t line, uint16_t col);
 
     bool operator==(const CSourceLocation& rhs) const;
     bool operator<(const CSourceLocation& rhs) const;
@@ -39,7 +40,12 @@ public:
 
     bool IsValid() const;
 
+    //For displaying error messages to the user, they may not be accurate after saving or modifying the ast
+    std::string ToString() const;
+    uint16_t DebugLine = 0, DebugCol = 0;
+
 private:
+    //This location is always accurate with respect to any update
     CStringBuffer::CLocation Location;
 };
 

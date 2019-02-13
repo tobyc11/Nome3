@@ -12,27 +12,21 @@
     yylloc->last_column = yycolumn + yyleng - 1; \
     yycolumn += yyleng; \
     driver->tokenBegin = driver->currOffset; driver->tokenEnd = driver->currOffset + yyleng - 1; driver->currOffset += yyleng; }
+	
+#define LEXER_KEYWORD \
+    yylval->Keyword = Nome::AKeyword::Create(*driver->GetASTContext(), yytext, \
+        driver->OffsetToLocation(driver->tokenBegin, yylloc->first_line, yylloc->first_column), \
+        driver->OffsetToLocation(driver->tokenEnd, yylloc->last_line, yylloc->last_column));
 
-Nome::AKeyword* NewKeyword(Nome::CNomeDriver* driver, const char* string)
-{
-    auto* astNode = Nome::AKeyword::Create(*driver->GetASTContext(), string,
-        driver->OffsetToLocation(driver->tokenBegin), driver->OffsetToLocation(driver->tokenEnd));
-    return astNode;
-}
+#define LEXER_IDENT \
+    yylval->Ident = Nome::AIdent::Create(*driver->GetASTContext(), yytext, \
+        driver->OffsetToLocation(driver->tokenBegin, yylloc->first_line, yylloc->first_column), \
+        driver->OffsetToLocation(driver->tokenEnd, yylloc->last_line, yylloc->last_column));
 
-Nome::AIdent* NewIdent(Nome::CNomeDriver* driver, const char* string)
-{
-    auto* astNode = Nome::AIdent::Create(*driver->GetASTContext(), string,
-        driver->OffsetToLocation(driver->tokenBegin), driver->OffsetToLocation(driver->tokenEnd));
-    return astNode;
-}
-
-Nome::ANumber* NewNumber(Nome::CNomeDriver* driver, const char* string)
-{
-    auto* astNode = Nome::ANumber::Create(*driver->GetASTContext(), string,
-        driver->OffsetToLocation(driver->tokenBegin), driver->OffsetToLocation(driver->tokenEnd));
-    return astNode;
-}
+#define LEXER_NUMBER \
+    yylval->Expr = Nome::ANumber::Create(*driver->GetASTContext(), yytext, \
+        driver->OffsetToLocation(driver->tokenBegin, yylloc->first_line, yylloc->first_column), \
+        driver->OffsetToLocation(driver->tokenEnd, yylloc->last_line, yylloc->last_column));
 
 int isatty(int fd) { return 0; }
 %}
@@ -61,85 +55,85 @@ ID [a-z][a-zA-Z0-9]*
     \n                      BEGIN(INITIAL);
     .                       ;
 }
-expr                        { yylval->Keyword = NewKeyword(driver, yytext); return EXPR; }
-sin                         { yylval->Keyword = NewKeyword(driver, yytext); return SIN; }
-cos                         { yylval->Keyword = NewKeyword(driver, yytext); return COS; }
-tan                         { yylval->Keyword = NewKeyword(driver, yytext); return TAN; }
-cot                         { yylval->Keyword = NewKeyword(driver, yytext); return COT; }
-sec                         { yylval->Keyword = NewKeyword(driver, yytext); return SEC; }
-csc                         { yylval->Keyword = NewKeyword(driver, yytext); return CSC; }
-arcsin                      { yylval->Keyword = NewKeyword(driver, yytext); return ARCSIN; }
-arccos                      { yylval->Keyword = NewKeyword(driver, yytext); return ARCCOS; }
-arctan                      { yylval->Keyword = NewKeyword(driver, yytext); return ARCTAN; }
-arccot                      { yylval->Keyword = NewKeyword(driver, yytext); return ARCCOT; }
-arcsec                      { yylval->Keyword = NewKeyword(driver, yytext); return ARCSEC; }
-arccsc                      { yylval->Keyword = NewKeyword(driver, yytext); return ARCCSC; }
-point                       { yylval->Keyword = NewKeyword(driver, yytext); return POINT; }
-endpoint                    { yylval->Keyword = NewKeyword(driver, yytext); return ENDPOINT; }
-polyline                    { yylval->Keyword = NewKeyword(driver, yytext); return POLYLINE; }
-endpolyline                 { yylval->Keyword = NewKeyword(driver, yytext); return ENDPOLYLINE; }
-closed                      { yylval->Keyword = NewKeyword(driver, yytext); return CLOSED; }
-face                        { yylval->Keyword = NewKeyword(driver, yytext); return FACE; }
-endface                     { yylval->Keyword = NewKeyword(driver, yytext); return ENDFACE; }
-object                      { yylval->Keyword = NewKeyword(driver, yytext); return OBJECT; }
-endobject                   { yylval->Keyword = NewKeyword(driver, yytext); return ENDOBJECT; }
-mesh                        { yylval->Keyword = NewKeyword(driver, yytext); return MESH; }
-endmesh                     { yylval->Keyword = NewKeyword(driver, yytext); return ENDMESH; }
-group                       { yylval->Keyword = NewKeyword(driver, yytext); return GROUP; }
-endgroup                    { yylval->Keyword = NewKeyword(driver, yytext); return ENDGROUP; }
-circle                      { yylval->Keyword = NewKeyword(driver, yytext); return CIRCLE; }
-endcircle                   { yylval->Keyword = NewKeyword(driver, yytext); return ENDCIRCLE; }
-funnel                      { yylval->Keyword = NewKeyword(driver, yytext); return FUNNEL; }
-endfunnel                   { yylval->Keyword = NewKeyword(driver, yytext); return ENDFUNNEL; }
-tunnel                      { yylval->Keyword = NewKeyword(driver, yytext); return TUNNEL; }
-endtunnel                   { yylval->Keyword = NewKeyword(driver, yytext); return ENDTUNNEL; }
-beziercurve                 { yylval->Keyword = NewKeyword(driver, yytext); return BEZIERCURVE; }
-endbeziercurve              { yylval->Keyword = NewKeyword(driver, yytext); return ENDBEZIERCURVE; }
-slices                      { yylval->Keyword = NewKeyword(driver, yytext); return SLICES; }
-bspline                     { yylval->Keyword = NewKeyword(driver, yytext); return BSPLINE; }
-endbspline                  { yylval->Keyword = NewKeyword(driver, yytext); return ENDBSPLINE; }
-order                       { yylval->Keyword = NewKeyword(driver, yytext); return ORDER; }
-instance                    { yylval->Keyword = NewKeyword(driver, yytext); return INSTANCE; }
-endinstance                 { yylval->Keyword = NewKeyword(driver, yytext); return ENDINSTANCE; }
-rotate                      { yylval->Keyword = NewKeyword(driver, yytext); return ROTATE; }
-scale                       { yylval->Keyword = NewKeyword(driver, yytext); return SCALE; }
-translate                   { yylval->Keyword = NewKeyword(driver, yytext); return TRANSLATE; }
-surface                     { yylval->Keyword = NewKeyword(driver, yytext); return SURFACE; }
-endsurface                  { yylval->Keyword = NewKeyword(driver, yytext); return ENDSURFACE; }
-color                       { yylval->Keyword = NewKeyword(driver, yytext); return COLOR; } 
-background                  { yylval->Keyword = NewKeyword(driver, yytext); return BACKGROUND; }
-endbackground               { yylval->Keyword = NewKeyword(driver, yytext); return ENDBACKGROUND; }
-foreground                  { yylval->Keyword = NewKeyword(driver, yytext); return FOREGROUND; }
-endforeground               { yylval->Keyword = NewKeyword(driver, yytext); return ENDFOREGROUND; }
-insidefaces                 { yylval->Keyword = NewKeyword(driver, yytext); return INSIDEFACES; }
-endinsidefaces              { yylval->Keyword = NewKeyword(driver, yytext); return ENDINSIDEFACES; }
-outsidefaces                { yylval->Keyword = NewKeyword(driver, yytext); return OUTSIDEFACES; }
-endoutsidefaces             { yylval->Keyword = NewKeyword(driver, yytext); return ENDOUTSIDEFACES; }
-offsetfaces                 { yylval->Keyword = NewKeyword(driver, yytext); return OFFSETFACES; }
-endoffsetfaces              { yylval->Keyword = NewKeyword(driver, yytext); return ENDOFFSETFACES; }
-frontfaces                  { yylval->Keyword = NewKeyword(driver, yytext); return FRONTFACES; }
-endfrontfaces               { yylval->Keyword = NewKeyword(driver, yytext); return ENDFRONTFACES; }
-backfaces                   { yylval->Keyword = NewKeyword(driver, yytext); return BACKFACES; }
-endbackfaces                { yylval->Keyword = NewKeyword(driver, yytext); return ENDBACKFACES; }
-rimfaces                    { yylval->Keyword = NewKeyword(driver, yytext); return RIMFACES; }
-endrimfaces                 { yylval->Keyword = NewKeyword(driver, yytext); return ENDRIMFACES; }
-bank                        { yylval->Keyword = NewKeyword(driver, yytext); return BANK; }
-endbank                     { yylval->Keyword = NewKeyword(driver, yytext); return ENDBANK; }
-set                         { yylval->Keyword = NewKeyword(driver, yytext); return SET; }
-delete                      { yylval->Keyword = NewKeyword(driver, yytext); return DELETE; }
-enddelete                   { yylval->Keyword = NewKeyword(driver, yytext); return ENDDELETE; }
-subdivision                 { yylval->Keyword = NewKeyword(driver, yytext); return SUBDIVISION; }
-endsubdivision              { yylval->Keyword = NewKeyword(driver, yytext); return ENDSUBDIVISION; }
-type                        { yylval->Keyword = NewKeyword(driver, yytext); return TYPE; }
-subdivisions                { yylval->Keyword = NewKeyword(driver, yytext); return SUBDIVISIONS; }
-offset                      { yylval->Keyword = NewKeyword(driver, yytext); return OFFSET; }
-endoffset                   { yylval->Keyword = NewKeyword(driver, yytext); return ENDOFFSET; }
-min                         { yylval->Keyword = NewKeyword(driver, yytext); return MIN; }
-max                         { yylval->Keyword = NewKeyword(driver, yytext); return MAX; }
-step                        { yylval->Keyword = NewKeyword(driver, yytext); return STEP; }
-\$[a-zA-Z\.][a-zA-Z0-9_\.]* { yylval->Ident = NewIdent(driver, yytext); return IDENT; }
-[a-zA-Z\.][a-zA-Z0-9_\.]*   { yylval->Ident = NewIdent(driver, yytext); return IDENT; }
--?([0-9]*[.])?[0-9]+        { yylval->Expr = NewNumber(driver, yytext); return NUMBER; }
+expr                        { LEXER_KEYWORD; return EXPR; }
+sin                         { LEXER_KEYWORD; return SIN; }
+cos                         { LEXER_KEYWORD; return COS; }
+tan                         { LEXER_KEYWORD; return TAN; }
+cot                         { LEXER_KEYWORD; return COT; }
+sec                         { LEXER_KEYWORD; return SEC; }
+csc                         { LEXER_KEYWORD; return CSC; }
+arcsin                      { LEXER_KEYWORD; return ARCSIN; }
+arccos                      { LEXER_KEYWORD; return ARCCOS; }
+arctan                      { LEXER_KEYWORD; return ARCTAN; }
+arccot                      { LEXER_KEYWORD; return ARCCOT; }
+arcsec                      { LEXER_KEYWORD; return ARCSEC; }
+arccsc                      { LEXER_KEYWORD; return ARCCSC; }
+point                       { LEXER_KEYWORD; return POINT; }
+endpoint                    { LEXER_KEYWORD; return ENDPOINT; }
+polyline                    { LEXER_KEYWORD; return POLYLINE; }
+endpolyline                 { LEXER_KEYWORD; return ENDPOLYLINE; }
+closed                      { LEXER_KEYWORD; return CLOSED; }
+face                        { LEXER_KEYWORD; return FACE; }
+endface                     { LEXER_KEYWORD; return ENDFACE; }
+object                      { LEXER_KEYWORD; return OBJECT; }
+endobject                   { LEXER_KEYWORD; return ENDOBJECT; }
+mesh                        { LEXER_KEYWORD; return MESH; }
+endmesh                     { LEXER_KEYWORD; return ENDMESH; }
+group                       { LEXER_KEYWORD; return GROUP; }
+endgroup                    { LEXER_KEYWORD; return ENDGROUP; }
+circle                      { LEXER_KEYWORD; return CIRCLE; }
+endcircle                   { LEXER_KEYWORD; return ENDCIRCLE; }
+funnel                      { LEXER_KEYWORD; return FUNNEL; }
+endfunnel                   { LEXER_KEYWORD; return ENDFUNNEL; }
+tunnel                      { LEXER_KEYWORD; return TUNNEL; }
+endtunnel                   { LEXER_KEYWORD; return ENDTUNNEL; }
+beziercurve                 { LEXER_KEYWORD; return BEZIERCURVE; }
+endbeziercurve              { LEXER_KEYWORD; return ENDBEZIERCURVE; }
+slices                      { LEXER_KEYWORD; return SLICES; }
+bspline                     { LEXER_KEYWORD; return BSPLINE; }
+endbspline                  { LEXER_KEYWORD; return ENDBSPLINE; }
+order                       { LEXER_KEYWORD; return ORDER; }
+instance                    { LEXER_KEYWORD; return INSTANCE; }
+endinstance                 { LEXER_KEYWORD; return ENDINSTANCE; }
+rotate                      { LEXER_KEYWORD; return ROTATE; }
+scale                       { LEXER_KEYWORD; return SCALE; }
+translate                   { LEXER_KEYWORD; return TRANSLATE; }
+surface                     { LEXER_KEYWORD; return SURFACE; }
+endsurface                  { LEXER_KEYWORD; return ENDSURFACE; }
+color                       { LEXER_KEYWORD; return COLOR; } 
+background                  { LEXER_KEYWORD; return BACKGROUND; }
+endbackground               { LEXER_KEYWORD; return ENDBACKGROUND; }
+foreground                  { LEXER_KEYWORD; return FOREGROUND; }
+endforeground               { LEXER_KEYWORD; return ENDFOREGROUND; }
+insidefaces                 { LEXER_KEYWORD; return INSIDEFACES; }
+endinsidefaces              { LEXER_KEYWORD; return ENDINSIDEFACES; }
+outsidefaces                { LEXER_KEYWORD; return OUTSIDEFACES; }
+endoutsidefaces             { LEXER_KEYWORD; return ENDOUTSIDEFACES; }
+offsetfaces                 { LEXER_KEYWORD; return OFFSETFACES; }
+endoffsetfaces              { LEXER_KEYWORD; return ENDOFFSETFACES; }
+frontfaces                  { LEXER_KEYWORD; return FRONTFACES; }
+endfrontfaces               { LEXER_KEYWORD; return ENDFRONTFACES; }
+backfaces                   { LEXER_KEYWORD; return BACKFACES; }
+endbackfaces                { LEXER_KEYWORD; return ENDBACKFACES; }
+rimfaces                    { LEXER_KEYWORD; return RIMFACES; }
+endrimfaces                 { LEXER_KEYWORD; return ENDRIMFACES; }
+bank                        { LEXER_KEYWORD; return BANK; }
+endbank                     { LEXER_KEYWORD; return ENDBANK; }
+set                         { LEXER_KEYWORD; return SET; }
+delete                      { LEXER_KEYWORD; return DELETE; }
+enddelete                   { LEXER_KEYWORD; return ENDDELETE; }
+subdivision                 { LEXER_KEYWORD; return SUBDIVISION; }
+endsubdivision              { LEXER_KEYWORD; return ENDSUBDIVISION; }
+type                        { LEXER_KEYWORD; return TYPE; }
+subdivisions                { LEXER_KEYWORD; return SUBDIVISIONS; }
+offset                      { LEXER_KEYWORD; return OFFSET; }
+endoffset                   { LEXER_KEYWORD; return ENDOFFSET; }
+min                         { LEXER_KEYWORD; return MIN; }
+max                         { LEXER_KEYWORD; return MAX; }
+step                        { LEXER_KEYWORD; return STEP; }
+\$[a-zA-Z\.][a-zA-Z0-9_\.]* { LEXER_IDENT; return IDENT; }
+[a-zA-Z\.][a-zA-Z0-9_\.]*   { LEXER_IDENT; return IDENT; }
+-?([0-9]*[.])?[0-9]+        { LEXER_NUMBER; return NUMBER; }
 [ \t\n]+                    ;
 .                           { return yytext[0]; }
 %%

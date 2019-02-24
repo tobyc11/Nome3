@@ -15,6 +15,7 @@ using tc::FSignal;
 //Forward declaration
 class CSceneNode;
 class CEntity;
+class CScene;
 
 class CSceneTreeNode : public Flow::CFlowNode
 {
@@ -32,6 +33,7 @@ public:
     CSceneTreeNode* FindChild(const std::string& name) const;
 
     const std::set<CSceneTreeNode*>& GetChildren() const { return Children; }
+    std::string GetPath() const;
 
     FSignal<void()> OnTransformChange;
 
@@ -59,7 +61,7 @@ class CSceneNode : public Flow::CFlowNode
     DEFINE_INPUT(Matrix3x4, Transform);
 
 public:
-    explicit CSceneNode(std::string name, bool isRoot = false, bool isGroup = false);
+    explicit CSceneNode(CScene* owningScene, std::string name, bool isRoot = false, bool isGroup = false);
     ~CSceneNode() override;
 
     const std::string& GetName() const { return Name; }
@@ -79,10 +81,13 @@ public:
     CEntity* GetEntity() const;
     void SetEntity(CEntity* ent);
 
+    CScene* GetScene() const { return Scene; }
+
 private:
     std::string Name;
     ///Denotes whether this node is a group. Group names can be skipped in a path
     bool bIsGroup = false;
+    CScene* Scene;
 
     friend class CSceneTreeNode;
     //Parents and associated tree nodes organized by parent

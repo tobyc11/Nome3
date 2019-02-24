@@ -31,6 +31,18 @@ CSceneTreeNode* CSceneTreeNode::FindChild(const std::string& name) const
     return nullptr;
 }
 
+std::string CSceneTreeNode::GetPath() const
+{
+    if (!Parent)
+        return std::string();
+
+    if (Owner->IsGroup())
+        return Parent->GetPath();
+
+    std::string result;
+    return Parent->GetPath() + "." + Owner->GetName();
+}
+
 CSceneTreeNode::CSceneTreeNode(CSceneNode* owner) : Owner(owner)
 {
 }
@@ -83,7 +95,8 @@ void CSceneNode::TransformMarkedDirty()
     }
 }
 
-CSceneNode::CSceneNode(std::string name, bool isRoot, bool isGroup) : Name(std::move(name)), bIsGroup(isGroup)
+CSceneNode::CSceneNode(CScene* owningScene, std::string name, bool isRoot, bool isGroup)
+    : Scene(owningScene), Name(std::move(name)), bIsGroup(isGroup)
 {
     if (isRoot)
     {
@@ -135,7 +148,7 @@ void CSceneNode::RemoveParent(CSceneNode* parent)
 
 CSceneNode* CSceneNode::CreateChildNode(const std::string& name)
 {
-    auto* child = new CSceneNode(name);
+    auto* child = new CSceneNode(Scene, name);
     child->AddParent(this);
     return child;
 }

@@ -10,7 +10,7 @@ namespace Nome::Scene
 
 CScene::CScene()
 {
-    RootNode = new CSceneNode("root", true);
+    RootNode = new CSceneNode(this, "root", true);
     CameraView = new Flow::TNumber<Matrix3x4>();
     CreateDefaultCamera();
 }
@@ -54,7 +54,7 @@ TAutoPtr<CSceneNode> CScene::CreateGroup(const std::string& name)
     if (Groups.find(name) != Groups.end())
         return {};
 
-    auto* node = new CSceneNode(name, false, true);
+    auto* node = new CSceneNode(this, name, false, true);
     Groups[name] = node;
     return node;
 }

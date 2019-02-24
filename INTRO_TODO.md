@@ -6,6 +6,7 @@ Listed below are a few programming tasks that can hopefully get you familier wit
 - [ ] Add torus-knot generator
 - [ ] Polish the GUI (adding dark theme or something like that)
 - [ ] Allow the user to add primitives using the GUI
+- [ ] All the trig functions need to be implemented for the expression parser as well.
 
 ## Medium
 - [ ] Add a global `$time` variable so that Nome can support simple animation!

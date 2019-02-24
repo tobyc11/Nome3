@@ -19,6 +19,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
         /wd4592       # -> disable warning: 'identifier': symbol will be dynamically initialized (implementation limitation)
         # /wd4201     # -> disable warning: nonstandard extension used: nameless struct/union (caused by GLM)
         /wd4127       # -> disable warning: conditional expression is constant (caused by Qt)
+		/wd4100       # -> disable warning: unused parameters
 
         # /Zm114      # -> Memory size for precompiled headers (insufficient for msvc 2013)
         # /Zm200      # -> Memory size for precompiled headers

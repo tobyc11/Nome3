@@ -4,12 +4,14 @@
 #include "Camera.h"
 #include "BankAndSet.h"
 #include "Point.h"
+#include <Render/Renderer.h>
 #include <Color.h>
 #include <utility>
 
 namespace Nome
 {
 class CViewport;
+class CPickingManager;
 }
 
 namespace Nome::Scene
@@ -50,6 +52,13 @@ public:
 
     void Render();
 
+    const CRenderViewInfo& GetLastRenderViewInfo() const
+    {
+        return LastRenderViewInfo;
+    }
+
+    CPickingManager* GetPickingMgr() const;
+
 private:
     CBankAndSet BankAndSet;
 
@@ -60,6 +69,9 @@ private:
     tc::Color ClearColor;
     float LineWidth = 2.0f, PointSize = 24.0f;
     TAutoPtr<Flow::TNumber<Matrix3x4>> CameraView;
+    CRenderViewInfo LastRenderViewInfo;
+
+    TAutoPtr<CPickingManager> PickingMgr;
 
     std::map<std::string, TAutoPtr<CEntity>> EntityLibrary;
     std::map<std::string, TAutoPtr<CSceneNode>> Groups;

@@ -8,7 +8,7 @@ namespace Nome
 class CEditorViewportClient : public CViewportClient
 {
 public:
-    CEditorViewportClient(tc::TAutoPtr<Scene::CScene> scene);
+    CEditorViewportClient(tc::TAutoPtr<Scene::CScene> scene, sp<CSourceManager> sm, CSourceFile* sf);
 
     // Inherited via CViewportClient
     void Draw(CViewport* vp) override;
@@ -24,6 +24,14 @@ private:
     //For camera controller
     tc::TAutoPtr<Scene::COrbitCameraController> OrbitCameraController;
     int LastX, LastY;
+
+    std::vector<std::string> PendingFace;
+    std::vector<std::vector<std::string>> PendingMesh;
+    char MeshName[128];
+
+    //For adding mesh
+    sp<CSourceManager> SourceManager;
+    CSourceFile* SourceFile = nullptr;
 };
 
 }

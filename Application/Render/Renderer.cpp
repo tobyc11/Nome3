@@ -50,16 +50,11 @@ CRenderer::~CRenderer()
     delete GD;
 }
 
-void CRenderer::BeginView(const tc::Matrix4& view, const tc::Matrix4& proj, CViewport* viewport, const tc::Color& clearColor,
-    float lineWidth, float pointRadius)
+void CRenderer::BeginView(const CRenderViewInfo& viewInfo)
 {
     CViewData viewData;
-    viewData.ViewMat = view;
-    viewData.ProjMat = proj;
-    viewData.Viewport = viewport;
-    viewData.ClearColor = clearColor;
-    viewData.LineWidth = lineWidth;
-    viewData.PointRadius = pointRadius;
+    CRenderViewInfo& viewDataInfo = viewData;
+    viewDataInfo = viewInfo;
     Views.push_back(viewData);
 }
 
@@ -439,11 +434,12 @@ void CRenderer::Render()
                 ctx->VSSetConstantBuffers(0, 3, constBuffers);
                 ctx->GSSetConstantBuffers(0, 3, constBuffers);
                 ctx->PSSetConstantBuffers(0, 3, constBuffers);
-                ctx->PSSetSamplers(0, 1, &DefaultSamplerState.Get());
+                ID3D11SamplerState* sampler = DefaultSamplerState.Get();
+                ctx->PSSetSamplers(0, 1, &sampler);
                 ctx->PSSetShaderResources(0, 1, Pd->DotSRV.GetAddressOf());
 
                 ctx->RSSetState(NoCullBiasedRasterizerState.Get());
-                ctx->OMSetDepthStencilState(PointDepthStencilState.Get(), 0);
+                ctx->OMSetDepthStencilState(DefaultDepthStencilState.Get(), 0);
                 ctx->OMSetBlendState(PointBlendState.Get(), nullptr, 0xffffffff);
 
                 //Bind vertex buffers
@@ -466,6 +462,164 @@ void CRenderer::Render()
     }
     ctx->GSSetShader(nullptr, nullptr, 0);
     Views.clear();
+}
+
+class CPointPickingShader : public CShaderCommon
+{
+public:
+    CPointPickingShader()
+    {
+        auto* dev = GRenderer->GetGD()->GetDevice();
+        CompileFile(CResourceMgr::Get().Find("PointPicking.hlsl"), "VSmain", "vs_5_0");
+        //Create input layout
+        D3D11_INPUT_ELEMENT_DESC ilDesc[] = {
+            { "ATTRIBUTE", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "ATTRIBUTE", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "ATTRIBUTE", 2, DXGI_FORMAT_R32_UINT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+        };
+        dev->CreateInputLayout(ilDesc, sizeof(ilDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+            VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), DefaultInputLayout.GetAddressOf());
+        dev->CreateVertexShader(VSBytecode->GetBufferPointer(), VSBytecode->GetBufferSize(), nullptr, VS.GetAddressOf());
+        CompileFile(CResourceMgr::Get().Find("PointPicking.hlsl"), "GSmain", "gs_5_0");
+        dev->CreateGeometryShader(GSBytecode->GetBufferPointer(), GSBytecode->GetBufferSize(), nullptr, GS.GetAddressOf());
+        GSBytecode = nullptr;
+        CompileFile(CResourceMgr::Get().Find("PointPicking.hlsl"), "PSmain", "ps_5_0");
+        dev->CreatePixelShader(PSBytecode->GetBufferPointer(), PSBytecode->GetBufferSize(), nullptr, PS.GetAddressOf());
+        PSBytecode = nullptr;
+    }
+
+    void Bind(ID3D11DeviceContext* ctx, bool bindInputLayout = true)
+    {
+        ctx->VSSetShader(VS.Get(), nullptr, 0);
+        ctx->GSSetShader(GS.Get(), nullptr, 0);
+        ctx->PSSetShader(PS.Get(), nullptr, 0);
+
+        if (bindInputLayout)
+            ctx->IASetInputLayout(DefaultInputLayout.Get());
+    }
+
+private:
+    ComPtr<ID3D11InputLayout> DefaultInputLayout;
+};
+
+uint32_t CRenderer::RenderPickingPointsGetId(const CRenderViewInfo& viewInfo, CVertexBuffer* pointBuffer, uint32_t x, uint32_t y)
+{
+    if (!PointPickingShader)
+        PointPickingShader.reset(new CPointPickingShader());
+
+    auto* dev = GetGD()->GetDevice();
+    auto* ctx = GetGD()->GetImmediateContext();
+
+    //Render to texture
+    uint32_t RTWidth = viewInfo.Viewport->GetWidth();
+    uint32_t RTHeight = viewInfo.Viewport->GetHeight();
+    CD3D11_TEXTURE2D_DESC texDesc{ DXGI_FORMAT_R32_UINT, RTWidth, RTHeight, 1, 1,
+        D3D11_BIND_RENDER_TARGET, D3D11_USAGE_DEFAULT, 0 };
+    ComPtr<ID3D11Texture2D> RenderTexture;
+    dev->CreateTexture2D(&texDesc, nullptr, RenderTexture.GetAddressOf());
+    ComPtr<ID3D11RenderTargetView> RenderTarget;
+    CD3D11_RENDER_TARGET_VIEW_DESC rtvDesc{ RenderTexture.Get(), D3D11_RTV_DIMENSION_TEXTURE2D, DXGI_FORMAT_UNKNOWN, 0 };
+    dev->CreateRenderTargetView(RenderTexture.Get(), &rtvDesc, RenderTarget.GetAddressOf());
+
+    ComPtr<ID3D11DepthStencilView> DepthBufferView;
+    {
+        ID3D11Texture2D* pDepthStencil = nullptr;
+        D3D11_TEXTURE2D_DESC desc;
+        desc.Width = RTWidth;
+        desc.Height = RTHeight;
+        desc.MipLevels = 1;
+        desc.ArraySize = 1;
+        desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        desc.SampleDesc.Count = 1;
+        desc.SampleDesc.Quality = 0;
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        desc.CPUAccessFlags = 0;
+        desc.MiscFlags = 0;
+        HRESULT hr = dev->CreateTexture2D(&desc, nullptr, &pDepthStencil);
+        if (!SUCCEEDED(hr))
+            throw std::runtime_error("Cannot create depth buffer!");
+
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+        dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        dsvDesc.Texture2D.MipSlice = 0;
+        dev->CreateDepthStencilView(pDepthStencil, &dsvDesc, DepthBufferView.GetAddressOf());
+        pDepthStencil->Release();
+    }
+
+    //Clearing
+    D3D11_VIEWPORT desc;
+    desc.TopLeftX = 0;
+    desc.TopLeftY = 0;
+    desc.Width = RTWidth;
+    desc.Height = RTHeight;
+    desc.MinDepth = 0.0f;
+    desc.MaxDepth = 1.0f;
+    ctx->RSSetViewports(1, &desc);
+    ctx->OMSetRenderTargets(1, RenderTarget.GetAddressOf(), DepthBufferView.Get());
+    ctx->ClearDepthStencilView(DepthBufferView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    const float defaultColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    ctx->ClearRenderTargetView(RenderTarget.Get(), defaultColor);
+
+    //Render points
+    PointPickingShader->Bind(ctx);
+    CBPerView cbPerView;
+    cbPerView.View = viewInfo.ViewMat;
+    cbPerView.Proj = viewInfo.ProjMat;
+    cbPerView.Width = RTWidth;
+    cbPerView.Height = RTHeight;
+    auto cbPerViewRef = PointShader->CreateUniformBuffer(&cbPerView);
+    CBPoint cbPoint;
+    cbPoint.PointRadius = viewInfo.PointRadius;
+    cbPoint.bColorCodeByWorldPos = true;
+    auto cbPointRef = PointShader->CreateUniformBuffer(&cbPoint);
+
+    CBPerObject cbPerObject;
+    cbPerObject.Model = Matrix4::IDENTITY;
+    auto cbPerObjectRef = PointShader->CreateUniformBuffer(&cbPerObject);
+
+    ID3D11Buffer* constBuffers[] = { cbPerViewRef.Get(), cbPerObjectRef.Get(), cbPointRef.Get() };
+    ctx->VSSetConstantBuffers(0, 3, constBuffers);
+    ctx->GSSetConstantBuffers(0, 3, constBuffers);
+    ctx->PSSetConstantBuffers(0, 3, constBuffers);
+    auto* sampler = DefaultSamplerState.Get();
+    ctx->PSSetSamplers(0, 1, &sampler);
+    ctx->PSSetShaderResources(0, 1, Pd->DotSRV.GetAddressOf());
+
+    ctx->RSSetState(NoCullBiasedRasterizerState.Get());
+    ctx->OMSetDepthStencilState(DefaultDepthStencilState.Get(), 0);
+    ctx->OMSetBlendState(DefaultBlendState.Get(), nullptr, 0xffffffff);
+
+    //Calc how many points
+    auto* pointBufferD3d = pointBuffer->GetD3D11Buffer();
+    D3D11_BUFFER_DESC bufDesc;
+    pointBufferD3d->GetDesc(&bufDesc);
+    uint32_t numElements = bufDesc.ByteWidth / 28;
+
+    //Bind vertex buffers
+    uint32_t stride = 28;
+    uint32_t offset = 0;
+    ctx->IASetVertexBuffers(0, 1, &pointBufferD3d, &stride, &offset);
+    ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+    ctx->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
+    ctx->Draw(numElements, 0);
+
+    ctx->GSSetShader(nullptr, nullptr, 0);
+
+    //Texture read back
+    CD3D11_TEXTURE2D_DESC stgDesc{ DXGI_FORMAT_R32_UINT, RTWidth, RTHeight, 1, 1,
+                                   0, D3D11_USAGE_STAGING, D3D11_CPU_ACCESS_READ };
+    ComPtr<ID3D11Texture2D> StagingTex;
+    dev->CreateTexture2D(&stgDesc, nullptr, StagingTex.GetAddressOf());
+
+    ctx->CopyResource(StagingTex.Get(), RenderTexture.Get());
+    D3D11_MAPPED_SUBRESOURCE mappedStgBuffer;
+    ctx->Map(StagingTex.Get(), 0, D3D11_MAP_READ, 0, &mappedStgBuffer);
+    const uint32_t* array = static_cast<const uint32_t*>(mappedStgBuffer.pData);
+    uint32_t retId = array[y * mappedStgBuffer.RowPitch / 4 + x];
+    ctx->Unmap(StagingTex.Get(), 0);
+    return retId;
 }
 
 }

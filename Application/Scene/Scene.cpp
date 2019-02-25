@@ -1,6 +1,6 @@
 #include "Scene.h"
 #include "Mesh.h"
-#include <Render/Renderer.h>
+#include "InteractivePoint.h"
 #include <Render/Viewport.h>
 #include <StringUtils.h>
 #include <imgui.h>
@@ -13,6 +13,7 @@ CScene::CScene()
     RootNode = new CSceneNode(this, "root", true);
     CameraView = new Flow::TNumber<Matrix3x4>();
     CreateDefaultCamera();
+    PickingMgr = new CPickingManager(this);
 }
 
 void CScene::ConnectCameraTransform(Flow::TOutput<Matrix3x4>* output)
@@ -251,13 +252,23 @@ void CScene::Render()
     //We don't render without a viewport
     if (!Viewport)
         return;
-
-    GRenderer->BeginView(MainCamera->GetViewMatrix(), MainCamera->GetProjMatrix(), Viewport, ClearColor, LineWidth, PointSize / 2.0f);
+    
+    GRenderer->BeginView(LastRenderViewInfo.SetViewMat(MainCamera->GetViewMatrix())
+                                           .SetProjMat(MainCamera->GetProjMatrix())
+                                           .SetViewport(Viewport)
+                                           .SetClearColor(ClearColor)
+                                           .SetLineWidth(LineWidth)
+                                           .SetPointRadius(PointSize / 2.0f));
     const auto& rootTreeNodes = RootNode->GetTreeNodes();
     assert(rootTreeNodes.size() == 1); //There is only one way to the root, thus only one tree node
     DFSTreeNodeRender(*rootTreeNodes.begin());
     GRenderer->EndView();
     GRenderer->Render();
+}
+
+CPickingManager* CScene::GetPickingMgr() const
+{
+    return PickingMgr;
 }
 
 }

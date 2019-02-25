@@ -145,7 +145,7 @@ void CMainWindow::LoadEmptyNomeFile()
 
     Scene = new Scene::CScene();
 
-    ViewportClient = new CEditorViewportClient(Scene);
+    ViewportClient = new CEditorViewportClient(Scene, SourceManager, SourceFile);
     CodeWindow = new CCodeWindow(this);
     ViewWidget = new CNomeViewWidget(this, ViewportClient);
     setCentralWidget(ViewWidget);
@@ -215,7 +215,7 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
 
     bIsBlankFile = false;
 
-    ViewportClient = new CEditorViewportClient(Scene);
+    ViewportClient = new CEditorViewportClient(Scene, SourceManager, SourceFile);
     CodeWindow = new CCodeWindow(this);
     ViewWidget = new CNomeViewWidget(this, ViewportClient);
     setCentralWidget(ViewWidget);

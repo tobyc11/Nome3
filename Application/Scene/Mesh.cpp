@@ -120,6 +120,11 @@ CEntity* CMesh::Instantiate(CSceneTreeNode* treeNode)
     return new CMeshInstance(this, treeNode);
 }
 
+std::string CMeshInstancePoint::GetPointPath() const
+{
+    return Owner->GetSceneTreeNode()->GetPath() + "." + GetName();
+}
+
 CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
     : MeshGenerator(generator), SceneTreeNode(stn), Priv(new CMeshRenderPrivateData())
 {
@@ -133,7 +138,8 @@ CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
 
 CMeshInstance::~CMeshInstance()
 {
-    SceneTreeNode->OnTransformChange.Disconnect(TransformChangeConnection);
+    //TODO: handle this circular reference stuff
+    //SceneTreeNode->OnTransformChange.Disconnect(TransformChangeConnection);
     MeshGenerator->InstanceSet.erase(this);
     delete Priv;
 }
@@ -198,6 +204,28 @@ void CMeshInstance::UpdateEntity()
         }
         Priv->LineGeometry = new CStaticMeshGeometry(positions);
         Priv->LineGeometry->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+    }
+    
+    //Construct interactive points
+    CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();
+    for (auto pair : PickingVerts)
+    {
+        scene->GetPickingMgr()->UnregisterObj(pair.second.second);
+        delete pair.second.first;
+    }
+    PickingVerts.clear();
+
+    for (const auto& pair : NameToVert)
+    {
+        //Create a picking proxy point for each vertex
+        CMeshInstancePoint* ip = new CMeshInstancePoint(this);
+        ip->SetName(pair.first);
+        const auto& p = Mesh.point(pair.second);
+        Vector3 pos = { p[0], p[1], p[2] };
+        ip->SetPosition(GetSceneTreeNode()->L2WTransform.GetValue(Matrix3x4::IDENTITY) * pos);
+        //Register this picking point with the scene picking mgr
+        uint32_t id = scene->GetPickingMgr()->RegisterObj(ip);
+        PickingVerts.emplace(pair.first, std::make_pair(ip, id));
     }
 
     Super::UpdateEntity();

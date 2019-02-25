@@ -14,7 +14,7 @@ public:
     {
     }
 
-    ID3D11RasterizerState* const& Get()
+    ID3D11RasterizerState* Get()
     {
         InitDeviceResources();
         return RastState.Get();
@@ -37,7 +37,7 @@ public:
     {
     }
 
-    ID3D11DepthStencilState* const& Get()
+    ID3D11DepthStencilState* Get()
     {
         InitDeviceResources();
         return StateObj.Get();
@@ -67,7 +67,7 @@ public:
         lambda(Desc);
     }
 
-    ID3D11SamplerState* const& Get()
+    ID3D11SamplerState* Get()
     {
         InitDeviceResources();
         return StateObj.Get();
@@ -97,7 +97,7 @@ public:
         lambda(Desc);
     }
 
-    ID3D11BlendState* const& Get()
+    ID3D11BlendState* Get()
     {
         InitDeviceResources();
         return StateObj.Get();
@@ -117,7 +117,6 @@ extern CStaticRasterizerState NoCullRasterizerState;
 extern CStaticRasterizerState NoCullBiasedRasterizerState;
 
 extern CStaticDepthStencilState DefaultDepthStencilState;
-extern CStaticDepthStencilState PointDepthStencilState;
 
 extern CStaticSamplerState DefaultSamplerState;
 extern CStaticSamplerState Anisotropic16SamplerState;

@@ -1,5 +1,6 @@
 #pragma once
 #include "Face.h"
+#include "InteractivePoint.h"
 
 //We use OpenMesh for now. Can easily replace with in-house library when needed.
 #define _USE_MATH_DEFINES
@@ -57,6 +58,21 @@ private:
     std::vector<CMeshImpl::VertexHandle> LineStrip;
 };
 
+class CMeshInstance;
+
+class CMeshInstancePoint : public CInteractivePoint
+{
+public:
+    CMeshInstancePoint(CMeshInstance* owner) : Owner(owner)
+    {
+    }
+
+    std::string GetPointPath() const;
+
+private:
+    CMeshInstance* Owner;
+};
+
 //This is the entity class for a mesh instance
 //Why is this needed?
 //  The same mesh might get instanciated multiple times and get separately edited by the user.
@@ -110,6 +126,8 @@ private:
 
     //Instance specific data
     std::set<std::string> FacesToDelete;
+
+    std::map<std::string, std::pair<CMeshInstancePoint*, uint32_t>> PickingVerts;
 
     CMeshRenderPrivateData* Priv;
 };

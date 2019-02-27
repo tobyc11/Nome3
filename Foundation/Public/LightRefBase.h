@@ -64,9 +64,9 @@ private:
 
 // This is a wrapper around TLightRefBase that simply enforces a virtual
 // destructor to eliminate the template requirement of TLightRefBase
-class VirtualLightRefBase : public TLightRefBase<VirtualLightRefBase> {
+class CVirtualLightRefBase : public TLightRefBase<CVirtualLightRefBase> {
 public:
-    virtual ~VirtualLightRefBase() = default;
+    virtual ~CVirtualLightRefBase() = default;
 };
 
 }; // namespace tc

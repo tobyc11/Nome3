@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_STRONG_POINTER_H
-#define ANDROID_STRONG_POINTER_H
+#pragma once
 
 // ---------------------------------------------------------------------------
 namespace tc {
@@ -242,8 +241,4 @@ void sp<T>::set_pointer(T* ptr) {
     m_ptr = ptr;
 }
 
-}; // namespace android
-
-// ---------------------------------------------------------------------------
-
-#endif // ANDROID_STRONG_POINTER_H
+}; // namespace tc

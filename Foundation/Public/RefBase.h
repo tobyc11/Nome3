@@ -167,8 +167,7 @@
 // to THE SAME sp<> or wp<>.  In effect, their thread-safety properties are
 // exactly like those of T*, NOT atomic<T*>.
 
-#ifndef ANDROID_REF_BASE_H
-#define ANDROID_REF_BASE_H
+#pragma once
 
 #include <atomic>
 
@@ -177,6 +176,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <LightRefBase.h>
 #include <StrongPointer.h>
 
 // ---------------------------------------------------------------------------
@@ -553,7 +553,7 @@ template<typename T> template<typename U>
 wp<T>& wp<T>::operator = (const sp<U>& other)
 {
     weakref_type* newRefs =
-        other != NULL ? other->createWeak(this) : 0;
+        other != nullptr ? other->createWeak(this) : 0;
     U* otherPtr(other.m_ptr);
     if (m_ptr) m_refs->decWeak(this);
     m_ptr = otherPtr;
@@ -668,7 +668,3 @@ void move_backward_type(wp<TYPE>* d, wp<TYPE> const* s, size_t n) {
 }
 
 }; // namespace tc
-
-// ---------------------------------------------------------------------------
-
-#endif // ANDROID_REF_BASE_H

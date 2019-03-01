@@ -121,6 +121,11 @@ public:
         {
             static_cast<T*>(this)->VisitDelete(cmd->SubCommands);
         }
+        else
+        {
+            printf("WARN: Unrecognized command %s at %d:%d\n", cmd->BeginKeyword->Keyword.c_str(),
+                cmd->BeginKeyword->BeginLoc.DebugLine, cmd->BeginKeyword->BeginLoc.DebugCol);
+        }
     }
 
     void VisitPoint(AIdent* name, AExpr* x, AExpr* y, AExpr* z) {}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FlowNode.h"
+#include <cmath>
 
 namespace Flow
 {
@@ -50,6 +51,28 @@ public:
 };
 
 typedef TUnaryOperator<float, std::negate<float>> CFloatNeg;
+
+template<class T = void>
+struct sin_functor
+{
+    constexpr T operator()(const T& left) const
+    {
+        return sin(left);
+    }
+};
+
+typedef TUnaryOperator<float, sin_functor<float>> CFloatSin;
+
+template<class T = void>
+struct cos_functor
+{
+    constexpr T operator()(const T& left) const
+    {
+        return cos(left);
+    }
+};
+
+typedef TUnaryOperator<float, cos_functor<float>> CFloatCos;
 
 template <typename T, typename TOperator>
 class TBinaryOperator : public CFlowNode

@@ -5,6 +5,7 @@
 #include "Tunnel.h"
 #include "Funnel.h"
 #include "Circle.h"
+#include "BezierSpline.h"
 #include <StringPrintf.h>
 
 namespace Nome::Scene
@@ -136,6 +137,19 @@ void CASTSceneBuilder::VisitTunnel(AIdent* name, AExpr* n, AExpr* ro, AExpr* rat
 
 void CASTSceneBuilder::VisitBezierCurve(AIdent* name, const std::vector<AIdent*>& points, AExpr* nSlices)
 {
+    auto* bsp = new CBezierSpline(name->Identifier);
+    TAutoPtr<CBezierSpline> bspRef(bsp); //Hold a reference
+    for (auto* ident : points)
+    {
+        Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
+        if (!pointOutput)
+        {
+            throw CSemanticError(tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), ident);
+        }
+        bsp->ControlPoints.Connect(*pointOutput);
+    }
+    CONNECT_AST_EXPR_TO(nSlices, bsp->Segments);
+    Scene->AddEntity(bsp);
 }
 
 void CASTSceneBuilder::VisitBSpline(AIdent* name, const std::vector<AIdent*>& points, AExpr* order, AExpr* nSlices, bool closed)
@@ -288,9 +302,27 @@ void CExprToNodeGraph::VisitUnaryOp(AUnaryOp* op)
         WhichOne = 1;
         break;
     }
+    case AUnaryOp::UOP_SIN:
+    {
+        auto* curr = new Flow::CFloatSin();
+        Visit(op->Operand); //Visit the operand
+        Connect(curr->Operand0); //Connect the operand to Negate's input
+        Sin = curr;
+        WhichOne = 8;
+        break;
+    }
+    case AUnaryOp::UOP_COS:
+    {
+        auto* curr = new Flow::CFloatCos();
+        Visit(op->Operand); //Visit the operand
+        Connect(curr->Operand0); //Connect the operand to Negate's input
+        Cos = curr;
+        WhichOne = 9;
+        break;
+    }
     //TODO: implement trig functions
     default:
-        throw std::runtime_error("wtf unary operator unheard of");
+        throw CSemanticError("wtf unary operator unheard of", op);
         break;
     }
 }
@@ -384,6 +416,12 @@ void CExprToNodeGraph::Connect(Flow::TInput<float>& input)
         break;
     case 7:
         SliderVal->Value.Connect(input);
+        break;
+    case 8:
+        Sin->Result.Connect(input);
+        break;
+    case 9:
+        Cos->Result.Connect(input);
         break;
     default:
         break;

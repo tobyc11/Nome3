@@ -90,8 +90,8 @@ endtunnel                   { LEXER_KEYWORD; return ENDTUNNEL; }
 beziercurve                 { LEXER_KEYWORD; return BEZIERCURVE; }
 endbeziercurve              { LEXER_KEYWORD; return ENDBEZIERCURVE; }
 slices                      { LEXER_KEYWORD; return SLICES; }
-bspline                     { LEXER_KEYWORD; return BSPLINE; }
-endbspline                  { LEXER_KEYWORD; return ENDBSPLINE; }
+bspline[0-9]*               { LEXER_KEYWORD; return BSPLINE; }
+endbspline[0-9]*            { LEXER_KEYWORD; return ENDBSPLINE; }
 order                       { LEXER_KEYWORD; return ORDER; }
 instance                    { LEXER_KEYWORD; return INSTANCE; }
 endinstance                 { LEXER_KEYWORD; return ENDINSTANCE; }

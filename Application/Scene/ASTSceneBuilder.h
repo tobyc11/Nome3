@@ -102,6 +102,8 @@ private:
     int WhichOne = 0;
     TAutoPtr<Flow::CFloatNumber> Number; //0
     TAutoPtr<Flow::CFloatNeg> Negate; //1
+    TAutoPtr<Flow::CFloatSin> Sin; //8
+    TAutoPtr<Flow::CFloatCos> Cos; //9
     TAutoPtr<Flow::CFloatAdd> Add; //2
     TAutoPtr<Flow::CFloatSub> Sub; //3
     TAutoPtr<Flow::CFloatMul> Mul; //4

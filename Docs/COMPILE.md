@@ -24,7 +24,7 @@ pacman --needed -S bison flex
 
 # Compilation
 Open up the CMake GUI, and set it up like this:
-![alt text](Docs/snip1.jpg)
+![alt text](snip1.jpg)
 
 Then click on "Add Entry" to add the following variables so that CMake can find all those libraries:
 ```

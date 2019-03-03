@@ -36,6 +36,11 @@ constexpr uint32_t ConstStrHash(ConstString s, size_t n = 0, uint32_t hash = 0)
 	return (n == s.size() || !s[n]) ? hash : ConstStrHash(s, n + 1, SDBMHashChar(hash, s[n]));
 }
 
+inline uint32_t StrHash(const char* str, uint32_t hash = 0)
+{
+    return *str == 0 ? hash : StrHash(str + 1, SDBMHashChar(hash, *str));
+}
+
 template <uint32_t N>
 struct PrintConstHash
 {

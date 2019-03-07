@@ -2,8 +2,12 @@
 
 Listed below are a few programming tasks that can hopefully get you familier with the Nome 3 codebase.
 
+## Trivial, or is it?
+- [ ] Update ImGui to the lastest version
+
 ## Eazy
 - [ ] Add torus-knot generator
+- [ ] Add Bezier curve generator (in addition to the spline)
 - [ ] Polish the GUI (adding dark theme or something like that)
 - [ ] Allow the user to add primitives using the GUI
 - [ ] All the trig functions need to be implemented for the expression parser as well.

@@ -484,6 +484,11 @@ public:
         return &m00_ + row * 4;
     }
 
+    const float* operator[](const int row) const
+    {
+        return &m00_ + row * 4;
+    }
+
     /// Set translation elements.
     void SetTranslation(const Vector3& translation)
     {

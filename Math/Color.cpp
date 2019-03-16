@@ -251,8 +251,8 @@ float Color::Hue(float min, float max) const
         return (4.0f * chroma - g + r) / (6.0f * chroma);
     else
     {
-        float r = (g - b) / (6.0f * chroma);
-        return (r < 0.0f) ? 1.0f + r : ((r >= 1.0f) ? r - 1.0f : r);
+        float rr = (g - b) / (6.0f * chroma);
+        return (rr < 0.0f) ? 1.0f + rr : ((rr >= 1.0f) ? rr - 1.0f : rr);
     }
 
 }

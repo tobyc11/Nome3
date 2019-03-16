@@ -37,7 +37,7 @@
 // freed until the last weak pointer is released.
 
 // Weak pointers are essentially "safe" pointers. They are always safe to
-// access through promote(). They may return nullptr if the object was
+// access through Promote(). They may return nullptr if the object was
 // destroyed because it ran out of strong pointers. This makes them good candidates
 // for keys in a cache for instance.
 
@@ -122,7 +122,7 @@
 // the same object, it may well return a pointer to a deallocated object that
 // has since been reallocated for a different purpose. (And if you know there
 // is a longer-lived sp<>, why not use an sp<> directly?) A wp<> should only be
-// dereferenced by using promote().
+// dereferenced by using Promote().
 
 // Any object inheriting from RefBase should always be destroyed as the result
 // of a reference count decrement, not via any other means.  Such objects
@@ -148,7 +148,7 @@
 // object while there are still weak references. This is really special purpose
 // functionality to support Binder.
 
-// Wp::promote(), implemented via the attemptIncStrong() member function, is
+// Wp::Promote(), implemented via the attemptIncStrong() member function, is
 // used to try to convert a weak pointer back to a strong pointer.  It's the
 // normal way to try to access the fields of an object referenced only through
 // a wp<>.  Binder code also sometimes uses attemptIncStrong() directly.
@@ -372,11 +372,11 @@ public:
 
     // promotion to sp
 
-    sp<T> promote() const;
+    sp<T> Promote() const;
 
     // Reset
 
-    void clear();
+    void Clear();
 
     // Accessors
 
@@ -571,17 +571,17 @@ void wp<T>::set_object_and_refs(T* other, weakref_type* refs)
 }
 
 template<typename T>
-sp<T> wp<T>::promote() const
+sp<T> wp<T>::Promote() const
 {
     sp<T> result;
     if (m_ptr && m_refs->attemptIncStrong(&result)) {
-        result.set_pointer(m_ptr);
+        result.SetPointer(m_ptr);
     }
     return result;
 }
 
 template<typename T>
-void wp<T>::clear()
+void wp<T>::Clear()
 {
     if (m_ptr) {
         m_refs->decWeak(this);
@@ -608,7 +608,7 @@ public:
             sp<TYPE> const* s_;
             virtual void operator()(size_t i) const {
                 // The id are known to be the sp<>'s this pointer
-                TYPE::renameRefId(d_[i].get(), &s_[i], &d_[i]);
+                TYPE::renameRefId(d_[i].Get(), &s_[i], &d_[i]);
             }
         public:
             Renamer(sp<TYPE>* d, sp<TYPE> const* s) : d_(d), s_(s) { }

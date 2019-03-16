@@ -73,17 +73,17 @@ public:
     template<typename U> sp& operator = (U* other);
 
     //! Special optimization for use by ProcessState (and nobody else).
-    void force_set(T* other);
+    void ForceSet(T* other);
 
     // Reset
 
-    void clear();
+    void Clear();
 
     // Accessors
 
     inline T&       operator* () const     { return *m_ptr; }
     inline T*       operator-> () const    { return m_ptr;  }
-    inline T*       get() const            { return m_ptr; }
+    inline T*       Get() const            { return m_ptr; }
     inline explicit operator bool () const { return m_ptr != nullptr; }
 	inline          operator T*() const    { return m_ptr; }
 
@@ -99,7 +99,7 @@ public:
 private:    
     template<typename Y> friend class sp;
     template<typename Y> friend class wp;
-    void set_pointer(T* ptr);
+    void SetPointer(T* ptr);
     T* m_ptr;
 };
 
@@ -223,13 +223,13 @@ sp<T>& sp<T>::operator =(U* other) {
 }
 
 template<typename T>
-void sp<T>::force_set(T* other) {
+void sp<T>::ForceSet(T* other) {
     other->forceIncStrong(this);
     m_ptr = other;
 }
 
 template<typename T>
-void sp<T>::clear() {
+void sp<T>::Clear() {
     if (m_ptr) {
         m_ptr->decStrong(this);
         m_ptr = 0;
@@ -237,7 +237,7 @@ void sp<T>::clear() {
 }
 
 template<typename T>
-void sp<T>::set_pointer(T* ptr) {
+void sp<T>::SetPointer(T* ptr) {
     m_ptr = ptr;
 }
 

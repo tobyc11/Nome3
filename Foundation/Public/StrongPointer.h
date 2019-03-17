@@ -96,6 +96,11 @@ public:
     COMPARE(<=)
     COMPARE(>=)
 
+    friend std::size_t hash_value(const sp& r)
+    {
+        return reinterpret_cast<std::size_t>(r.Get());
+    }
+
 private:    
     template<typename Y> friend class sp;
     template<typename Y> friend class wp;

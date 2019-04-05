@@ -27,8 +27,7 @@ public:
 
 constexpr uint32_t SDBMHashChar(uint32_t hash, unsigned char c)
 {
-	//Cast to unsigned long long to avoid compiler warning about int overflow
-	return c + (static_cast<unsigned long long>(hash) << 6) + (hash << 16) - hash;
+	return c + (hash << 6) + (hash << 16) - hash;
 }
 
 constexpr uint32_t ConstStrHash(ConstString s, size_t n = 0, uint32_t hash = 0)

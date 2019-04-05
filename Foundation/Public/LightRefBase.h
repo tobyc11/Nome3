@@ -69,4 +69,4 @@ public:
     virtual ~CVirtualLightRefBase() = default;
 };
 
-}; // namespace tc
+} // namespace tc

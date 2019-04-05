@@ -158,9 +158,9 @@ bool Quaternion::FromLookRotation(const Vector3& direction, const Vector3& up)
     if (v.LengthSquared() >= M_EPSILON)
     {
         v.Normalize();
-        Vector3 up = v.CrossProduct(forward);
-        Vector3 right = up.CrossProduct(forward);
-        ret.FromAxes(right, up, forward);
+        Vector3 up2 = v.CrossProduct(forward);
+        Vector3 right = up2.CrossProduct(forward);
+        ret.FromAxes(right, up2, forward);
     }
     else
         ret.FromRotationTo(Vector3::FORWARD, forward);

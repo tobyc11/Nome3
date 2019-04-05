@@ -246,4 +246,4 @@ void sp<T>::SetPointer(T* ptr) {
     m_ptr = ptr;
 }
 
-}; // namespace tc
+} // namespace tc

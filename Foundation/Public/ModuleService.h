@@ -1,5 +1,6 @@
 #pragma once
 #include "FoundationAPI.h"
+#include <algorithm>
 #include <string>
 #include <map>
 #include <unordered_map>

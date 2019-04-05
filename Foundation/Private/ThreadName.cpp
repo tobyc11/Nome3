@@ -2,7 +2,13 @@
 
 //From https://stackoverflow.com/questions/10121560/stdthread-naming-your-thread
 
-#ifdef _WIN32
+#ifdef __MINGW32__
+
+void SetThreadName(const char* threadName) {}
+
+void SetThreadName(std::thread* thread, const char* threadName) {}
+
+#elif _WIN32
 #include <Windows.h>
 const DWORD MS_VC_EXCEPTION = 0x406D1388;
 

@@ -18,7 +18,7 @@ public:
 
     //Can move
     FSignal(FSignal&& other) : Slots(std::move(other.Slots)), CurrentId(other.CurrentId) {};
-    FSignal& operator=(FSignal&&)
+    FSignal& operator=(FSignal&& other)
     {
         Slots = std::move(other.Slots);
         CurrentId = other.CurrentId;

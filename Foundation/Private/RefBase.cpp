@@ -767,4 +767,4 @@ void RefBase::renameRefId(RefBase* ref,
     ref->mRefs->renameWeakRefId(old_id, new_id);
 }
 
-}; // namespace tc
+} // namespace tc

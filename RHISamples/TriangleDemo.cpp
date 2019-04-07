@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
     SDL_Init(SDL_INIT_VIDEO);
     window = SDL_CreateWindow("RHI Triangle Demo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                               640, 480, 0);
-    if (window == NULL)
+    if (window == nullptr)
     {
         printf("Could not create window: %s\n", SDL_GetError());
         return 1;
@@ -42,21 +42,30 @@ int main(int argc, char* argv[])
     surfaceDesc.Win32.Instance = wmInfo.info.win.hinstance;
     surfaceDesc.Win32.Window = wmInfo.info.win.window;
     auto swapChain = device->CreateSwapChain(surfaceDesc, EFormat::B8G8R8A8_UNORM);
+    uint32_t width, height;
+    swapChain->GetSize(width, height);
 
     auto fbImage = swapChain->GetImage();
 
     CImageViewDesc fbViewDesc;
     fbViewDesc.Format = EFormat::B8G8R8A8_UNORM;
-    fbViewDesc.Range.BaseMipLevel = 0;
-    fbViewDesc.Range.LevelCount = 1;
-    fbViewDesc.Range.BaseArrayLayer = 0;
-    fbViewDesc.Range.LayerCount = 1;
+    fbViewDesc.Range.Set(0, 1, 0, 1);
     auto fbView = device->CreateImageView(fbViewDesc, fbImage);
+
+    auto depthImage = device->CreateImage2D(EFormat::D24_UNORM_S8_UINT,
+                                            EImageUsageFlags::DepthStencil, width, height);
+    CImageViewDesc depthViewDesc;
+    depthViewDesc.Format = EFormat::D24_UNORM_S8_UINT;
+    depthViewDesc.Range.Set(0, 1, 0, 1);
+    auto depthView = device->CreateImageView(depthViewDesc, depthImage);
 
     CRenderPassDesc rpDesc;
     rpDesc.Attachments.emplace_back(fbView, CAttachmentLoadOp::Clear, CAttachmentStoreOp::Store);
+    rpDesc.Attachments.emplace_back(depthView, CAttachmentLoadOp::Clear,
+                                    CAttachmentStoreOp::DontCare);
     rpDesc.Subpasses.resize(1);
     rpDesc.Subpasses[0].AddColorAttachment(0);
+    rpDesc.Subpasses[0].SetDepthStencilAttachment(1);
     swapChain->GetSize(rpDesc.Width, rpDesc.Height);
     rpDesc.Layers = 1;
     auto screenPass = device->CreateRenderPass(rpDesc);
@@ -66,15 +75,21 @@ int main(int argc, char* argv[])
     CDepthStencilDesc depthStencilDesc;
     CBlendDesc blendDesc;
     rastDesc.CullMode = ECullModeFlags::None;
-    depthStencilDesc.DepthTestEnable = false;
-    depthStencilDesc.DepthWriteEnable = false;
     pipelineDesc.VS = LoadSPIRV(device, APP_SOURCE_DIR "/Shader/Demo1.vert.spv");
-    pipelineDesc.PS = LoadSPIRV(device, APP_SOURCE_DIR "/Shader/Demo1.frag.spv");
+    pipelineDesc.PS = LoadSPIRV(device, APP_SOURCE_DIR "/Shader/Demo2.frag.spv");
     pipelineDesc.RasterizerState = &rastDesc;
     pipelineDesc.DepthStencilState = &depthStencilDesc;
     pipelineDesc.BlendState = &blendDesc;
     pipelineDesc.RenderPass = screenPass;
     auto pso = device->CreatePipeline(pipelineDesc);
+
+    auto ubo = device->CreateBuffer(16, EBufferUsageFlags::ConstantBuffer);
+    float* color = static_cast<float*>(ubo->Map(0, 16));
+    color[0] = 1.0f;
+    color[1] = 0.0f;
+    color[2] = 1.0f;
+    color[3] = 1.0f;
+    ubo->Unmap();
 
     auto ctx = device->GetImmediateContext();
     bool done = false;
@@ -87,19 +102,21 @@ int main(int argc, char* argv[])
                 done = true;
         }
 
-		swapChain->AcquireNextImage();
+        swapChain->AcquireNextImage();
 
-        ctx->BeginRenderPass(screenPass, { CClearValue(0.0f, 1.0f, 0.0f, 0.0f) });
-        ctx->BindPipeline(pso.get());
+        ctx->BeginRenderPass(screenPass,
+                             { CClearValue(0.0f, 1.0f, 0.0f, 0.0f), CClearValue(1.0f, 0) });
+        ctx->BindPipeline(pso);
+        ctx->BindBuffer(ubo, 0, 16, 0, 1, 0);
         ctx->Draw(3, 1, 0, 0);
         ctx->EndRenderPass();
 
-		CSwapChainPresentInfo info;
+        CSwapChainPresentInfo info;
         info.SrcImage = fbView;
         swapChain->Present(info);
     }
 
-	ctx->Flush(true);
+    ctx->Flush(true);
     SDL_DestroyWindow(window);
     SDL_Quit();
     SDL_Delay(1000);

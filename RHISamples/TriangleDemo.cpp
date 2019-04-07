@@ -6,6 +6,9 @@
 #include <Windows.h>
 #include <fstream>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 using namespace RHI;
 
 CShaderModule::Ref LoadSPIRV(CDevice::Ref device, const std::string& path)
@@ -86,10 +89,23 @@ int main(int argc, char* argv[])
     auto ubo = device->CreateBuffer(16, EBufferUsageFlags::ConstantBuffer);
     float* color = static_cast<float*>(ubo->Map(0, 16));
     color[0] = 1.0f;
-    color[1] = 0.0f;
+    color[1] = 1.0f;
     color[2] = 1.0f;
     color[3] = 1.0f;
     ubo->Unmap();
+
+    int x, y, comp;
+    auto* checker512Data = stbi_load(APP_SOURCE_DIR "/checker512.png", &x, &y, &comp, 4);
+    auto checker512 = device->CreateImage2D(EFormat::R8G8B8A8_UNORM, EImageUsageFlags::Sampled, 512,
+                                            512, 1, 1, 1, checker512Data);
+    stbi_image_free(checker512Data);
+    CImageViewDesc checkerViewDesc;
+    checkerViewDesc.Format = EFormat::R8G8B8A8_UNORM;
+    checkerViewDesc.Range.Set(0, 1, 0, 1);
+    auto checkerView = device->CreateImageView(checkerViewDesc, checker512);
+
+	CSamplerDesc samplerDesc;
+    auto sampler = device->CreateSampler(samplerDesc);
 
     auto ctx = device->GetImmediateContext();
     bool done = false;
@@ -108,6 +124,8 @@ int main(int argc, char* argv[])
                              { CClearValue(0.0f, 1.0f, 0.0f, 0.0f), CClearValue(1.0f, 0) });
         ctx->BindPipeline(pso);
         ctx->BindBuffer(ubo, 0, 16, 0, 1, 0);
+        ctx->BindSampler(sampler, 1, 0, 0);
+        ctx->BindImageView(checkerView, 1, 1, 0);
         ctx->Draw(3, 1, 0, 0);
         ctx->EndRenderPass();
 

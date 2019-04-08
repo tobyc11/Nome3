@@ -1,4 +1,3 @@
-#include "renderdoc_app.h"
 #include <PresentationSurfaceDesc.h>
 #include <RHIInstance.h>
 #include <SDL.h>
@@ -44,14 +43,15 @@ int main(int argc, char* argv[])
     surfaceDesc.Type = EPresentationSurfaceDescType::Win32;
     surfaceDesc.Win32.Instance = wmInfo.info.win.hinstance;
     surfaceDesc.Win32.Window = wmInfo.info.win.window;
-    auto swapChain = device->CreateSwapChain(surfaceDesc, EFormat::B8G8R8A8_UNORM);
+    auto swapChain = device->CreateSwapChain(surfaceDesc, EFormat::R8G8B8A8_UNORM);
     uint32_t width, height;
     swapChain->GetSize(width, height);
 
     auto fbImage = swapChain->GetImage();
 
     CImageViewDesc fbViewDesc;
-    fbViewDesc.Format = EFormat::B8G8R8A8_UNORM;
+    fbViewDesc.Format = EFormat::R8G8B8A8_UNORM;
+    fbViewDesc.Type = EImageViewType::View2D;
     fbViewDesc.Range.Set(0, 1, 0, 1);
     auto fbView = device->CreateImageView(fbViewDesc, fbImage);
 
@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
                                             EImageUsageFlags::DepthStencil, width, height);
     CImageViewDesc depthViewDesc;
     depthViewDesc.Format = EFormat::D24_UNORM_S8_UINT;
+    depthViewDesc.Type = EImageViewType::View2D;
     depthViewDesc.Range.Set(0, 1, 0, 1);
     auto depthView = device->CreateImageView(depthViewDesc, depthImage);
 
@@ -101,6 +102,7 @@ int main(int argc, char* argv[])
     stbi_image_free(checker512Data);
     CImageViewDesc checkerViewDesc;
     checkerViewDesc.Format = EFormat::R8G8B8A8_UNORM;
+    checkerViewDesc.Type = EImageViewType::View2D;
     checkerViewDesc.Range.Set(0, 1, 0, 1);
     auto checkerView = device->CreateImageView(checkerViewDesc, checker512);
 

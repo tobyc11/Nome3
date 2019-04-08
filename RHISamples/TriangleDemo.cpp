@@ -10,7 +10,7 @@
 
 using namespace RHI;
 
-CShaderModule::Ref LoadSPIRV(CDevice::Ref device, const std::string& path)
+static CShaderModule::Ref LoadSPIRV(CDevice::Ref device, const std::string& path)
 {
     std::ifstream file(path.c_str(), std::ios::binary | std::ios::ate);
     std::streamsize size = file.tellg();
@@ -22,32 +22,11 @@ CShaderModule::Ref LoadSPIRV(CDevice::Ref device, const std::string& path)
     return {};
 }
 
-int main(int argc, char* argv[])
+static CRenderPass::Ref CreateScreenPass(CDevice::Ref device, CSwapChain::Ref swapChain)
 {
-    auto device = CInstance::Get().CreateDevice(EDeviceCreateHints::Discrete);
-    SDL_Window* window;
-    SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow("RHI Triangle Demo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                              640, 480, 0);
-    if (window == nullptr)
-    {
-        printf("Could not create window: %s\n", SDL_GetError());
-        return 1;
-    }
-
-    SDL_SysWMinfo wmInfo;
-    SDL_VERSION(&wmInfo.version);
-    SDL_GetWindowWMInfo(window, &wmInfo);
-
-    CPresentationSurfaceDesc surfaceDesc;
-    surfaceDesc.Type = EPresentationSurfaceDescType::Win32;
-    surfaceDesc.Win32.Instance = wmInfo.info.win.hinstance;
-    surfaceDesc.Win32.Window = wmInfo.info.win.window;
-    auto swapChain = device->CreateSwapChain(surfaceDesc, EFormat::R8G8B8A8_UNORM);
+    auto fbImage = swapChain->GetImage();
     uint32_t width, height;
     swapChain->GetSize(width, height);
-
-    auto fbImage = swapChain->GetImage();
 
     CImageViewDesc fbViewDesc;
     fbViewDesc.Format = EFormat::R8G8B8A8_UNORM;
@@ -72,20 +51,49 @@ int main(int argc, char* argv[])
     rpDesc.Subpasses[0].SetDepthStencilAttachment(1);
     swapChain->GetSize(rpDesc.Width, rpDesc.Height);
     rpDesc.Layers = 1;
-    auto screenPass = device->CreateRenderPass(rpDesc);
+    return device->CreateRenderPass(rpDesc);
+}
 
-    CPipelineDesc pipelineDesc;
-    CRasterizerDesc rastDesc;
-    CDepthStencilDesc depthStencilDesc;
-    CBlendDesc blendDesc;
-    rastDesc.CullMode = ECullModeFlags::None;
-    pipelineDesc.VS = LoadSPIRV(device, APP_SOURCE_DIR "/Shader/Demo1.vert.spv");
-    pipelineDesc.PS = LoadSPIRV(device, APP_SOURCE_DIR "/Shader/Demo2.frag.spv");
-    pipelineDesc.RasterizerState = &rastDesc;
-    pipelineDesc.DepthStencilState = &depthStencilDesc;
-    pipelineDesc.BlendState = &blendDesc;
-    pipelineDesc.RenderPass = screenPass;
-    auto pso = device->CreatePipeline(pipelineDesc);
+int main(int argc, char* argv[])
+{
+    auto device = CInstance::Get().CreateDevice(EDeviceCreateHints::Discrete);
+    SDL_Window* window;
+    SDL_Init(SDL_INIT_VIDEO);
+    window = SDL_CreateWindow("RHI Triangle Demo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                              640, 480, SDL_WINDOW_RESIZABLE);
+    if (window == nullptr)
+    {
+        printf("Could not create window: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    SDL_SysWMinfo wmInfo;
+    SDL_VERSION(&wmInfo.version);
+    SDL_GetWindowWMInfo(window, &wmInfo);
+
+    CPresentationSurfaceDesc surfaceDesc;
+    surfaceDesc.Type = EPresentationSurfaceDescType::Win32;
+    surfaceDesc.Win32.Instance = wmInfo.info.win.hinstance;
+    surfaceDesc.Win32.Window = wmInfo.info.win.window;
+    auto swapChain = device->CreateSwapChain(surfaceDesc, EFormat::R8G8B8A8_UNORM);
+
+    auto screenPass = CreateScreenPass(device, swapChain);
+
+	CPipeline::Ref pso;
+    {
+        CPipelineDesc pipelineDesc;
+        CRasterizerDesc rastDesc;
+        CDepthStencilDesc depthStencilDesc;
+        CBlendDesc blendDesc;
+        rastDesc.CullMode = ECullModeFlags::None;
+        pipelineDesc.VS = LoadSPIRV(device, APP_SOURCE_DIR "/Shader/Demo1.vert.spv");
+        pipelineDesc.PS = LoadSPIRV(device, APP_SOURCE_DIR "/Shader/Demo2.frag.spv");
+        pipelineDesc.RasterizerState = &rastDesc;
+        pipelineDesc.DepthStencilState = &depthStencilDesc;
+        pipelineDesc.BlendState = &blendDesc;
+        pipelineDesc.RenderPass = screenPass;
+        pso = device->CreatePipeline(pipelineDesc);
+    }
 
     auto ubo = device->CreateBuffer(16, EBufferUsageFlags::ConstantBuffer);
     float* color = static_cast<float*>(ubo->Map(0, 16));
@@ -120,7 +128,14 @@ int main(int argc, char* argv[])
                 done = true;
         }
 
-        swapChain->AcquireNextImage();
+        bool swapOk = swapChain->AcquireNextImage();
+        if (!swapOk)
+        {
+            screenPass.reset();
+            swapChain->Resize(UINT32_MAX, UINT32_MAX);
+            screenPass = CreateScreenPass(device, swapChain);
+            swapChain->AcquireNextImage();
+        }
 
         ctx->BeginRenderPass(screenPass,
                              { CClearValue(0.0f, 1.0f, 0.0f, 0.0f), CClearValue(1.0f, 0) });
@@ -132,10 +147,9 @@ int main(int argc, char* argv[])
         ctx->EndRenderPass();
 
         CSwapChainPresentInfo info;
-        info.SrcImage = fbView;
+        info.SrcImage = nullptr;
         swapChain->Present(info);
     }
-
     ctx->Flush(true);
     SDL_DestroyWindow(window);
     SDL_Quit();

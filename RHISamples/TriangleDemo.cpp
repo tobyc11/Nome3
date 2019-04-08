@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
     checkerViewDesc.Range.Set(0, 1, 0, 1);
     auto checkerView = device->CreateImageView(checkerViewDesc, checker512);
 
-	CSamplerDesc samplerDesc;
+    CSamplerDesc samplerDesc;
     auto sampler = device->CreateSampler(samplerDesc);
 
     auto ctx = device->GetImmediateContext();

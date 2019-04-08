@@ -75,7 +75,7 @@ int main()
 
     auto ctx = device->GetImmediateContext();
     ctx->BeginRenderPass(renderPass, { CClearValue(0.0f, 1.0f, 0.0f, 0.0f) });
-    ctx->BindPipeline(pso.get());
+    ctx->BindPipeline(pso);
     ctx->Draw(3, 1, 0, 0);
     ctx->EndRenderPass();
 

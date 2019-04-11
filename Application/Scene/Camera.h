@@ -1,19 +1,21 @@
 #pragma once
-
 #include "SceneGraph.h"
-
 #include <Frustum.h>
+#include <stdexcept>
 
 namespace Nome::Scene
 {
 
-using tc::Matrix4;
 using tc::Frustum;
+using tc::Matrix4;
 
 class CCamera : public tc::FRefCounted
 {
 public:
-    CCamera(CSceneTreeNode* treeNode) : SceneTreeNode(treeNode) {}
+    CCamera(CSceneTreeNode* treeNode)
+        : SceneTreeNode(treeNode)
+    {
+    }
 
     void CalculateProjMatrix() const;
 
@@ -23,7 +25,7 @@ public:
 
     Frustum GetFrustum() const;
 
-    ///Property getter/setter
+    /// Property getter/setter
     float GetAspectRatio() const { return AspectRatio; }
     void SetAspectRatio(float value)
     {
@@ -53,17 +55,17 @@ public:
     }
 
 private:
-    //This is where the view transform comes from
+    // This is where the view transform comes from
     TAutoPtr<CSceneTreeNode> SceneTreeNode;
 
-    //bool bIsOrthographic = false;
+    // bool bIsOrthographic = false;
     float AspectRatio = 1.0f;
-    ///The vertical field of view, the default is 59 degrees
+    /// The vertical field of view, the default is 59 degrees
     float FovY = 59.0f;
     float NearClip = 0.1f;
     float FarClip = 1000.0f;
-    //float Zoom;
-    //float OrthoSize;
+    // float Zoom;
+    // float OrthoSize;
 
     mutable Matrix4 ProjMatrix;
     mutable bool bProjMatrixDirty = true;
@@ -71,11 +73,8 @@ private:
 
 class COrbitCameraController : public Flow::CFlowNode
 {
-    //A transform whose inverse is the view matrix
-    DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Transform)
-    {
-        CalcTransform();
-    }
+    // A transform whose inverse is the view matrix
+    DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Transform) { CalcTransform(); }
 
 public:
     void Activate() { bIsActive = true; }

@@ -4,11 +4,11 @@
 namespace Nome
 {
 
-template <typename T>
-class TASTConsumer
+template <typename T> class TASTConsumer
 {
 public:
-    TASTConsumer(CASTContext& ast) : AST(ast)
+    TASTConsumer(CASTContext& ast)
+        : AST(ast)
     {
     }
 
@@ -25,8 +25,7 @@ protected:
     CASTContext& AST;
 };
 
-template <typename T>
-class TCommandVisitor
+template <typename T> class TCommandVisitor
 {
 public:
     void Visit(ACommand* cmd)
@@ -37,7 +36,7 @@ public:
         }
         else if (cmd->BeginKeyword->Keyword == "polyline")
         {
-            //We assume the AST itself is valid
+            // We assume the AST itself is valid
             std::vector<AIdent*> points;
             for (auto* expr : cmd->Args)
                 points.push_back(static_cast<AIdent*>(expr));
@@ -73,11 +72,13 @@ public:
         }
         else if (cmd->BeginKeyword->Keyword == "funnel")
         {
-            static_cast<T*>(this)->VisitFunnel(cmd->Name, cmd->Args[0], cmd->Args[1], cmd->Args[2], cmd->Args[3]);
+            static_cast<T*>(this)->VisitFunnel(cmd->Name, cmd->Args[0], cmd->Args[1], cmd->Args[2],
+                                               cmd->Args[3]);
         }
         else if (cmd->BeginKeyword->Keyword == "tunnel")
         {
-            static_cast<T*>(this)->VisitTunnel(cmd->Name, cmd->Args[0], cmd->Args[1], cmd->Args[2], cmd->Args[3]);
+            static_cast<T*>(this)->VisitTunnel(cmd->Name, cmd->Args[0], cmd->Args[1], cmd->Args[2],
+                                               cmd->Args[3]);
         }
         else if (cmd->BeginKeyword->Keyword == "beziercurve")
         {
@@ -99,7 +100,7 @@ public:
         }
         else if (cmd->BeginKeyword->Keyword == "instance")
         {
-            //Args[0] is the entity; Args[1...] are the transforms
+            // Args[0] is the entity; Args[1...] are the transforms
             std::vector<ATransform*> transforms;
             auto iter = cmd->Args.begin(), iterEnd = cmd->Args.end();
             for (++iter; iter != iterEnd; ++iter)
@@ -107,11 +108,13 @@ public:
 
             AIdent* surface = static_cast<AIdent*>(cmd->FindNamedArg("surface"));
 
-            static_cast<T*>(this)->VisitInstance(cmd->Name, static_cast<AIdent*>(cmd->Args[0]), transforms, surface);
+            static_cast<T*>(this)->VisitInstance(cmd->Name, static_cast<AIdent*>(cmd->Args[0]),
+                                                 transforms, surface);
         }
         else if (cmd->BeginKeyword->Keyword == "surface")
         {
-            static_cast<T*>(this)->VisitSurface(cmd->Name, cmd->Args[0], cmd->Args[1], cmd->Args[2]);
+            static_cast<T*>(this)->VisitSurface(cmd->Name, cmd->Args[0], cmd->Args[1],
+                                                cmd->Args[2]);
         }
         else if (cmd->BeginKeyword->Keyword == "bank")
         {
@@ -124,7 +127,7 @@ public:
         else
         {
             printf("WARN: Unrecognized command %s at %d:%d\n", cmd->BeginKeyword->Keyword.c_str(),
-                cmd->BeginKeyword->BeginLoc.DebugLine, cmd->BeginKeyword->BeginLoc.DebugCol);
+                   cmd->BeginKeyword->BeginLoc.DebugLine, cmd->BeginKeyword->BeginLoc.DebugCol);
         }
     }
 
@@ -138,15 +141,20 @@ public:
     void VisitFunnel(AIdent* name, AExpr* n, AExpr* ro, AExpr* ratio, AExpr* h) {}
     void VisitTunnel(AIdent* name, AExpr* n, AExpr* ro, AExpr* ratio, AExpr* h) {}
     void VisitBezierCurve(AIdent* name, const std::vector<AIdent*>& points, AExpr* nSlices) {}
-    void VisitBSpline(AIdent* name, const std::vector<AIdent*>& points, AExpr* order, AExpr* nSlices, bool closed) {}
-    void VisitInstance(AIdent* name, AIdent* entityName, const std::vector<ATransform*>& transformList, AIdent* surface) {}
+    void VisitBSpline(AIdent* name, const std::vector<AIdent*>& points, AExpr* order,
+                      AExpr* nSlices, bool closed)
+    {
+    }
+    void VisitInstance(AIdent* name, AIdent* entityName,
+                       const std::vector<ATransform*>& transformList, AIdent* surface)
+    {
+    }
     void VisitSurface(AIdent* name, AExpr* r, AExpr* g, AExpr* b) {}
     void VisitBank(AIdent* name, const std::vector<ACommand*>& sets) {}
     void VisitDelete(const std::vector<ACommand*>& faceCmds) {}
 };
 
-template <typename T>
-class TExprVisitor
+template <typename T> class TExprVisitor
 {
 public:
     void Visit(AExpr* expr)

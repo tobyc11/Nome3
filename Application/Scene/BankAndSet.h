@@ -2,6 +2,7 @@
 #include <Flow/Arithmetics.h>
 #include <Parsing/ASTUtils.h>
 #include <map>
+#include <stdexcept>
 
 namespace Nome::Scene
 {
@@ -22,11 +23,12 @@ private:
     float GuiValue;
 };
 
-//Manages all the sliders
+// Manages all the sliders
 class CBankAndSet
 {
 public:
-    void AddSlider(const std::string& name, CCommandHandle handle, float value, float min, float max, float step);
+    void AddSlider(const std::string& name, CCommandHandle handle, float value, float min,
+                   float max, float step);
     CSlider* GetSlider(const std::string& name);
 
     void DrawImGui();

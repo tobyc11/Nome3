@@ -2,8 +2,8 @@
 
 #include <AutoPtr.h>
 
-#include <unordered_set>
 #include <functional>
+#include <unordered_set>
 #include <utility>
 
 namespace Flow
@@ -15,28 +15,28 @@ public:
     ~CFlowNode() override = default;
 };
 
-//Forward declaration
+// Forward declaration
 template <typename T> class TOutput;
 template <typename T> class TInput;
 
-template <typename T>
-class TOutput
+template <typename T> class TOutput
 {
 public:
     TOutput(CFlowNode* owner, std::function<void()> updateRoutine)
-        : Owner(owner), UpdateRoutine(std::move(updateRoutine))
+        : Owner(owner)
+        , UpdateRoutine(std::move(updateRoutine))
     {
     }
 
-    //Mark this output dirty, and notify all connected inputs
+    // Mark this output dirty, and notify all connected inputs
     void MarkDirty();
 
-    //Unmark dirty
+    // Unmark dirty
     void UnmarkDirty() { Dirty = false; }
 
     bool IsDirty() const { return Dirty; }
 
-    //Set a new value, and unmark dirty
+    // Set a new value, and unmark dirty
     void UpdateValue(T val)
     {
         Value = val;
@@ -50,12 +50,9 @@ public:
         return defaultValue;
     }
 
-    size_t CountConnections() const
-    {
-        return ConnectedInputs.size();
-    }
+    size_t CountConnections() const { return ConnectedInputs.size(); }
 
-    //Trigger an update to the value, returns whether the update was successful
+    // Trigger an update to the value, returns whether the update was successful
     bool Update() const
     {
         if (!IsDirty())
@@ -74,35 +71,29 @@ private:
     T Value;
     bool Dirty = true;
 
-    //Friend the corresponding input so that they can access our connections
+    // Friend the corresponding input so that they can access our connections
     friend class TInput<T>;
     std::unordered_set<TInput<T>*> ConnectedInputs;
 };
 
-template <typename T>
-class TInput
+template <typename T> class TInput
 {
 public:
     TInput(CFlowNode* owner, std::function<void()> dirtyNotifyRoutine)
-        : Owner(owner), DirtyNotifyRoutine(std::move(dirtyNotifyRoutine))
+        : Owner(owner)
+        , DirtyNotifyRoutine(std::move(dirtyNotifyRoutine))
     {
     }
 
-    ~TInput()
-    {
-        Disconnect();
-    }
+    ~TInput() { Disconnect(); }
 
-    void NotifyDirty()
-    {
-        DirtyNotifyRoutine();
-    }
+    void NotifyDirty() { DirtyNotifyRoutine(); }
 
     void Connect(TOutput<T>& output)
     {
         TOutput<T>* pOut = &output;
 
-        //Don't do anything if nothing changes
+        // Don't do anything if nothing changes
         if (pOut == ConnectedOutput)
             return;
 
@@ -118,8 +109,8 @@ public:
         NotifyDirty();
     }
 
-    //template <typename TDerived>
-    //std::enable_if_t<std::is_convertible<TDerived, T>::value> Connect(TOutput<TDerived>& output)
+    // template <typename TDerived>
+    // std::enable_if_t<std::is_convertible<TDerived, T>::value> Connect(TOutput<TDerived>& output)
     //{
     //}
 
@@ -135,10 +126,7 @@ public:
         ConnectedOutput = nullptr;
     }
 
-    bool IsConnected() const
-    {
-        return ConnectedOutput;
-    }
+    bool IsConnected() const { return ConnectedOutput; }
 
     T GetValue(const T& defaultValue) const
     {
@@ -153,7 +141,7 @@ private:
 
     TOutput<T>* ConnectedOutput = nullptr;
 
-    //Only used by InputArray
+    // Only used by InputArray
     template <typename TT> friend class TInputArray;
     void SetDirtyNotifyRoutine(std::function<void()> routine)
     {
@@ -161,10 +149,9 @@ private:
     }
 };
 
-template <typename T>
-void TOutput<T>::MarkDirty()
+template <typename T> void TOutput<T>::MarkDirty()
 {
-    //Don't mark dirty if already dirty. Safe to do?
+    // Don't mark dirty if already dirty. Safe to do?
     if (IsDirty())
         return;
 
@@ -175,43 +162,36 @@ void TOutput<T>::MarkDirty()
     }
 }
 
-template <typename T>
-void TOutput<T>::Connect(TInput<T>& input)
-{
-    input.Connect(*this);
-}
+template <typename T> void TOutput<T>::Connect(TInput<T>& input) { input.Connect(*this); }
 
 template <> class TInput<void>;
 
-template <>
-class TOutput<void>
+template <> class TOutput<void>
 {
 public:
     TOutput(CFlowNode* owner, std::function<void()> updateRoutine)
-        : Owner(owner), UpdateRoutine(std::move(updateRoutine))
+        : Owner(owner)
+        , UpdateRoutine(std::move(updateRoutine))
     {
     }
 
-    //Workaround for lambda chicken egg problem
+    // Workaround for lambda chicken egg problem
     void SetUpdateRoutine(std::function<void()> updateRoutine)
     {
         UpdateRoutine = std::move(updateRoutine);
     }
 
-    //Mark this output dirty, and notify all connected inputs
+    // Mark this output dirty, and notify all connected inputs
     void MarkDirty();
 
-    //Unmark dirty
+    // Unmark dirty
     void UnmarkDirty() { Dirty = false; }
 
     bool IsDirty() const { return Dirty; }
 
-    size_t CountConnections() const
-    {
-        return ConnectedInputs.size();
-    }
+    size_t CountConnections() const { return ConnectedInputs.size(); }
 
-    //Trigger an update to the value, returns whether the update was successful
+    // Trigger an update to the value, returns whether the update was successful
     bool Update() const
     {
         if (!IsDirty())
@@ -229,45 +209,36 @@ private:
 
     bool Dirty = true;
 
-    //Friend the corresponding input so that they can access our connections
+    // Friend the corresponding input so that they can access our connections
     friend class TInput<void>;
     std::unordered_set<TInput<void>*> ConnectedInputs;
 };
 
-template <>
-class TInput<void>
+template <> class TInput<void>
 {
 public:
     TInput(CFlowNode* owner, std::function<void()> dirtyNotifyRoutine)
-        : Owner(owner), DirtyNotifyRoutine(std::move(dirtyNotifyRoutine))
+        : Owner(owner)
+        , DirtyNotifyRoutine(std::move(dirtyNotifyRoutine))
     {
     }
 
-    ~TInput()
-    {
-        Disconnect();
-    }
+    ~TInput() { Disconnect(); }
 
-    void NotifyDirty()
-    {
-        DirtyNotifyRoutine();
-    }
+    void NotifyDirty() { DirtyNotifyRoutine(); }
 
     void Connect(TOutput<void>& output)
     {
         TOutput<void>* pOut = &output;
 
-        //Don't do anything if nothing changes
+        // Don't do anything if nothing changes
         if (pOut == ConnectedOutput)
             return;
 
         Disconnect();
 
         ConnectedOutput = pOut;
-        if (ConnectedOutput)
-        {
-            ConnectedOutput->ConnectedInputs.insert(this);
-        }
+        ConnectedOutput->ConnectedInputs.insert(this);
         ConnectedOutput->Owner->AddRef();
 
         NotifyDirty();
@@ -293,18 +264,20 @@ private:
 
 } /* namespace Flow */
 
-//Finally, macros to help implementing flow nodes
+// Finally, macros to help implementing flow nodes
 
-///Define an input slot, the function is called when an upstream output is marked dirty
-#define DEFINE_INPUT(Type, Name) \
-public:\
-    Flow::TInput<Type> Name{ this, [=]() {this->Name##MarkedDirty(); } }; \
-private:\
+/// Define an input slot, the function is called when an upstream output is marked dirty
+#define DEFINE_INPUT(Type, Name)                                                                   \
+public:                                                                                            \
+    Flow::TInput<Type> Name { this, [=]() { this->Name##MarkedDirty(); } };                        \
+                                                                                                   \
+private:                                                                                           \
     inline void Name##MarkedDirty()
 
-///Define an output slot, the function is called when the value is requested
-#define DEFINE_OUTPUT_WITH_UPDATE(Type, Name) \
-public:\
-    Flow::TOutput<Type> Name{ this, [=]() {this->Name##Update(); } }; \
-private:\
+/// Define an output slot, the function is called when the value is requested
+#define DEFINE_OUTPUT_WITH_UPDATE(Type, Name)                                                      \
+public:                                                                                            \
+    Flow::TOutput<Type> Name { this, [=]() { this->Name##Update(); } };                            \
+                                                                                                   \
+private:                                                                                           \
     inline void Name##Update()

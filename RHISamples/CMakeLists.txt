@@ -7,7 +7,7 @@ target_link_libraries(WindowLess PRIVATE RHI)
 target_compile_definitions(WindowLess PRIVATE -DAPP_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 
-add_executable(TriangleDemo TriangleDemo.cpp)
+add_executable(TriangleDemo TriangleDemo.cpp imgui_impl_sdl.cpp)
 target_link_libraries(TriangleDemo PRIVATE RHI)
 target_compile_definitions(TriangleDemo PRIVATE -DAPP_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 

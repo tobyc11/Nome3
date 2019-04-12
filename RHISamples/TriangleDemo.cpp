@@ -1,9 +1,13 @@
 #include <PresentationSurfaceDesc.h>
+#include <RHIImGuiBackend.h>
 #include <RHIInstance.h>
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include <Windows.h>
 #include <fstream>
+
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -56,7 +60,7 @@ static CRenderPass::Ref CreateScreenPass(CDevice::Ref device, CSwapChain::Ref sw
 
 int main(int argc, char* argv[])
 {
-    auto device = CInstance::Get().CreateDevice(EDeviceCreateHints::Discrete);
+    auto device = CInstance::Get().CreateDevice(EDeviceCreateHints::Integrated);
     SDL_Window* window;
     SDL_Init(SDL_INIT_VIDEO);
     window = SDL_CreateWindow("RHI Triangle Demo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -79,7 +83,16 @@ int main(int argc, char* argv[])
 
     auto screenPass = CreateScreenPass(device, swapChain);
 
-	CPipeline::Ref pso;
+    // Setup ImGui
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplSDL2_InitForVulkan(window);
+    CRHIImGuiBackend::Init(device, screenPass);
+
+    CPipeline::Ref pso;
     {
         CPipelineDesc pipelineDesc;
         CRasterizerDesc rastDesc;
@@ -124,9 +137,16 @@ int main(int argc, char* argv[])
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
+            ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT)
                 done = true;
         }
+
+        CRHIImGuiBackend::NewFrame();
+        ImGui_ImplSDL2_NewFrame(window);
+        ImGui::NewFrame();
+
+        ImGui::ShowDemoWindow();
 
         bool swapOk = swapChain->AcquireNextImage();
         if (!swapOk)
@@ -144,6 +164,10 @@ int main(int argc, char* argv[])
         ctx->BindSampler(sampler, 1, 0, 0);
         ctx->BindImageView(checkerView, 1, 1, 0);
         ctx->Draw(3, 1, 0, 0);
+
+        ImGui::Render();
+        CRHIImGuiBackend::RenderDrawData(ImGui::GetDrawData(), ctx);
+
         ctx->EndRenderPass();
 
         CSwapChainPresentInfo info;
@@ -151,6 +175,7 @@ int main(int argc, char* argv[])
         swapChain->Present(info);
     }
     ctx->Flush(true);
+    CRHIImGuiBackend::Shutdown();
     SDL_DestroyWindow(window);
     SDL_Quit();
     SDL_Delay(1000);

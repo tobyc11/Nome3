@@ -3,6 +3,7 @@ image: Visual Studio 2017
 shallow_clone: true
 
 install:
+  - git submodule update --init --recursive
   # update msys2
   - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Sy"

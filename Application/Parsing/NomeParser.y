@@ -24,11 +24,12 @@ void yyerror(YYLTYPE* loc, yyscan_t scanner, Nome::CNomeDriver* driver, const ch
 %lex-param {yyscan_t scanner} {Nome::CNomeDriver* driver}
 %parse-param {yyscan_t scanner} {Nome::CNomeDriver* driver}
 %union {
-    Nome::AKeyword* Keyword;
     Nome::AExpr* Expr;
     Nome::AIdent* Ident;
     Nome::ACommand* Command;
     Nome::ATransform* Transform;
+	Nome::AExprList* ExprList;
+	Nome::ACommandArgument* CommandArgument;
 }
 %token <Ident> IDENT
 %token <Expr> NUMBER
@@ -36,36 +37,39 @@ void yyerror(YYLTYPE* loc, yyscan_t scanner, Nome::CNomeDriver* driver, const ch
 %left '*' '/'
 %precedence NEG
 %right '^'
-%token <Keyword> EXPR SIN COS TAN COT SEC CSC ARCSIN ARCCOS ARCTAN ARCCOT ARCSEC ARCCSC
-%token <Keyword> POINT ENDPOINT
-%token <Keyword> POLYLINE ENDPOLYLINE CLOSED
-%token <Keyword> FACE ENDFACE
-%token <Keyword> OBJECT ENDOBJECT
-%token <Keyword> MESH ENDMESH
-%token <Keyword> GROUP ENDGROUP
-%token <Keyword> CIRCLE ENDCIRCLE
-%token <Keyword> FUNNEL ENDFUNNEL
-%token <Keyword> TUNNEL ENDTUNNEL
-%token <Keyword> BEZIERCURVE ENDBEZIERCURVE SLICES
-%token <Keyword> BSPLINE ENDBSPLINE ORDER
-%token <Keyword> INSTANCE ENDINSTANCE ROTATE SCALE TRANSLATE
-%token <Keyword> SURFACE ENDSURFACE COLOR
-%token <Keyword> BACKGROUND ENDBACKGROUND
-%token <Keyword> FOREGROUND ENDFOREGROUND
-%token <Keyword> INSIDEFACES ENDINSIDEFACES
-%token <Keyword> OUTSIDEFACES ENDOUTSIDEFACES
-%token <Keyword> OFFSETFACES ENDOFFSETFACES
-%token <Keyword> FRONTFACES ENDFRONTFACES
-%token <Keyword> BACKFACES ENDBACKFACES
-%token <Keyword> RIMFACES ENDRIMFACES
-%token <Keyword> BANK ENDBANK SET
-%token <Keyword> DELETE ENDDELETE
-%token <Keyword> SUBDIVISION ENDSUBDIVISION TYPE SUBDIVISIONS
-%token <Keyword> OFFSET ENDOFFSET MIN MAX STEP
-%type <Command> command
+%token <Ident> EXPR SIN COS TAN COT SEC CSC ARCSIN ARCCOS ARCTAN ARCCOT ARCSEC ARCCSC
+%token <Ident> POINT ENDPOINT
+%token <Ident> POLYLINE ENDPOLYLINE CLOSED
+%token <Ident> FACE ENDFACE
+%token <Ident> OBJECT ENDOBJECT
+%token <Ident> MESH ENDMESH
+%token <Ident> GROUP ENDGROUP
+%token <Ident> CIRCLE ENDCIRCLE
+%token <Ident> FUNNEL ENDFUNNEL
+%token <Ident> TUNNEL ENDTUNNEL
+%token <Ident> BEZIERCURVE ENDBEZIERCURVE SLICES
+%token <Ident> BSPLINE ENDBSPLINE ORDER
+%token <Ident> INSTANCE ENDINSTANCE ROTATE SCALE TRANSLATE
+%token <Ident> SURFACE ENDSURFACE COLOR
+%token <Ident> BACKGROUND ENDBACKGROUND
+%token <Ident> FOREGROUND ENDFOREGROUND
+%token <Ident> INSIDEFACES ENDINSIDEFACES
+%token <Ident> OUTSIDEFACES ENDOUTSIDEFACES
+%token <Ident> OFFSETFACES ENDOFFSETFACES
+%token <Ident> FRONTFACES ENDFRONTFACES
+%token <Ident> BACKFACES ENDBACKFACES
+%token <Ident> RIMFACES ENDRIMFACES
+%token <Ident> BANK ENDBANK SET
+%token <Ident> DELETE ENDDELETE
+%token <Ident> SUBDIVISION ENDSUBDIVISION TYPE SUBDIVISIONS
+%token <Ident> OFFSET ENDOFFSET MIN MAX STEP
+%type <Command> command command_list
+%type <CommandArgument> command_arg_list
+%type <ExprList> plain_exp_list
 %type <Expr> exp num_exp
 %type <Command> point polyline face object mesh group circle funnel tunnel bezier_curve bspline instance surface background foreground insidefaces outsidefaces offsetfaces frontfaces backfaces rimfaces bank set delete face_for_deletion subdivision offset
 %type <Transform> transform
+%type <Ident> kwd_or_ident
 
 %%
 input:
@@ -74,11 +78,29 @@ input:
 | num_exp { driver->GetASTContext()->SetExpr($1); }
 ;
 
-command: point | polyline | face | object | mesh | group |
-  circle | funnel | tunnel | bezier_curve | bspline | instance |
-  surface | background | foreground | insidefaces | outsidefaces | offsetfaces |
-  frontfaces | backfaces | rimfaces |
-  bank | delete | subdivision | offset
+kwd_or_ident: IDENT | POINT | POLYLINE | FACE | OBJECT | MESH | GROUP | CIRCLE | FUNNEL | TUNNEL | BEZIERCURVE | BSPLINE | INSTANCE;
+
+command: point | polyline | face | object | mesh | group |circle | funnel | tunnel | bezier_curve | bspline |
+  instance | surface | background | foreground | insidefaces | outsidefaces | offsetfaces |
+  frontfaces | backfaces | rimfaces | bank | delete | subdivision | offset
+| '(' kwd_or_ident IDENT command_arg_list command_list ')' {
+    $$ = Nome::ACommand::Create(*driver->GetASTContext(), $3, $2, nullptr, $4, $5);
+}
+;
+
+command_list:
+  %empty { $$ = nullptr; }
+| command command_list { $$ = $1; $$->SetNext($2); }
+;
+
+command_arg_list:
+  %empty { $$ = nullptr; }
+| IDENT '=' exp command_arg_list { $$ = Nome::ACommandArgument::Create(*driver->GetASTContext(), $1, $3, $4); }
+;
+
+plain_exp_list:
+  %empty { $$ = Nome::AExprList::Create(*driver->GetASTContext()); }
+| plain_exp_list exp { $$->AddExpr($2); }
 ;
 
 exp:
@@ -103,6 +125,7 @@ exp:
 | ARCCOT '(' exp ')'   { $$ = Nome::AUnaryOp::Create(*driver->GetASTContext(), Nome::AUnaryOp::UOP_ARCCOT, $3, nullptr); }
 | ARCSEC '(' exp ')'   { $$ = Nome::AUnaryOp::Create(*driver->GetASTContext(), Nome::AUnaryOp::UOP_ARCSEC, $3, nullptr); }
 | ARCCSC '(' exp ')'   { $$ = Nome::AUnaryOp::Create(*driver->GetASTContext(), Nome::AUnaryOp::UOP_ARCCSC, $3, nullptr); }
+| '[' plain_exp_list ']' { $$ = $2; }
 ;
 
 num_exp: NUMBER | '{' EXPR exp '}' { $$ = $3; };
@@ -111,28 +134,28 @@ ident_list: IDENT { driver->IdentList.push_back($1); } | ident_list IDENT { driv
 
 point: POINT IDENT '(' num_exp num_exp num_exp ')' ENDPOINT
 {
-    $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $POINT, $ENDPOINT);
-    $$->Args.push_back($4);
-    $$->Args.push_back($5);
-    $$->Args.push_back($6);
+	auto* exprList = Nome::AExprList::Create(*driver->GetASTContext());
+	exprList->AddExpr($4);
+	exprList->AddExpr($5);
+	exprList->AddExpr($6);
+	auto* arg = Nome::ACommandArgument::Create(*driver->GetASTContext(), driver->MakeIdent("position"), exprList, nullptr);
+    $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $POINT, $ENDPOINT, arg);
 };
 
 polyline: POLYLINE IDENT '(' ident_list ')' polyline_ext ENDPOLYLINE
 {
-    $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $POLYLINE, $ENDPOLYLINE);
-    $$->Args.insert($$->Args.begin(), driver->IdentList.begin(), driver->IdentList.end());
-    driver->IdentList.clear();
-    driver->Ext.MoveTo($$);
+    $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $POLYLINE, $ENDPOLYLINE, nullptr);
+    driver->Ext.MoveTo(*driver, $$);
+	driver->MoveIdentList($$, "point_list");
 };
 
-polyline_ext: %empty | CLOSED { driver->Ext.NamedArgs[$1] = $1; };
+polyline_ext: %empty | CLOSED { driver->Ext.NamedArgs[$1] = driver->MakeIdent("true"); };
 
 face: FACE IDENT '(' ident_list ')' face_ext ENDFACE
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $2, $FACE, $ENDFACE);
-    $$->Args.insert($$->Args.begin(), driver->IdentList.begin(), driver->IdentList.end());
-    driver->IdentList.clear();
-    driver->Ext.MoveTo($$);
+    driver->Ext.MoveTo(*driver, $$);
+	driver->MoveIdentList($$, "point_list");
 };
 
 face_ext: %empty | SURFACE IDENT { driver->Ext.NamedArgs[$1] = $2; };
@@ -140,15 +163,13 @@ face_ext: %empty | SURFACE IDENT { driver->Ext.NamedArgs[$1] = $2; };
 object: OBJECT IDENT '(' ident_list ')' ENDOBJECT
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $2, $OBJECT, $ENDOBJECT);
-    $$->Args.insert($$->Args.begin(), driver->IdentList.begin(), driver->IdentList.end());
-    driver->IdentList.clear();
+	driver->MoveIdentList($$, "primitives");
 };
 
 mesh: MESH IDENT face_list ENDMESH
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $2, $MESH, $ENDMESH);
-    $$->SubCommands.insert($$->SubCommands.begin(), driver->FaceList.begin(), driver->FaceList.end());
-    driver->FaceList.clear();
+	driver->MoveFaceList($$);
 };
 
 face_list: %empty | face_list face { driver->FaceList.push_back($2); };
@@ -156,8 +177,7 @@ face_list: %empty | face_list face { driver->FaceList.push_back($2); };
 group: GROUP IDENT instance_list ENDGROUP
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $2, $GROUP, $ENDGROUP);
-    $$->SubCommands.insert($$->SubCommands.begin(), driver->InstanceList.begin(), driver->InstanceList.end());
-    driver->InstanceList.clear();
+	driver->MoveInstanceList($$);
 };
 
 instance_list: %empty | instance_list instance { driver->InstanceList.push_back($2); };
@@ -165,34 +185,33 @@ instance_list: %empty | instance_list instance { driver->InstanceList.push_back(
 circle: CIRCLE IDENT '(' num_exp num_exp ')' ENDCIRCLE
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $CIRCLE, $ENDCIRCLE);
-    $$->Args.push_back($4);
-    $$->Args.push_back($5);
+	$$->AddArgument(driver->MakeIdent("subdiv"), $4);
+	$$->AddArgument(driver->MakeIdent("radius"), $5);
 };
 
 funnel: FUNNEL IDENT '(' num_exp num_exp num_exp num_exp ')' ENDFUNNEL
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $FUNNEL, $ENDFUNNEL);
-    $$->Args.push_back($4);
-    $$->Args.push_back($5);
-    $$->Args.push_back($6);
-    $$->Args.push_back($7);
+	$$->AddArgument(driver->MakeIdent("subdiv"), $4);
+	$$->AddArgument(driver->MakeIdent("radius"), $5);
+	$$->AddArgument(driver->MakeIdent("ratio"), $6);
+	$$->AddArgument(driver->MakeIdent("height"), $7);
 };
 
 tunnel: TUNNEL IDENT '(' num_exp num_exp num_exp num_exp ')' ENDTUNNEL
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $TUNNEL, $ENDTUNNEL);
-    $$->Args.push_back($4);
-    $$->Args.push_back($5);
-    $$->Args.push_back($6);
-    $$->Args.push_back($7);
+	$$->AddArgument(driver->MakeIdent("subdiv"), $4);
+	$$->AddArgument(driver->MakeIdent("radius"), $5);
+	$$->AddArgument(driver->MakeIdent("ratio"), $6);
+	$$->AddArgument(driver->MakeIdent("height"), $7);
 };
 
 bezier_curve: BEZIERCURVE IDENT '(' ident_list ')' bezier_curve_ext ENDBEZIERCURVE
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $BEZIERCURVE, $ENDBEZIERCURVE);
-    $$->Args.insert($$->Args.begin(), driver->IdentList.begin(), driver->IdentList.end());
-    driver->IdentList.clear();
-    driver->Ext.MoveTo($$);
+    driver->Ext.MoveTo(*driver, $$);
+	driver->MoveIdentList($$, "point_list");
 };
 
 bezier_curve_ext: %empty | SLICES num_exp { driver->Ext.NamedArgs[$1] = $2; };
@@ -200,9 +219,8 @@ bezier_curve_ext: %empty | SLICES num_exp { driver->Ext.NamedArgs[$1] = $2; };
 bspline: BSPLINE IDENT '(' ident_list ')' bspline_ext ENDBSPLINE
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $BSPLINE, $ENDBSPLINE);
-    $$->Args.insert($$->Args.begin(), driver->IdentList.begin(), driver->IdentList.end());
-    driver->IdentList.clear();
-    driver->Ext.MoveTo($$);
+    driver->Ext.MoveTo(*driver, $$);
+	driver->MoveIdentList($$, "point_list");
 };
 
 bspline_ext: %empty
@@ -214,13 +232,14 @@ bspline_ext: %empty
 instance: INSTANCE IDENT IDENT instance_ext ENDINSTANCE
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $2, $INSTANCE, $ENDINSTANCE);
-    $$->Args.push_back($3);
-    driver->Ext.MoveTo($$);
+	$$->AddArgument(driver->MakeIdent("target"), $3);
+	driver->MoveTransformList($$, "transformation");
+    driver->Ext.MoveTo(*driver, $$);
 };
 
 instance_ext: %empty
  | instance_ext SURFACE IDENT { driver->Ext.NamedArgs[$2] = $3; }
- | instance_ext transform { driver->Ext.Args.push_back($2); };
+ | instance_ext transform { driver->TransformList.push_back($2); };
 
 transform:
   ROTATE '(' num_exp num_exp num_exp ')' '(' num_exp ')'
@@ -247,64 +266,65 @@ transform:
 surface: SURFACE IDENT COLOR '(' num_exp num_exp num_exp ')' ENDSURFACE
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $SURFACE, $ENDSURFACE);
-    $$->Args.push_back($5);
-    $$->Args.push_back($6);
-    $$->Args.push_back($7);
+	auto* exprList = Nome::AExprList::Create(*driver->GetASTContext());
+	exprList->AddExpr($5);
+	exprList->AddExpr($6);
+	exprList->AddExpr($7);
+    $$->AddArgument(driver->MakeIdent("color"), exprList);
 };
 
 background: BACKGROUND SURFACE IDENT ENDBACKGROUND
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), nullptr, $1, $4);
-    $$->NamedArgs[$SURFACE] = $IDENT;
+    $$->AddArgument($SURFACE, $IDENT);
 };
 
 foreground: FOREGROUND SURFACE IDENT ENDFOREGROUND
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), nullptr, $1, $4);
-    $$->NamedArgs[$SURFACE] = $IDENT;
+    $$->AddArgument($SURFACE, $IDENT);
 };
 
 insidefaces: INSIDEFACES SURFACE IDENT ENDINSIDEFACES
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), nullptr, $1, $4);
-    $$->NamedArgs[$SURFACE] = $IDENT;
+    $$->AddArgument($SURFACE, $IDENT);
 };
 
 outsidefaces: OUTSIDEFACES SURFACE IDENT ENDOUTSIDEFACES
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), nullptr, $1, $4);
-    $$->NamedArgs[$SURFACE] = $IDENT;
+    $$->AddArgument($SURFACE, $IDENT);
 };
 
 offsetfaces: OFFSETFACES SURFACE IDENT ENDOFFSETFACES
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), nullptr, $1, $4);
-    $$->NamedArgs[$SURFACE] = $IDENT;
+    $$->AddArgument($SURFACE, $IDENT);
 };
 
 frontfaces: FRONTFACES SURFACE IDENT ENDFRONTFACES
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), nullptr, $1, $4);
-    $$->NamedArgs[$SURFACE] = $IDENT;
+    $$->AddArgument($SURFACE, $IDENT);
 };
 
 backfaces: BACKFACES SURFACE IDENT ENDBACKFACES
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), nullptr, $1, $4);
-    $$->NamedArgs[$SURFACE] = $IDENT;
+    $$->AddArgument($SURFACE, $IDENT);
 };
 
 rimfaces: RIMFACES SURFACE IDENT ENDRIMFACES
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), nullptr, $1, $4);
-    $$->NamedArgs[$SURFACE] = $IDENT;
+    $$->AddArgument($SURFACE, $IDENT);
 };
 
 bank: BANK IDENT set_list ENDBANK
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $BANK, $ENDBANK);
-    $$->SubCommands.insert($$->SubCommands.begin(), driver->SetList.begin(), driver->SetList.end());
-    driver->SetList.clear();
+	driver->MoveSetList($$);
 };
 
 set_list: %empty | set_list set { driver->SetList.push_back($2); };
@@ -312,17 +332,16 @@ set_list: %empty | set_list set { driver->SetList.push_back($2); };
 set: SET IDENT num_exp num_exp num_exp num_exp
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $SET, nullptr);
-    $$->Args.push_back($3);
-    $$->Args.push_back($4);
-    $$->Args.push_back($5);
-    $$->Args.push_back($6);
+	$$->AddArgument(driver->MakeIdent("value"), $3);
+	$$->AddArgument(driver->MakeIdent("min"), $4);
+	$$->AddArgument(driver->MakeIdent("max"), $5);
+	$$->AddArgument(driver->MakeIdent("step"), $6);
 };
 
 delete: DELETE face_for_deletion_list ENDDELETE
 {
     $$ = Nome::ACommand::Create(*driver->GetASTContext(), nullptr, $DELETE, $ENDDELETE);
-    $$->SubCommands.insert($$->SubCommands.begin(), driver->FaceForDeletionList.begin(), driver->FaceForDeletionList.end());
-    driver->FaceForDeletionList.clear();
+	driver->MoveFaceForDeletionList($$);
 };
 
 face_for_deletion: FACE IDENT ENDFACE

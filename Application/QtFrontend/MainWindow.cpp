@@ -183,7 +183,7 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
     {
         builder.Traverse();
     }
-    catch (const Scene::CSemanticError& exception)
+    catch (const CSemanticError& exception)
     {
         printf("Semantic error encountered during scene building:\n");
         printf("%s\n", exception.what());

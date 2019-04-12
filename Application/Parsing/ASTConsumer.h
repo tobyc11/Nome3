@@ -30,104 +30,114 @@ template <typename T> class TCommandVisitor
 public:
     void Visit(ACommand* cmd)
     {
-        if (cmd->BeginKeyword->Keyword == "point")
+        if (cmd->GetBeginKeyword()->Identifier == "point")
         {
-            static_cast<T*>(this)->VisitPoint(cmd->Name, cmd->Args[0], cmd->Args[1], cmd->Args[2]);
+            auto* pos = ast_as<AExprList*>(cmd->FindNamedArg("position"));
+            const auto& vec = pos->GetExpressions();
+            static_cast<T*>(this)->VisitPoint(cmd->GetName(), vec[0], vec[1], vec[2]);
         }
-        else if (cmd->BeginKeyword->Keyword == "polyline")
+        else if (cmd->GetBeginKeyword()->Identifier == "polyline")
         {
             // We assume the AST itself is valid
-            std::vector<AIdent*> points;
-            for (auto* expr : cmd->Args)
-                points.push_back(static_cast<AIdent*>(expr));
+            auto* pointList = ast_as<AExprList*>(cmd->FindNamedArg("point_list"));
+            auto idents = pointList->ConvertToIdents();
             bool closed = cmd->FindNamedArg("closed");
-            static_cast<T*>(this)->VisitPolyline(cmd->Name, points, closed);
+            static_cast<T*>(this)->VisitPolyline(cmd->GetName(), idents, closed);
         }
-        else if (cmd->BeginKeyword->Keyword == "face")
+        else if (cmd->GetBeginKeyword()->Identifier == "face")
         {
-            std::vector<AIdent*> points;
-            for (auto* expr : cmd->Args)
-                points.push_back(static_cast<AIdent*>(expr));
+            auto* pointList = ast_as<AExprList*>(cmd->FindNamedArg("point_list"));
+            auto idents = pointList->ConvertToIdents();
             AIdent* surface = static_cast<AIdent*>(cmd->FindNamedArg("surface"));
-            static_cast<T*>(this)->VisitFace(cmd->Name, points, surface);
+            static_cast<T*>(this)->VisitFace(cmd->GetName(), idents, surface);
         }
-        else if (cmd->BeginKeyword->Keyword == "object")
+        else if (cmd->GetBeginKeyword()->Identifier == "object")
         {
-            std::vector<AIdent*> points;
-            for (auto* expr : cmd->Args)
-                points.push_back(static_cast<AIdent*>(expr));
-            static_cast<T*>(this)->VisitObject(cmd->Name, points);
+            auto* exprList = ast_as<AExprList*>(cmd->FindNamedArg("primitives"));
+            auto primitives = exprList->ConvertToIdents();
+            static_cast<T*>(this)->VisitObject(cmd->GetName(), primitives);
         }
-        else if (cmd->BeginKeyword->Keyword == "mesh")
+        else if (cmd->GetBeginKeyword()->Identifier == "mesh")
         {
-            static_cast<T*>(this)->VisitMesh(cmd->Name, cmd->SubCommands);
+            static_cast<T*>(this)->VisitMesh(cmd->GetName(), cmd->GatherSubcommands());
         }
-        else if (cmd->BeginKeyword->Keyword == "group")
+        else if (cmd->GetBeginKeyword()->Identifier == "group")
         {
-            static_cast<T*>(this)->VisitGroup(cmd->Name, cmd->SubCommands);
+            static_cast<T*>(this)->VisitGroup(cmd->GetName(), cmd->GatherSubcommands());
         }
-        else if (cmd->BeginKeyword->Keyword == "circle")
+        else if (cmd->GetBeginKeyword()->Identifier == "circle")
         {
-            static_cast<T*>(this)->VisitCircle(cmd->Name, cmd->Args[0], cmd->Args[1]);
+            static_cast<T*>(this)->VisitCircle(cmd->GetName(), cmd->FindNamedArg("subdiv"),
+                                               cmd->FindNamedArg("radius"));
         }
-        else if (cmd->BeginKeyword->Keyword == "funnel")
+        else if (cmd->GetBeginKeyword()->Identifier == "funnel")
         {
-            static_cast<T*>(this)->VisitFunnel(cmd->Name, cmd->Args[0], cmd->Args[1], cmd->Args[2],
-                                               cmd->Args[3]);
+            static_cast<T*>(this)->VisitFunnel(
+                cmd->GetName(), cmd->FindNamedArg("subdiv"), cmd->FindNamedArg("radius"),
+                cmd->FindNamedArg("ratio"), cmd->FindNamedArg("height"));
         }
-        else if (cmd->BeginKeyword->Keyword == "tunnel")
+        else if (cmd->GetBeginKeyword()->Identifier == "tunnel")
         {
-            static_cast<T*>(this)->VisitTunnel(cmd->Name, cmd->Args[0], cmd->Args[1], cmd->Args[2],
-                                               cmd->Args[3]);
+            static_cast<T*>(this)->VisitTunnel(
+                cmd->GetName(), cmd->FindNamedArg("subdiv"), cmd->FindNamedArg("radius"),
+                cmd->FindNamedArg("ratio"), cmd->FindNamedArg("height"));
         }
-        else if (cmd->BeginKeyword->Keyword == "beziercurve")
+        else if (cmd->GetBeginKeyword()->Identifier == "beziercurve")
         {
-            std::vector<AIdent*> points;
-            for (auto* expr : cmd->Args)
-                points.push_back(static_cast<AIdent*>(expr));
+            auto* exprList = ast_as<AExprList*>(cmd->FindNamedArg("point_list"));
+            auto points = exprList->ConvertToIdents();
             AExpr* slices = cmd->FindNamedArg("slices");
-            static_cast<T*>(this)->VisitBezierCurve(cmd->Name, points, slices);
+            static_cast<T*>(this)->VisitBezierCurve(cmd->GetName(), points, slices);
         }
-        else if (cmd->BeginKeyword->Keyword == "bspline")
+        else if (cmd->GetBeginKeyword()->Identifier == "bspline")
         {
-            std::vector<AIdent*> points;
-            for (auto* expr : cmd->Args)
-                points.push_back(static_cast<AIdent*>(expr));
+            auto* exprList = ast_as<AExprList*>(cmd->FindNamedArg("point_list"));
+            auto points = exprList->ConvertToIdents();
             AExpr* order = cmd->FindNamedArg("order");
             AExpr* slices = cmd->FindNamedArg("slices");
             bool closed = cmd->FindNamedArg("closed");
-            static_cast<T*>(this)->VisitBSpline(cmd->Name, points, order, slices, closed);
+            static_cast<T*>(this)->VisitBSpline(cmd->GetName(), points, order, slices, closed);
         }
-        else if (cmd->BeginKeyword->Keyword == "instance")
+        else if (cmd->GetBeginKeyword()->Identifier == "instance")
         {
-            // Args[0] is the entity; Args[1...] are the transforms
+            auto* exprList = ast_as<AExprList*>(cmd->FindNamedArg("transformation"));
             std::vector<ATransform*> transforms;
-            auto iter = cmd->Args.begin(), iterEnd = cmd->Args.end();
-            for (++iter; iter != iterEnd; ++iter)
-                transforms.push_back(static_cast<ATransform*>(*iter));
+            for (AExpr* expr : exprList->GetExpressions())
+            {
+                ATransform* ident = ast_as<ATransform*>(expr);
+                if (!ident)
+                    throw CSemanticError("Cannot convert to ATransform", expr);
+                else
+                    transforms.push_back(ident);
+            }
 
             AIdent* surface = static_cast<AIdent*>(cmd->FindNamedArg("surface"));
 
-            static_cast<T*>(this)->VisitInstance(cmd->Name, static_cast<AIdent*>(cmd->Args[0]),
+            static_cast<T*>(this)->VisitInstance(cmd->GetName(),
+                                                 static_cast<AIdent*>(cmd->FindNamedArg("target")),
                                                  transforms, surface);
         }
-        else if (cmd->BeginKeyword->Keyword == "surface")
+        else if (cmd->GetBeginKeyword()->Identifier == "surface")
         {
-            static_cast<T*>(this)->VisitSurface(cmd->Name, cmd->Args[0], cmd->Args[1],
-                                                cmd->Args[2]);
+            auto* exprList = ast_as<AExprList*>(cmd->FindNamedArg("color"));
+            static_cast<T*>(this)->VisitSurface(cmd->GetName(), exprList->GetExpressions()[0],
+                                                exprList->GetExpressions()[1],
+                                                exprList->GetExpressions()[2]);
         }
-        else if (cmd->BeginKeyword->Keyword == "bank")
+        else if (cmd->GetBeginKeyword()->Identifier == "bank")
         {
-            static_cast<T*>(this)->VisitBank(cmd->Name, cmd->SubCommands);
+            static_cast<T*>(this)->VisitBank(cmd->GetName(), cmd->GatherSubcommands());
         }
-        else if (cmd->BeginKeyword->Keyword == "delete")
+        else if (cmd->GetBeginKeyword()->Identifier == "delete")
         {
-            static_cast<T*>(this)->VisitDelete(cmd->SubCommands);
+            static_cast<T*>(this)->VisitDelete(cmd->GatherSubcommands());
         }
         else
         {
-            printf("WARN: Unrecognized command %s at %d:%d\n", cmd->BeginKeyword->Keyword.c_str(),
-                   cmd->BeginKeyword->BeginLoc.DebugLine, cmd->BeginKeyword->BeginLoc.DebugCol);
+            printf("WARN: Unrecognized command %s at %d:%d\n",
+                   cmd->GetBeginKeyword()->Identifier.c_str(),
+                   cmd->GetBeginKeyword()->BeginLoc.DebugLine,
+                   cmd->GetBeginKeyword()->BeginLoc.DebugCol);
         }
     }
 

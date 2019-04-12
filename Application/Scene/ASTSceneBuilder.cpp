@@ -1,28 +1,26 @@
 #include "ASTSceneBuilder.h"
-#include "Surface.h"
+#include "BezierSpline.h"
+#include "Circle.h"
+#include "Funnel.h"
 #include "Point.h"
 #include "Polyline.h"
+#include "Surface.h"
 #include "Tunnel.h"
-#include "Funnel.h"
-#include "Circle.h"
-#include "BezierSpline.h"
 #include <StringPrintf.h>
 
 namespace Nome::Scene
 {
 
-#define CONNECT_AST_EXPR_TO(expr, to) \
-do { \
-    CExprToNodeGraph converter{ expr, Scene->GetBankAndSet() }; \
-    converter.Connect(to); \
-} while (0)
+#define CONNECT_AST_EXPR_TO(expr, to)                                                              \
+    do                                                                                             \
+    {                                                                                              \
+        CExprToNodeGraph converter { expr, Scene->GetBankAndSet() };                               \
+        converter.Connect(to);                                                                     \
+    } while (0)
 
-//Note:
+// Note:
 //  Parser, AST, and the scene builder all have to match for any command
-void CASTSceneBuilder::VisitCommand(ACommand* cmd)
-{
-    Visit(cmd);
-}
+void CASTSceneBuilder::VisitCommand(ACommand* cmd) { Visit(cmd); }
 
 void CASTSceneBuilder::VisitPoint(AIdent* name, AExpr* x, AExpr* y, AExpr* z)
 {
@@ -41,7 +39,8 @@ void CASTSceneBuilder::VisitPolyline(AIdent* name, const std::vector<AIdent*>& p
         Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
         if (!pointOutput)
         {
-            throw CSemanticError(tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), name);
+            throw CSemanticError(
+                tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), name);
         }
         polyline->Points.Connect(*pointOutput);
     }
@@ -57,7 +56,8 @@ void CASTSceneBuilder::VisitFace(AIdent* name, const std::vector<AIdent*>& point
         Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
         if (!pointOutput)
         {
-            throw CSemanticError(tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), name);
+            throw CSemanticError(
+                tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), name);
         }
         face->Points.Connect(*pointOutput);
     }
@@ -67,7 +67,7 @@ void CASTSceneBuilder::VisitFace(AIdent* name, const std::vector<AIdent*>& point
     {
         InMesh->Faces.Connect(face->Face);
     }
-    //TODO: handle surface
+    // TODO: handle surface
 }
 
 void CASTSceneBuilder::VisitObject(AIdent* name, const std::vector<AIdent*>& faceRefs)
@@ -78,11 +78,13 @@ void CASTSceneBuilder::VisitObject(AIdent* name, const std::vector<AIdent*>& fac
         TAutoPtr<CEntity> entity = Scene->FindEntity(ident->Identifier);
         if (!entity)
         {
-            throw CSemanticError(tc::StringPrintf("Cannot find entity %s", ident->Identifier.c_str()), ident);
+            throw CSemanticError(
+                tc::StringPrintf("Cannot find entity %s", ident->Identifier.c_str()), ident);
         }
         CFace* face = dynamic_cast<CFace*>(entity.Get());
         if (!face)
-            throw CSemanticError(tc::StringPrintf("Entity %s is not a face", ident->Identifier.c_str()), ident);
+            throw CSemanticError(
+                tc::StringPrintf("Entity %s is not a face", ident->Identifier.c_str()), ident);
         mesh->Faces.Connect(face->Face);
     }
     Scene->AddEntity(mesh.Get());
@@ -135,16 +137,18 @@ void CASTSceneBuilder::VisitTunnel(AIdent* name, AExpr* n, AExpr* ro, AExpr* rat
     Scene->AddEntity(tunnel);
 }
 
-void CASTSceneBuilder::VisitBezierCurve(AIdent* name, const std::vector<AIdent*>& points, AExpr* nSlices)
+void CASTSceneBuilder::VisitBezierCurve(AIdent* name, const std::vector<AIdent*>& points,
+                                        AExpr* nSlices)
 {
     auto* bsp = new CBezierSpline(name->Identifier);
-    TAutoPtr<CBezierSpline> bspRef(bsp); //Hold a reference
+    TAutoPtr<CBezierSpline> bspRef(bsp); // Hold a reference
     for (auto* ident : points)
     {
         Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
         if (!pointOutput)
         {
-            throw CSemanticError(tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), ident);
+            throw CSemanticError(
+                tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), ident);
         }
         bsp->ControlPoints.Connect(*pointOutput);
     }
@@ -152,12 +156,14 @@ void CASTSceneBuilder::VisitBezierCurve(AIdent* name, const std::vector<AIdent*>
     Scene->AddEntity(bsp);
 }
 
-void CASTSceneBuilder::VisitBSpline(AIdent* name, const std::vector<AIdent*>& points, AExpr* order, AExpr* nSlices, bool closed)
+void CASTSceneBuilder::VisitBSpline(AIdent* name, const std::vector<AIdent*>& points, AExpr* order,
+                                    AExpr* nSlices, bool closed)
 {
     throw CSemanticError("Sorry, bspline is not yet supported", name);
 }
 
-void CASTSceneBuilder::VisitInstance(AIdent* name, AIdent* entityName, const std::vector<ATransform*>& transformList, AIdent* surface)
+void CASTSceneBuilder::VisitInstance(AIdent* name, AIdent* entityName,
+                                     const std::vector<ATransform*>& transformList, AIdent* surface)
 {
     TAutoPtr<CTransform> lastTransform;
     for (ATransform* astTransform : transformList)
@@ -185,7 +191,9 @@ void CASTSceneBuilder::VisitInstance(AIdent* name, AIdent* entityName, const std
     }
     else
     {
-        throw CSemanticError(tc::StringPrintf("Instantiation failed, unknown generator: %s", entityName->Identifier.c_str()), entityName);
+        throw CSemanticError(tc::StringPrintf("Instantiation failed, unknown generator: %s",
+                                              entityName->Identifier.c_str()),
+                             entityName);
     }
 }
 
@@ -203,14 +211,14 @@ void CASTSceneBuilder::VisitBank(AIdent* name, const std::vector<ACommand*>& set
 {
     for (auto* cmd : sets)
     {
-        auto* value = ast_as<ANumber*>(cmd->Args[0]);
-        auto* min = ast_as<ANumber*>(cmd->Args[1]);
-        auto* max = ast_as<ANumber*>(cmd->Args[2]);
-        auto* step = ast_as<ANumber*>(cmd->Args[3]);
-        Scene->GetBankAndSet().AddSlider(name->Identifier + "." + cmd->Name->Identifier,
-            CCommandHandle{ cmd, SourceManager, SourceFile },
-            (float)value->GetValue(), (float)min->GetValue(),
-            (float)max->GetValue(), (float)step->GetValue());
+        auto* value = ast_as<ANumber*>(cmd->FindNamedArg("value"));
+        auto* min = ast_as<ANumber*>(cmd->FindNamedArg("min"));
+        auto* max = ast_as<ANumber*>(cmd->FindNamedArg("max"));
+        auto* step = ast_as<ANumber*>(cmd->FindNamedArg("step"));
+        Scene->GetBankAndSet().AddSlider(name->Identifier + "." + cmd->GetName()->Identifier,
+                                         CCommandHandle { cmd, SourceManager, SourceFile },
+                                         (float)value->GetValue(), (float)min->GetValue(),
+                                         (float)max->GetValue(), (float)step->GetValue());
     }
 }
 
@@ -218,9 +226,9 @@ void CASTSceneBuilder::VisitDelete(const std::vector<ACommand*>& faceCmds)
 {
     for (auto* cmd : faceCmds)
     {
-        if (cmd->BeginKeyword->Keyword != "face")
+        if (cmd->GetBeginKeyword()->Identifier != "face")
             throw CSemanticError("Delete command can only contain faces.", cmd);
-        auto node_face = Scene->WalkPath(cmd->Name->Identifier);
+        auto node_face = Scene->WalkPath(cmd->GetName()->Identifier);
         CEntity* instEnt = node_face.first->GetInstanceEntity();
         if (!instEnt)
             throw CSemanticError("Delete face names an invalid mesh instance", cmd);
@@ -232,10 +240,7 @@ void CASTSceneBuilder::VisitDelete(const std::vector<ACommand*>& faceCmds)
     }
 }
 
-TAutoPtr<CScene> CASTSceneBuilder::GetScene() const
-{
-    return Scene;
-}
+TAutoPtr<CScene> CASTSceneBuilder::GetScene() const { return Scene; }
 
 CTransform* CASTSceneBuilder::ConvertASTTransform(ATransform* t) const
 {
@@ -270,7 +275,8 @@ CTransform* CASTSceneBuilder::ConvertASTTransform(ATransform* t) const
     return nullptr;
 }
 
-CExprToNodeGraph::CExprToNodeGraph(AExpr* expr, CBankAndSet& bankAndSet) : BankAndSet(bankAndSet)
+CExprToNodeGraph::CExprToNodeGraph(AExpr* expr, CBankAndSet& bankAndSet)
+    : BankAndSet(bankAndSet)
 {
     Visit(expr);
 }
@@ -279,7 +285,8 @@ void CExprToNodeGraph::VisitIdent(AIdent* ident)
 {
     SliderVal = BankAndSet.GetSlider(ident->Identifier);
     if (!SliderVal)
-        throw CSemanticError(tc::StringPrintf("Could not find slider %s", ident->Identifier.c_str()), ident);
+        throw CSemanticError(
+            tc::StringPrintf("Could not find slider %s", ident->Identifier.c_str()), ident);
     WhichOne = 7;
 }
 
@@ -296,8 +303,8 @@ void CExprToNodeGraph::VisitUnaryOp(AUnaryOp* op)
     case AUnaryOp::UOP_NEG:
     {
         auto* curr = new Flow::CFloatNeg();
-        Visit(op->Operand); //Visit the operand
-        Connect(curr->Operand0); //Connect the operand to Negate's input
+        Visit(op->Operand); // Visit the operand
+        Connect(curr->Operand0); // Connect the operand to Negate's input
         Negate = curr;
         WhichOne = 1;
         break;
@@ -305,8 +312,8 @@ void CExprToNodeGraph::VisitUnaryOp(AUnaryOp* op)
     case AUnaryOp::UOP_SIN:
     {
         auto* curr = new Flow::CFloatSin();
-        Visit(op->Operand); //Visit the operand
-        Connect(curr->Operand0); //Connect the operand to Negate's input
+        Visit(op->Operand); // Visit the operand
+        Connect(curr->Operand0); // Connect the operand to Negate's input
         Sin = curr;
         WhichOne = 8;
         break;
@@ -314,13 +321,13 @@ void CExprToNodeGraph::VisitUnaryOp(AUnaryOp* op)
     case AUnaryOp::UOP_COS:
     {
         auto* curr = new Flow::CFloatCos();
-        Visit(op->Operand); //Visit the operand
-        Connect(curr->Operand0); //Connect the operand to Negate's input
+        Visit(op->Operand); // Visit the operand
+        Connect(curr->Operand0); // Connect the operand to Negate's input
         Cos = curr;
         WhichOne = 9;
         break;
     }
-    //TODO: implement trig functions
+    // TODO: implement trig functions
     default:
         throw CSemanticError("wtf unary operator unheard of", op);
         break;

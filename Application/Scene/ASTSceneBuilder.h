@@ -11,33 +11,6 @@ namespace Nome::Scene
 //Forward declaration
 class CMesh;
 
-class CSemanticError : public std::exception
-{
-public:
-    CSemanticError(const char* message, AExpr* expr)
-    {
-        Message = std::string(message) + " " + expr->BeginLoc.ToString() + "-" + expr->EndLoc.ToString();
-    }
-
-    CSemanticError(const std::string& message, AExpr* expr)
-    {
-        Message = message + " " + expr->BeginLoc.ToString() + "-" + expr->EndLoc.ToString();
-    }
-
-    CSemanticError(const std::string& message, ACommand* cmd)
-    {
-        Message = message + " " + cmd->BeginKeyword->BeginLoc.ToString();
-    }
-
-    char const* what() const override
-    {
-        return Message.c_str();
-    }
-
-private:
-    std::string Message;
-};
-
 class CASTSceneBuilder : public TASTConsumer<CASTSceneBuilder>, public TCommandVisitor<CASTSceneBuilder>
 {
 public:

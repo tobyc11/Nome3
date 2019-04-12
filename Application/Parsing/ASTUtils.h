@@ -5,7 +5,7 @@
 namespace Nome
 {
 
-//One layer of indirection just in case when we modify the AST structure
+// One layer of indirection just in case when we modify the AST structure
 struct CCommandHandle
 {
     CCommandHandle(ACommand* cmd, CSourceManager* sm, CSourceFile* sf);
@@ -22,7 +22,7 @@ public:
 
     void Rename(const std::string& newName);
 
-    void ReplaceArg(int index, const std::string& content);
+    void ReplaceArg(const std::string& name, const std::string& content);
 
 private:
     CCommandHandle& CmdHandle;

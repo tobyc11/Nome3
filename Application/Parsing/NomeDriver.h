@@ -4,14 +4,15 @@
 namespace Nome
 {
 
-//A helper class that contains the arguments to a command, used by certain paresr rules
+class CNomeDriver;
+
+// A helper class that contains the arguments to a command, used by certain paresr rules
 class ACommandExtHelper
 {
 public:
-    std::vector<AExpr*> Args;
-    std::map<AKeyword*, AExpr*> NamedArgs;
+    std::map<AIdent*, AExpr*> NamedArgs;
 
-    void MoveTo(ACommand* dest);
+    void MoveTo(CNomeDriver& driver, ACommand* dest);
 };
 
 class CNomeDriver
@@ -37,17 +38,26 @@ public:
         return CSourceLocation();
     }
 
-    //Global vars used by the lexer
+    AIdent* MakeIdent(const std::string& identifier);
+    void MoveIdentList(ACommand* dest, const std::string& paramName);
+    void MoveFaceList(ACommand* dest);
+    void MoveInstanceList(ACommand* dest);
+    void MoveSetList(ACommand* dest);
+    void MoveFaceForDeletionList(ACommand* dest);
+    void MoveTransformList(ACommand* dest, const std::string& paramName);
+
+    // Global vars used by the lexer
     int tokenBegin = 0;
     int tokenEnd = 0;
     int currOffset = 0;
 
-    //Global vars used by the parser
+    // Global vars used by the parser
     std::vector<Nome::AIdent*> IdentList;
     std::vector<Nome::ACommand*> FaceList;
     std::vector<Nome::ACommand*> InstanceList;
     std::vector<Nome::ACommand*> SetList;
     std::vector<Nome::ACommand*> FaceForDeletionList;
+    std::vector<Nome::ATransform*> TransformList;
     ACommandExtHelper Ext;
 
 private:
@@ -55,7 +65,7 @@ private:
 
     CASTContext* Context;
 
-    //Either the sourcemgr+file or the string is active
+    // Either the sourcemgr+file or the string is active
     CSourceManager* SourceMgr = nullptr;
     CSourceFile* SourceFile = nullptr;
     std::string SourceString;

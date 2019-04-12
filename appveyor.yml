@@ -1,6 +1,5 @@
 version: 3.0.{build}
 image: Visual Studio 2017
-shallow_clone: true
 
 install:
   - cd %APPVEYOR_BUILD_FOLDER%

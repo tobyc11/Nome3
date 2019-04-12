@@ -1,0 +1,6 @@
+[submodule "Foundation"]
+	path = Foundation
+	url = git@github.com:cyj0912/Foundation.git
+[submodule "RHI"]
+	path = RHI
+	url = git@github.com:cyj0912/RHI.git

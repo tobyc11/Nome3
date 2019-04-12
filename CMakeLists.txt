@@ -8,7 +8,6 @@ include(CompileOptions)
 
 # Include sub-projects.
 add_subdirectory(imgui)
-add_subdirectory(glad)
 add_subdirectory(Foundation)
 add_subdirectory(Math)
 add_subdirectory(Application)

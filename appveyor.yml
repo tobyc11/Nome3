@@ -3,6 +3,7 @@ image: Visual Studio 2017
 shallow_clone: true
 
 install:
+  - cd %APPVEYOR_BUILD_FOLDER%
   - git submodule update --init --recursive
   # update msys2
   - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"

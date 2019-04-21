@@ -85,18 +85,22 @@ struct CMainPass
         colorViewDesc.Range.Set(0, 1, 0, 1);
         ColorTargetView = device->CreateImageView(colorViewDesc, ColorTarget);
 
-        auto depthImage = device->CreateImage2D(EFormat::D24_UNORM_S8_UINT,
-                                                EImageUsageFlags::DepthStencil, width, height);
+        auto depthImage = device->CreateImage2D(
+            EFormat::D24_UNORM_S8_UINT, EImageUsageFlags::DepthStencil | EImageUsageFlags::Sampled,
+            width, height);
         CImageViewDesc depthViewDesc;
         depthViewDesc.Format = EFormat::D24_UNORM_S8_UINT;
         depthViewDesc.Type = EImageViewType::View2D;
         depthViewDesc.Range.Set(0, 1, 0, 1);
-        auto depthView = device->CreateImageView(depthViewDesc, depthImage);
+        auto depthStencilView = device->CreateImageView(depthViewDesc, depthImage);
+        depthViewDesc.DepthStencilAspect = EDepthStencilAspectFlags::Depth;
+        DepthView = device->CreateImageView(depthViewDesc, depthImage);
 
         CRenderPassDesc passDesc;
         passDesc.AddAttachment(ColorTargetView, EAttachmentLoadOp::Clear,
                                EAttachmentStoreOp::Store);
-        passDesc.AddAttachment(depthView, EAttachmentLoadOp::Clear, EAttachmentStoreOp::DontCare);
+        passDesc.AddAttachment(depthStencilView, EAttachmentLoadOp::Clear,
+                               EAttachmentStoreOp::Store);
         passDesc.NextSubpass().AddColorAttachment(0).SetDepthStencilAttachment(1);
         passDesc.SetExtent(width, height);
         RenderPass = device->CreateRenderPass(passDesc);
@@ -142,6 +146,7 @@ struct CMainPass
     CImage::Ref ColorTarget;
     CImageView::Ref ColorTargetView;
     CRenderPass::Ref RenderPass;
+    CImageView::Ref DepthView;
 
     CPipeline::Ref Pipeline;
     CBuffer::Ref FragConstants;
@@ -246,6 +251,7 @@ int main(int argc, char* argv[])
         ctx->BindPipeline(*blitPipeline);
         ctx->BindSampler(*mainPass.Sampler, 0, 0, 0);
         ctx->BindImageView(*mainPass.ColorTargetView, 0, 1, 0);
+        ctx->BindImageView(*mainPass.DepthView, 0, 2, 0);
         ctx->Draw(3, 1, 0, 0);
 
         ImGui::Render();

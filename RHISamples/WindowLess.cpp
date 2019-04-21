@@ -47,7 +47,7 @@ int main()
     auto fbView = device->CreateImageView(fbViewDesc, fbImage);
 
     CRenderPassDesc rpDesc;
-    rpDesc.Attachments.emplace_back(fbView, CAttachmentLoadOp::Clear, CAttachmentStoreOp::Store);
+    rpDesc.Attachments.emplace_back(fbView, EAttachmentLoadOp::Clear, EAttachmentStoreOp::Store);
     rpDesc.Subpasses.resize(1);
     rpDesc.Subpasses[0].AddColorAttachment(0);
     rpDesc.Width = 1024;
@@ -74,8 +74,8 @@ int main()
         rdocApi->StartFrameCapture(nullptr, nullptr);
 
     auto ctx = device->GetImmediateContext();
-    ctx->BeginRenderPass(renderPass, { CClearValue(0.0f, 1.0f, 0.0f, 0.0f) });
-    ctx->BindPipeline(pso);
+    ctx->BeginRenderPass(*renderPass, { CClearValue(0.0f, 1.0f, 0.0f, 0.0f) });
+    ctx->BindPipeline(*pso);
     ctx->Draw(3, 1, 0, 0);
     ctx->EndRenderPass();
 
@@ -87,7 +87,7 @@ int main()
     copy.DstSubresource = copy.SrcSubresource;
     copy.DstOffset = copy.SrcOffset;
     copy.Extent.Set(1024, 1024, 1);
-    ctx->CopyImage(fbImage.get(), readBackImage.get(), { copy });
+    ctx->CopyImage(*fbImage, *readBackImage, { copy });
 
     ctx->Flush(true);
     if (rdocApi)

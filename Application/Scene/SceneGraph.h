@@ -1,6 +1,6 @@
 #pragma once
 #include "Transforms.h"
-#include <Signal.h>
+#include <SignalSlot.h>
 #include <map>
 #include <set>
 #include <string>

@@ -252,6 +252,18 @@ public:
     /// Test for inequality with another vector without epsilon.
     bool operator !=(const Vector3& rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z; }
 
+    /// Test for less than.
+    bool operator <(const Vector3& rhs) const { return x < rhs.x && y < rhs.y && z < rhs.z; }
+
+    /// Test for less than or equal to.
+    bool operator <=(const Vector3& rhs) const { return x <= rhs.x && y <= rhs.y && z <= rhs.z; }
+
+    /// Test for greater than.
+    bool operator >(const Vector3& rhs) const { return x > rhs.x && y > rhs.y && z > rhs.z; }
+
+    /// Test for greater than or equal to.
+    bool operator >=(const Vector3& rhs) const { return x >= rhs.x && y >= rhs.y && z >= rhs.z; }
+
     /// Add a vector.
     Vector3 operator +(const Vector3& rhs) const { return Vector3(x + rhs.x, y + rhs.y, z + rhs.z); }
 

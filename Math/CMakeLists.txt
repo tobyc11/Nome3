@@ -19,4 +19,6 @@ if(MSVC)
 	target_compile_definitions(${MODULE_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
 
-target_compile_options(${MODULE_NAME} ${DEFAULT_COMPILE_OPTIONS})
+if(DEFAULT_COMPILE_OPTIONS)
+    target_compile_options(${MODULE_NAME} ${DEFAULT_COMPILE_OPTIONS})
+endif()

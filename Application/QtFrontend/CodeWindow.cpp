@@ -2,7 +2,6 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QHBoxLayout>
-#include <QVBoxLayout>
 
 namespace Nome
 {

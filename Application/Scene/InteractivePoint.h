@@ -16,7 +16,7 @@ class CInteractivePoint;
 class CPickingManager : public tc::FRefCounted
 {
 public:
-    CPickingManager(Scene::CScene* scene) : Scene(scene)
+    explicit CPickingManager(Scene::CScene* scene) : Scene(scene)
     {
     }
 

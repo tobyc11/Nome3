@@ -12,13 +12,10 @@ option(NOME_BUILD_TESTS "Build tests" OFF)
 
 file(GLOB PG2_SOURCES
     *.h *.cpp
-    #DSLDemo/*.h DSLDemo/*.cpp
     Flow/*.h Flow/*.cpp
     FlowViz/*.h FlowViz/*.cpp
-    #Nome/*.h Nome/*.cpp
     Parsing/*.h Parsing/*.cpp Parsing/*.l Parsing/*.y
     QtFrontend/*.h QtFrontend/*.cpp QtFrontend/*.ui
-    Render/*.h Render/*.cpp
     Scene/*.h Scene/*.cpp
 )
 
@@ -26,8 +23,8 @@ file(GLOB PG2_TEST_SOURCES
     Tests/*.h Tests/*.cpp
 )
 
-find_package(BISON)
-find_package(FLEX)
+find_package(BISON 3.4)
+find_package(FLEX 2.6)
 
 BISON_TARGET(NomeParser Parsing/NomeParser.y ${CMAKE_CURRENT_BINARY_DIR}/NomeParser.cpp)
 FLEX_TARGET(NomeScanner Parsing/NomeLexer.l ${CMAKE_CURRENT_BINARY_DIR}/NomeLexer.cpp)
@@ -39,34 +36,16 @@ set(PG2_GENERATED_SOURCES
 )
 
 macro(config_playground2 target)
-    target_link_libraries(${target} PRIVATE imgui)
     target_link_libraries(${target} PRIVATE Foundation)
     target_link_libraries(${target} PRIVATE Math)
     target_compile_options(${target} ${DEFAULT_COMPILE_OPTIONS})
 
-    #find_package(SDL2 REQUIRED)
-    #if(TARGET SDL2::SDL2)
-    #    target_link_libraries(${target} PRIVATE SDL2::SDL2)
-    #else()
-    #    target_include_directories(${target} PRIVATE ${SDL2_INCLUDE_DIRS})
-    #    target_link_libraries(${target} PRIVATE ${SDL2_LIBRARIES})
-    #endif()
-
     find_package(Qt5Widgets CONFIG REQUIRED)
     target_link_libraries(${target} PRIVATE Qt5::Widgets)
-
-    #find_package(Boost REQUIRED)
-    #target_link_libraries(${target} PRIVATE Boost::boost)
-
-    #find_package(Lua REQUIRED)
-    #target_include_directories(${target} PRIVATE ${LUA_INCLUDE_DIR})
-    #target_link_libraries(${target} PRIVATE ${LUA_LIBRARIES})
 
     find_package(OpenMesh REQUIRED)
     target_include_directories(${target} PRIVATE ${OPENMESH_INCLUDE_DIRS})
     target_link_libraries(${target} PRIVATE ${OPENMESH_LIBRARIES})
-
-    target_link_libraries(${target} PRIVATE d3d11.lib d3dcompiler.lib dxgi.lib dxguid.lib)
 endmacro()
 
 add_executable(Nome3 ${PG2_SOURCES} ${PG2_GENERATED_SOURCES})

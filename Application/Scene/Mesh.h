@@ -18,6 +18,8 @@ namespace Nome::Scene
 {
 
 class CMeshRenderPrivateData;
+class CMeshInstance;
+class CVertexSelector;
 
 //Common base class for all mesh objects
 class CMesh : public CEntity
@@ -58,12 +60,10 @@ private:
     std::vector<CMeshImpl::VertexHandle> LineStrip;
 };
 
-class CMeshInstance;
-
 class CMeshInstancePoint : public CInteractivePoint
 {
 public:
-    CMeshInstancePoint(CMeshInstance* owner) : Owner(owner)
+    explicit CMeshInstancePoint(CMeshInstance* owner) : Owner(owner)
     {
     }
 
@@ -142,7 +142,7 @@ class CVertexSelector : public Flow::CFlowNode
     DEFINE_OUTPUT_WITH_UPDATE(CVertexInfo*, Point);
 
 public:
-    CVertexSelector(const std::string& targetName, const std::string& resultName) : TargetName(targetName)
+    CVertexSelector(std::string targetName, const std::string& resultName) : TargetName(std::move(targetName))
     {
         VI.Name = resultName;
     }

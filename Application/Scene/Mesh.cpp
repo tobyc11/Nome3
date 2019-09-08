@@ -1,9 +1,6 @@
 #include "Mesh.h"
 //Render related
 #include "SceneGraph.h"
-#include <Render/Material.h>
-#include <Render/Geometry.h>
-#include <Render/Renderer.h>
 #include <StringPrintf.h>
 
 namespace Nome::Scene
@@ -12,9 +9,6 @@ namespace Nome::Scene
 class CMeshRenderPrivateData
 {
 public:
-    TAutoPtr<CStaticMeshGeometry> RenderGeometry;
-    TAutoPtr<CStaticMeshGeometry> LineGeometry;
-    TAutoPtr<CMaterial> Material;
 };
 
 CMesh::CMesh()
@@ -177,21 +171,14 @@ void CMeshInstance::UpdateEntity()
         }
     }
 
-    if (!Priv->Material)
-    {
-        Priv->Material = new CMaterial();
-    }
-
     if (!Mesh.faces_empty())
     {
         Mesh.request_face_normals();
         Mesh.request_vertex_normals();
         Mesh.update_face_normals();
         Mesh.update_vertex_normals();
-        Priv->RenderGeometry = new CStaticMeshGeometry(Mesh);
+        // Update visual layer geometry
     }
-    else
-        Priv->RenderGeometry = nullptr;
 
     //The upstream mesh contains a polyline of some sort
     if (!MeshGenerator->LineStrip.empty())
@@ -202,8 +189,7 @@ void CMeshInstance::UpdateEntity()
             const auto& vPos = MeshGenerator->Mesh.point(vHandle);
             positions.emplace_back(vPos[0], vPos[1], vPos[2]);
         }
-        Priv->LineGeometry = new CStaticMeshGeometry(positions);
-        Priv->LineGeometry->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+        // Update visual layer geometry
     }
     
     //Construct interactive points
@@ -234,15 +220,6 @@ void CMeshInstance::UpdateEntity()
 
 void CMeshInstance::Draw(CSceneTreeNode* treeNode)
 {
-    tc::Matrix4 modelMat = treeNode->L2WTransform.GetValue(Matrix3x4::IDENTITY).ToMatrix4();
-    if (Priv->RenderGeometry)
-    {
-        GRenderer->Draw(modelMat, Priv->RenderGeometry, Priv->Material);
-    }
-    if (Priv->LineGeometry)
-    {
-        GRenderer->Draw(modelMat, Priv->LineGeometry, Priv->Material);
-    }
 }
 
 CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name, const std::string& outputName)

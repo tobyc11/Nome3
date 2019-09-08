@@ -5,7 +5,6 @@
 #include <Parsing/NomeDriver.h>
 #include <Scene/ASTSceneBuilder.h>
 #include <Scene/SceneModifier.h>
-#include <Render/GraphicsDevice.h>
 
 #include <QFileDialog>
 #include <QVBoxLayout>
@@ -132,11 +131,6 @@ void CMainWindow::on_actionAbout_triggered()
             "Toby Chen"));
 }
 
-void CMainWindow::IdleProcess()
-{
-    ViewWidget->UpdateAndDraw();
-}
-
 void CMainWindow::LoadEmptyNomeFile()
 {
     //Called from the constructor
@@ -145,19 +139,7 @@ void CMainWindow::LoadEmptyNomeFile()
 
     Scene = new Scene::CScene();
 
-    ViewportClient = new CEditorViewportClient(Scene, SourceManager, SourceFile);
-    CodeWindow = new CCodeWindow(this);
-    ViewWidget = new CNomeViewWidget(this, ViewportClient);
-    setCentralWidget(ViewWidget);
-
     setWindowFilePath("untitled.nom");
-
-    IdleTimer = new QTimer(this);
-    //Limit to 200 fps
-    IdleTimer->setTimerType(Qt::PreciseTimer);
-    IdleTimer->setInterval(5);
-    connect(IdleTimer, &QTimer::timeout, this, &CMainWindow::IdleProcess);
-    IdleTimer->start();
 
     bIsBlankFile = true;
 }
@@ -214,32 +196,10 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
     Scene = builder.GetScene();
 
     bIsBlankFile = false;
-
-    ViewportClient = new CEditorViewportClient(Scene, SourceManager, SourceFile);
-    CodeWindow = new CCodeWindow(this);
-    ViewWidget = new CNomeViewWidget(this, ViewportClient);
-    setCentralWidget(ViewWidget);
-
-    IdleTimer = new QTimer(this);
-    //Limit to 200 fps
-    IdleTimer->setTimerType(Qt::PreciseTimer);
-    IdleTimer->setInterval(5);
-    connect(IdleTimer, &QTimer::timeout, this, &CMainWindow::IdleProcess);
-    IdleTimer->start();
 }
 
 void CMainWindow::UnloadNomeFile()
 {
-    if (IdleTimer)
-    {
-        IdleTimer->stop();
-        delete IdleTimer; IdleTimer = nullptr;
-    }
-
-    delete ViewWidget; ViewWidget = nullptr;
-    delete CodeWindow; CodeWindow = nullptr;
-    delete ViewportClient; ViewportClient = nullptr;
-
     Scene = nullptr;
     ASTContext = nullptr;
     if (SourceFile)

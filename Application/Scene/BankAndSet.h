@@ -12,7 +12,6 @@ class CSlider : public Flow::CFloatNumber
 public:
     CSlider(CCommandHandle handle, float value, float min, float max, float step);
 
-    void DrawImGui(const std::string& name);
     void WriteValue();
 
 private:
@@ -31,7 +30,6 @@ public:
                    float max, float step);
     CSlider* GetSlider(const std::string& name);
 
-    void DrawImGui();
     void WriteSliderValues();
 
 private:

@@ -1,9 +1,7 @@
 #include "Scene.h"
 #include "Mesh.h"
 #include "InteractivePoint.h"
-#include <Render/Viewport.h>
 #include <StringUtils.h>
-#include <imgui.h>
 
 namespace Nome::Scene
 {
@@ -24,11 +22,6 @@ void CScene::ConnectCameraTransform(Flow::TOutput<Matrix3x4>* output)
         CameraView->Value.Connect(CameraNode->Transform);
 }
 
-void CScene::SetMainCameraViewport(CViewport* viewport)
-{
-    Viewport = viewport;
-}
-
 void CScene::CreateDefaultCamera()
 {
     CameraNode = RootNode->CreateChildNode("default_camera");
@@ -39,7 +32,7 @@ void CScene::CreateDefaultCamera()
 
 void CScene::AddEntity(TAutoPtr<CEntity> entity)
 {
-    EntityLibrary.insert(std::make_pair(entity->GetName(), entity));
+    EntityLibrary.insert(std::make_pair(entity->GetName(), std::move(entity)));
 }
 
 TAutoPtr<CEntity> CScene::FindEntity(const std::string& name) const
@@ -149,56 +142,6 @@ std::pair<CSceneTreeNode*, std::string> CScene::WalkPath(const std::string& path
     return { currNode, tc::FStringUtils::Combine(iter, pathComps.end(), ".") };
 }
 
-void DFSTreeNode(CSceneTreeNode* treeNode)
-{
-    if (ImGui::TreeNode(treeNode->GetOwner()->GetName().c_str()))
-    {
-        if (CEntity* instEnt = treeNode->GetInstanceEntity())
-        {
-            ImGui::Text("Instance Entity=%s", instEnt->GetName().c_str());
-            bool validity = instEnt->IsEntityValid();
-            ImGui::Checkbox("Validity", &validity);
-            ImGui::Text("Update count %d", instEnt->GetUpdateCount());
-        }
-        if (CEntity* ent = treeNode->GetOwner()->GetEntity())
-        {
-            ImGui::Text("Entity=%s", ent->GetName().c_str());
-            bool validity = ent->IsEntityValid();
-            ImGui::Checkbox("Validity", &validity);
-            ImGui::Text("Update count %d", ent->GetUpdateCount());
-        }
-
-        const auto& childNodes = treeNode->GetChildren();
-        for (CSceneTreeNode* child : childNodes)
-            DFSTreeNode(child);
-        ImGui::TreePop();
-    }
-}
-
-void CScene::ImGuiUpdate()
-{
-    BankAndSet.DrawImGui();
-
-    ImGui::Begin("Scene Viewer");
-    ImGui::ColorEdit4("Clear Color", const_cast<float*>(ClearColor.Data()));
-    ImGui::SliderFloat("Line Width", &LineWidth, 0.5f, 10.0f);
-    ImGui::SliderFloat("Point Size", &PointSize, 1.0f, 32.0f);
-    if (ImGui::CollapsingHeader("Entity"))
-    {
-        for (const auto& ent : EntityLibrary)
-        {
-            ImGui::Text("%s", ent.second->GetName().c_str());
-        }
-    }
-    if (ImGui::CollapsingHeader(("Scene Tree")))
-    {
-        const auto& rootTreeNodes = RootNode->GetTreeNodes();
-        assert(rootTreeNodes.size() == 1); //There is only one way to the root, thus only one tree node
-        DFSTreeNode(*rootTreeNodes.begin());
-    }
-    ImGui::End();
-}
-
 void DFSTreeNodeUpdate(CSceneTreeNode* treeNode)
 {
     treeNode->L2WTransform.Update();
@@ -214,7 +157,7 @@ void DFSTreeNodeUpdate(CSceneTreeNode* treeNode)
     }
     else if (auto* ent = treeNode->GetOwner()->GetEntity())
     {
-        //Otherwize, update the scene node entity
+        //Otherwise, update the scene node entity
         ent->UpdateEntity();
     }
 }
@@ -226,44 +169,6 @@ void CScene::Update()
     const auto& rootTreeNodes = RootNode->GetTreeNodes();
     assert(rootTreeNodes.size() == 1); //There is only one way to the root, thus only one tree node
     DFSTreeNodeUpdate(*rootTreeNodes.begin());
-
-    if (Viewport)
-        MainCamera->SetAspectRatio(Viewport->GetAspectRatio());
-}
-
-void DFSTreeNodeRender(CSceneTreeNode* treeNode)
-{
-    const auto& childNodes = treeNode->GetChildren();
-    for (CSceneTreeNode* child : childNodes)
-        DFSTreeNodeRender(child);
-
-    if (auto* instEnt = treeNode->GetInstanceEntity())
-    {
-        instEnt->Draw(treeNode);
-    }
-    else if (auto* ent = treeNode->GetOwner()->GetEntity())
-    {
-        ent->Draw(treeNode);
-    }
-}
-
-void CScene::Render()
-{
-    //We don't render without a viewport
-    if (!Viewport)
-        return;
-    
-    GRenderer->BeginView(LastRenderViewInfo.SetViewMat(MainCamera->GetViewMatrix())
-                                           .SetProjMat(MainCamera->GetProjMatrix())
-                                           .SetViewport(Viewport)
-                                           .SetClearColor(ClearColor)
-                                           .SetLineWidth(LineWidth)
-                                           .SetPointRadius(PointSize / 2.0f));
-    const auto& rootTreeNodes = RootNode->GetTreeNodes();
-    assert(rootTreeNodes.size() == 1); //There is only one way to the root, thus only one tree node
-    DFSTreeNodeRender(*rootTreeNodes.begin());
-    GRenderer->EndView();
-    GRenderer->Render();
 }
 
 CPickingManager* CScene::GetPickingMgr() const

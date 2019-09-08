@@ -1,6 +1,4 @@
 #pragma once
-#include "NomeViewWidget.h"
-#include "EditorViewportClient.h"
 #include <Parsing/SourceManager.h>
 #include <Parsing/ASTContext.h>
 #include <StrongPointer.h>
@@ -26,8 +24,8 @@ class CMainWindow : public QMainWindow
 
 public:
     explicit CMainWindow(QWidget* parent = nullptr);
-    CMainWindow(const std::string& fileToOpen, QWidget* parent = nullptr);
-    ~CMainWindow();
+    explicit CMainWindow(const std::string& fileToOpen, QWidget* parent = nullptr);
+    ~CMainWindow() override;
 
 private slots:
     void on_actionNew_triggered();
@@ -37,7 +35,6 @@ private slots:
     void on_actionPoint_triggered();
     void on_actionInstance_triggered();
     void on_actionAbout_triggered();
-    void IdleProcess();
 
 private:
     //Load nome files into the current window, only call one of them
@@ -49,17 +46,11 @@ private:
 
     bool bIsBlankFile;
 
-    //UI components
-    CCodeWindow* CodeWindow = nullptr;
-    CNomeViewWidget* ViewWidget = nullptr;
-    QTimer* IdleTimer = nullptr;
-
     //Nome Context
     sp<CSourceManager> SourceManager;
     CSourceFile* SourceFile = nullptr;
     sp<CASTContext> ASTContext;
     tc::TAutoPtr<Scene::CScene> Scene;
-    CEditorViewportClient* ViewportClient = nullptr;
 };
 
 }

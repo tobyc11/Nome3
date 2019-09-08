@@ -4,7 +4,6 @@
 #include "Camera.h"
 #include "BankAndSet.h"
 #include "Point.h"
-#include <Render/Renderer.h>
 #include <Color.h>
 #include <utility>
 
@@ -28,7 +27,6 @@ public:
 
     TAutoPtr<CCamera> GetMainCamera() const { return MainCamera; }
     void ConnectCameraTransform(Flow::TOutput<Matrix3x4>* output);
-    void SetMainCameraViewport(CViewport* viewport);
 
     void CreateDefaultCamera();
 
@@ -52,16 +50,7 @@ public:
     ///Walks the scene tree along a path, return the last matching node and the rest of path
     std::pair<CSceneTreeNode*, std::string> WalkPath(const std::string& path) const;
 
-    void ImGuiUpdate();
-
     void Update();
-
-    void Render();
-
-    const CRenderViewInfo& GetLastRenderViewInfo() const
-    {
-        return LastRenderViewInfo;
-    }
 
     CPickingManager* GetPickingMgr() const;
 
@@ -74,11 +63,7 @@ private:
     TAutoPtr<CSceneNode> CameraNode;
     // The main camera that contains projection parameters etc.
     TAutoPtr<CCamera> MainCamera;
-    CViewport* Viewport = nullptr;
-    tc::Color ClearColor;
-    float LineWidth = 2.0f, PointSize = 24.0f;
     TAutoPtr<Flow::TNumber<Matrix3x4>> CameraView;
-    CRenderViewInfo LastRenderViewInfo;
 
     TAutoPtr<CPickingManager> PickingMgr;
 

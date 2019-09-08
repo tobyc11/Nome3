@@ -265,7 +265,7 @@ public:
         Message = message + " " + cmd->GetBeginKeyword()->BeginLoc.ToString();
     }
 
-    char const* what() const override { return Message.c_str(); }
+    [[nodiscard]] char const* what() const noexcept override { return Message.c_str(); }
 
 private:
     std::string Message;

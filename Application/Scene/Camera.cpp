@@ -1,7 +1,5 @@
 #include "Camera.h"
 
-#include "imgui.h"
-
 namespace Nome::Scene
 {
 

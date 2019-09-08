@@ -130,7 +130,7 @@ step                        { LEXER_IDENT; return STEP; }
 \$[a-zA-Z\.][a-zA-Z0-9_\.]* { LEXER_IDENT; return IDENT; }
 [a-zA-Z\.][a-zA-Z0-9_\.]*   { LEXER_IDENT; return IDENT; }
 -?([0-9]*[.])?[0-9]+        { LEXER_NUMBER; return NUMBER; }
-[ \t\n]+                    ;
+[ \t\r\n]+                    ;
 .                           { return yytext[0]; }
 %%
 

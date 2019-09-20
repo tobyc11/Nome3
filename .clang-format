@@ -4,6 +4,6 @@ AlignAfterOpenBracket: Align
 AllowShortFunctionsOnASingleLine: All
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Allman
-ColumnLimit: '100'
+ColumnLimit: 100
 
 ...

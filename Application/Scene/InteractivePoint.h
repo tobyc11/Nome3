@@ -27,7 +27,7 @@ public:
     CInteractivePoint* Pick(uint32_t x, uint32_t y);
 
 private:
-    tc::TAutoPtr<Scene::CScene> Scene;
+    Scene::CScene* Scene;
 
     std::unordered_map<uint32_t, CInteractivePoint*> PointMap;
     uint32_t NextObjId = 1;

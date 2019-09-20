@@ -91,7 +91,7 @@ public:
     using Super = CEntity;
 
     CMeshInstance(CMesh* generator, CSceneTreeNode* stn);
-    ~CMeshInstance();
+    ~CMeshInstance() override;
 
     //Called when the mesh entity is updated
     void MarkDirty() override;
@@ -112,6 +112,9 @@ public:
     CSceneTreeNode* GetSceneTreeNode() const { return SceneTreeNode; }
 
     void CopyFromGenerator();
+
+    //I am really not sure whether this is a good interface or not
+    const CMeshImpl& GetMeshImpl() const { return Mesh; }
 
 private:
     TAutoPtr<CMesh> MeshGenerator;

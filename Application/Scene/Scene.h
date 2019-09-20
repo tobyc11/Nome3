@@ -5,11 +5,11 @@
 #include "BankAndSet.h"
 #include "Point.h"
 #include <Color.h>
+#include <queue>
 #include <utility>
 
 namespace Nome
 {
-class CViewport;
 class CPickingManager;
 }
 
@@ -24,6 +24,7 @@ public:
     CBankAndSet& GetBankAndSet() { return BankAndSet; }
 
     TAutoPtr<CSceneNode> GetRootNode() const { return RootNode; }
+    TAutoPtr<CSceneTreeNode> GetRootTreeNode() const;
 
     TAutoPtr<CCamera> GetMainCamera() const { return MainCamera; }
     void ConnectCameraTransform(Flow::TOutput<Matrix3x4>* output);
@@ -51,6 +52,21 @@ public:
     std::pair<CSceneTreeNode*, std::string> WalkPath(const std::string& path) const;
 
     void Update();
+
+    template <typename TFunc>
+    void ForEachSceneTreeNode(const TFunc& func)
+    {
+        std::queue<CSceneTreeNode*> q;
+        q.push(GetRootTreeNode());
+        while (!q.empty())
+        {
+            func(q.front());
+            const auto& childNodes = q.front()->GetChildren();
+            for (CSceneTreeNode* child : childNodes)
+                q.push(child);
+            q.pop();
+        }
+    }
 
     CPickingManager* GetPickingMgr() const;
 

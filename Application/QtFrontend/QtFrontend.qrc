@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Shaders/Wireframe.vert</file>
+        <file>Shaders/Wireframe.geom</file>
+        <file>Shaders/Wireframe.frag</file>
+    </qresource>
+</RCC>

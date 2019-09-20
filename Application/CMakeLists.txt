@@ -5,6 +5,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 # Create code from a list of Qt designer ui files
 set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY Binaries)
 
@@ -15,7 +16,7 @@ file(GLOB PG2_SOURCES
     Flow/*.h Flow/*.cpp
     FlowViz/*.h FlowViz/*.cpp
     Parsing/*.h Parsing/*.cpp Parsing/*.l Parsing/*.y
-    QtFrontend/*.h QtFrontend/*.cpp QtFrontend/*.ui
+    QtFrontend/*.h QtFrontend/*.cpp QtFrontend/*.ui QtFrontend/*.qrc
     Scene/*.h Scene/*.cpp
 )
 
@@ -40,8 +41,8 @@ macro(config_playground2 target)
     target_link_libraries(${target} PRIVATE Math)
     target_compile_options(${target} ${DEFAULT_COMPILE_OPTIONS})
 
-    find_package(Qt5Widgets CONFIG REQUIRED)
-    target_link_libraries(${target} PRIVATE Qt5::Widgets)
+    find_package(Qt5 COMPONENTS Widgets 3DRender 3DExtras REQUIRED)
+    target_link_libraries(${target} PRIVATE Qt5::Widgets Qt5::3DRender Qt5::3DExtras)
 
     find_package(OpenMesh REQUIRED)
     target_include_directories(${target} PRIVATE ${OPENMESH_INCLUDE_DIRS})

@@ -14,6 +14,13 @@ CScene::CScene()
     PickingMgr = new CPickingManager(this);
 }
 
+TAutoPtr<CSceneTreeNode> CScene::GetRootTreeNode() const
+{
+    const auto& rootTreeNodes = RootNode->GetTreeNodes();
+    assert(rootTreeNodes.size() == 1);
+    return *rootTreeNodes.begin();
+}
+
 void CScene::ConnectCameraTransform(Flow::TOutput<Matrix3x4>* output)
 {
     if (output)
@@ -165,10 +172,7 @@ void DFSTreeNodeUpdate(CSceneTreeNode* treeNode)
 void CScene::Update()
 {
     //Called every frame to make sure everything is up to date
-
-    const auto& rootTreeNodes = RootNode->GetTreeNodes();
-    assert(rootTreeNodes.size() == 1); //There is only one way to the root, thus only one tree node
-    DFSTreeNodeUpdate(*rootTreeNodes.begin());
+    DFSTreeNodeUpdate(GetRootTreeNode());
 }
 
 CPickingManager* CScene::GetPickingMgr() const

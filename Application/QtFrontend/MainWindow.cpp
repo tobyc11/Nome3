@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include "CodeWindow.h"
+#include "Nome3DView.h"
 
 #include <Parsing/NomeDriver.h>
 #include <Scene/ASTSceneBuilder.h>
@@ -11,6 +12,9 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QSettings>
+#include <QLabel>
+#include <QSlider>
+#include <QDockWidget>
 
 namespace Nome
 {
@@ -20,8 +24,7 @@ CMainWindow::CMainWindow(QWidget *parent) : QMainWindow(parent),
                                             bIsBlankFile(true)
 {
     ui->setupUi(this);
-    connect(ui->actionExit, &QAction::triggered, this, &CMainWindow::close);
-    connect(ui->actionAboutQt, &QAction::triggered, this, &QApplication::aboutQt);
+    SetupUI();
     LoadEmptyNomeFile();
 }
 
@@ -31,8 +34,7 @@ CMainWindow::CMainWindow(const std::string& fileToOpen, QWidget* parent)
       bIsBlankFile(false)
 {
     ui->setupUi(this);
-    connect(ui->actionExit, &QAction::triggered, this, &CMainWindow::close);
-    connect(ui->actionAboutQt, &QAction::triggered, this, &QApplication::aboutQt);
+    SetupUI();
     LoadNomeFile(fileToOpen);
 }
 
@@ -117,7 +119,7 @@ void CMainWindow::on_actionPoint_triggered()
 
 void CMainWindow::on_actionInstance_triggered()
 {
-    Scene::CSceneModifier modifier{ Scene, SourceManager,SourceFile, ASTContext };
+    Scene::CSceneModifier modifier{ Scene, SourceManager, SourceFile, ASTContext };
     std::string name = QInputDialog::getText(this, "Please input name", "name:").toStdString();
     std::string ent = QInputDialog::getText(this, "Please input entity name", "entity:").toStdString();
     modifier.AddInstance(name, ent);
@@ -131,6 +133,30 @@ void CMainWindow::on_actionAbout_triggered()
             "Toby Chen"));
 }
 
+void CMainWindow::SetupUI()
+{
+    //Add vertical layout for main window content
+    //  Might not need to do this if layout is in the ui file
+    auto* layout = new QVBoxLayout();
+    ui->centralwidget->setLayout(layout);
+
+    //Initialize 3D view
+    Nome3DView = std::make_unique<CNome3DView>();
+
+    auto* viewContainer = QWidget::createWindowContainer(Nome3DView.get());
+    viewContainer->setObjectName("visualLayerContainer");
+    QSize screenSize = Nome3DView->screen()->size();
+    viewContainer->setMinimumSize(QSize(640, 480));
+    viewContainer->setMaximumSize(screenSize);
+    viewContainer->setFocusPolicy(Qt::TabFocus);
+
+    layout->addWidget(viewContainer);
+
+    //Connect signals that are not otherwise auto-connected
+    connect(ui->actionExit, &QAction::triggered, this, &CMainWindow::close);
+    connect(ui->actionAboutQt, &QAction::triggered, this, &QApplication::aboutQt);
+}
+
 void CMainWindow::LoadEmptyNomeFile()
 {
     //Called from the constructor
@@ -138,6 +164,8 @@ void CMainWindow::LoadEmptyNomeFile()
     ASTContext = new CASTContext();
 
     Scene = new Scene::CScene();
+    Scene->GetBankAndSet().AddObserver(this);
+    Nome3DView->TakeScene(Scene);
 
     setWindowFilePath("untitled.nom");
 
@@ -194,18 +222,78 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
         }
     }
     Scene = builder.GetScene();
+    Scene->GetBankAndSet().AddObserver(this);
+    Nome3DView->TakeScene(Scene);
 
     bIsBlankFile = false;
 }
 
 void CMainWindow::UnloadNomeFile()
 {
+    Nome3DView->UnloadScene();
     Scene = nullptr;
     ASTContext = nullptr;
     if (SourceFile)
         SourceManager->Close(SourceFile);
     SourceFile = nullptr;
     SourceManager = nullptr;
+}
+
+void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
+{
+    if (!SliderWidget)
+    {
+        auto* sliderDock = new QDockWidget("Scene Parameter Sliders", this);
+        sliderDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        SliderWidget = std::make_unique<QWidget>();
+        SliderLayout = new QFormLayout(SliderWidget.get());
+        sliderDock->setWidget(SliderWidget.get());
+        this->addDockWidget(Qt::LeftDockWidgetArea, sliderDock);
+        ui->menubar->addAction(sliderDock->toggleViewAction());
+    }
+
+    auto* sliderName = new QLabel();
+    sliderName->setText(QString::fromStdString(name));
+
+    auto* sliderLayout = new QHBoxLayout();
+
+    auto* sliderBar = new QSlider();
+    int numSteps = ceil((slider.GetMax() - slider.GetMin()) / slider.GetStep());
+    int currTick = round((slider.GetValue() - slider.GetMin()) / slider.GetStep());
+    sliderBar->setMinimum(0);
+    sliderBar->setMaximum(numSteps);
+    sliderBar->setValue(currTick);
+    sliderBar->setOrientation(Qt::Horizontal);
+    sliderBar->setTickPosition(QSlider::TicksBelow);
+    sliderLayout->addWidget(sliderBar);
+
+    auto* sliderDisplay = new QLineEdit();
+    sliderDisplay->setText(QString("%1").arg(slider.GetValue()));
+    sliderLayout->addWidget(sliderDisplay);
+
+    sliderLayout->setStretchFactor(sliderBar, 4);
+    sliderLayout->setStretchFactor(sliderDisplay, 1);
+
+    connect(sliderBar, &QAbstractSlider::valueChanged, [sliderDisplay, &slider](int value)
+    {
+        float fval = (float)value * slider.GetStep() + slider.GetMin();
+        QString sval = QString("%1").arg(fval);
+        sliderDisplay->setText(sval);
+    });
+
+    SliderLayout->addRow(sliderName, sliderLayout);
+    SliderNameToWidget.emplace(name, sliderLayout);
+}
+
+void CMainWindow::OnSliderRemoving(Scene::CSlider& slider, const std::string& name)
+{
+    auto iter = SliderNameToWidget.find(name);
+    assert(iter != SliderNameToWidget.end());
+
+    auto* widget = iter->second;
+
+    SliderNameToWidget.erase(iter);
+    SliderLayout->removeRow(widget);
 }
 
 }

@@ -4,8 +4,10 @@
 #include <StrongPointer.h>
 #include <Scene/Scene.h>
 
+#include <QFormLayout>
 #include <QMainWindow>
 #include <string>
+#include <unordered_map>
 
 namespace Ui {
 class MainWindow;
@@ -17,8 +19,9 @@ namespace Nome
 using tc::sp;
 
 class CCodeWindow;
+class CNome3DView;
 
-class CMainWindow : public QMainWindow
+class CMainWindow : public QMainWindow, public Scene::ISliderObserver
 {
     Q_OBJECT
 
@@ -26,6 +29,11 @@ public:
     explicit CMainWindow(QWidget* parent = nullptr);
     explicit CMainWindow(const std::string& fileToOpen, QWidget* parent = nullptr);
     ~CMainWindow() override;
+
+    [[nodiscard]] const tc::TAutoPtr<Scene::CScene>& GetScene() const
+    {
+        return Scene;
+    }
 
 private slots:
     void on_actionNew_triggered();
@@ -38,11 +46,17 @@ private slots:
 
 private:
     //Load nome files into the current window, only call one of them
+    void SetupUI();
     void LoadEmptyNomeFile();
     void LoadNomeFile(const std::string& filePath);
     void UnloadNomeFile();
 
+    //Slider panel management
+    void OnSliderAdded(Scene::CSlider& slider, const std::string& name) override;
+    void OnSliderRemoving(Scene::CSlider& slider, const std::string& name) override;
+
     Ui::MainWindow *ui;
+    std::unique_ptr<CNome3DView> Nome3DView;
 
     bool bIsBlankFile;
 
@@ -51,6 +65,10 @@ private:
     CSourceFile* SourceFile = nullptr;
     sp<CASTContext> ASTContext;
     tc::TAutoPtr<Scene::CScene> Scene;
+
+    std::unique_ptr<QWidget> SliderWidget;
+    QFormLayout* SliderLayout = nullptr;
+    std::unordered_map<std::string, QLayout*> SliderNameToWidget;
 };
 
 }

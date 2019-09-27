@@ -1,10 +1,13 @@
 #include "InteractiveMesh.h"
 #include "MeshToQGeometry.h"
+#include "ColorMaterials.h"
 
 #include <Scene/Mesh.h>
 #include <Matrix3x4.h>
 
 #include <Qt3DRender/QGeometryRenderer>
+#include <Qt3DRender/QObjectPicker>
+#include <Qt3DRender/QPickEvent>
 #include <Qt3DExtras/QPhongMaterial>
 #include <Qt3DExtras/QSphereMesh>
 
@@ -16,6 +19,7 @@ CInteractiveMesh::CInteractiveMesh(Scene::CSceneTreeNode* node) : SceneTreeNode(
     UpdateTransform();
     UpdateGeometry();
     UpdateMaterial();
+    InitInteractions();
 }
 
 void CInteractiveMesh::UpdateTransform()
@@ -40,6 +44,7 @@ void CInteractiveMesh::UpdateGeometry()
 
     if (entity)
     {
+        //TODO: drop the old QGeometry otherwise memory leak?
         auto* meshInstance = dynamic_cast<Scene::CMeshInstance*>(entity);
         if (meshInstance)
         {
@@ -51,9 +56,12 @@ void CInteractiveMesh::UpdateGeometry()
             vGeomRenderer->setGeometry(vGeometry);
             vGeomRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
             this->addComponent(vGeomRenderer);
+
+            meshInstance->SetRenderer(this);
         }
         else
         {
+            //The entity is not a mesh instance, we don't know how to handle it
             auto* vPlaceholder = new Qt3DExtras::QSphereMesh(this);
             vPlaceholder->setRadius(1.0f);
             vPlaceholder->setRings(16);
@@ -67,11 +75,33 @@ void CInteractiveMesh::UpdateMaterial()
 {
     if (!Material)
     {
-        auto* mat = new Qt3DExtras::QPhongMaterial(this);
-        mat->setAmbient({255, 127, 127});
+        //auto* mat = new Qt3DExtras::QPhongMaterial(this);
+        //mat->setAmbient({255, 127, 127});
+        auto* mat = new CColorFlatMaterial();
         this->addComponent(mat);
         Material = mat;
     }
+}
+
+void CInteractiveMesh::InitInteractions()
+{
+    auto* picker = new Qt3DRender::QObjectPicker(this);
+    picker->setHoverEnabled(true);
+    connect(picker, &Qt3DRender::QObjectPicker::pressed, [](Qt3DRender::QPickEvent *pick)
+    {
+        printf("%.3f %.3f\n", pick->position().x(), pick->position().y());
+    });
+    this->addComponent(picker);
+}
+
+int CInteractiveMesh::GetRenderFlags()
+{
+    return HasFaceColor | DrawWireframe | DrawPoints;
+}
+
+void CInteractiveMesh::NotifyGeometryChange()
+{
+    UpdateGeometry();
 }
 
 }

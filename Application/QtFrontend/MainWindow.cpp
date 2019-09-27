@@ -225,6 +225,16 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
     Scene->GetBankAndSet().AddObserver(this);
     Nome3DView->TakeScene(Scene);
 
+    SceneUpdateClock = new QTimer(this);
+    SceneUpdateClock->setInterval(100);
+    SceneUpdateClock->setSingleShot(false);
+    connect(SceneUpdateClock, &QTimer::timeout, [this]()
+    {
+        Scene->Update();
+        //TODO: also update scene node transformation changes in renderer
+    });
+    SceneUpdateClock->start();
+
     bIsBlankFile = false;
 }
 
@@ -276,9 +286,11 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
 
     connect(sliderBar, &QAbstractSlider::valueChanged, [sliderDisplay, &slider](int value)
     {
+        //Every "1" in value represents a step, since the slider only allows integers
         float fval = (float)value * slider.GetStep() + slider.GetMin();
         QString sval = QString("%1").arg(fval);
         sliderDisplay->setText(sval);
+        slider.SetNumber(fval);
     });
 
     SliderLayout->addRow(sliderName, sliderLayout);

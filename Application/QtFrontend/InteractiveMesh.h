@@ -1,5 +1,6 @@
 #pragma once
 #include <Scene/SceneGraph.h>
+#include <Scene/RendererInterface.h>
 
 #include <Qt3DCore/QEntity>
 #include <Qt3DCore/QTransform>
@@ -8,7 +9,7 @@
 namespace Nome
 {
 
-class CInteractiveMesh : public Qt3DCore::QEntity
+class CInteractiveMesh : public Qt3DCore::QEntity, public IMeshRenderer
 {
 public:
     explicit CInteractiveMesh(Scene::CSceneTreeNode* node);
@@ -16,6 +17,10 @@ public:
     void UpdateTransform();
     void UpdateGeometry();
     void UpdateMaterial();
+    void InitInteractions();
+
+    int GetRenderFlags() override;
+    void NotifyGeometryChange() override;
 
 private:
     Scene::CSceneTreeNode* SceneTreeNode = nullptr;

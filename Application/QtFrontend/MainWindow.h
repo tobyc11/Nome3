@@ -6,6 +6,7 @@
 
 #include <QFormLayout>
 #include <QMainWindow>
+#include <QTimer>
 #include <string>
 #include <unordered_map>
 
@@ -65,6 +66,7 @@ private:
     CSourceFile* SourceFile = nullptr;
     sp<CASTContext> ASTContext;
     tc::TAutoPtr<Scene::CScene> Scene;
+    QTimer* SceneUpdateClock = nullptr;
 
     std::unique_ptr<QWidget> SliderWidget;
     QFormLayout* SliderLayout = nullptr;

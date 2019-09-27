@@ -1,6 +1,7 @@
 #pragma once
 #include "Face.h"
 #include "InteractivePoint.h"
+#include "RendererInterface.h"
 
 //We use OpenMesh for now. Can easily replace with in-house library when needed.
 #define _USE_MATH_DEFINES
@@ -93,6 +94,13 @@ public:
     CMeshInstance(CMesh* generator, CSceneTreeNode* stn);
     ~CMeshInstance() override;
 
+    void SetRenderer(IMeshRenderer* renderer)
+    {
+        //Prevent changing renderer for now
+        assert(!ObservingRenderer || ObservingRenderer == renderer);
+        ObservingRenderer = renderer;
+    }
+
     //Called when the mesh entity is updated
     void MarkDirty() override;
     //Nothing changed about this mesh except its transformations and such
@@ -103,7 +111,7 @@ public:
     std::set<std::string>& GetFacesToDelete() { return FacesToDelete; }
     const std::set<std::string>& GetFacesToDelete() const { return FacesToDelete; }
 
-    void Draw(CSceneTreeNode* treeNode);
+    void Draw(CSceneTreeNode* treeNode) override;
 
     //Create a vertex selector with a vertex name, and a name for the resulting vertex
     CVertexSelector* CreateVertexSelector(const std::string& name, const std::string& outputName);
@@ -120,6 +128,8 @@ private:
     TAutoPtr<CMesh> MeshGenerator;
     ///A weak pointer to the owning scene tree node
     CSceneTreeNode* SceneTreeNode;
+    ///The renderer that listens to the changes in this mesh
+    IMeshRenderer* ObservingRenderer{};
 
     unsigned int TransformChangeConnection;
 

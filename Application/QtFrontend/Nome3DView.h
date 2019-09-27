@@ -15,7 +15,7 @@ public:
     CNome3DView();
     ~CNome3DView() override;
 
-    void TakeScene(tc::TAutoPtr<Scene::CScene> Scene);
+    void TakeScene(const tc::TAutoPtr<Scene::CScene>& Scene);
     void UnloadScene();
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);

@@ -37,9 +37,10 @@ CNome3DView::CNome3DView()
 
 CNome3DView::~CNome3DView()
 {
+    UnloadScene();
 }
 
-void CNome3DView::TakeScene(tc::TAutoPtr<Scene::CScene> Scene)
+void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& Scene)
 {
     using namespace Scene;
 
@@ -84,7 +85,7 @@ Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
 
     QByteArray bufferBytes;
     bufferBytes.resize(3 * sizeof(float) * 4 * (divisions + 1));
-    float* positions = reinterpret_cast<float*>(bufferBytes.data());
+    auto* positions = reinterpret_cast<float*>(bufferBytes.data());
     float xStart = -size / 2.0f;
     float increment = size / divisions;
     for (int i = 0; i <= divisions; i++)

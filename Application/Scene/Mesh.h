@@ -30,7 +30,7 @@ class CMesh : public CEntity
 public:
     using Super = CEntity;
     CMesh();
-    CMesh(std::string name);
+    explicit CMesh(std::string name);
 
     void MarkDirty() override;
     void UpdateEntity() override;
@@ -68,7 +68,7 @@ public:
     {
     }
 
-    std::string GetPointPath() const;
+    [[nodiscard]] std::string GetPointPath() const;
 
 private:
     CMeshInstance* Owner;

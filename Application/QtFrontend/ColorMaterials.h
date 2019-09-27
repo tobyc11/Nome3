@@ -2,6 +2,7 @@
 
 #include <Qt3DRender/QMaterial>
 #include <Qt3DRender/QTechnique>
+#include <Qt3DRender/QEffect>
 
 namespace Nome {
 
@@ -28,6 +29,20 @@ private:
     Qt3DRender::QRenderPass* GL3RenderPass;
     Qt3DRender::QShaderProgram* GL3Shader;
     Qt3DRender::QFilterKey* FilterKey;
+};
+
+class CWireframeEffect : public Qt3DRender::QEffect
+{
+public:
+    explicit CWireframeEffect(Qt3DCore::QNode *parent = nullptr);
+};
+
+class CWireframeMaterial : public Qt3DRender::QMaterial
+{
+    Q_OBJECT
+
+public:
+    explicit CWireframeMaterial(Qt3DCore::QNode *parent = nullptr);
 };
 
 }

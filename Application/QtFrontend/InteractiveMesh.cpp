@@ -77,7 +77,7 @@ void CInteractiveMesh::UpdateMaterial()
     {
         //auto* mat = new Qt3DExtras::QPhongMaterial(this);
         //mat->setAmbient({255, 127, 127});
-        auto* mat = new CColorFlatMaterial();
+        auto* mat = new CWireframeMaterial(this);
         this->addComponent(mat);
         Material = mat;
     }

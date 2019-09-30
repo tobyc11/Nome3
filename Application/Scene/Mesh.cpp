@@ -6,11 +6,6 @@
 namespace Nome::Scene
 {
 
-class CMeshRenderPrivateData
-{
-public:
-};
-
 CMesh::CMesh()
 {
 }
@@ -120,7 +115,7 @@ std::string CMeshInstancePoint::GetPointPath() const
 }
 
 CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
-    : MeshGenerator(generator), SceneTreeNode(stn), Priv(new CMeshRenderPrivateData())
+    : MeshGenerator(generator), SceneTreeNode(stn)
 {
     SetName(tc::StringPrintf("_%s_%s", MeshGenerator->GetName().c_str(), GetName().c_str()));
     MeshGenerator->InstanceSet.insert(this);
@@ -135,7 +130,6 @@ CMeshInstance::~CMeshInstance()
     //TODO: handle this circular reference stuff
     //SceneTreeNode->OnTransformChange.Disconnect(TransformChangeConnection);
     MeshGenerator->InstanceSet.erase(this);
-    delete Priv;
 }
 
 void CMeshInstance::MarkDirty()

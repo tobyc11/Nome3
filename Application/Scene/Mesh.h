@@ -18,7 +18,6 @@ typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
 namespace Nome::Scene
 {
 
-class CMeshRenderPrivateData;
 class CMeshInstance;
 class CVertexSelector;
 
@@ -141,8 +140,6 @@ private:
     std::set<std::string> FacesToDelete;
 
     std::map<std::string, std::pair<CMeshInstancePoint*, uint32_t>> PickingVerts;
-
-    CMeshRenderPrivateData* Priv;
 };
 
 class CVertexSelector : public Flow::CFlowNode

@@ -272,7 +272,7 @@ public:                                                                         
     Flow::TInput<Type> Name { this, [=]() { this->Name##MarkedDirty(); } };                        \
                                                                                                    \
 private:                                                                                           \
-    inline void Name##MarkedDirty()
+    void Name##MarkedDirty()
 
 /// Define an output slot, the function is called when the value is requested
 #define DEFINE_OUTPUT_WITH_UPDATE(Type, Name)                                                      \
@@ -280,4 +280,4 @@ public:                                                                         
     Flow::TOutput<Type> Name { this, [=]() { this->Name##Update(); } };                            \
                                                                                                    \
 private:                                                                                           \
-    inline void Name##Update()
+    void Name##Update()

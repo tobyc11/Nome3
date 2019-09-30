@@ -68,7 +68,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh)
 
     Geometry = new Qt3DRender::QGeometry();
 
-    auto* buffer = new Qt3DRender::QBuffer(Geometry);
+    auto* buffer = new Qt3DRender::QBuffer(Qt3DRender::QBuffer::VertexBuffer, Geometry);
     buffer->setData(bufferArray);
 
     auto* posAttr = new Qt3DRender::QAttribute(Geometry);

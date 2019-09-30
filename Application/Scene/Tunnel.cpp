@@ -20,17 +20,17 @@ void CTunnel::UpdateEntity()
     for (int i = 0; i < n; i++)
     {
         float theta = (float)i / n * 2.f * (float)M_PI;
-        AddVertex("v2_" + std::to_string(i), { radius * cos(theta), radius * sin(theta), 0.f });
+        AddVertex("v2_" + std::to_string(i), { radius * cosf(theta), radius * sinf(theta), 0.f });
     }
     for (int i = 0; i < n; i++)
     {
         float theta = (float)i / n * 2.f * (float)M_PI;
-        AddVertex("v1_" + std::to_string(i), { ri * cos(theta), ri * sin(theta), height });
+        AddVertex("v1_" + std::to_string(i), { ri * cosf(theta), ri * sinf(theta), height });
     }
     for (int i = 0; i < n; i++)
     {
         float theta = (float)i / n * 2.f * (float)M_PI;
-        AddVertex("v3_" + std::to_string(i), { ri * cos(theta), ri * sin(theta), -height });
+        AddVertex("v3_" + std::to_string(i), { ri * cosf(theta), ri * sinf(theta), -height });
     }
     
     //Create faces

@@ -9,8 +9,6 @@ namespace Nome::Scene
 CScene::CScene()
 {
     RootNode = new CSceneNode(this, "root", true);
-    CameraView = new Flow::TNumber<Matrix3x4>();
-    CreateDefaultCamera();
     PickingMgr = new CPickingManager(this);
 }
 
@@ -19,22 +17,6 @@ TAutoPtr<CSceneTreeNode> CScene::GetRootTreeNode() const
     const auto& rootTreeNodes = RootNode->GetTreeNodes();
     assert(rootTreeNodes.size() == 1);
     return *rootTreeNodes.begin();
-}
-
-void CScene::ConnectCameraTransform(Flow::TOutput<Matrix3x4>* output)
-{
-    if (output)
-        output->Connect(CameraNode->Transform);
-    else
-        CameraView->Value.Connect(CameraNode->Transform);
-}
-
-void CScene::CreateDefaultCamera()
-{
-    CameraNode = RootNode->CreateChildNode("default_camera");
-    CameraView->SetNumber(Matrix3x4({ 0.0f, 0.0f, 10.0f }, Quaternion::IDENTITY, 1.0f));
-    CameraView->Value.Connect(CameraNode->Transform);
-    MainCamera = new CCamera(*CameraNode->GetTreeNodes().cbegin());
 }
 
 void CScene::AddEntity(TAutoPtr<CEntity> entity)

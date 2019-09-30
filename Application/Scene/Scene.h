@@ -26,11 +26,6 @@ public:
     TAutoPtr<CSceneNode> GetRootNode() const { return RootNode; }
     TAutoPtr<CSceneTreeNode> GetRootTreeNode() const;
 
-    TAutoPtr<CCamera> GetMainCamera() const { return MainCamera; }
-    void ConnectCameraTransform(Flow::TOutput<Matrix3x4>* output);
-
-    void CreateDefaultCamera();
-
     // Adds an entity into the lookup map
     void AddEntity(TAutoPtr<CEntity> entity);
     //TODO:
@@ -75,11 +70,6 @@ private:
 
     // This is the root node of the scene tree
     TAutoPtr<CSceneNode> RootNode;
-    // This points to the scene node that is associated with the current camera
-    TAutoPtr<CSceneNode> CameraNode;
-    // The main camera that contains projection parameters etc.
-    TAutoPtr<CCamera> MainCamera;
-    TAutoPtr<Flow::TNumber<Matrix3x4>> CameraView;
 
     TAutoPtr<CPickingManager> PickingMgr;
 

@@ -106,7 +106,7 @@ Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
         xStart += increment;
     }
 
-    auto* buf = new Qt3DRender::QBuffer(geometry);
+    auto* buf = new Qt3DRender::QBuffer(Qt3DRender::QBuffer::VertexBuffer, geometry);
     buf->setData(bufferBytes);
 
     auto* positionAttr = new Qt3DRender::QAttribute(geometry);

@@ -29,7 +29,7 @@ class CXMLMaterial : public Qt3DRender::QMaterial
 public:
     explicit CXMLMaterial(QString path);
 
-    Qt3DRender::QParameter* FindParameterByName(const QString& name) const;
+    [[nodiscard]] Qt3DRender::QParameter* FindParameterByName(const QString& name) const;
 };
 
 }

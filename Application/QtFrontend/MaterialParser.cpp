@@ -3,20 +3,12 @@
 #include <QUrl>
 #include <QVector3D>
 #include <QVector4D>
-#include <Qt3DRender/QMaterial>
-#include <Qt3DRender/QTechnique>
-#include <Qt3DRender/QEffect>
-#include <Qt3DRender/QParameter>
-#include <Qt3DRender/QRenderPass>
-#include <Qt3DRender/QShaderProgram>
-#include <Qt3DRender/QFilterKey>
-#include <Qt3DRender/QGraphicsApiFilter>
-#include <Qt3DRender/QTexture>
-#include <Qt3DRender/QTextureData>
+#include <Qt3DRender/Qt3DRender>
 #include <pugixml.hpp>
 #include <fstream>
 #include <sstream>
 #include <utility>
+#include <unordered_map>
 
 namespace Nome
 {
@@ -120,6 +112,56 @@ bool CMaterialParser::Parse()
                 if (fragmentShaderCode)
                 {
                     shaderProgram->setFragmentShaderCode(QShaderProgram::loadSource(QUrl(fragmentShaderCode.value())));
+                }
+
+                auto cullFaceNode = renderPassNode.child("CullFace");
+                if (cullFaceNode)
+                {
+                    const std::unordered_map<std::string, QCullFace::CullingMode> modeMap =
+                        {{"NoCulling", QCullFace::NoCulling}, {"Front", QCullFace::Front},
+                         {"Back", QCullFace::Back}, {"FrontAndBack", QCullFace::FrontAndBack}};
+
+                    auto* cullState = new QCullFace();
+                    std::string mode = cullFaceNode.attribute("mode").value();
+                    cullState->setMode(modeMap.at(mode));
+                    renderPass->addRenderState(cullState);
+                }
+
+                auto blendNode = renderPassNode.child("Blend");
+                if (blendNode)
+                {
+                    const std::unordered_map<std::string, QBlendEquation::BlendFunction> opMap =
+                        {{"Add", QBlendEquation::Add}, {"Subtract", QBlendEquation::Subtract},
+                         {"ReverseSubtract", QBlendEquation::ReverseSubtract}, {"Min", QBlendEquation::Min},
+                         {"Max", QBlendEquation::Max}};
+
+                    const std::unordered_map<std::string, QBlendEquationArguments::Blending> factorMap =
+                        {{"Add", QBlendEquationArguments::Zero}, {"One", QBlendEquationArguments::One},
+                         {"SourceColor", QBlendEquationArguments::SourceColor},
+                         {"SourceAlpha", QBlendEquationArguments::SourceAlpha},
+                         {"DestinationColor", QBlendEquationArguments::DestinationColor},
+                         {"DestinationAlpha", QBlendEquationArguments::DestinationAlpha},
+                         {"SourceAlphaSaturate", QBlendEquationArguments::SourceAlphaSaturate},
+                         {"ConstantColor", QBlendEquationArguments::ConstantColor},
+                         {"ConstantAlpha", QBlendEquationArguments::ConstantAlpha},
+                         {"OneMinusSourceColor", QBlendEquationArguments::OneMinusSourceColor},
+                         {"OneMinusSourceAlpha", QBlendEquationArguments::OneMinusSourceAlpha},
+                         {"OneMinusDestinationAlpha", QBlendEquationArguments::OneMinusDestinationAlpha},
+                         {"OneMinusDestinationColor", QBlendEquationArguments::OneMinusDestinationColor},
+                         {"OneMinusConstantColor", QBlendEquationArguments::OneMinusConstantColor},
+                         {"OneMinusConstantAlpha", QBlendEquationArguments::OneMinusConstantAlpha}};
+
+                    auto* blendFunc = new QBlendEquation();
+                    std::string op = blendNode.attribute("op").value();
+                    blendFunc->setBlendFunction(opMap.at(op));
+                    renderPass->addRenderState(blendFunc);
+
+                    auto* blendWeights = new QBlendEquationArguments();
+                    std::string srcFactor = blendNode.attribute("srcFactor").value();
+                    std::string dstFactor = blendNode.attribute("dstFactor").value();
+                    blendWeights->setSourceRgba(factorMap.at(srcFactor));
+                    blendWeights->setDestinationRgba(factorMap.at(dstFactor));
+                    renderPass->addRenderState(blendWeights);
                 }
             }
         }

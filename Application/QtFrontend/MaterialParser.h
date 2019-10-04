@@ -1,5 +1,6 @@
 #pragma once
 #include <Qt3DRender/QMaterial>
+#include <Qt3DRender/QParameter>
 
 #include <string>
 
@@ -9,7 +10,7 @@ namespace Nome
 class CMaterialParser
 {
 public:
-    explicit CMaterialParser(QString path);
+    explicit CMaterialParser(QString path, Qt3DRender::QMaterial* parseInto = nullptr);
     ~CMaterialParser();
 
     bool Parse();
@@ -19,7 +20,16 @@ public:
 
 private:
     QString Path;
+    bool bDoNotAutoDelete = false;
     Qt3DRender::QMaterial* ResultMaterial = nullptr;
+};
+
+class CXMLMaterial : public Qt3DRender::QMaterial
+{
+public:
+    explicit CXMLMaterial(QString path);
+
+    Qt3DRender::QParameter* FindParameterByName(const QString& name) const;
 };
 
 }

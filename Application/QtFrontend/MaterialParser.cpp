@@ -13,14 +13,16 @@
 namespace Nome
 {
 
-CMaterialParser::CMaterialParser(QString path)
-    : Path(std::move(path))
+CMaterialParser::CMaterialParser(QString path, Qt3DRender::QMaterial* parseInto)
+    : Path(std::move(path)), ResultMaterial(parseInto)
 {
+    if (parseInto)
+        bDoNotAutoDelete = true;
 }
 
 CMaterialParser::~CMaterialParser()
 {
-    if (ResultMaterial)
+    if (!bDoNotAutoDelete && ResultMaterial)
     {
         if (!ResultMaterial->parent())
             delete ResultMaterial;
@@ -44,7 +46,7 @@ bool CMaterialParser::Parse()
 
     //There should only be one material node per document
     pugi::xml_node materialNode = doc.child("Material");
-    auto* material = new QMaterial();
+    auto* material = ResultMaterial ? ResultMaterial: new QMaterial();
     for (auto paramNode : materialNode.children("Parameter"))
     {
         auto* parameter = new QParameter();
@@ -215,13 +217,29 @@ QVariant CMaterialParser::ParseVariant(const char* str)
         tex->setMaximumAnisotropy(16.0f);
 
         ss >> fileName;
-        fileName = "file:" + fileName;
+        fileName = fileName;
         auto* image = new Qt3DRender::QTextureImage();
         tex->addTextureImage(image);
         image->setSource(QUrl(fileName.c_str()));
         return QVariant::fromValue(tex);
     }
     return QVariant();
+}
+
+CXMLMaterial::CXMLMaterial(QString path)
+{
+    CMaterialParser parser{path, this};
+    parser.Parse();
+}
+
+Qt3DRender::QParameter* CXMLMaterial::FindParameterByName(const QString& name) const
+{
+    for (Qt3DRender::QParameter* param : this->parameters())
+    {
+        if (param->name() == name)
+            return param;
+    }
+    return nullptr;
 }
 
 }

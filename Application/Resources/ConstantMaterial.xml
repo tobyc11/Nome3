@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Material>
+    <Effect>
+        <Parameter name="baseColor" value="vec3: 1.0 1.0 0.0" />
+        <Technique>
+            <FilterKey name="renderingStyle" value="forward" />
+            <GraphicsApiFilter api="OpenGL" profile="Core" majorVersion="3" minorVersion="1" />
+            <RenderPass>
+                <ShaderProgram vertexShaderCode="qrc:/Shaders/default.vert" fragmentShaderCode="qrc:/Shaders/ColorFlat.frag" />
+            </RenderPass>
+        </Technique>
+    </Effect>
+</Material>

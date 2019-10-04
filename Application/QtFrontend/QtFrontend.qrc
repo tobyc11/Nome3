@@ -5,5 +5,9 @@
         <file>Shaders/Wireframe.frag</file>
         <file>Shaders/ColorFlat.frag</file>
         <file>Shaders/default.vert</file>
+        <file>Shaders/PointCloud.geom</file>
+        <file>Shaders/PointCloud.frag</file>
+        <file>Textures/512checker.png</file>
+        <file>Textures/dot32.png</file>
     </qresource>
 </RCC>

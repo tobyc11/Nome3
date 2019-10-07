@@ -1,6 +1,8 @@
 #include "InteractiveMesh.h"
 #include "MeshToQGeometry.h"
 #include "ColorMaterials.h"
+#include "MaterialParser.h"
+#include "ResourceMgr.h"
 
 #include <Scene/Mesh.h>
 #include <Matrix3x4.h>
@@ -77,7 +79,9 @@ void CInteractiveMesh::UpdateMaterial()
     {
         //auto* mat = new Qt3DExtras::QPhongMaterial(this);
         //mat->setAmbient({255, 127, 127});
-        auto* mat = new CWireframeMaterial(this);
+        auto xmlPath = CResourceMgr::Get().Find("WireframeLit.xml");
+        auto* mat = new CXMLMaterial(QString::fromStdString(xmlPath));
+        mat->FindParameterByName("kd")->setValue(QVector3D(1.0f, 0.5f, 0.1f));
         this->addComponent(mat);
         Material = mat;
     }

@@ -47,6 +47,9 @@ macro(config_playground2 target)
     find_package(OpenMesh REQUIRED)
     target_include_directories(${target} PRIVATE ${OPENMESH_INCLUDE_DIRS})
     target_link_libraries(${target} PRIVATE ${OPENMESH_LIBRARIES})
+
+    find_package(pugixml REQUIRED)
+    target_link_libraries(${target} PRIVATE pugixml)
 endmacro()
 
 add_executable(Nome3 ${PG2_SOURCES} ${PG2_GENERATED_SOURCES})

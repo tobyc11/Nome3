@@ -2,3 +2,7 @@ CMakeLists.txt.user
 imgui.ini
 .vscode
 .vs
+
+#Ignoring Build Files
+build
+cmake-build-debug

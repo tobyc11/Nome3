@@ -236,7 +236,7 @@ void CMainWindow::PostloadSetup()
     connect(SceneUpdateClock, &QTimer::timeout, [this]()
     {
         Scene->Update();
-        Nome3DView->PostSceneUpdate(Scene);
+        Nome3DView->PostSceneUpdate();
     });
     SceneUpdateClock->start();
 }
@@ -246,6 +246,7 @@ void CMainWindow::UnloadNomeFile()
     SceneUpdateClock->stop();
     delete SceneUpdateClock;
     Nome3DView->UnloadScene();
+    assert(Scene->GetRefCount() == 1);
     Scene = nullptr;
     ASTContext = nullptr;
     if (SourceFile)

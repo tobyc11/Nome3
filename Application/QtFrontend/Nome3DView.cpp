@@ -1,7 +1,5 @@
 #include "Nome3DView.h"
 
-#include <unordered_map>
-
 namespace Nome
 {
 
@@ -42,11 +40,11 @@ CNome3DView::~CNome3DView()
     UnloadScene();
 }
 
-void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& Scene)
+void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
 {
     using namespace Scene;
+    Scene = scene;
 
-    //TODO: figure out when to update scene
     Scene->Update();
     Scene->ForEachSceneTreeNode([this](CSceneTreeNode* node)
                                 {
@@ -61,11 +59,13 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& Scene)
                                     {
                                         printf("    %s\n", entity->GetName().c_str());
 
+                                        //Create an InteractiveMesh from the scene node
                                         auto* mesh = new CInteractiveMesh(node);
                                         mesh->setParent(this->Root);
                                         InteractiveMeshes.insert(mesh);
                                     }
                                 });
+    PostSceneUpdate();
 }
 
 void CNome3DView::UnloadScene()
@@ -73,13 +73,15 @@ void CNome3DView::UnloadScene()
     for (auto* m : InteractiveMeshes)
         delete m;
     InteractiveMeshes.clear();
+    Scene = nullptr;
 }
 
-void CNome3DView::PostSceneUpdate(const tc::TAutoPtr<Scene::CScene>& Scene)
+void CNome3DView::PostSceneUpdate()
 {
     using namespace Scene;
     std::unordered_map<CSceneTreeNode*, CInteractiveMesh*> sceneNodeAssoc;
     std::unordered_set<CInteractiveMesh*> aliveSet;
+    std::unordered_map<Scene::CEntity*, CDebugDraw*> aliveEntityDrawData;
     for (auto* m : InteractiveMeshes)
         sceneNodeAssoc.emplace(m->GetSceneTreeNode(), m);
 
@@ -94,21 +96,37 @@ void CNome3DView::PostSceneUpdate(const tc::TAutoPtr<Scene::CScene>& Scene)
 
                                     if (entity)
                                     {
+                                        CInteractiveMesh* mesh = nullptr;
                                         //Check for existing InteractiveMesh
                                         auto iter = sceneNodeAssoc.find(node);
                                         if (iter != sceneNodeAssoc.end())
                                         {
                                             //Found existing InteractiveMesh, mark as alive
-                                            auto* mesh = iter->second;
+                                            mesh = iter->second;
                                             aliveSet.insert(mesh);
                                             mesh->UpdateTransform();
                                         }
                                         else
                                         {
-                                            auto* mesh = new CInteractiveMesh(node);
+                                            mesh = new CInteractiveMesh(node);
                                             mesh->setParent(this->Root);
                                             aliveSet.insert(mesh);
                                             InteractiveMeshes.insert(mesh);
+                                        }
+
+                                        //Create a DebugDraw for the CEntity if not already
+                                        auto eIter = EntityDrawData.find(entity);
+                                        if (eIter == EntityDrawData.end())
+                                        {
+                                            auto* debugDraw = new CDebugDraw(Root);
+                                            aliveEntityDrawData[entity] = debugDraw;
+                                            //TODO: somehow uncommenting this line leads to a crash in Qt3D
+                                            //mesh->SetDebugDraw(debugDraw);
+                                        }
+                                        else
+                                        {
+                                            aliveEntityDrawData[entity] = eIter->second;
+                                            mesh->SetDebugDraw(eIter->second);
                                         }
                                     }
                                 });
@@ -124,6 +142,23 @@ void CNome3DView::PostSceneUpdate(const tc::TAutoPtr<Scene::CScene>& Scene)
         }
     }
     InteractiveMeshes = std::move(aliveSet);
+
+    //Kill all entity debug draws that are not alive
+    for (auto & iter : EntityDrawData)
+    {
+        auto iter2 = aliveEntityDrawData.find(iter.first);
+        if (iter2 == aliveEntityDrawData.end())
+        {
+            delete iter.second;
+        }
+    }
+    EntityDrawData = std::move(aliveEntityDrawData);
+    for (const auto& pair : EntityDrawData)
+    {
+        pair.second->Reset();
+        pair.first->Draw(pair.second);
+        pair.second->Commit();
+    }
 }
 
 Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)

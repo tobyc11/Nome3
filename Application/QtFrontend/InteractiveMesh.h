@@ -1,4 +1,5 @@
 #pragma once
+#include "DebugDraw.h"
 #include <Scene/SceneGraph.h>
 #include <Scene/RendererInterface.h>
 
@@ -23,6 +24,7 @@ public:
     void UpdateGeometry();
     void UpdateMaterial();
     void InitInteractions();
+    void SetDebugDraw(const CDebugDraw* debugDraw);
 
     int GetRenderFlags() override;
     void NotifyGeometryChange() override;

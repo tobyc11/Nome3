@@ -98,6 +98,35 @@ void CInteractiveMesh::InitInteractions()
     this->addComponent(picker);
 }
 
+void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
+{
+    //Check for existing lineEntity and delete
+    auto* oldEntity = this->findChild<Qt3DCore::QEntity*>(QStringLiteral("lineEntity"));
+    if (oldEntity)
+    {
+        auto* oldRenderer = oldEntity->findChild<Qt3DRender::QGeometryRenderer*>();
+        if (oldRenderer && oldRenderer->geometry() == debugDraw->GetLineGeometry())
+            return; //No work to be done if geometry stays the same
+    }
+    delete oldEntity;
+
+    //printf("this=%p debugDraw=%p\n", this, debugDraw);
+
+    auto* lineEntity = new Qt3DCore::QEntity(this);
+    lineEntity->setObjectName(QStringLiteral("lineEntity"));
+
+    auto xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
+    auto* lineMaterial = new CXMLMaterial(QString::fromStdString(xmlPath));
+    lineMaterial->setObjectName(QStringLiteral("lineMaterial"));
+    lineEntity->addComponent(lineMaterial);
+    assert(lineMaterial->parent() == lineEntity);
+
+    auto* lineRenderer = new Qt3DRender::QGeometryRenderer(lineEntity);
+    lineRenderer->setGeometry(debugDraw->GetLineGeometry());
+    lineRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Lines);
+    lineEntity->addComponent(lineRenderer);
+}
+
 int CInteractiveMesh::GetRenderFlags()
 {
     return HasFaceColor | DrawWireframe | DrawPoints;

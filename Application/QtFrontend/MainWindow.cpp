@@ -157,30 +157,30 @@ void CMainWindow::SetupUI()
     connect(ui->actionAboutQt, &QAction::triggered, this, &QApplication::aboutQt);
 }
 
+void CMainWindow::PreloadSetup()
+{
+    SourceManager = new CSourceManager();
+    ASTContext = new CASTContext();
+}
+
 void CMainWindow::LoadEmptyNomeFile()
 {
     //Called from the constructor
-    SourceManager = new CSourceManager();
-    ASTContext = new CASTContext();
-
-    Scene = new Scene::CScene();
-    Scene->GetBankAndSet().AddObserver(this);
-    Nome3DView->TakeScene(Scene);
-
+    PreloadSetup();
     setWindowFilePath("untitled.nom");
-
     bIsBlankFile = true;
+    Scene = new Scene::CScene();
+    PostloadSetup();
 }
 
 void CMainWindow::LoadNomeFile(const std::string& filePath)
 {
+    PreloadSetup();
+
     setWindowFilePath(QString::fromStdString(filePath));
+    bIsBlankFile = false;
 
-    //Called from the constructor
-    SourceManager = new CSourceManager();
     SourceFile = SourceManager->Open(filePath);
-    ASTContext = new CASTContext();
-
     //Parse the input nome file
     {
         CNomeDriver driver{ ASTContext, SourceManager, SourceFile };
@@ -222,6 +222,11 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
         }
     }
     Scene = builder.GetScene();
+    PostloadSetup();
+}
+
+void CMainWindow::PostloadSetup()
+{
     Scene->GetBankAndSet().AddObserver(this);
     Nome3DView->TakeScene(Scene);
 
@@ -231,11 +236,9 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
     connect(SceneUpdateClock, &QTimer::timeout, [this]()
     {
         Scene->Update();
-        //TODO: also update scene node transformation changes in renderer
+        Nome3DView->PostSceneUpdate(Scene);
     });
     SceneUpdateClock->start();
-
-    bIsBlankFile = false;
 }
 
 void CMainWindow::UnloadNomeFile()

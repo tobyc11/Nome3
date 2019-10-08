@@ -48,8 +48,10 @@ private slots:
 private:
     //Load nome files into the current window, only call one of them
     void SetupUI();
+    void PreloadSetup();
     void LoadEmptyNomeFile();
     void LoadNomeFile(const std::string& filePath);
+    void PostloadSetup();
     void UnloadNomeFile();
 
     //Slider panel management

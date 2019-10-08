@@ -17,6 +17,7 @@ public:
 
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& Scene);
     void UnloadScene();
+    void PostSceneUpdate(const tc::TAutoPtr<Scene::CScene>& Scene);
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
 

@@ -1,5 +1,7 @@
 #include "Nome3DView.h"
 
+#include <unordered_map>
+
 namespace Nome
 {
 
@@ -71,6 +73,57 @@ void CNome3DView::UnloadScene()
     for (auto* m : InteractiveMeshes)
         delete m;
     InteractiveMeshes.clear();
+}
+
+void CNome3DView::PostSceneUpdate(const tc::TAutoPtr<Scene::CScene>& Scene)
+{
+    using namespace Scene;
+    std::unordered_map<CSceneTreeNode*, CInteractiveMesh*> sceneNodeAssoc;
+    std::unordered_set<CInteractiveMesh*> aliveSet;
+    for (auto* m : InteractiveMeshes)
+        sceneNodeAssoc.emplace(m->GetSceneTreeNode(), m);
+
+    Scene->ForEachSceneTreeNode([&](CSceneTreeNode* node)
+                                {
+                                    //Obtain either an instance entity or a shared entity from the scene node
+                                    auto* entity = node->GetInstanceEntity();
+                                    if (!entity)
+                                    {
+                                        entity = node->GetOwner()->GetEntity();
+                                    }
+
+                                    if (entity)
+                                    {
+                                        //Check for existing InteractiveMesh
+                                        auto iter = sceneNodeAssoc.find(node);
+                                        if (iter != sceneNodeAssoc.end())
+                                        {
+                                            //Found existing InteractiveMesh, mark as alive
+                                            auto* mesh = iter->second;
+                                            aliveSet.insert(mesh);
+                                            mesh->UpdateTransform();
+                                        }
+                                        else
+                                        {
+                                            auto* mesh = new CInteractiveMesh(node);
+                                            mesh->setParent(this->Root);
+                                            aliveSet.insert(mesh);
+                                            InteractiveMeshes.insert(mesh);
+                                        }
+                                    }
+                                });
+
+    //Now kill all the dead objects, i.e., not longer in the scene graph
+    for (auto* m : InteractiveMeshes)
+    {
+        auto iter = aliveSet.find(m);
+        if (iter == aliveSet.end())
+        {
+            //Not in aliveSet
+            delete m;
+        }
+    }
+    InteractiveMeshes = std::move(aliveSet);
 }
 
 Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)

@@ -14,6 +14,11 @@ class CInteractiveMesh : public Qt3DCore::QEntity, public IMeshRenderer
 public:
     explicit CInteractiveMesh(Scene::CSceneTreeNode* node);
 
+    [[nodiscard]] Scene::CSceneTreeNode* GetSceneTreeNode() const
+    {
+        return SceneTreeNode;
+    }
+
     void UpdateTransform();
     void UpdateGeometry();
     void UpdateMaterial();

@@ -214,8 +214,9 @@ void CMeshInstance::UpdateEntity()
         ObservingRenderer->NotifyGeometryChange();
 }
 
-void CMeshInstance::Draw(CSceneTreeNode* treeNode)
+void CMeshInstance::Draw(IDebugDraw* draw)
 {
+    MeshGenerator->Draw(draw);
 }
 
 CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name, const std::string& outputName)

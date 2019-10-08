@@ -1,5 +1,6 @@
 #pragma once
 #include "Flow/FlowNode.h"
+#include "RendererInterface.h"
 #include <Matrix3x4.h> //For convenience
 #include <string>
 
@@ -41,7 +42,7 @@ public:
     bool IsEntityValid() const { return bIsValid; }
     void SetValid(bool value) { bIsValid = value; }
 
-    virtual void Draw(CSceneTreeNode* treeNode) {};
+    virtual void Draw(IDebugDraw* draw) {};
 
     //Some entities(generators) allow actual instance objects for each scene tree node
     //  so that each instance can be customized, like delete face

@@ -110,7 +110,7 @@ public:
     std::set<std::string>& GetFacesToDelete() { return FacesToDelete; }
     const std::set<std::string>& GetFacesToDelete() const { return FacesToDelete; }
 
-    void Draw(CSceneTreeNode* treeNode) override;
+    void Draw(IDebugDraw* draw) override;
 
     //Create a vertex selector with a vertex name, and a name for the resulting vertex
     CVertexSelector* CreateVertexSelector(const std::string& name, const std::string& outputName);

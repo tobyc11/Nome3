@@ -1,5 +1,6 @@
 #include "ASTSceneBuilder.h"
 #include "BezierSpline.h"
+#include "BSpline.h"
 #include "Circle.h"
 #include "Funnel.h"
 #include "Point.h"
@@ -159,7 +160,22 @@ void CASTSceneBuilder::VisitBezierCurve(AIdent* name, const std::vector<AIdent*>
 void CASTSceneBuilder::VisitBSpline(AIdent* name, const std::vector<AIdent*>& points, AExpr* order,
                                     AExpr* nSlices, bool closed)
 {
-    throw CSemanticError("Sorry, bspline is not yet supported", name);
+    auto* bsp = new CBSpline(name->Identifier);
+    TAutoPtr<CBSpline> bspRef(bsp);
+    for (auto* ident : points)
+    {
+        Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
+        if (!pointOutput)
+        {
+            throw CSemanticError(
+                tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), ident);
+        }
+        bsp->ControlPoints.Connect(*pointOutput);
+    }
+    CONNECT_AST_EXPR_TO(nSlices, bsp->Segments);
+    CONNECT_AST_EXPR_TO(order, bsp->Order);
+    bsp->SetClosed(closed);
+    Scene->AddEntity(bsp);
 }
 
 void CASTSceneBuilder::VisitInstance(AIdent* name, AIdent* entityName,

@@ -243,6 +243,8 @@ void CMainWindow::PostloadSetup()
 
 void CMainWindow::UnloadNomeFile()
 {
+    SceneUpdateClock->stop();
+    delete SceneUpdateClock;
     Nome3DView->UnloadScene();
     Scene = nullptr;
     ASTContext = nullptr;

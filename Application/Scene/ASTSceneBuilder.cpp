@@ -244,15 +244,15 @@ void CASTSceneBuilder::VisitDelete(const std::vector<ACommand*>& faceCmds)
     {
         if (cmd->GetBeginKeyword()->Identifier != "face")
             throw CSemanticError("Delete command can only contain faces.", cmd);
-        auto node_face = Scene->WalkPath(cmd->GetName()->Identifier);
-        CEntity* instEnt = node_face.first->GetInstanceEntity();
+        auto [matchingNode, restPath] = Scene->WalkPath(cmd->GetName()->Identifier);
+        CEntity* instEnt = matchingNode->GetInstanceEntity();
         if (!instEnt)
             throw CSemanticError("Delete face names an invalid mesh instance", cmd);
         auto* meshInst = dynamic_cast<CMeshInstance*>(instEnt);
         if (!meshInst)
             throw CSemanticError("Delete face names an invalid mesh instance", cmd);
-        meshInst->GetFacesToDelete().insert(node_face.second);
-        printf("[Debug] %s", node_face.second.c_str());
+        meshInst->GetFacesToDelete().insert(restPath);
+        printf("[Debug] %s", restPath.c_str());
     }
 }
 

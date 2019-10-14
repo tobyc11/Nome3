@@ -72,6 +72,8 @@ public:
     void AddParent(CSceneNode* newParent);
     void RemoveParent(CSceneNode* parent);
     CSceneNode* CreateChildNode(const std::string& name);
+    CSceneNode* FindChildNode(const std::string& name);
+    CSceneNode* FindOrCreateChildNode(const std::string& name);
 
     //Returns the number of associated tree nodes, i.e. the number of ways from the root to this graph node
     size_t CountTreeNodes() const;

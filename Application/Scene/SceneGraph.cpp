@@ -153,6 +153,22 @@ CSceneNode* CSceneNode::CreateChildNode(const std::string& name)
     return child;
 }
 
+CSceneNode* CSceneNode::FindChildNode(const std::string& name)
+{
+    for (const auto& child : Children)
+        if (child->GetName() == name)
+            return child.Get();
+    return nullptr;
+}
+
+CSceneNode* CSceneNode::FindOrCreateChildNode(const std::string& name)
+{
+    auto* result = FindChildNode(name);
+    if (!result)
+        return CreateChildNode(name);
+    return result;
+}
+
 size_t CSceneNode::CountTreeNodes() const
 {
     return TreeNodes.size();

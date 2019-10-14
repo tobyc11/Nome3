@@ -3,6 +3,9 @@
 //
 #pragma once
 #include <memory>
+#include <string>
+#include <vector>
+#include <typeinfo>
 
 namespace Nome::Scene::PartialEdgeDS
 {
@@ -13,103 +16,136 @@ namespace Nome::Scene::PartialEdgeDS
  * Boundary Representation Based on Partial Topological Entities", by Sang Hun
  * Lee and Kunwoo Lee; however, we will be enforcing a strict linked list
  * structure."
- * 
+ *
 */
 
 class Entity
 {
 public:
-    int id;
+    Entity(std::string name) : Name(std::move(name)) { }
+private:
+    std::string Name;
 };
+
+class Region;
+class Shell;
 
 class Model: public Entity
 {
 public:
-    std::shared_ptr<Model> next;
-    std::shared_ptr<Region> region;
+    Model *next;
+    Region *region;
 };
 
 class Region: public Entity
 {
 public:
-    std::shared_ptr<Model> model;
-    std::shared_ptr<Region> next;
-    std::shared_ptr<Shell> shell;
+    Model *model;
+    Region *next;
+    Shell *shell;
+
+    std::vector<PFace> getFaces() const;
 };
 
 class Shell: public Entity
 {
 public:
-    std::shared_ptr<Region> region;
-    std::shared_ptr<Shell> next;
-    std::shared_ptr<PFace> pface;
+    Region *region;
+    Shell *next;
+    PFace *pface;
+};
+
+enum PFaceChildType {
+    face,
+    edge,
+    vertex
 };
 
 class PFace: public Entity
 {
 public:
-    std::shared_ptr<Shell> shell;
-    std::shared_ptr<PFace> next;
-    std::shared_ptr<Entity> child; // Can be a face, edge, or vertex
-
+    Shell *shell;
+    PFace *next;
+    Entity *child; // Can be a face, edge, or vertex
+    PFaceChildType type;
     // Extra Information
     //TODO: Add Orientation Flag
-    std::shared_ptr<PFace> mate;
+    PFace *mate;
 };
 
 class Face: public Entity
 {
 public:
-    std::shared_ptr<PFace> pface;
-    std::shared_ptr<Loop> loop;
+    PFace *pface;
+    Loop *loop;
     //TODO: Add Surface Geometry
 };
+
+
 
 class Loop: public Entity
 {
 public:
-    std::shared_ptr<Face> face;
-    std::shared_ptr<Loop> next;
-    std::shared_ptr<PEdge> pedge;
+    Face *face;
+    Loop *next;
+    PEdge *pedge;
 };
 
 class PEdge: public Entity
 {
 public:
-    std::shared_ptr<Loop> loop;
-    std::shared_ptr<Entity> child; // Can be a edge, or vertex
+    Loop *loop;
+    Entity *child; // Can be a edge, or vertex
 
     // Extra Information
     //TODO: Add Orientation Flag
-    std::shared_ptr<PVertex> pvertex; // Start pvertex
-    std::shared_ptr<PEdge> looped_prev;
-    std::shared_ptr<PEdge> looped_next;
-    std::shared_ptr<PEdge> radial_prev;
-    std::shared_ptr<PEdge> radial_next;
+    PVertex *pvertex; // Start pvertex
+    PEdge *looped_prev;
+    PEdge *looped_next;
+    PEdge *radial_prev;
+    PEdge *radial_next;
 };
 
 class Edge: public Entity
 {
 public:
-    std::shared_ptr<Entity> parent; // Can be a partial face, or partial edge
-    std::shared_ptr<PVertex> pvertices[2];
+    Entity *parent; // Can be a partial face, or partial edge
+    PVertex *pvertices[2];
     //TODO: Add Curve Geometry
 };
 
 class PVertex: public Entity
 {
 public:
-    std::shared_ptr<Edge> edge;
-    std::shared_ptr<PVertex> next; //TODO: Evaluate if we actually need this
-    std::shared_ptr<Vertex> vertex;
+    Edge *edge;
+    PVertex *next; //TODO: Evaluate if we actually need this
+    Vertex *vertex;
 };
 
 class Vertex: public Entity
 {
 public:
-    std::shared_ptr<Entity> parent; // Can be a partial face, partial edge,
+    Entity *parent; // Can be a partial face, partial edge,
                                     // or partial vertex
     //TODO: Add Point Geometry
 };
 
+std::vector<Face *> Region::getFaces() const
+{
+    std::vector<Face *> pFaces;
+    Shell *tempShellP = shell;
+
+    while (tempShellP != null)
+    {
+        PFace *tempPFaceP = tempShellP->pface;
+        while (tempPFaceP != null)
+        {
+            if (tempPFaceP->type == face) { pFaces.push_back((Face *)tempPFaceP->child); }
+            tempPFaceP = tempPFaceP->next;
+        }
+        tempShellP = tempShellP->next;
+    }
+    return pFaces;
 }
+
+} /* namespace Nome::Scene::PartialEdgeDS */

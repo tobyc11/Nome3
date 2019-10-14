@@ -6,7 +6,6 @@
 #include "Entity.h"
 #include "Shell.h"
 #include "PFace.h"
-#include "PFaceChildType.h"
 
 namespace Nome::PartialEdgeDS {
 

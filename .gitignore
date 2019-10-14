@@ -2,6 +2,7 @@ CMakeLists.txt.user
 imgui.ini
 .vscode
 .vs
+.DS_Store
 
 #Ignoring Build Files
 build

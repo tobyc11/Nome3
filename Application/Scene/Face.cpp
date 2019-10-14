@@ -6,10 +6,10 @@ namespace Nome::Scene
 
 void CFace::MarkDirty()
 {
-    //Mark this entity dirty
+    // Mark this entity dirty
     Super::MarkDirty();
 
-    //And also mark the Face output dirty
+    // And also mark the Face output dirty
     Face.MarkDirty();
 }
 
@@ -20,10 +20,7 @@ void CFace::UpdateEntity()
     SetValid(true);
 }
 
-size_t CFace::CountVertices() const
-{
-    return Points.GetSize();
-}
+size_t CFace::CountVertices() const { return Points.GetSize(); }
 
 bool CFace::AddFaceIntoMesh(CMesh* mesh) const
 {
@@ -32,7 +29,7 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
     {
         auto* point = Points.GetValue(i, nullptr);
 
-        //point update failed etc
+        // point update failed etc
         if (!point)
         {
             return false;
@@ -41,23 +38,24 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
         std::string newName = point->Name;
         if (mesh->HasVertex(point->Name))
         {
-            //See if those two points are close enough
+            // See if those two points are close enough
             float dist = mesh->GetVertexPos(point->Name).DistanceToPoint(point->Position);
             const float epsilon = 0.001f;
             if (dist < epsilon)
             {
-                //Skip adding this vertex
+                // Skip adding this vertex
                 nameList.push_back(point->Name);
                 continue;
             }
 
-            //Not close enough, rename and add the vertex
+            // Not close enough, rename and add the vertex
             int suffix = 1;
             while (mesh->HasVertex(newName))
                 newName = point->Name + std::to_string(suffix++);
-            printf("[Mesh: %s] Vertex %s has been renamed to %s\n", mesh->GetName().c_str(), point->Name.c_str(), newName.c_str());
+            printf("[Mesh: %s] Vertex %s has been renamed to %s\n", mesh->GetName().c_str(),
+                   point->Name.c_str(), newName.c_str());
         }
-        
+
         mesh->AddVertex(newName, point->Position);
         nameList.push_back(newName);
     }

@@ -3,9 +3,6 @@
 namespace Nome
 {
 
-CCodeEditor::CCodeEditor()
-{
-
-}
+CCodeEditor::CCodeEditor() {}
 
 }

@@ -1,16 +1,15 @@
 #include "Mesh.h"
-//Render related
+// Render related
 #include "SceneGraph.h"
 #include <StringPrintf.h>
 
 namespace Nome::Scene
 {
 
-CMesh::CMesh()
-{
-}
+CMesh::CMesh() {}
 
-CMesh::CMesh(std::string name) : CEntity(std::move(name))
+CMesh::CMesh(std::string name)
+    : CEntity(std::move(name))
 {
 }
 
@@ -34,7 +33,7 @@ void CMesh::UpdateEntity()
     bool isValid = true;
     for (size_t i = 0; i < Faces.GetSize(); i++)
     {
-        //We assume the nullptr value is never returned, of course
+        // We assume the nullptr value is never returned, of course
         auto* face = Faces.GetValue(i, nullptr);
         bool successful = face->AddFaceIntoMesh(this);
         if (!successful)
@@ -49,7 +48,7 @@ void CMesh::UpdateEntity()
 
 CMeshImpl::VertexHandle CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
 {
-    //Silently fail if the name already exists
+    // Silently fail if the name already exists
     auto iter = NameToVert.find(name);
     if (iter != NameToVert.end())
         return iter->second;
@@ -86,7 +85,8 @@ void CMesh::AddFace(const std::string& name, const std::vector<CMeshImpl::Vertex
     NameToFace.emplace(name, faceHandle);
 }
 
-void CMesh::AddLineStrip(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& points)
+void CMesh::AddLineStrip(const std::string& name,
+                         const std::vector<CMeshImpl::VertexHandle>& points)
 {
     LineStrip = points;
 }
@@ -107,15 +107,9 @@ void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexH
     NameToFace = std::move(fnames);
 }
 
-bool CMesh::IsInstantiable()
-{
-    return true;
-}
+bool CMesh::IsInstantiable() { return true; }
 
-CEntity* CMesh::Instantiate(CSceneTreeNode* treeNode)
-{
-    return new CMeshInstance(this, treeNode);
-}
+CEntity* CMesh::Instantiate(CSceneTreeNode* treeNode) { return new CMeshInstance(this, treeNode); }
 
 std::string CMeshInstancePoint::GetPointPath() const
 {
@@ -123,20 +117,21 @@ std::string CMeshInstancePoint::GetPointPath() const
 }
 
 CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
-    : MeshGenerator(generator), SceneTreeNode(stn)
+    : MeshGenerator(generator)
+    , SceneTreeNode(stn)
 {
     SetName(tc::StringPrintf("_%s_%s", MeshGenerator->GetName().c_str(), GetName().c_str()));
     MeshGenerator->InstanceSet.insert(this);
 
-    //We listen to the transformation changes of the associated tree node
+    // We listen to the transformation changes of the associated tree node
     TransformChangeConnection = SceneTreeNode->OnTransformChange.Connect(
         std::bind(&CMeshInstance::MarkOnlyDownstreamDirty, this));
 }
 
 CMeshInstance::~CMeshInstance()
 {
-    //TODO: handle this circular reference stuff
-    //SceneTreeNode->OnTransformChange.Disconnect(TransformChangeConnection);
+    // TODO: handle this circular reference stuff
+    // SceneTreeNode->OnTransformChange.Disconnect(TransformChangeConnection);
     MeshGenerator->InstanceSet.erase(this);
 }
 
@@ -146,10 +141,7 @@ void CMeshInstance::MarkDirty()
     SelectorSignal.MarkDirty();
 }
 
-void CMeshInstance::MarkOnlyDownstreamDirty()
-{
-    SelectorSignal.MarkDirty();
-}
+void CMeshInstance::MarkOnlyDownstreamDirty() { SelectorSignal.MarkDirty(); }
 
 void CMeshInstance::UpdateEntity()
 {
@@ -169,7 +161,8 @@ void CMeshInstance::UpdateEntity()
         }
         else
         {
-            printf("Couldn't find face %s for deletion in mesh instance %s\n", face.c_str(), GetName().c_str());
+            printf("Couldn't find face %s for deletion in mesh instance %s\n", face.c_str(),
+                   GetName().c_str());
         }
     }
 
@@ -182,7 +175,7 @@ void CMeshInstance::UpdateEntity()
         // Update visual layer geometry
     }
 
-    //The upstream mesh contains a polyline of some sort
+    // The upstream mesh contains a polyline of some sort
     if (!MeshGenerator->LineStrip.empty())
     {
         std::vector<Vector3> positions;
@@ -193,8 +186,8 @@ void CMeshInstance::UpdateEntity()
         }
         // Update visual layer geometry
     }
-    
-    //Construct interactive points
+
+    // Construct interactive points
     CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();
     for (auto pair : PickingVerts)
     {
@@ -205,13 +198,13 @@ void CMeshInstance::UpdateEntity()
 
     for (const auto& pair : NameToVert)
     {
-        //Create a picking proxy point for each vertex
+        // Create a picking proxy point for each vertex
         CMeshInstancePoint* ip = new CMeshInstancePoint(this);
         ip->SetName(pair.first);
         const auto& p = Mesh.point(pair.second);
         Vector3 pos = { p[0], p[1], p[2] };
         ip->SetPosition(GetSceneTreeNode()->L2WTransform.GetValue(Matrix3x4::IDENTITY) * pos);
-        //Register this picking point with the scene picking mgr
+        // Register this picking point with the scene picking mgr
         uint32_t id = scene->GetPickingMgr()->RegisterObj(ip);
         PickingVerts.emplace(pair.first, std::make_pair(ip, id));
     }
@@ -220,12 +213,10 @@ void CMeshInstance::UpdateEntity()
     SetValid(MeshGenerator->IsEntityValid());
 }
 
-void CMeshInstance::Draw(IDebugDraw* draw)
-{
-    MeshGenerator->Draw(draw);
-}
+void CMeshInstance::Draw(IDebugDraw* draw) { MeshGenerator->Draw(draw); }
 
-CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name, const std::string& outputName)
+CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name,
+                                                     const std::string& outputName)
 {
     auto* selector = new CVertexSelector(name, outputName);
     SelectorSignal.Connect(selector->MeshInstance);
@@ -239,14 +230,14 @@ void CMeshInstance::CopyFromGenerator()
     NameToFace.clear();
 
     Mesh = MeshGenerator->Mesh;
-    //Since the handle only contains an index, we can just copy
+    // Since the handle only contains an index, we can just copy
     NameToVert = MeshGenerator->NameToVert;
     NameToFace = MeshGenerator->NameToFace;
 }
 
 void CVertexSelector::PointUpdate()
 {
-    //Assume MeshInstance is connected
+    // Assume MeshInstance is connected
     auto* mi = MeshInstance.GetValue(nullptr);
     if (!mi)
     {
@@ -256,7 +247,8 @@ void CVertexSelector::PointUpdate()
     auto iter = mi->NameToVert.find(TargetName);
     if (iter == mi->NameToVert.end())
     {
-        printf("Vertex %s does not exist in entity %s\n", TargetName.c_str(), mi->GetName().c_str());
+        printf("Vertex %s does not exist in entity %s\n", TargetName.c_str(),
+               mi->GetName().c_str());
         return;
     }
     auto vertHandle = iter->second;

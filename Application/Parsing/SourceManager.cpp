@@ -6,21 +6,19 @@
 namespace Nome
 {
 
-const std::string& CSourceFile::GetAsString() const
-{
-    return Content->GetAsString();
-}
+const std::string& CSourceFile::GetAsString() const { return Content->GetAsString(); }
 
-CSourceLocation::CSourceLocation()
-{
-}
+CSourceLocation::CSourceLocation() {}
 
-CSourceLocation::CSourceLocation(CStringBuffer::CLocation inLocation) : Location(inLocation)
+CSourceLocation::CSourceLocation(CStringBuffer::CLocation inLocation)
+    : Location(inLocation)
 {
 }
 
 CSourceLocation::CSourceLocation(CStringBuffer::CLocation inLocation, uint16_t line, uint16_t col)
-    : Location(inLocation), DebugLine(line), DebugCol(col)
+    : Location(inLocation)
+    , DebugLine(line)
+    , DebugCol(col)
 {
 }
 
@@ -29,7 +27,7 @@ bool CSourceLocation::operator==(const CSourceLocation& rhs) const
     if (!IsValid())
     {
         if (!rhs.IsValid())
-            return true; //both are invalid
+            return true; // both are invalid
         else
             return false;
     }
@@ -52,29 +50,22 @@ bool CSourceLocation::operator<=(const CSourceLocation& rhs) const
     return operator==(rhs) || operator<(rhs);
 }
 
-bool CSourceLocation::IsValid() const
-{
-    return Location.IsValid();
-}
+bool CSourceLocation::IsValid() const { return Location.IsValid(); }
 
 std::string CSourceLocation::ToString() const
 {
     return tc::StringPrintf("%d:%d", DebugLine, DebugCol);
 }
 
-CSourceRange::CSourceRange()
-{
-}
+CSourceRange::CSourceRange() {}
 
 CSourceRange::CSourceRange(CSourceLocation begin, CSourceLocation end)
-    : Begin(begin), End(end)
+    : Begin(begin)
+    , End(end)
 {
 }
 
-bool CSourceRange::IsValid() const
-{
-    return Begin.IsValid() && End.IsValid() && Begin <= End;
-}
+bool CSourceRange::IsValid() const { return Begin.IsValid() && End.IsValid() && Begin <= End; }
 
 bool CSourceRange::Intersects(const CSourceRange& rhs) const
 {
@@ -116,13 +107,11 @@ CSourceRange CSourceRange::Merge(const CSourceRange& rhs) const
     }
 }
 
-CSourceManager::CSourceManager()
-{
-}
+CSourceManager::CSourceManager() {}
 
 CSourceFile* CSourceManager::Open(const std::string& filePath)
 {
-    //Read the file into a string
+    // Read the file into a string
     std::ifstream t(filePath);
     std::string str;
 
@@ -130,8 +119,7 @@ CSourceFile* CSourceManager::Open(const std::string& filePath)
     str.reserve(t.tellg());
     t.seekg(0, std::ios::beg);
 
-    str.assign((std::istreambuf_iterator<char>(t)),
-        std::istreambuf_iterator<char>());
+    str.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 
     auto* sb = new CStringBuffer(str);
     auto* sourceFile = new CSourceFile(sb);

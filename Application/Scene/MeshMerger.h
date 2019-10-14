@@ -10,7 +10,10 @@ class CMeshMerger : public CMesh
 public:
     using Super = CMesh;
     CMeshMerger() = default;
-    CMeshMerger(const std::string& name) : CMesh(std::move(name)) {}
+    CMeshMerger(const std::string& name)
+        : CMesh(std::move(name))
+    {
+    }
 
     void UpdateEntity() override;
 

@@ -9,21 +9,21 @@ CNome3DView::CNome3DView()
     this->setRootEntity(Root);
     MakeGridEntity(Root);
 
-    //Make a point light
+    // Make a point light
     auto* lightEntity = new Qt3DCore::QEntity(Root);
     auto* light = new Qt3DRender::QPointLight(lightEntity);
     light->setColor("white");
     light->setIntensity(1);
     lightEntity->addComponent(light);
     auto* lightTransform = new Qt3DCore::QTransform(lightEntity);
-    lightTransform->setTranslation({100.0f, 100.0f, 100.0f});
+    lightTransform->setTranslation({ 100.0f, 100.0f, 100.0f });
     lightEntity->addComponent(lightTransform);
 
-    //Tweak render settings
+    // Tweak render settings
     this->defaultFrameGraph()->setClearColor(QColor(QRgb(0x4d4d4f)));
 
-    //Setup camera
-    //TODO: aspect ratio
+    // Setup camera
+    // TODO: aspect ratio
     auto* camera = this->camera();
     camera->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
     camera->setPosition(QVector3D(0, 0, 40.0f));
@@ -35,10 +35,7 @@ CNome3DView::CNome3DView()
     camController->setCamera(camera);
 }
 
-CNome3DView::~CNome3DView()
-{
-    UnloadScene();
-}
+CNome3DView::~CNome3DView() { UnloadScene(); }
 
 void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
 {
@@ -46,25 +43,24 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
     Scene = scene;
 
     Scene->Update();
-    Scene->ForEachSceneTreeNode([this](CSceneTreeNode* node)
-                                {
-                                    printf("%s\n", node->GetPath().c_str());
-                                    auto* entity = node->GetInstanceEntity();
-                                    if (!entity)
-                                    {
-                                        entity = node->GetOwner()->GetEntity();
-                                    }
+    Scene->ForEachSceneTreeNode([this](CSceneTreeNode* node) {
+        printf("%s\n", node->GetPath().c_str());
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+        {
+            entity = node->GetOwner()->GetEntity();
+        }
 
-                                    if (entity)
-                                    {
-                                        printf("    %s\n", entity->GetName().c_str());
+        if (entity)
+        {
+            printf("    %s\n", entity->GetName().c_str());
 
-                                        //Create an InteractiveMesh from the scene node
-                                        auto* mesh = new CInteractiveMesh(node);
-                                        mesh->setParent(this->Root);
-                                        InteractiveMeshes.insert(mesh);
-                                    }
-                                });
+            // Create an InteractiveMesh from the scene node
+            auto* mesh = new CInteractiveMesh(node);
+            mesh->setParent(this->Root);
+            InteractiveMeshes.insert(mesh);
+        }
+    });
     PostSceneUpdate();
 }
 
@@ -85,72 +81,71 @@ void CNome3DView::PostSceneUpdate()
     for (auto* m : InteractiveMeshes)
         sceneNodeAssoc.emplace(m->GetSceneTreeNode(), m);
 
-    Scene->ForEachSceneTreeNode([&](CSceneTreeNode* node)
-                                {
-                                    //Obtain either an instance entity or a shared entity from the scene node
-                                    auto* entity = node->GetInstanceEntity();
-                                    if (!entity)
-                                    {
-                                        entity = node->GetOwner()->GetEntity();
-                                    }
+    Scene->ForEachSceneTreeNode([&](CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+        {
+            entity = node->GetOwner()->GetEntity();
+        }
 
-                                    if (entity)
-                                    {
-                                        CInteractiveMesh* mesh = nullptr;
-                                        //Check for existing InteractiveMesh
-                                        auto iter = sceneNodeAssoc.find(node);
-                                        if (iter != sceneNodeAssoc.end())
-                                        {
-                                            //Found existing InteractiveMesh, mark as alive
-                                            mesh = iter->second;
-                                            aliveSet.insert(mesh);
-                                            mesh->UpdateTransform();
-                                            if (node->WasEntityUpdated())
-                                            {
-                                                printf("Geom regen for %s\n", node->GetPath().c_str());
-                                                mesh->UpdateGeometry();
-                                                node->SetEntityUpdated(false);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            mesh = new CInteractiveMesh(node);
-                                            mesh->setParent(this->Root);
-                                            aliveSet.insert(mesh);
-                                            InteractiveMeshes.insert(mesh);
-                                        }
+        if (entity)
+        {
+            CInteractiveMesh* mesh = nullptr;
+            // Check for existing InteractiveMesh
+            auto iter = sceneNodeAssoc.find(node);
+            if (iter != sceneNodeAssoc.end())
+            {
+                // Found existing InteractiveMesh, mark as alive
+                mesh = iter->second;
+                aliveSet.insert(mesh);
+                mesh->UpdateTransform();
+                if (node->WasEntityUpdated())
+                {
+                    printf("Geom regen for %s\n", node->GetPath().c_str());
+                    mesh->UpdateGeometry();
+                    node->SetEntityUpdated(false);
+                }
+            }
+            else
+            {
+                mesh = new CInteractiveMesh(node);
+                mesh->setParent(this->Root);
+                aliveSet.insert(mesh);
+                InteractiveMeshes.insert(mesh);
+            }
 
-                                        //Create a DebugDraw for the CEntity if not already
-                                        auto eIter = EntityDrawData.find(entity);
-                                        if (eIter == EntityDrawData.end())
-                                        {
-                                            auto* debugDraw = new CDebugDraw(Root);
-                                            aliveEntityDrawData[entity] = debugDraw;
-                                            //TODO: somehow uncommenting this line leads to a crash in Qt3D
-                                            //mesh->SetDebugDraw(debugDraw);
-                                        }
-                                        else
-                                        {
-                                            aliveEntityDrawData[entity] = eIter->second;
-                                            mesh->SetDebugDraw(eIter->second);
-                                        }
-                                    }
-                                });
+            // Create a DebugDraw for the CEntity if not already
+            auto eIter = EntityDrawData.find(entity);
+            if (eIter == EntityDrawData.end())
+            {
+                auto* debugDraw = new CDebugDraw(Root);
+                aliveEntityDrawData[entity] = debugDraw;
+                // TODO: somehow uncommenting this line leads to a crash in Qt3D
+                // mesh->SetDebugDraw(debugDraw);
+            }
+            else
+            {
+                aliveEntityDrawData[entity] = eIter->second;
+                mesh->SetDebugDraw(eIter->second);
+            }
+        }
+    });
 
-    //Now kill all the dead objects, i.e., not longer in the scene graph
+    // Now kill all the dead objects, i.e., not longer in the scene graph
     for (auto* m : InteractiveMeshes)
     {
         auto iter = aliveSet.find(m);
         if (iter == aliveSet.end())
         {
-            //Not in aliveSet
+            // Not in aliveSet
             delete m;
         }
     }
     InteractiveMeshes = std::move(aliveSet);
 
-    //Kill all entity debug draws that are not alive
-    for (auto & iter : EntityDrawData)
+    // Kill all entity debug draws that are not alive
+    for (auto& iter : EntityDrawData)
     {
         auto iter2 = aliveEntityDrawData.find(iter.first);
         if (iter2 == aliveEntityDrawData.end())
@@ -217,7 +212,7 @@ Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
     gridMesh->setGeometry(geometry);
     gridMesh->setPrimitiveType(Qt3DRender::QGeometryRenderer::Lines);
     auto* material = new Qt3DExtras::QPhongMaterial(gridEntity);
-    material->setAmbient({255, 255, 255});
+    material->setAmbient({ 255, 255, 255 });
 
     gridEntity->addComponent(gridMesh);
     gridEntity->addComponent(material);

@@ -5,7 +5,7 @@ namespace Flow
 
 void TOutput<void>::MarkDirty()
 {
-    //Don't mark dirty if already dirty. Safe to do?
+    // Don't mark dirty if already dirty. Safe to do?
     if (IsDirty())
         return;
 
@@ -16,9 +16,6 @@ void TOutput<void>::MarkDirty()
     }
 }
 
-void TOutput<void>::Connect(TInput<void>& input)
-{
-    input.Connect(*this);
-}
+void TOutput<void>::Connect(TInput<void>& input) { input.Connect(*this); }
 
 }

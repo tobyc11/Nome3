@@ -9,7 +9,7 @@ void CFunnel::UpdateEntity()
     if (!IsDirty())
         return;
 
-    //Clear mesh
+    // Clear mesh
     Super::UpdateEntity();
 
     int n = static_cast<int>(VerticesPerRing.GetValue(16.0f));
@@ -27,27 +27,28 @@ void CFunnel::UpdateEntity()
         float theta = (float)i / n * 2.f * (float)M_PI;
         AddVertex("v1_" + std::to_string(i), { ri * cosf(theta), ri * sinf(theta), height });
     }
-    
-    //Create faces
+
+    // Create faces
     for (int i = 0; i < n; i++)
     {
-        //CCW winding
-        //v1_next v1_i
-        //v2_next v2_i
+        // CCW winding
+        // v1_next v1_i
+        // v2_next v2_i
         int next = (i + 1) % n;
-        std::vector<std::string> upperFace = { "v1_" + std::to_string(next), "v1_" + std::to_string(i),
-            "v2_" + std::to_string(i), "v2_" + std::to_string(next) };
+        std::vector<std::string> upperFace = { "v1_" + std::to_string(next),
+                                               "v1_" + std::to_string(i), "v2_" + std::to_string(i),
+                                               "v2_" + std::to_string(next) };
         AddFace("f1_" + std::to_string(i), upperFace);
     }
-    //Two caps
-    //std::vector<std::string> upperCap, lowerCap;
-    //for (int i = 0; i < n; i++)
+    // Two caps
+    // std::vector<std::string> upperCap, lowerCap;
+    // for (int i = 0; i < n; i++)
     //{
     //    upperCap.push_back("v1_" + std::to_string(i));
     //    lowerCap.push_back("v2_" + std::to_string(n - 1 - i));
     //}
-    //AddFace("top", upperCap);
-    //AddFace("bottom", lowerCap);
+    // AddFace("top", upperCap);
+    // AddFace("bottom", lowerCap);
 }
 
 }

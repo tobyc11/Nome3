@@ -1,22 +1,23 @@
 #include "InteractiveMesh.h"
-#include "MeshToQGeometry.h"
 #include "ColorMaterials.h"
 #include "MaterialParser.h"
+#include "MeshToQGeometry.h"
 #include "ResourceMgr.h"
 
-#include <Scene/Mesh.h>
 #include <Matrix3x4.h>
+#include <Scene/Mesh.h>
 
+#include <Qt3DExtras/QPhongMaterial>
+#include <Qt3DExtras/QSphereMesh>
 #include <Qt3DRender/QGeometryRenderer>
 #include <Qt3DRender/QObjectPicker>
 #include <Qt3DRender/QPickEvent>
-#include <Qt3DExtras/QPhongMaterial>
-#include <Qt3DExtras/QSphereMesh>
 
 namespace Nome
 {
 
-CInteractiveMesh::CInteractiveMesh(Scene::CSceneTreeNode* node) : SceneTreeNode(node)
+CInteractiveMesh::CInteractiveMesh(Scene::CSceneTreeNode* node)
+    : SceneTreeNode(node)
 {
     UpdateTransform();
     UpdateGeometry();
@@ -32,7 +33,7 @@ void CInteractiveMesh::UpdateTransform()
         this->addComponent(Transform);
     }
     const auto& tf = SceneTreeNode->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-    QMatrix4x4 qtf{tf.ToMatrix4().Data()};
+    QMatrix4x4 qtf { tf.ToMatrix4().Data() };
     Transform->setMatrix(qtf);
 }
 
@@ -46,7 +47,7 @@ void CInteractiveMesh::UpdateGeometry()
 
     if (entity)
     {
-        //TODO: drop the old QGeometry otherwise memory leak?
+        // TODO: drop the old QGeometry otherwise memory leak?
         auto* meshInstance = dynamic_cast<Scene::CMeshInstance*>(entity);
         if (meshInstance)
         {
@@ -61,7 +62,7 @@ void CInteractiveMesh::UpdateGeometry()
         }
         else
         {
-            //The entity is not a mesh instance, we don't know how to handle it
+            // The entity is not a mesh instance, we don't know how to handle it
             auto* vPlaceholder = new Qt3DExtras::QSphereMesh(this);
             vPlaceholder->setRadius(1.0f);
             vPlaceholder->setRings(16);
@@ -75,8 +76,8 @@ void CInteractiveMesh::UpdateMaterial()
 {
     if (!Material)
     {
-        //auto* mat = new Qt3DExtras::QPhongMaterial(this);
-        //mat->setAmbient({255, 127, 127});
+        // auto* mat = new Qt3DExtras::QPhongMaterial(this);
+        // mat->setAmbient({255, 127, 127});
         auto xmlPath = CResourceMgr::Get().Find("WireframeLit.xml");
         auto* mat = new CXMLMaterial(QString::fromStdString(xmlPath));
         mat->FindParameterByName("kd")->setValue(QVector3D(1.0f, 0.5f, 0.1f));
@@ -89,8 +90,7 @@ void CInteractiveMesh::InitInteractions()
 {
     auto* picker = new Qt3DRender::QObjectPicker(this);
     picker->setHoverEnabled(true);
-    connect(picker, &Qt3DRender::QObjectPicker::pressed, [](Qt3DRender::QPickEvent *pick)
-    {
+    connect(picker, &Qt3DRender::QObjectPicker::pressed, [](Qt3DRender::QPickEvent* pick) {
         printf("%.3f %.3f\n", pick->position().x(), pick->position().y());
     });
     this->addComponent(picker);
@@ -98,17 +98,17 @@ void CInteractiveMesh::InitInteractions()
 
 void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
 {
-    //Check for existing lineEntity and delete
+    // Check for existing lineEntity and delete
     auto* oldEntity = this->findChild<Qt3DCore::QEntity*>(QStringLiteral("lineEntity"));
     if (oldEntity)
     {
         auto* oldRenderer = oldEntity->findChild<Qt3DRender::QGeometryRenderer*>();
         if (oldRenderer && oldRenderer->geometry() == debugDraw->GetLineGeometry())
-            return; //No work to be done if geometry stays the same
+            return; // No work to be done if geometry stays the same
     }
     delete oldEntity;
 
-    //printf("this=%p debugDraw=%p\n", this, debugDraw);
+    // printf("this=%p debugDraw=%p\n", this, debugDraw);
 
     auto* lineEntity = new Qt3DCore::QEntity(this);
     lineEntity->setObjectName(QStringLiteral("lineEntity"));

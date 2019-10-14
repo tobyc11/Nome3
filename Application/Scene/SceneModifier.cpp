@@ -7,18 +7,18 @@
 namespace Nome::Scene
 {
 
-void CSceneModifier::AddPoint(const std::string& name, const std::string& x, const std::string& y, const std::string& z)
+void CSceneModifier::AddPoint(const std::string& name, const std::string& x, const std::string& y,
+                              const std::string& z)
 {
     auto* point = new CPoint(name);
 
-    //TODO: AST nodes produced this way do not have associated source locations
-    auto parseAndConn = [this](const std::string& expr, Flow::TInput<float>& input)
-    {
-        CNomeDriver xD{ expr };
+    // TODO: AST nodes produced this way do not have associated source locations
+    auto parseAndConn = [this](const std::string& expr, Flow::TInput<float>& input) {
+        CNomeDriver xD { expr };
         xD.ParseToAST();
         CASTContext* xDAST = xD.GetASTContext();
         AExpr* xExpr = xDAST->GetExpr();
-        CExprToNodeGraph xConverter{ xExpr, Scene->GetBankAndSet() };
+        CExprToNodeGraph xConverter { xExpr, Scene->GetBankAndSet() };
         xConverter.Connect(input);
     };
 

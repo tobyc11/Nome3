@@ -10,15 +10,12 @@ namespace Flow::Viz
 CNode::CNode()
 {
     setFlag(ItemIsMovable);
-    //setFlag(ItemSendsGeometryChanges);
+    // setFlag(ItemSendsGeometryChanges);
     setCacheMode(ItemCoordinateCache);
     setZValue(-1);
 }
 
-QRectF CNode::boundingRect() const
-{
-    return QRectF(0, 0, Width, Height);
-}
+QRectF CNode::boundingRect() const { return QRectF(0, 0, Width, Height); }
 
 void CNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
@@ -31,7 +28,7 @@ void CNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWi
     painter->setBrush(bgGradient);
     painter->drawRect(0, 0, Width, Height);
 
-    //Draw title
+    // Draw title
     int fontSize = 12;
     painter->setPen(Qt::white);
     painter->setFont(QFont("Sans", fontSize));
@@ -43,7 +40,7 @@ CConnector* CNode::AddInputConnector(const std::string& name, QColor color)
     auto* conn = new CConnector(this, QString::fromStdString(name), color, CConnector::CONN_LEFT);
     InputConnectors.insert({ name, conn });
 
-    //Respace the connectors
+    // Respace the connectors
     const int spacing = 10;
     const int connectorHeight = 20;
     int nextY = 50;
@@ -61,7 +58,7 @@ CConnector* CNode::AddOutputConnector(const std::string& name, QColor color)
     auto* conn = new CConnector(this, QString::fromStdString(name), color, CConnector::CONN_RIGHT);
     OutputConnectors.insert({ name, conn });
 
-    //Respace the connectors
+    // Respace the connectors
     const int spacing = 10;
     const int connectorHeight = 20;
     int nextY = 50;

@@ -7,7 +7,7 @@ namespace Nome
 
 CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh)
 {
-    //Per face normal, thus no shared vertices between faces
+    // Per face normal, thus no shared vertices between faces
     struct CVertexData
     {
         std::array<float, 3> Pos;
@@ -22,8 +22,10 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh)
     const uint32_t stride = sizeof(CVertexData);
     static_assert(stride == 24, "Vertex data size isn't as expected");
     QByteArray bufferArray;
-    CAttribute attrPos{bufferArray, offsetof(CVertexData, Pos), stride, Qt3DRender::QAttribute::Float, 3};
-    CAttribute attrNor{bufferArray, offsetof(CVertexData, Normal), stride, Qt3DRender::QAttribute::Float, 3};
+    CAttribute attrPos { bufferArray, offsetof(CVertexData, Pos), stride,
+                         Qt3DRender::QAttribute::Float, 3 };
+    CAttribute attrNor { bufferArray, offsetof(CVertexData, Normal), stride,
+                         Qt3DRender::QAttribute::Float, 3 };
     CGeometryBuilder builder;
     builder.AddAttribute(&attrPos);
     builder.AddAttribute(&attrNor);

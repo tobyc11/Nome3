@@ -17,7 +17,8 @@ void CCircle::UpdateEntity()
     for (int i = 0; i < n; i++)
     {
         float theta = (float)i / n * 2.f * (float)M_PI;
-        handles.push_back(AddVertex("v" + std::to_string(i), { radius * cosf(theta), radius *sinf(theta), 0.0f }));
+        handles.push_back(AddVertex("v" + std::to_string(i),
+                                    { radius * cosf(theta), radius * sinf(theta), 0.0f }));
     }
     handles.push_back(handles[0]);
     AddLineStrip("circle", handles);

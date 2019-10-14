@@ -1,26 +1,27 @@
 #pragma once
 
+#include <Qt3DRender/QEffect>
 #include <Qt3DRender/QMaterial>
 #include <Qt3DRender/QTechnique>
-#include <Qt3DRender/QEffect>
 
-namespace Nome {
+namespace Nome
+{
 
 class CColorFlatMaterial : public Qt3DRender::QMaterial
 {
     Q_OBJECT
 
 public:
-    explicit CColorFlatMaterial(Qt3DCore::QNode *parent = nullptr);
+    explicit CColorFlatMaterial(Qt3DCore::QNode* parent = nullptr);
     ~CColorFlatMaterial() override = default;
 
     [[nodiscard]] QVariant BaseColor() const;
 
 public Q_SLOTS:
-    void SetBaseColor(const QVariant &baseColor);
+    void SetBaseColor(const QVariant& baseColor);
 
 Q_SIGNALS:
-    void BaseColorChanged(const QVariant &baseColor);
+    void BaseColorChanged(const QVariant& baseColor);
 
 private:
     Qt3DRender::QParameter* BaseColorParameter;
@@ -34,7 +35,7 @@ private:
 class CWireframeEffect : public Qt3DRender::QEffect
 {
 public:
-    explicit CWireframeEffect(Qt3DCore::QNode *parent = nullptr);
+    explicit CWireframeEffect(Qt3DCore::QNode* parent = nullptr);
 };
 
 class CWireframeMaterial : public Qt3DRender::QMaterial
@@ -42,7 +43,7 @@ class CWireframeMaterial : public Qt3DRender::QMaterial
     Q_OBJECT
 
 public:
-    explicit CWireframeMaterial(Qt3DCore::QNode *parent = nullptr);
+    explicit CWireframeMaterial(Qt3DCore::QNode* parent = nullptr);
 };
 
 }

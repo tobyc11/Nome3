@@ -1,23 +1,23 @@
 #pragma once
 #include <LightRefBase.h>
 #include <VectorPool.h>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 namespace Nome
 {
 
-//A data structure that holds a list of strings to allow fast update
-//Note: this is not yet a proper implementation of the rope ADT. Will change in the future.
+// A data structure that holds a list of strings to allow fast update
+// Note: this is not yet a proper implementation of the rope ADT. Will change in the future.
 class CRope : public tc::TLightRefBase<CRope>
 {
     class CRealLocation
     {
     public:
-        //Select which string
+        // Select which string
         size_t Index;
-        //An offset into the string
+        // An offset into the string
         size_t Offset;
 
         int32_t RefCount = 0;
@@ -31,7 +31,8 @@ public:
     public:
         CLocation() {}
 
-        CLocation(RealLocRef ref) : Reference(ref)
+        CLocation(RealLocRef ref)
+            : Reference(ref)
         {
             if (Reference.IsValid())
                 Reference->RefCount++;
@@ -43,10 +44,7 @@ public:
                 Reference->RefCount--;
         }
 
-        bool IsValid() const
-        {
-            return Reference.IsValid();
-        }
+        bool IsValid() const { return Reference.IsValid(); }
 
     private:
         friend class CRope;

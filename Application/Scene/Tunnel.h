@@ -14,7 +14,10 @@ class CTunnel : public CMesh
 public:
     using Super = CMesh;
     CTunnel() = default;
-    CTunnel(const std::string& name) : CMesh(std::move(name)) {}
+    CTunnel(const std::string& name)
+        : CMesh(std::move(name))
+    {
+    }
 
     void UpdateEntity() override;
 };

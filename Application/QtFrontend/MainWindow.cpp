@@ -128,21 +128,20 @@ void CMainWindow::on_actionMerge_triggered()
     // One shot merging, and add a new entity and its corresponding node
     Scene->Update();
     tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge");
-    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node)
-                                {
-                                    if (node->GetOwner()->GetName() == "globalMergeNode")
-                                        return;
-                                    auto* entity = node->GetInstanceEntity();
-                                    if (!entity)
-                                    {
-                                        entity = node->GetOwner()->GetEntity();
-                                    }
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        if (node->GetOwner()->GetName() == "globalMergeNode")
+            return;
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+        {
+            entity = node->GetOwner()->GetEntity();
+        }
 
-                                    if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
-                                    {
-                                        merger->MergeIn(*mesh);
-                                    }
-                                });
+        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+        {
+            merger->MergeIn(*mesh);
+        }
+    });
 
     Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger));
     auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode");

@@ -1,9 +1,9 @@
 #pragma once
 #include <LightRefBase.h>
 #include <VectorPool.h>
-#include <string>
-#include <set>
 #include <map>
+#include <set>
+#include <string>
 
 namespace Nome
 {

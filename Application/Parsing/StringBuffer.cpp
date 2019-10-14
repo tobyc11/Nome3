@@ -3,11 +3,10 @@
 namespace Nome
 {
 
-CStringBuffer::CStringBuffer()
-{
-}
+CStringBuffer::CStringBuffer() {}
 
-CStringBuffer::CStringBuffer(const std::string& content) : Buffer(content)
+CStringBuffer::CStringBuffer(const std::string& content)
+    : Buffer(content)
 {
 }
 
@@ -26,10 +25,7 @@ CStringBuffer::CLocation CStringBuffer::GetLocation(size_t offset)
     return loc;
 }
 
-const std::string& CStringBuffer::GetAsString() const
-{
-    return Buffer;
-}
+const std::string& CStringBuffer::GetAsString() const { return Buffer; }
 
 void CStringBuffer::ReplaceRange(size_t begin, size_t end, const std::string& content)
 {
@@ -37,7 +33,7 @@ void CStringBuffer::ReplaceRange(size_t begin, size_t end, const std::string& co
     size_t lenBefore = end - begin;
     size_t lenAfter = content.size();
     ptrdiff_t deltaLen = (ptrdiff_t)lenAfter - lenBefore;
-    //Now move all locations after end (inclusive) by deltaLen
+    // Now move all locations after end (inclusive) by deltaLen
     if (deltaLen != 0)
     {
         for (auto& loc : LocationTable)
@@ -48,7 +44,7 @@ void CStringBuffer::ReplaceRange(size_t begin, size_t end, const std::string& co
     }
     RebuildLocationMap();
 
-    //Now replace the actual content
+    // Now replace the actual content
     Buffer.replace(begin, lenBefore, content);
 }
 

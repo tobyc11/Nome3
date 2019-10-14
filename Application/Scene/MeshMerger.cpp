@@ -12,7 +12,7 @@ void CMeshMerger::UpdateEntity()
     if (!IsDirty())
         return;
 
-    //Update is manual, so this entity has a dummy update method
+    // Update is manual, so this entity has a dummy update method
 
     CEntity::UpdateEntity();
     SetValid(true);

@@ -1,6 +1,6 @@
 #pragma once
-#include <Scene/RendererInterface.h>
 #include <Qt3DRender/Qt3DRender>
+#include <Scene/RendererInterface.h>
 
 namespace Nome
 {
@@ -15,9 +15,10 @@ public:
 
     [[nodiscard]] Qt3DRender::QGeometry* GetLineGeometry() const { return LineGeometry.get(); }
 
-    ///Draw fresh primitives every frame, fairly costly
+    /// Draw fresh primitives every frame, fairly costly
     void DrawPoint(tc::Vector3 pos, tc::Color color) override;
-    void LineSegment(tc::Vector3 from, tc::Color fromColor, tc::Vector3 to, tc::Color toColor) override;
+    void LineSegment(tc::Vector3 from, tc::Color fromColor, tc::Vector3 to,
+                     tc::Color toColor) override;
 
 private:
     QByteArray PointData;

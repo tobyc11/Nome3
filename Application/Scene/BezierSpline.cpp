@@ -3,10 +3,7 @@
 namespace Nome::Scene
 {
 
-Matrix3 CBezierCurveMath::FrenetFrameAt(float t)
-{
-    return Matrix3();
-}
+Matrix3 CBezierCurveMath::FrenetFrameAt(float t) { return Matrix3(); }
 
 std::vector<float> CBezierCurveMath::GetDefaultKnots()
 {

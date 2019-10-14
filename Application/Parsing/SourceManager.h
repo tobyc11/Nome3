@@ -15,7 +15,10 @@ class CSourceFile
     friend class CSourceManager;
 
 public:
-    CSourceFile(CStringBuffer* content) : Content(content) {}
+    CSourceFile(CStringBuffer* content)
+        : Content(content)
+    {
+    }
 
     const std::string& GetAsString() const;
     const std::string& GetPath() const { return Path; }
@@ -40,12 +43,13 @@ public:
 
     bool IsValid() const;
 
-    //For displaying error messages to the user, they may not be accurate after saving or modifying the ast
+    // For displaying error messages to the user, they may not be accurate after saving or modifying
+    // the ast
     std::string ToString() const;
     uint16_t DebugLine = 0, DebugCol = 0;
 
 private:
-    //This location is always accurate with respect to any update
+    // This location is always accurate with respect to any update
     CStringBuffer::CLocation Location;
 };
 

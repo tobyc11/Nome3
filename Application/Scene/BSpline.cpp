@@ -5,21 +5,18 @@ namespace Nome::Scene
 
 Matrix3 CBSplineMath::FrenetFrameAt(float t)
 {
-    //TODO: starter code
+    // TODO: starter code
     return Matrix3::IDENTITY;
 }
 
 std::vector<float> CBSplineMath::GetDefaultKnots()
 {
-    //TODO: starter code
+    // TODO: starter code
     std::vector<float> result = { 0.0f, 0.5f, 1.0f };
     return result;
 }
 
-void CBSpline::SetClosed(bool closed)
-{
-    bClosed = closed;
-}
+void CBSpline::SetClosed(bool closed) { bClosed = closed; }
 
 void CBSpline::UpdateEntity()
 {
@@ -28,12 +25,12 @@ void CBSpline::UpdateEntity()
 
     Super::UpdateEntity();
 
-    int n = (int) Segments.GetValue(8.0f);
+    int n = (int)Segments.GetValue(8.0f);
 
-    //TODO: starter code
+    // TODO: starter code
     for (int i = 0; i <= n; i++)
     {
-        //Sample some dummy values
+        // Sample some dummy values
         SamplePositions.emplace_back(i * 1.0f, 1.0f, 0.0f);
     }
 

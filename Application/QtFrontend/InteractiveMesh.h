@@ -1,7 +1,7 @@
 #pragma once
 #include "DebugDraw.h"
-#include <Scene/SceneGraph.h>
 #include <Scene/RendererInterface.h>
+#include <Scene/SceneGraph.h>
 
 #include <Qt3DCore/QEntity>
 #include <Qt3DCore/QTransform>
@@ -15,10 +15,7 @@ class CInteractiveMesh : public Qt3DCore::QEntity
 public:
     explicit CInteractiveMesh(Scene::CSceneTreeNode* node);
 
-    [[nodiscard]] Scene::CSceneTreeNode* GetSceneTreeNode() const
-    {
-        return SceneTreeNode;
-    }
+    [[nodiscard]] Scene::CSceneTreeNode* GetSceneTreeNode() const { return SceneTreeNode; }
 
     void UpdateTransform();
     void UpdateGeometry();

@@ -3,8 +3,6 @@
 namespace Flow::Viz
 {
 
-CEdge::CEdge(CConnector* from, CConnector* to)
-{
-}
+CEdge::CEdge(CConnector* from, CConnector* to) {}
 
 }

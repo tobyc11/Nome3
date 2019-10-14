@@ -13,7 +13,7 @@ public:
     CFlowViz(QWidget* parent = nullptr);
 
 protected:
-    //void drawBackground(QPainter* painter, const QRectF& rect) override;
+    // void drawBackground(QPainter* painter, const QRectF& rect) override;
 
 private:
 };

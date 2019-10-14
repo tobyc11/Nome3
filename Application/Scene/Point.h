@@ -16,10 +16,7 @@ class CPoint : public CEntity
     DEFINE_INPUT(float, Y) { MarkDirty(); }
     DEFINE_INPUT(float, Z) { MarkDirty(); }
 
-    DEFINE_OUTPUT_WITH_UPDATE(CVertexInfo*, Point)
-    {
-        UpdateEntity();
-    }
+    DEFINE_OUTPUT_WITH_UPDATE(CVertexInfo*, Point) { UpdateEntity(); }
 
     void MarkDirty() override;
     void UpdateEntity() override;
@@ -27,7 +24,8 @@ class CPoint : public CEntity
 public:
     using Super = CEntity;
 
-    CPoint(std::string name) : CEntity(std::move(name))
+    CPoint(std::string name)
+        : CEntity(std::move(name))
     {
     }
 

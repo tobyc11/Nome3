@@ -21,6 +21,9 @@ TAutoPtr<CSceneTreeNode> CScene::GetRootTreeNode() const
 
 void CScene::AddEntity(TAutoPtr<CEntity> entity)
 {
+    auto iter = EntityLibrary.find(entity->GetName());
+    if (iter != EntityLibrary.end())
+        EntityLibrary.erase(iter);
     EntityLibrary.insert(std::make_pair(entity->GetName(), std::move(entity)));
 }
 
@@ -142,11 +145,15 @@ void DFSTreeNodeUpdate(CSceneTreeNode* treeNode)
     if (auto* instEnt = treeNode->GetInstanceEntity())
     {
         //Update the instance entity
+        if (instEnt->IsDirty())
+            treeNode->SetEntityUpdated(true);
         instEnt->UpdateEntity();
     }
     else if (auto* ent = treeNode->GetOwner()->GetEntity())
     {
         //Otherwise, update the scene node entity
+        if (ent->IsDirty())
+            treeNode->SetEntityUpdated(true);
         ent->UpdateEntity();
     }
 }

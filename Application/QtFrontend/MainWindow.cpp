@@ -130,6 +130,8 @@ void CMainWindow::on_actionMerge_triggered()
     tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge");
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node)
                                 {
+                                    if (node->GetOwner()->GetName() == "globalMergeNode")
+                                        return;
                                     auto* entity = node->GetInstanceEntity();
                                     if (!entity)
                                     {

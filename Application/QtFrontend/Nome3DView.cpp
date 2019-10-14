@@ -105,6 +105,12 @@ void CNome3DView::PostSceneUpdate()
                                             mesh = iter->second;
                                             aliveSet.insert(mesh);
                                             mesh->UpdateTransform();
+                                            if (node->WasEntityUpdated())
+                                            {
+                                                printf("Geom regen for %s\n", node->GetPath().c_str());
+                                                mesh->UpdateGeometry();
+                                                node->SetEntityUpdated(false);
+                                            }
                                         }
                                         else
                                         {

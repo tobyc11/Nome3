@@ -58,8 +58,6 @@ void CInteractiveMesh::UpdateGeometry()
             vGeomRenderer->setGeometry(vGeometry);
             vGeomRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
             this->addComponent(vGeomRenderer);
-
-            meshInstance->SetRenderer(this);
         }
         else
         {
@@ -125,16 +123,6 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
     lineRenderer->setGeometry(debugDraw->GetLineGeometry());
     lineRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Lines);
     lineEntity->addComponent(lineRenderer);
-}
-
-int CInteractiveMesh::GetRenderFlags()
-{
-    return HasFaceColor | DrawWireframe | DrawPoints;
-}
-
-void CInteractiveMesh::NotifyGeometryChange()
-{
-    UpdateGeometry();
 }
 
 }

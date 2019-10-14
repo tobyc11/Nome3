@@ -27,6 +27,9 @@ public:
     CSceneNode* GetOwner() const { return Owner; }
     bool IsValid() const { return Owner; }
     CEntity* GetInstanceEntity() const { return InstanceEntity; }
+    ///Returns whether the associated entity was changed or updated in the last frame
+    bool WasEntityUpdated() const { return bEntityUpdated; }
+    void SetEntityUpdated(bool value) { bEntityUpdated = value; }
 
     //Note: linear time is prob too slow
     CSceneTreeNode* FindChildOfOwner(CSceneNode* owner) const;
@@ -54,6 +57,7 @@ private:
 
     //This is non-null if the entity is instantiable
     TAutoPtr<CEntity> InstanceEntity;
+    bool bEntityUpdated = false;
 };
 
 class CSceneNode : public Flow::CFlowNode

@@ -218,8 +218,6 @@ void CMeshInstance::UpdateEntity()
 
     Super::UpdateEntity();
     SetValid(MeshGenerator->IsEntityValid());
-    if (ObservingRenderer)
-        ObservingRenderer->NotifyGeometryChange();
 }
 
 void CMeshInstance::Draw(IDebugDraw* draw)

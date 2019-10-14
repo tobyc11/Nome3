@@ -10,7 +10,7 @@
 namespace Nome
 {
 
-class CInteractiveMesh : public Qt3DCore::QEntity, public IMeshRenderer
+class CInteractiveMesh : public Qt3DCore::QEntity
 {
 public:
     explicit CInteractiveMesh(Scene::CSceneTreeNode* node);
@@ -25,9 +25,6 @@ public:
     void UpdateMaterial();
     void InitInteractions();
     void SetDebugDraw(const CDebugDraw* debugDraw);
-
-    int GetRenderFlags() override;
-    void NotifyGeometryChange() override;
 
 private:
     Scene::CSceneTreeNode* SceneTreeNode = nullptr;

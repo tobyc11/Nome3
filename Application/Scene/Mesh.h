@@ -55,6 +55,7 @@ public:
 
 private:
     friend class CMeshInstance;
+    friend class CMeshMerger;
     std::set<CMeshInstance*> InstanceSet;
 
     CMeshImpl Mesh;

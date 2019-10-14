@@ -7,6 +7,17 @@ namespace Nome::Scene
 
 inline static const float Epsilon = 0.01f;
 
+void CMeshMerger::UpdateEntity()
+{
+    if (!IsDirty())
+        return;
+
+    //Update is manual, so this entity has a dummy update method
+
+    CEntity::UpdateEntity();
+    SetValid(true);
+}
+
 void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
 {
     auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
@@ -43,14 +54,6 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
         NameToFace.insert({ fName, fnew });
         FaceCount++;
     }
-}
-
-TAutoPtr<CEntity> CMeshMerger::GetResultMesh()
-{
-    TAutoPtr<CMesh> mesh = new CMesh("globalMerge");
-    mesh->SetFromData(Mesh, NameToVert, NameToFace);
-    mesh->MarkDirty();
-    return tc::static_pointer_cast<CEntity>(mesh);
 }
 
 std::pair<CMeshImpl::VertexHandle, float> CMeshMerger::FindClosestVertex(const tc::Vector3& pos)

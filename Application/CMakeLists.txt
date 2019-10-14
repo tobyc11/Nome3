@@ -48,7 +48,9 @@ macro(config_playground2 target)
     target_include_directories(${target} PRIVATE ${OPENMESH_INCLUDE_DIRS})
     target_link_libraries(${target} PRIVATE ${OPENMESH_LIBRARIES})
 
-    find_package(pugixml REQUIRED)
+    #TODO: uncomment pugixml in CMakeLists.txt
+    #Needed to remove on Peter's implementation of Nome3, but KEEP on other implementations.
+    #find_package(pugixml REQUIRED)
     target_link_libraries(${target} PRIVATE pugixml)
 endmacro()
 

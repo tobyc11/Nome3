@@ -52,7 +52,7 @@ macro(config_playground2 target)
     target_link_libraries(${target} PRIVATE pugixml)
 endmacro()
 
-add_executable(Nome3 ${PG2_SOURCES} ${PG2_GENERATED_SOURCES})
+add_executable(Nome3 ${PG2_SOURCES} ${PG2_GENERATED_SOURCES} Scene/PartialEdgeDS.cpp Scene/PartialEdgeDS.h)
 config_playground2(Nome3)
 if(NOME_BUILD_TESTS)
     add_executable(Nome3_test ${PG2_SOURCES} ${PG2_GENERATED_SOURCES} ${PG2_TEST_SOURCES})

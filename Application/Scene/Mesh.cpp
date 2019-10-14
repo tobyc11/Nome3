@@ -99,6 +99,14 @@ void CMesh::ClearMesh()
     LineStrip.clear();
 }
 
+void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexHandle> vnames,
+                        std::map<std::string, CMeshImpl::FaceHandle> fnames)
+{
+    Mesh = std::move(mesh);
+    NameToVert = std::move(vnames);
+    NameToFace = std::move(fnames);
+}
+
 bool CMesh::IsInstantiable()
 {
     return true;

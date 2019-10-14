@@ -3,7 +3,7 @@
 #include "InteractivePoint.h"
 #include "RendererInterface.h"
 
-//We use OpenMesh for now. Can easily replace with in-house library when needed.
+// We use OpenMesh for now. Can easily replace with in-house library when needed.
 #define _USE_MATH_DEFINES
 #undef min
 #undef max
@@ -21,7 +21,7 @@ namespace Nome::Scene
 class CMeshInstance;
 class CVertexSelector;
 
-//Common base class for all mesh objects
+// Common base class for all mesh objects
 class CMesh : public CEntity
 {
     DEFINE_INPUT_ARRAY(CFace*, Faces) { MarkDirty(); }
@@ -47,6 +47,9 @@ public:
     void AddLineStrip(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& points);
     void ClearMesh();
 
+    void SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexHandle> vnames,
+                     std::map<std::string, CMeshImpl::FaceHandle> fnames);
+
     bool IsInstantiable() override;
     CEntity* Instantiate(CSceneTreeNode* treeNode) override;
 
@@ -63,7 +66,8 @@ private:
 class CMeshInstancePoint : public CInteractivePoint
 {
 public:
-    explicit CMeshInstancePoint(CMeshInstance* owner) : Owner(owner)
+    explicit CMeshInstancePoint(CMeshInstance* owner)
+        : Owner(owner)
     {
     }
 
@@ -73,12 +77,12 @@ private:
     CMeshInstance* Owner;
 };
 
-//This is the entity class for a mesh instance
-//Why is this needed?
+// This is the entity class for a mesh instance
+// Why is this needed?
 //  The same mesh might get instanciated multiple times and get separately edited by the user.
 class CMeshInstance : public CEntity
 {
-    //This connects to all the vertex selectors naming a vertex from this mesh instance
+    // This connects to all the vertex selectors naming a vertex from this mesh instance
     DEFINE_OUTPUT_WITH_UPDATE(CMeshInstance*, SelectorSignal)
     {
         UpdateEntity();
@@ -95,16 +99,16 @@ public:
 
     void SetRenderer(IMeshRenderer* renderer)
     {
-        //Prevent changing renderer for now
+        // Prevent changing renderer for now
         assert(!ObservingRenderer || ObservingRenderer == renderer);
         ObservingRenderer = renderer;
     }
 
-    //Called when the mesh entity is updated
+    // Called when the mesh entity is updated
     void MarkDirty() override;
-    //Nothing changed about this mesh except its transformations and such
+    // Nothing changed about this mesh except its transformations and such
     void MarkOnlyDownstreamDirty();
-    //Copy the actual mesh from the mesh entity and notify selectors
+    // Copy the actual mesh from the mesh entity and notify selectors
     void UpdateEntity() override;
 
     std::set<std::string>& GetFacesToDelete() { return FacesToDelete; }
@@ -112,23 +116,23 @@ public:
 
     void Draw(IDebugDraw* draw) override;
 
-    //Create a vertex selector with a vertex name, and a name for the resulting vertex
+    // Create a vertex selector with a vertex name, and a name for the resulting vertex
     CVertexSelector* CreateVertexSelector(const std::string& name, const std::string& outputName);
 
-    //Get the scene tree node associated with this mesh instance
+    // Get the scene tree node associated with this mesh instance
     CSceneTreeNode* GetSceneTreeNode() const { return SceneTreeNode; }
 
     void CopyFromGenerator();
 
-    //I am really not sure whether this is a good interface or not
+    // I am really not sure whether this is a good interface or not
     const CMeshImpl& GetMeshImpl() const { return Mesh; }
 
 private:
     TAutoPtr<CMesh> MeshGenerator;
-    ///A weak pointer to the owning scene tree node
+    /// A weak pointer to the owning scene tree node
     CSceneTreeNode* SceneTreeNode;
-    ///The renderer that listens to the changes in this mesh
-    IMeshRenderer* ObservingRenderer{};
+    /// The renderer that listens to the changes in this mesh
+    IMeshRenderer* ObservingRenderer {};
 
     unsigned int TransformChangeConnection;
 
@@ -136,7 +140,7 @@ private:
     std::map<std::string, CMeshImpl::VertexHandle> NameToVert;
     std::map<std::string, CMeshImpl::FaceHandle> NameToFace;
 
-    //Instance specific data
+    // Instance specific data
     std::set<std::string> FacesToDelete;
 
     std::map<std::string, std::pair<CMeshInstancePoint*, uint32_t>> PickingVerts;
@@ -144,15 +148,13 @@ private:
 
 class CVertexSelector : public Flow::CFlowNode
 {
-    DEFINE_INPUT(CMeshInstance*, MeshInstance)
-    {
-        Point.MarkDirty();
-    }
+    DEFINE_INPUT(CMeshInstance*, MeshInstance) { Point.MarkDirty(); }
 
     DEFINE_OUTPUT_WITH_UPDATE(CVertexInfo*, Point);
 
 public:
-    CVertexSelector(std::string targetName, const std::string& resultName) : TargetName(std::move(targetName))
+    CVertexSelector(std::string targetName, const std::string& resultName)
+        : TargetName(std::move(targetName))
     {
         VI.Name = resultName;
     }

@@ -12,7 +12,7 @@ namespace Nome::Scene::PartialEdgeDS
  * correspond to the paper "Partial Entity Structure: A Compact Non-Manifold
  * Boundary Representation Based on Partial Topological Entities", by Sang Hun
  * Lee and Kunwoo Lee; however, we will be enforcing a strict linked list
- * structure. The first two "
+ * structure."
  * 
 */
 
@@ -48,7 +48,7 @@ public:
 class PFace: public Entity
 {
 public:
-    std::shared_ptr<Region> region;
+    std::shared_ptr<Shell> shell;
     std::shared_ptr<PFace> next;
     std::shared_ptr<Entity> child; // Can be a face, edge, or vertex
 
@@ -61,8 +61,8 @@ class Face: public Entity
 {
 public:
     std::shared_ptr<PFace> pface;
-    std::shared_ptr<Face> next;
     std::shared_ptr<Loop> loop;
+    //TODO: Add Surface Geometry
 };
 
 class Loop: public Entity
@@ -77,7 +77,6 @@ class PEdge: public Entity
 {
 public:
     std::shared_ptr<Loop> loop;
-    std::shared_ptr<PEdge> next;
     std::shared_ptr<Entity> child; // Can be a edge, or vertex
 
     // Extra Information
@@ -93,15 +92,15 @@ class Edge: public Entity
 {
 public:
     std::shared_ptr<Entity> parent; // Can be a partial face, or partial edge
-    std::shared_ptr<Edge> next;
-    std::shared_ptr<PVertex> pvertex;
+    std::shared_ptr<PVertex> pvertices[2];
+    //TODO: Add Curve Geometry
 };
 
 class PVertex: public Entity
 {
 public:
     std::shared_ptr<Edge> edge;
-    std::shared_ptr<PVertex> next;
+    std::shared_ptr<PVertex> next; //TODO: Evaluate if we actually need this
     std::shared_ptr<Vertex> vertex;
 };
 
@@ -110,8 +109,7 @@ class Vertex: public Entity
 public:
     std::shared_ptr<Entity> parent; // Can be a partial face, partial edge,
                                     // or partial vertex
-    std::shared_ptr<Vertex> next;
-    //TODO: Add geometry for single point
+    //TODO: Add Point Geometry
 };
 
 }

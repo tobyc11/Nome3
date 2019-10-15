@@ -4,10 +4,11 @@
 
 #pragma once
 #include "Entity.h"
-#include "Model.h"
-#include "Shell.h"
 
 namespace Nome::PartialEdgeDS {
+
+class Model;
+class Shell;
 
 class Region: public Entity
 {

@@ -4,10 +4,11 @@
 
 #pragma once
 #include "Entity.h"
-#include "Shell.h"
-#include "PFace.h"
 
 namespace Nome::PartialEdgeDS {
+
+class Shell;
+class PFace;
 
 class PFace: public Entity
 {
@@ -15,7 +16,7 @@ public:
     Shell *shell;
     PFace *next;
     Entity *child; // Can be a face, edge, or vertex
-    PFaceChildType type;
+    EType type;
     // Extra Information
     //TODO: Add Orientation Flag
     PFace *mate;

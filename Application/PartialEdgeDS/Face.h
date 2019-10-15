@@ -4,9 +4,11 @@
 
 #pragma once
 #include "Entity.h"
-#include "PFace.h"
 
 namespace Nome::PartialEdgeDS {
+
+class PFace;
+class Loop;
 
 class Face: public Entity
 {

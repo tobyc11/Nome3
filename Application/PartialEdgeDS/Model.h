@@ -4,9 +4,10 @@
 
 #pragma once
 #include "Entity.h"
-#include "Region.h"
 
 namespace Nome::PartialEdgeDS {
+
+class Region;
 
 class Model: public Entity
 {

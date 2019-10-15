@@ -6,7 +6,7 @@
 #include <string>
 
 namespace Nome::PartialEdgeDS {
-    
+
 enum class EType {
     FACE,
     EDGE,
@@ -15,6 +15,7 @@ enum class EType {
     PEDGE,
     PVERTEX
 };
+
 
 class Entity
 {

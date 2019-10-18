@@ -4,9 +4,12 @@
 
 #pragma once
 #include "Entity.h"
+#include <vector>
 
 namespace Nome::PartialEdgeDS
 {
+
+class Edge;
 
 class Vertex: public Entity
 {
@@ -14,6 +17,8 @@ public:
     Entity *parent; // Can be a partial face, partial edge,
     // or partial vertex
     //TODO: Add Point Geometry
+    EType type;
+    std::vector<Edge *> getEdges() const;
 };
 
 } /* namespace Nome::Scene::PartialEdgeDS */

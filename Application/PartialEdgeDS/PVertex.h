@@ -19,7 +19,7 @@ public:
     PVertex *next; //TODO: Evaluate if we actually need this
     Vertex *vertex;
 
-    std::vector<Edge *> getEdges();
+    std::vector<Edge *> getAndVisitEdges(Edge *edge) const;
 };
 
 } /* namespace Nome::Scene::PartialEdgeDS */

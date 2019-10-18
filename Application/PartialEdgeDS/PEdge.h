@@ -16,14 +16,14 @@ class PEdge: public Entity
 public:
     Loop *loop;
     Entity *child; // Can be a edge, or vertex
-
+    EType type;
     // Extra Information
     //TODO: Add Orientation Flag
-    PVertex *pvertex; // Start pvertex
-    PEdge *looped_prev;
-    PEdge *looped_next;
-    PEdge *radial_prev;
-    PEdge *radial_next;
+    PVertex *pVertex; // Start pvertex
+    PEdge *loopedPrev;
+    PEdge *loopedNext;
+    PEdge *radialPrev;
+    PEdge *radialNext;
 };
 
 } /* namespace Nome::Scene::PartialEdgeDS */

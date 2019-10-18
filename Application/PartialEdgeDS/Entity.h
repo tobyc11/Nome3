@@ -21,6 +21,7 @@ class Entity
 {
 public:
     Entity(std::string name) : Name(std::move(name)) { }
+    bool isVisit = false;
 private:
     std::string Name;
 };

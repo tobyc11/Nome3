@@ -14,7 +14,9 @@ class Edge : public Entity
 {
 public:
     Entity* parent; // Can be a partial face, or partial edge
-    PVertex* pvertices[2];
+
+    EType type;
+    PVertex* pVertices[2];
     // TODO: Add Curve Geometry
 };
 

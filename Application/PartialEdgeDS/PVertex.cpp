@@ -36,7 +36,7 @@ std::vector<Edge *> PVertex::getAndVisitEdges(Edge *edge) const {
             nextEdge = (Edge *)tempPEdge->loopedNext->child;
         }
         if (nextEdge->isVisit == false) {
-            tempEdges = this->visitAndGetEdges(nextEdge);
+            tempEdges = this->getAndVisitEdges(nextEdge);
             edges.insert(edges.end(), tempEdges.begin(), tempEdges.end());
         }
     }

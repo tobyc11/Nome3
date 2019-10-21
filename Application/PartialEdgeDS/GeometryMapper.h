@@ -18,7 +18,7 @@ public:
 
     //OBJECT METHODSs
     //getPoint(id)
-    //getPoints(ids)
+    //getPoints(id)
     //getCurve(id)
     //getCurves(ids)
     //getSurface(id)
@@ -29,6 +29,8 @@ private:
     //Hash Table SURFACES:  id -> surface geometric entity
     //Hash Table CURVES:    id -> curve geometric entity
     //Hash Table POINT:     id -> point geometric entity
+
+    //TODO: once we implement GeometryMapper, we can get rid of flags, and just use HoFs
 };
 
 }

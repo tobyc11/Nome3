@@ -19,17 +19,17 @@ void CTunnel::UpdateEntity()
     float ri = radius * (1 + ratio);
     for (int i = 0; i < n; i++)
     {
-        float theta = (float)i / n * 2.f * (float)M_PI;
+        float theta = (float)i / n * 2.f * (float)tc::M_PI;
         AddVertex("v2_" + std::to_string(i), { radius * cosf(theta), radius * sinf(theta), 0.f });
     }
     for (int i = 0; i < n; i++)
     {
-        float theta = (float)i / n * 2.f * (float)M_PI;
+        float theta = (float)i / n * 2.f * (float)tc::M_PI;
         AddVertex("v1_" + std::to_string(i), { ri * cosf(theta), ri * sinf(theta), height });
     }
     for (int i = 0; i < n; i++)
     {
-        float theta = (float)i / n * 2.f * (float)M_PI;
+        float theta = (float)i / n * 2.f * (float)tc::M_PI;
         AddVertex("v3_" + std::to_string(i), { ri * cosf(theta), ri * sinf(theta), -height });
     }
 

@@ -17,6 +17,11 @@ public:
     Face *face;
     Loop *next;
     PEdge *pedge;
+
+    Loop();
+    ~Loop();
+
+    Loop* killLoop();
 };
 
 } /* namespace Nome::Scene::PartialEdgeDS */

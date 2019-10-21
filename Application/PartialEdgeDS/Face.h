@@ -16,6 +16,11 @@ public:
     PFace *pface;
     Loop *loop;
     //TODO: Add Surface Geometry
+
+    Face();
+    ~Face();
+
+    Face* killFace();
 };
 
 

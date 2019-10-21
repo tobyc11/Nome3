@@ -20,6 +20,11 @@ public:
     // Extra Information
     //TODO: Add Orientation Flag
     PFace *mate;
+
+    PFace();
+    ~PFace();
+
+    PFace* killPFace();
 };
 
 }

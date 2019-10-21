@@ -19,6 +19,11 @@ public:
     PVertex *next; //TODO: Evaluate if we actually need this
     Vertex *vertex;
 
+    PVertex();
+    ~PVertex();
+
+    PVertex* killPVertex();
+
     std::vector<Edge *> getAndVisitEdges(Edge *edge) const;
 };
 

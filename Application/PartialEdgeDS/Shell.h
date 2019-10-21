@@ -16,6 +16,11 @@ public:
     Region *region;
     Shell *next;
     PFace *pface;
+
+    Shell();
+    ~Shell();
+
+    Shell* killShell();
 };
 
 }

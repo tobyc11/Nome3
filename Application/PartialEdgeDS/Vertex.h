@@ -18,6 +18,12 @@ public:
     // or partial vertex
     //TODO: Add Point Geometry
     EType type;
+
+    Vertex();
+    ~Vertex();
+
+    Vertex* killVertex();
+
     std::vector<Edge *> getEdges() const;
 };
 

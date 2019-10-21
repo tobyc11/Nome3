@@ -18,6 +18,11 @@ public:
     EType type;
     PVertex* pVertices[2];
     // TODO: Add Curve Geometry
+
+    Edge();
+    ~Edge();
+
+    Edge* killEdge();
 };
 
 } /* namespace Nome::Scene::PartialEdgeDS */

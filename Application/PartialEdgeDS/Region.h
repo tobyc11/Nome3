@@ -19,8 +19,12 @@ public:
     Region *next;
     Shell *shell;
 
-    std::vector<Face *> getFaces() const;
+    Region();
+    ~Region();
 
+    Region* killRegion();
+
+    std::vector<Face *> getFaces() const;
 };
 
 }

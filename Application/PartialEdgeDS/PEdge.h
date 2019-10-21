@@ -24,6 +24,11 @@ public:
     PEdge *loopedNext;
     PEdge *radialPrev;
     PEdge *radialNext;
+
+    PEdge();
+    ~PEdge();
+
+    PEdge* killPEdge();
 };
 
 } /* namespace Nome::Scene::PartialEdgeDS */

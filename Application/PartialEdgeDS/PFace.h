@@ -16,7 +16,7 @@ public:
     Shell *shell;
     PFace *next;
     Entity *child; // Can be a face, edge, or vertex
-    EType type;
+    EType type; // TODO: Refactor this type to be child_type
     // Extra Information
     //TODO: Add Orientation Flag
     PFace *mate;

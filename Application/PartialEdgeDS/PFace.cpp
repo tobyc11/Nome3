@@ -4,9 +4,30 @@
 
 #include "PFace.h"
 #include "Shell.h"
-#include "PFace.h"
 
 namespace Nome::PartialEdgeDS
 {
+
+PFace::~PFace()
+{
+    this->killPFace();
+
+    if (this->next != NULL)
+    {
+        delete this->next;
+        this->next = NULL;
+    }
+}
+
+PFace* PFace::killPFace()
+{
+    if (this->child != NULL)
+    {
+        delete this->child;
+        this->child = NULL;
+    }
+
+    return this->next;
+}
 
 } /* namespace Nome::Scene::PartialEdgeDS */

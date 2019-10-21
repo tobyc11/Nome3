@@ -11,6 +11,28 @@
 namespace Nome::PartialEdgeDS
 {
 
+Region::~Region()
+{
+    this->killRegion();
+
+    if (this->next != NULL)
+    {
+        delete this->next;
+        this->next = NULL;
+    }
+}
+
+Region* Region::killRegion()
+{
+    if (this->shell != NULL)
+    {
+        delete this->shell;
+        this->shell = NULL;
+    }
+
+    return this->next;
+}
+
 std::vector<Face *> Region::getFaces() const
 {
     std::vector<Face *> faces;

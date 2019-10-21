@@ -14,6 +14,11 @@ class Model: public Entity
 public:
     Model *next;
     Region *region;
+
+    Model();
+    ~Model();
+
+    Model* killModel();
 };
 
 }

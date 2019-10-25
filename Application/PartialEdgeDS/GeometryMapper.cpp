@@ -7,16 +7,38 @@
 namespace Nome::PartialEdgeDS
 
 {
-    bool GeometryMapper::killModel(string model_uid) {
-        return true;
+
+GeometryMapper::GeometryMapper() {
+
+}
+
+bool GeometryMapper::copyModel(const std::string &model_uid){
+    return true;
+}
+
+bool GeometryMapper::addGeometry(const std::string &model_uid,
+                                 const EGType &type,
+                                 const std::string &geometry_uid,
+                                 const Geopmetry &geopmetry) {
+
+    if (map[model_uid].empty()) { map.insert(std::pair(model_uid,
+                                            std::map<EGType,std::map<std::string, Geopmetry>>()));
+    }
+    if (map[model_uid][type].empty()) { map[model_uid].insert(std::pair(type,
+                                                             std::map<std::string, Geopmetry>()));
+    }
+    if (map[model_uid][type].find(geometry_uid) != map[model_uid][type].end()) {
+        std::cout <<"GeometryMapper::addGeometry(const std::string &" << model_uid << \
+        ", const EGType &" << type << ", const std::string &" << geometry_uid << "does exits!!";
+        return false;
     }
 
-    bool GeometryMapper::addGeometry(string model_uid, EGType type, string geometry_uid); {
-        if (map[mod])
-        return true;
-    }
+    map[model_uid][type][geometry_uid] = geopmetry;
+    return true;
+}
 
-    bool GeometryMapper::copyModel(string model_uid){
-        return true;
-    }
+bool copyModel(const std::string &model_uid) {
+    return true;
+}
+
 }

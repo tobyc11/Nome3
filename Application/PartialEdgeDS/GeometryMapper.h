@@ -7,14 +7,14 @@
  * which references them. Will make duplicating geometry (and entire models)
  * easier to implement. */
 
+#pragma once
 #include <map>
 #include <string>
+#include "Geopmetry.h"
 
 namespace Nome::PartialEdgeDS
 
 {
-
-class Geopmetry;
 
 enum class EGType {
     POINT,
@@ -56,9 +56,14 @@ public:
     //
     //
     //
-    bool killModel(string model_uid);
-    bool addGeometry(string model_uid, EGType type, string geometry_uid);
-    bool copyModel(string model_uid);
+    bool killModel(const std::string &model_uid);
+
+    bool addGeometry(const std::string &model_uid,
+                     const EGType &type,
+                     const std::string &geometry_uid,
+                     const Geopmetry &geomegty);
+
+    bool copyModel(const std::string &model_uid);
 
 private:
     //OBJECT VARIABLES

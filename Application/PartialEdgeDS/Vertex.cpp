@@ -21,7 +21,7 @@ std::vector<Edge *> Vertex::getEdges() const {
         tempPVertex = tempPVertex->next;
     }
 
-    for (std::vector<Edge *>::iterator it = edges.begin(); it != edges.end(); it++) { it->isVist = false; }
+    for (std::vector<Edge *>::iterator it = edges.begin(); it != edges.end(); it++) { (*it)->isVisit = false; }
 
     return edges;
 }

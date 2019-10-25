@@ -20,8 +20,8 @@ enum class EType {
 class Entity
 {
 public:
-    virtual ~Entity();
-
+    virtual ~Entity() { };
+    //TODO: ADD Init
     Entity(std::string name) : Name(std::move(name)) { }
     bool isVisit = false;
 private:

@@ -7,9 +7,20 @@
  * which references them. Will make duplicating geometry (and entire models)
  * easier to implement. */
 
+#include <map>
+#include <string>
+
 namespace Nome::PartialEdgeDS
 
 {
+
+class Geopmetry;
+
+enum class EGType {
+    POINT,
+    CURVE,
+    SURFACE
+};
 
 class GeometryMapper
 {
@@ -20,22 +31,22 @@ public:
     /**
      *  TODO: OBJECT MEMBERS/METHODS FOR GEOMETRY MAPPER
      *  * M[Model_ID][Geometry_Type][Geom_ID]
-     *   
+     *
      *  * KillModel(model_uid)
      *  * AddGeom(model_uid, geom_uid)
      *      - for POINTS
      *      - for CURVES
      *      - for SURFACE
      *  * CopyModel(model_uid) -> (deep copy and move to new index)
-     * 
-     *  * getEntity(model_id, G_TYPE, geom_id) 
+     *
+     *  * getEntity(model_id, G_TYPE, geom_id)
      *  * getAllPoints(model_id)
      *  * getAllCurves(model_id)
      *  * getAllSurfaces(model_id)
      *  * model_merge(model_a_id, model_b_id)
      *      -   Merge Hash Tables, record collisions
      *      -   return Map of B_old_Id -> B_new_ID (all of them, not just collisions)
-     * 
+     *
      *  * applyTransformation(model_id, T)
      *  *  T ~ lambda x,y,z -> x', y', z
     */
@@ -45,11 +56,15 @@ public:
     //
     //
     //
+    bool killModel(string model_uid);
+    bool addGeometry(string model_uid, EGType type, string geometry_uid);
+    bool copyModel(string model_uid);
 
 private:
     //OBJECT VARIABLES
     //Hash Table MODELS
     //
+    std::map<std::string, std::map<EGType,std::map<std::string, Geopmetry>>> map;
 
 
     //TODO: once we implement GeometryMapper, we can get rid of flags, and just use HoFs

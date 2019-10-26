@@ -74,27 +74,30 @@ void CInteractiveMesh::UpdateGeometry()
 
 void CInteractiveMesh::UpdateMaterial()
 {
+    QVector3D instanceColor { 1.0f, 0.5f, 0.1f };
+    if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
+    {
+        instanceColor.setX(surface->ColorR.GetValue(1.0f));
+        instanceColor.setY(surface->ColorG.GetValue(1.0f));
+        instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+    }
+
     if (!Material)
     {
-        // auto* mat = new Qt3DExtras::QPhongMaterial(this);
-        // mat->setAmbient({255, 127, 127});
         auto xmlPath = CResourceMgr::Get().Find("WireframeLit.xml");
         auto* mat = new CXMLMaterial(QString::fromStdString(xmlPath));
-        mat->FindParameterByName("kd")->setValue(QVector3D(1.0f, 0.5f, 0.1f));
         this->addComponent(mat);
         Material = mat;
     }
-    if (LineMaterial)
+    auto* mat = dynamic_cast<CXMLMaterial*>(Material);
+    mat->FindParameterByName("kd")->setValue(instanceColor);
+
+    // Use non-default line color only if the instance has a surface
+    auto surface = SceneTreeNode->GetOwner()->GetSurface();
+    if (LineMaterial && surface)
     {
-        if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
-        {
-            QVector3D instanceColor;
-            instanceColor.setX(surface->ColorR.GetValue(1.0f));
-            instanceColor.setY(surface->ColorG.GetValue(1.0f));
-            instanceColor.setZ(surface->ColorB.GetValue(1.0f));
-            auto* lineMat = dynamic_cast<CXMLMaterial*>(LineMaterial);
-            lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
-        }
+        auto* lineMat = dynamic_cast<CXMLMaterial*>(LineMaterial);
+        lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
     }
 }
 

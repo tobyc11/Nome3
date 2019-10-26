@@ -1,6 +1,8 @@
 #include "Tunnel.h"
 #include <cmath>
 
+#undef M_PI
+
 namespace Nome::Scene
 {
 

@@ -1,5 +1,7 @@
 #include "Circle.h"
 
+#undef M_PI
+
 namespace Nome::Scene
 {
 

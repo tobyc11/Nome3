@@ -104,6 +104,7 @@ void CNome3DView::PostSceneUpdate()
                 {
                     printf("Geom regen for %s\n", node->GetPath().c_str());
                     mesh->UpdateGeometry();
+                    mesh->UpdateMaterial();
                     node->SetEntityUpdated(false);
                 }
             }

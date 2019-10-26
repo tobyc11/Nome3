@@ -1,4 +1,5 @@
 #pragma once
+#include "Surface.h"
 #include "Transforms.h"
 #include <SignalSlot.h>
 #include <map>
@@ -91,6 +92,12 @@ public:
 
     CScene* GetScene() const { return Scene; }
 
+    // A signal/input that manages the possibly unassigned surface (color)
+    // TODO: generalize this and tie this to the AST
+    void SetSurface(const TAutoPtr<CSurface> surface) { Surface = surface; }
+    TAutoPtr<CSurface> GetSurface() const { return Surface; }
+    void NotifySurfaceDirty() const;
+
 private:
     std::string Name;
     /// Denotes whether this node is a group. Group names can be skipped in a path
@@ -105,6 +112,7 @@ private:
 
     // Associated entity, aka the generator instantiated
     TAutoPtr<CEntity> Entity;
+    TAutoPtr<CSurface> Surface;
 };
 
 }

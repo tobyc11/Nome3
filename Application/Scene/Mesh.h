@@ -32,6 +32,7 @@ public:
 
     void MarkDirty() override;
     void UpdateEntity() override;
+    void Draw(IDebugDraw* draw) override;
 
     CMeshImpl::VertexHandle AddVertex(const std::string& name, Vector3 pos);
 

@@ -28,6 +28,7 @@ private:
 
     Qt3DCore::QTransform* Transform = nullptr;
     Qt3DRender::QMaterial* Material = nullptr;
+    Qt3DRender::QMaterial* LineMaterial = nullptr;
 };
 
 }

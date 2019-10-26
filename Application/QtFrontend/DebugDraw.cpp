@@ -58,6 +58,45 @@ void CDebugDraw::Commit()
     }
 }
 
+void CDebugDraw::DrawPoint(tc::Vector3 pos)
+{
+    // Append appropriate data at the end of the point buffer:
+    // VVVCCC/VVVCCC/VVVCCC/...
+
+    int sizeInBytes = sizeof(float) * 6;
+    int offset = PointData.size();
+    // Resize the array and point p to the original end
+    PointData.resize(PointData.size() + sizeInBytes);
+    auto* p = reinterpret_cast<float*>(PointData.data() + offset);
+    *p++ = pos.x;
+    *p++ = pos.y;
+    *p++ = pos.z;
+    *p++ = 0.0f;
+    *p++ = 0.0f;
+    *p++ = 0.0f;
+}
+
+void CDebugDraw::LineSegment(tc::Vector3 from, tc::Vector3 to)
+{
+    // VVVCCCx2
+    int sizeInBytes = sizeof(float) * 6 * 2;
+    int offset = LineData.size();
+    LineData.resize(LineData.size() + sizeInBytes);
+    auto* p = reinterpret_cast<float*>(LineData.data() + offset);
+    *p++ = from.x;
+    *p++ = from.y;
+    *p++ = from.z;
+    *p++ = 0.0f;
+    *p++ = 0.0f;
+    *p++ = 0.0f;
+    *p++ = to.x;
+    *p++ = to.y;
+    *p++ = to.z;
+    *p++ = 0.0f;
+    *p++ = 0.0f;
+    *p++ = 0.0f;
+}
+
 void CDebugDraw::DrawPoint(tc::Vector3 pos, tc::Color color)
 {
     // Append appropriate data at the end of the point buffer:

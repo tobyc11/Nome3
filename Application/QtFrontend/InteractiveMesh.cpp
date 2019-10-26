@@ -84,6 +84,18 @@ void CInteractiveMesh::UpdateMaterial()
         this->addComponent(mat);
         Material = mat;
     }
+    if (LineMaterial)
+    {
+        if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
+        {
+            QVector3D instanceColor;
+            instanceColor.setX(surface->ColorR.GetValue(1.0f));
+            instanceColor.setY(surface->ColorG.GetValue(1.0f));
+            instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+            auto* lineMat = dynamic_cast<CXMLMaterial*>(LineMaterial);
+            lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
+        }
+    }
 }
 
 void CInteractiveMesh::InitInteractions()
@@ -113,11 +125,24 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
     auto* lineEntity = new Qt3DCore::QEntity(this);
     lineEntity->setObjectName(QStringLiteral("lineEntity"));
 
-    auto xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
-    auto* lineMaterial = new CXMLMaterial(QString::fromStdString(xmlPath));
-    lineMaterial->setObjectName(QStringLiteral("lineMaterial"));
-    lineEntity->addComponent(lineMaterial);
-    assert(lineMaterial->parent() == lineEntity);
+    if (!LineMaterial)
+    {
+        auto xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
+        auto* lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
+        LineMaterial = lineMat;
+        LineMaterial->setObjectName(QStringLiteral("lineMaterial"));
+        LineMaterial->setParent(this);
+        lineEntity->addComponent(LineMaterial);
+
+        if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
+        {
+            QVector3D instanceColor;
+            instanceColor.setX(surface->ColorR.GetValue(1.0f));
+            instanceColor.setY(surface->ColorG.GetValue(1.0f));
+            instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+            lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
+        }
+    }
 
     auto* lineRenderer = new Qt3DRender::QGeometryRenderer(lineEntity);
     lineRenderer->setGeometry(debugDraw->GetLineGeometry());

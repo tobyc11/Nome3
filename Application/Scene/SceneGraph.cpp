@@ -206,4 +206,12 @@ void CSceneNode::SetEntity(CEntity* ent)
     }
 }
 
+void CSceneNode::NotifySurfaceDirty() const
+{
+    for (CSceneTreeNode* treeNode : TreeNodes)
+    {
+        treeNode->SetEntityUpdated(true);
+    }
+}
+
 }

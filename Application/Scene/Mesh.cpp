@@ -46,6 +46,26 @@ void CMesh::UpdateEntity()
     SetValid(isValid);
 }
 
+void CMesh::Draw(IDebugDraw* draw)
+{
+    CEntity::Draw(draw);
+
+    if (!LineStrip.empty())
+    {
+        std::vector<Vector3> positions;
+        for (auto vHandle : LineStrip)
+        {
+            const auto& vPos = Mesh.point(vHandle);
+            positions.emplace_back(vPos[0], vPos[1], vPos[2]);
+        }
+
+        for (size_t i = 1; i < positions.size(); i++)
+        {
+            draw->LineSegment(positions[i - 1], positions[i]);
+        }
+    }
+}
+
 CMeshImpl::VertexHandle CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
 {
     // Silently fail if the name already exists
@@ -172,18 +192,6 @@ void CMeshInstance::UpdateEntity()
         Mesh.request_vertex_normals();
         Mesh.update_face_normals();
         Mesh.update_vertex_normals();
-        // Update visual layer geometry
-    }
-
-    // The upstream mesh contains a polyline of some sort
-    if (!MeshGenerator->LineStrip.empty())
-    {
-        std::vector<Vector3> positions;
-        for (auto vHandle : MeshGenerator->LineStrip)
-        {
-            const auto& vPos = MeshGenerator->Mesh.point(vHandle);
-            positions.emplace_back(vPos[0], vPos[1], vPos[2]);
-        }
         // Update visual layer geometry
     }
 

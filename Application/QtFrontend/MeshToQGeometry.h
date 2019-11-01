@@ -24,15 +24,17 @@ public:
     Qt3DRender::QAttribute::VertexBaseType Type;
     uint32_t Size;
 
-    CAttribute(QByteArray& buffer, uint32_t byteOffset, uint32_t byteStride, Qt3DRender::QAttribute::VertexBaseType type, uint32_t size)
-        : Buffer(buffer), ByteOffset(byteOffset), ByteStride(byteStride), Type(type), Size(size)
+    CAttribute(QByteArray& buffer, uint32_t byteOffset, uint32_t byteStride,
+               Qt3DRender::QAttribute::VertexBaseType type, uint32_t size)
+        : Buffer(buffer)
+        , ByteOffset(byteOffset)
+        , ByteStride(byteStride)
+        , Type(type)
+        , Size(size)
     {
     }
 
-    [[nodiscard]] int GetAbsByteOffset(uint32_t i) const
-    {
-        return ByteOffset + ByteStride * i;
-    }
+    [[nodiscard]] int GetAbsByteOffset(uint32_t i) const { return ByteOffset + ByteStride * i; }
 
     void FillInQAttribute(Qt3DRender::QAttribute* attr) const
     {
@@ -48,20 +50,17 @@ class CGeometryBuilder
 public:
     CGeometryBuilder() = default;
 
-    void AddAttribute(const CAttribute* attr)
-    {
-        Attributes.push_back(attr);
-    }
+    void AddAttribute(const CAttribute* attr) { Attributes.push_back(attr); }
 
     void Ingest(float x, float y, float z)
     {
         auto* target = Attributes[CurrAttrIndex];
 
-        //Type check for target
+        // Type check for target
         assert(target->Type == Qt3DRender::QAttribute::Float);
         assert(target->Size == 3);
 
-        //Append the buffer pointed to by target
+        // Append the buffer pointed to by target
         const int byteLen = sizeof(float) * 3;
         int begOffset = target->GetAbsByteOffset(CurrVertexIndex);
         if (target->Buffer.size() < begOffset + byteLen)
@@ -75,10 +74,7 @@ public:
         AdvanceIndices();
     }
 
-    uint32_t GetVertexCount() const
-    {
-        return CurrVertexIndex;
-    }
+    uint32_t GetVertexCount() const { return CurrVertexIndex; }
 
 protected:
     void AdvanceIndices()

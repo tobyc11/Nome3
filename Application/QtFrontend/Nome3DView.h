@@ -1,6 +1,6 @@
 #pragma once
-#include "InteractiveMesh.h"
 #include "DebugDraw.h"
+#include "InteractiveMesh.h"
 #include <Scene/Scene.h>
 
 #include <Qt3DExtras>

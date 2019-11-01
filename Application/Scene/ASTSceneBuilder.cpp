@@ -1,6 +1,6 @@
 #include "ASTSceneBuilder.h"
-#include "BezierSpline.h"
 #include "BSpline.h"
+#include "BezierSpline.h"
 #include "Circle.h"
 #include "Funnel.h"
 #include "Point.h"
@@ -191,11 +191,16 @@ void CASTSceneBuilder::VisitInstance(AIdent* name, AIdent* entityName,
     }
 
     auto entity = Scene->FindEntity(entityName->Identifier);
+    auto surfaceRef = surface
+        ? tc::dynamic_pointer_cast<CSurface>(Scene->FindEntity(surface->Identifier))
+        : nullptr;
     if (entity)
     {
         auto* sceneNode = InstanciateUnder->CreateChildNode(name->Identifier);
         if (lastTransform)
             sceneNode->Transform.Connect(lastTransform->Output);
+        if (surfaceRef)
+            sceneNode->SetSurface(surfaceRef);
         sceneNode->SetEntity(entity);
     }
     else if (auto group = Scene->FindGroup(entityName->Identifier))
@@ -203,6 +208,8 @@ void CASTSceneBuilder::VisitInstance(AIdent* name, AIdent* entityName,
         auto* sceneNode = InstanciateUnder->CreateChildNode(name->Identifier);
         if (lastTransform)
             sceneNode->Transform.Connect(lastTransform->Output);
+        if (surfaceRef)
+            sceneNode->SetSurface(surfaceRef);
         group->AddParent(sceneNode);
     }
     else

@@ -5,13 +5,15 @@
 
 namespace Flow
 {
-    
-template <typename T>
-class TNumber : public CFlowNode
+
+template <typename T> class TNumber : public CFlowNode
 {
 public:
     TNumber() = default;
-    TNumber(T num) : Number(num) {}
+    TNumber(T num)
+        : Number(num)
+    {
+    }
 
     T GetNumber() const { return Number; }
     void SetNumber(T val)
@@ -33,14 +35,10 @@ typedef TNumber<unsigned int> CUIntNumber;
 typedef TNumber<float> CFloatNumber;
 typedef TNumber<double> CDoubleNumber;
 
-template <typename T, typename TOperator>
-class TUnaryOperator : public CFlowNode
+template <typename T, typename TOperator> class TUnaryOperator : public CFlowNode
 {
 public:
-    DEFINE_INPUT(T, Operand0)
-    {
-        Result.MarkDirty();
-    }
+    DEFINE_INPUT(T, Operand0) { Result.MarkDirty(); }
 
     DEFINE_OUTPUT_WITH_UPDATE(T, Result)
     {
@@ -52,41 +50,26 @@ public:
 
 typedef TUnaryOperator<float, std::negate<float>> CFloatNeg;
 
-template<class T = void>
-struct sin_functor
+template <class T = void> struct sin_functor
 {
-    constexpr T operator()(const T& left) const
-    {
-        return sin(left);
-    }
+    constexpr T operator()(const T& left) const { return sin(left); }
 };
 
 typedef TUnaryOperator<float, sin_functor<float>> CFloatSin;
 
-template<class T = void>
-struct cos_functor
+template <class T = void> struct cos_functor
 {
-    constexpr T operator()(const T& left) const
-    {
-        return cos(left);
-    }
+    constexpr T operator()(const T& left) const { return cos(left); }
 };
 
 typedef TUnaryOperator<float, cos_functor<float>> CFloatCos;
 
-template <typename T, typename TOperator>
-class TBinaryOperator : public CFlowNode
+template <typename T, typename TOperator> class TBinaryOperator : public CFlowNode
 {
 public:
-    DEFINE_INPUT(T, Operand0)
-    {
-        Result.MarkDirty();
-    }
+    DEFINE_INPUT(T, Operand0) { Result.MarkDirty(); }
 
-    DEFINE_INPUT(T, Operand1)
-    {
-        Result.MarkDirty();
-    }
+    DEFINE_INPUT(T, Operand1) { Result.MarkDirty(); }
 
     DEFINE_OUTPUT_WITH_UPDATE(T, Result)
     {

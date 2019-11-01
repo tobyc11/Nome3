@@ -4,11 +4,11 @@
 #include <QUrl>
 #include <QVector3D>
 #include <QVector4D>
+#include <Qt3DRender/QFilterKey>
+#include <Qt3DRender/QGraphicsApiFilter>
 #include <Qt3DRender/QParameter>
 #include <Qt3DRender/QRenderPass>
 #include <Qt3DRender/QShaderProgram>
-#include <Qt3DRender/QFilterKey>
-#include <Qt3DRender/QGraphicsApiFilter>
 
 namespace Nome
 {
@@ -25,9 +25,12 @@ CColorFlatMaterial::CColorFlatMaterial(Qt3DCore::QNode* parent)
     GL3Shader = new QShaderProgram();
     FilterKey = new QFilterKey();
 
-    QObject::connect(BaseColorParameter, &QParameter::valueChanged, this, &CColorFlatMaterial::BaseColorChanged);
-    GL3Shader->setVertexShaderCode(QShaderProgram::loadSource(QUrl(QStringLiteral("qrc:/Shaders/default.vert"))));
-    GL3Shader->setFragmentShaderCode(QShaderProgram::loadSource(QUrl(QStringLiteral("qrc:/Shaders/ColorFlat.frag"))));
+    QObject::connect(BaseColorParameter, &QParameter::valueChanged, this,
+                     &CColorFlatMaterial::BaseColorChanged);
+    GL3Shader->setVertexShaderCode(
+        QShaderProgram::loadSource(QUrl(QStringLiteral("qrc:/Shaders/default.vert"))));
+    GL3Shader->setFragmentShaderCode(
+        QShaderProgram::loadSource(QUrl(QStringLiteral("qrc:/Shaders/ColorFlat.frag"))));
 
     GL3Technique->graphicsApiFilter()->setApi(QGraphicsApiFilter::OpenGL);
     GL3Technique->graphicsApiFilter()->setMajorVersion(3);
@@ -48,10 +51,7 @@ CColorFlatMaterial::CColorFlatMaterial(Qt3DCore::QNode* parent)
     this->setEffect(Effect);
 }
 
-QVariant CColorFlatMaterial::BaseColor() const
-{
-    return BaseColorParameter->value();
-}
+QVariant CColorFlatMaterial::BaseColor() const { return BaseColorParameter->value(); }
 
 void CColorFlatMaterial::SetBaseColor(const QVariant& baseColor)
 {
@@ -78,9 +78,12 @@ CWireframeEffect::CWireframeEffect(Qt3DCore::QNode* parent)
 
     auto* GL3RenderPass = new QRenderPass();
     auto* GL3Shader = new QShaderProgram();
-    GL3Shader->setVertexShaderCode(QShaderProgram::loadSource(QUrl(QStringLiteral("qrc:/Shaders/Wireframe.vert"))));
-    GL3Shader->setGeometryShaderCode(QShaderProgram::loadSource(QUrl(QStringLiteral("qrc:/Shaders/Wireframe.geom"))));
-    GL3Shader->setFragmentShaderCode(QShaderProgram::loadSource(QUrl(QStringLiteral("qrc:/Shaders/Wireframe.frag"))));
+    GL3Shader->setVertexShaderCode(
+        QShaderProgram::loadSource(QUrl(QStringLiteral("qrc:/Shaders/Wireframe.vert"))));
+    GL3Shader->setGeometryShaderCode(
+        QShaderProgram::loadSource(QUrl(QStringLiteral("qrc:/Shaders/Wireframe.geom"))));
+    GL3Shader->setFragmentShaderCode(
+        QShaderProgram::loadSource(QUrl(QStringLiteral("qrc:/Shaders/Wireframe.frag"))));
     GL3RenderPass->setShaderProgram(GL3Shader);
     GL3Technique->addRenderPass(GL3RenderPass);
 
@@ -97,10 +100,13 @@ CWireframeMaterial::CWireframeMaterial(Qt3DCore::QNode* parent)
     this->addParameter(new QParameter(QStringLiteral("ks"), QVector3D(0.95f, 0.95f, 0.95f)));
     this->addParameter(new QParameter(QStringLiteral("shininess"), 150.0f));
 
-    this->addParameter(new QParameter(QStringLiteral("light.position"), QVector4D(0.0f, 0.0f, 0.0f, 1.0f)));
-    this->addParameter(new QParameter(QStringLiteral("light.intensity"), QVector3D(1.0f, 1.0f, 1.0f)));
+    this->addParameter(
+        new QParameter(QStringLiteral("light.position"), QVector4D(0.0f, 0.0f, 0.0f, 1.0f)));
+    this->addParameter(
+        new QParameter(QStringLiteral("light.intensity"), QVector3D(1.0f, 1.0f, 1.0f)));
     this->addParameter(new QParameter(QStringLiteral("line.width"), 1.0f));
-    this->addParameter(new QParameter(QStringLiteral("line.color"), QVector4D(1.0f, 1.0f, 1.0f, 1.0f)));
+    this->addParameter(
+        new QParameter(QStringLiteral("line.color"), QVector4D(1.0f, 1.0f, 1.0f, 1.0f)));
 
     this->setEffect(new CWireframeEffect(this));
 }

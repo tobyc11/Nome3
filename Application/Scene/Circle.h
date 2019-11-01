@@ -12,7 +12,10 @@ class CCircle : public CMesh
 public:
     using Super = CMesh;
     CCircle() = default;
-    CCircle(const std::string& name) : CMesh(std::move(name)) {}
+    CCircle(const std::string& name)
+        : CMesh(std::move(name))
+    {
+    }
 
     void UpdateEntity() override;
 };

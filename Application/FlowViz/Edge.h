@@ -10,7 +10,10 @@ class CEdge : public QGraphicsItem
 public:
     CEdge(CConnector* from, CConnector* to);
 
-    enum { Type = UserType + 2 };
+    enum
+    {
+        Type = UserType + 2
+    };
     int type() const override { return Type; }
 
 private:

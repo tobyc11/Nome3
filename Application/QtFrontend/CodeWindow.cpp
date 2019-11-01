@@ -1,12 +1,13 @@
 #include "CodeWindow.h"
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
-#include <QHBoxLayout>
 
 namespace Nome
 {
 
-CCodeWindow::CCodeWindow(QWidget* parent) : QWidget(parent, Qt::Dialog)
+CCodeWindow::CCodeWindow(QWidget* parent)
+    : QWidget(parent, Qt::Dialog)
 {
     StatusLabel = new QLabel("OK");
     SyncBtn = new QPushButton("Sync");

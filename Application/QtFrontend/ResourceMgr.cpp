@@ -1,7 +1,7 @@
 #include "ResourceMgr.h"
 #include <PathTools.h>
-#include <stdexcept>
 #include <cassert>
+#include <stdexcept>
 
 namespace Nome
 {
@@ -20,27 +20,33 @@ CResourceMgr::CResourceMgr()
     if (FPathTools::Exists(ResourcesDir))
         return;
 
-    ResourcesDir = FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetWorkingDirectory(), "Application/Resources");
+    ResourcesDir = FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetWorkingDirectory(),
+                                                                 "Application/Resources");
     if (!ResourcesDir.empty())
         return;
 
-    ResourcesDir = FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetExecutablePath(), "Application/Resources");
+    ResourcesDir = FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetExecutablePath(),
+                                                                 "Application/Resources");
     if (!ResourcesDir.empty())
         return;
 
-    ResourcesDir = FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetWorkingDirectory(), "Nome3/Application/Resources");
+    ResourcesDir = FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetWorkingDirectory(),
+                                                                 "Nome3/Application/Resources");
     if (!ResourcesDir.empty())
         return;
 
-    ResourcesDir = FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetExecutablePath(), "Nome3/Application/Resources");
+    ResourcesDir = FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetExecutablePath(),
+                                                                 "Nome3/Application/Resources");
     if (!ResourcesDir.empty())
         return;
 
-    ResourcesDir = FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetWorkingDirectory(), "Resources");
+    ResourcesDir = FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetWorkingDirectory(),
+                                                                 "Resources");
     if (!ResourcesDir.empty())
         return;
 
-    ResourcesDir = FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetExecutablePath(), "Resources");
+    ResourcesDir =
+        FPathTools::FindParentSubDirectoryRecursively(FPathTools::GetExecutablePath(), "Resources");
     if (!ResourcesDir.empty())
         return;
 

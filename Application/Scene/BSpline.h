@@ -7,10 +7,10 @@ namespace Nome::Scene
 class CBSplineMath : public IParametricCurve
 {
 public:
-    ///Get the frenet frame at t
+    /// Get the frenet frame at t
     Matrix3 FrenetFrameAt(float t) override;
 
-    ///Get a default list of t values to use
+    /// Get a default list of t values to use
     std::vector<float> GetDefaultKnots() override;
 };
 
@@ -20,14 +20,21 @@ class CBSpline : public CMesh
     DEFINE_INPUT(float, Segments) { MarkDirty(); }
     DEFINE_INPUT_ARRAY(CVertexInfo*, ControlPoints) { MarkDirty(); }
 
-    DEFINE_OUTPUT_WITH_UPDATE(IParametricCurve*, Spline) { UpdateEntity(); Spline.UpdateValue(&Math); }
+    DEFINE_OUTPUT_WITH_UPDATE(IParametricCurve*, Spline)
+    {
+        UpdateEntity();
+        Spline.UpdateValue(&Math);
+    }
 
 public:
     using Super = CMesh;
     CBSpline() = default;
-    CBSpline(const std::string& name) : CMesh(name) {}
+    CBSpline(const std::string& name)
+        : CMesh(name)
+    {
+    }
 
-    ///Set whether the bspline is a closed loop
+    /// Set whether the bspline is a closed loop
     void SetClosed(bool closed);
 
     void UpdateEntity() override;

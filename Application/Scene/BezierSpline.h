@@ -10,7 +10,7 @@ using tc::Matrix3;
 class IParametricCurve
 {
 protected:
-    //No deletion through this interface, hence protected.
+    // No deletion through this interface, hence protected.
     ~IParametricCurve() = default;
 
 public:
@@ -35,12 +35,19 @@ class CBezierSpline : public CMesh
     DEFINE_INPUT(float, Segments) { MarkDirty(); }
     DEFINE_INPUT_ARRAY(CVertexInfo*, ControlPoints) { MarkDirty(); }
 
-    DEFINE_OUTPUT_WITH_UPDATE(IParametricCurve*, Spline) { UpdateEntity(); Spline.UpdateValue(&Math); }
+    DEFINE_OUTPUT_WITH_UPDATE(IParametricCurve*, Spline)
+    {
+        UpdateEntity();
+        Spline.UpdateValue(&Math);
+    }
 
 public:
     using Super = CMesh;
     CBezierSpline() = default;
-    CBezierSpline(const std::string& name) : CMesh(std::move(name)) {}
+    CBezierSpline(const std::string& name)
+        : CMesh(std::move(name))
+    {
+    }
 
     void UpdateEntity() override;
 

@@ -1,9 +1,9 @@
 #pragma once
-#include "Entity.h"
-#include "SceneGraph.h"
-#include "Camera.h"
 #include "BankAndSet.h"
+#include "Camera.h"
+#include "Entity.h"
 #include "Point.h"
+#include "SceneGraph.h"
 #include <Color.h>
 #include <queue>
 #include <utility>
@@ -28,10 +28,10 @@ public:
 
     // Adds an entity into the lookup map
     void AddEntity(TAutoPtr<CEntity> entity);
-    //TODO:
-    //void RemoveEntity(const std::string& name);
-    //void RenameEntity(const std::string& oldName, const std::string& newName);
-    
+    // TODO:
+    // void RemoveEntity(const std::string& name);
+    // void RenameEntity(const std::string& oldName, const std::string& newName);
+
     // Finds an entity by its name
     TAutoPtr<CEntity> FindEntity(const std::string& name) const;
 
@@ -43,13 +43,12 @@ public:
     // Locate in the scene a point output (could be a point or a mesh vertex) by its path
     Flow::TOutput<CVertexInfo*>* FindPointOutput(const std::string& id) const;
 
-    ///Walks the scene tree along a path, return the last matching node and the rest of path
+    /// Walks the scene tree along a path, return the last matching node and the rest of path
     std::pair<CSceneTreeNode*, std::string> WalkPath(const std::string& path) const;
 
     void Update();
 
-    template <typename TFunc>
-    void ForEachSceneTreeNode(const TFunc& func)
+    template <typename TFunc> void ForEachSceneTreeNode(const TFunc& func)
     {
         std::queue<CSceneTreeNode*> q;
         q.push(GetRootTreeNode());

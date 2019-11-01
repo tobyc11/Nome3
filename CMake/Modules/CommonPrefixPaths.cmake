@@ -1,0 +1,15 @@
+list(APPEND CMAKE_PREFIX_PATH /usr/local)
+list(APPEND CMAKE_PREFIX_PATH /usr/local/opt/qt)
+list(APPEND CMAKE_PREFIX_PATH /usr/local/opt/flex)
+list(APPEND CMAKE_PREFIX_PATH /usr/local/opt/bison)
+
+set(USER "$ENV{USERNAME}")
+if (NOT USER)
+    set(USER "$ENV{USER}")
+endif()
+list(APPEND CMAKE_PREFIX_PATH /Users/${USER}/homebrew)
+list(APPEND CMAKE_PREFIX_PATH /Users/${USER}/homebrew/opt/qt)
+list(APPEND CMAKE_PREFIX_PATH /Users/${USER}/homebrew/opt/flex)
+list(APPEND CMAKE_PREFIX_PATH /Users/${USER}/homebrew/opt/bison)
+
+message(STATUS "Using CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")

@@ -1,7 +1,7 @@
 #pragma once
 #include <Flow/Arithmetics.h>
-#include <Parsing/ASTUtils.h>
 #include <LangUtils.h>
+#include <Parsing/ASTUtils.h>
 #include <map>
 #include <set>
 #include <stdexcept>

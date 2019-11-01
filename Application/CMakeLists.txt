@@ -24,8 +24,8 @@ file(GLOB PG2_TEST_SOURCES
     Tests/*.h Tests/*.cpp
 )
 
-find_package(BISON 3.0)
-find_package(FLEX 2.6)
+find_package(BISON 3.0 REQUIRED)
+find_package(FLEX 2.6 REQUIRED)
 
 BISON_TARGET(NomeParser Parsing/NomeParser.y ${CMAKE_CURRENT_BINARY_DIR}/NomeParser.cpp)
 FLEX_TARGET(NomeScanner Parsing/NomeLexer.l ${CMAKE_CURRENT_BINARY_DIR}/NomeLexer.cpp)

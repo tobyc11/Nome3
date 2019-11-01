@@ -1,7 +1,7 @@
 #pragma once
 #include "DebugDraw.h"
-#include <Scene/SceneGraph.h>
 #include <Scene/RendererInterface.h>
+#include <Scene/SceneGraph.h>
 
 #include <Qt3DCore/QEntity>
 #include <Qt3DCore/QTransform>
@@ -10,15 +10,12 @@
 namespace Nome
 {
 
-class CInteractiveMesh : public Qt3DCore::QEntity, public IMeshRenderer
+class CInteractiveMesh : public Qt3DCore::QEntity
 {
 public:
     explicit CInteractiveMesh(Scene::CSceneTreeNode* node);
 
-    [[nodiscard]] Scene::CSceneTreeNode* GetSceneTreeNode() const
-    {
-        return SceneTreeNode;
-    }
+    [[nodiscard]] Scene::CSceneTreeNode* GetSceneTreeNode() const { return SceneTreeNode; }
 
     void UpdateTransform();
     void UpdateGeometry();
@@ -26,14 +23,12 @@ public:
     void InitInteractions();
     void SetDebugDraw(const CDebugDraw* debugDraw);
 
-    int GetRenderFlags() override;
-    void NotifyGeometryChange() override;
-
 private:
     Scene::CSceneTreeNode* SceneTreeNode = nullptr;
 
     Qt3DCore::QTransform* Transform = nullptr;
     Qt3DRender::QMaterial* Material = nullptr;
+    Qt3DRender::QMaterial* LineMaterial = nullptr;
 };
 
 }

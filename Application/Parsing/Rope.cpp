@@ -3,14 +3,9 @@
 namespace Nome
 {
 
-CRope::CRope()
-{
-}
+CRope::CRope() {}
 
-CRope::CRope(std::string content)
-{
-    Content.push_back(content);
-}
+CRope::CRope(std::string content) { Content.push_back(content); }
 
 std::string CRope::Assemble() const
 {
@@ -40,7 +35,7 @@ CRope::CLocation CRope::GetLoc(size_t index, size_t offset) const
         auto offsetIter = indexIter->second.find(offset);
         if (offsetIter != indexIter->second.end())
         {
-            //Such location already exists
+            // Such location already exists
             return CLocation(offsetIter->second);
         }
     }
@@ -98,7 +93,7 @@ void CRope::InsertAt(CRope::CLocation loc, const std::string& text)
 
     size_t textLen = text.size();
 
-    //Move locations after loc by textLen
+    // Move locations after loc by textLen
     auto indexIter = LocationMap.find(realLoc->Index);
     if (indexIter != LocationMap.end())
     {
@@ -108,12 +103,12 @@ void CRope::InsertAt(CRope::CLocation loc, const std::string& text)
         {
             if (offsetIter->second->Offset >= realLoc->Offset)
                 offsetIter->second->Offset += textLen;
-            newOffsetMap.insert({offsetIter->second->Offset, offsetIter->second});
+            newOffsetMap.insert({ offsetIter->second->Offset, offsetIter->second });
         }
         LocationMap.insert_or_assign(realLoc->Index, newOffsetMap);
     }
 
-    //Actually modify the string
+    // Actually modify the string
     Content[realLoc->Index].insert(realLoc->Offset, text);
 }
 
@@ -128,17 +123,14 @@ void CRope::GarbageCollectLocations() const
     {
         if (iter->RefCount == 0)
         {
-            //Erase from map
+            // Erase from map
             LocationMap.at(iter->Index).erase(iter->Offset);
-            //Delete from pool
+            // Delete from pool
             LocationPool.FreeElement(iter);
         }
     }
 }
 
-void CRope::SplitRow(const CRope::CRealLocation& where)
-{
-    throw "Unimplemented";
-}
+void CRope::SplitRow(const CRope::CRealLocation& where) { throw "Unimplemented"; }
 
 }

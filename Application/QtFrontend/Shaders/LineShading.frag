@@ -7,7 +7,10 @@ in IOInterface
 
 out vec4 fragColor;
 
+uniform vec3 instanceColor;
+
 void main()
 {
-    fragColor = vec4(inData.vertexColor, 1.0);
+    vec3 additive = (vec3(1.0) - inData.vertexColor) * instanceColor;
+    fragColor = vec4(inData.vertexColor + additive, 1.0);
 }

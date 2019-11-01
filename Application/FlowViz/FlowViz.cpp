@@ -1,6 +1,6 @@
 #include "FlowViz.h"
-#include "Node.h"
 #include "Connector.h"
+#include "Node.h"
 
 namespace Flow::Viz
 {
@@ -28,7 +28,7 @@ CFlowViz::CFlowViz(QWidget* parent)
     scene->addItem(node);
 }
 
-//void CFlowViz::drawBackground(QPainter* painter, const QRectF& rect)
+// void CFlowViz::drawBackground(QPainter* painter, const QRectF& rect)
 //{
 //}
 

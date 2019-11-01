@@ -17,7 +17,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -44,8 +44,15 @@
     <addaction name="actionPoint"/>
     <addaction name="actionInstance"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="actionMerge"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAdd"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -104,6 +111,11 @@
   <action name="actionAboutQt">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionMerge">
+   <property name="text">
+    <string>&amp;Merge</string>
    </property>
   </action>
  </widget>

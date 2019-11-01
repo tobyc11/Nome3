@@ -3,7 +3,8 @@
 namespace Nome
 {
 
-CBlockAllocator::CBlockAllocator(size_t size) : BytesLeft(size)
+CBlockAllocator::CBlockAllocator(size_t size)
+    : BytesLeft(size)
 {
     Mem = p = malloc(size);
 }
@@ -14,8 +15,12 @@ CBlockAllocator::~CBlockAllocator()
         free(Mem);
 }
 
-CBlockAllocator::CBlockAllocator(CBlockAllocator&& o) : Mem(std::exchange(o.Mem, nullptr))
-  ,p(o.p),BytesLeft(o.BytesLeft) {}
+CBlockAllocator::CBlockAllocator(CBlockAllocator&& o)
+    : Mem(std::exchange(o.Mem, nullptr))
+    , p(o.p)
+    , BytesLeft(o.BytesLeft)
+{
+}
 
 CBlockAllocator& CBlockAllocator::operator=(CBlockAllocator&& o)
 {
@@ -39,9 +44,7 @@ void* CBlockAllocator::aligned_alloc(std::size_t a, std::size_t size)
     return nullptr;
 }
 
-CASTContext::~CASTContext()
-{
-}
+CASTContext::~CASTContext() {}
 
 void* CASTContext::Alloc(size_t align, size_t size)
 {
@@ -60,14 +63,8 @@ void* CASTContext::Alloc(size_t align, size_t size)
     return result;
 }
 
-AExpr* CASTContext::GetExpr() const
-{
-    return Expr;
-}
+AExpr* CASTContext::GetExpr() const { return Expr; }
 
-void CASTContext::SetExpr(AExpr* value)
-{
-    Expr = value;
-}
+void CASTContext::SetExpr(AExpr* value) { Expr = value; }
 
 }

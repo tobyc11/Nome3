@@ -172,7 +172,7 @@ void ACommand::AppendChild(ACommand* cmd)
     cmd->Next = FirstChild;
     cmd->Parent = this;
     if (FirstChild)
-		FirstChild->Prev = cmd;
+        FirstChild->Prev = cmd;
     FirstChild = cmd;
 }
 

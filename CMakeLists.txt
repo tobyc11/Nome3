@@ -5,6 +5,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake/Modules")
 project(Nome3)
 
 include(CompileOptions)
+include(CommonPrefixPaths)
 
 # Include sub-projects.
 add_subdirectory(Foundation)

@@ -9,7 +9,7 @@ class CMesh;
 
 class CFace : public CEntity
 {
-    //Face points, in order
+    // Face points, in order
     DEFINE_INPUT_ARRAY(CVertexInfo*, Points) { MarkDirty(); }
 
     DEFINE_OUTPUT_WITH_UPDATE(CFace*, Face) { UpdateEntity(); }
@@ -17,14 +17,17 @@ class CFace : public CEntity
 public:
     using Super = CEntity;
     CFace() {}
-    CFace(std::string name) : CEntity(std::move(name)) {}
+    CFace(std::string name)
+        : CEntity(std::move(name))
+    {
+    }
 
     void MarkDirty() override;
     void UpdateEntity() override;
 
     size_t CountVertices() const;
 
-    //Returns whether successful
+    // Returns whether successful
     bool AddFaceIntoMesh(CMesh* mesh) const;
 };
 

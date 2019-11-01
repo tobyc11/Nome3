@@ -1,6 +1,6 @@
 #include "Scene.h"
-#include "Mesh.h"
 #include "InteractivePoint.h"
+#include "Mesh.h"
 #include <StringUtils.h>
 
 namespace Nome::Scene
@@ -21,6 +21,9 @@ TAutoPtr<CSceneTreeNode> CScene::GetRootTreeNode() const
 
 void CScene::AddEntity(TAutoPtr<CEntity> entity)
 {
+    auto iter = EntityLibrary.find(entity->GetName());
+    if (iter != EntityLibrary.end())
+        EntityLibrary.erase(iter);
     EntityLibrary.insert(std::make_pair(entity->GetName(), std::move(entity)));
 }
 
@@ -66,7 +69,7 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
     size_t charsToIgnore = 0;
     if (id[0] == '.')
         charsToIgnore = 1;
-    //Descend down the scene tree starting from the root
+    // Descend down the scene tree starting from the root
     CSceneTreeNode* currNode = *RootNode->GetTreeNodes().begin();
     while (true)
     {
@@ -84,7 +87,8 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
             {
                 std::string idTurnedVertName = id;
                 std::replace(idTurnedVertName.begin(), idTurnedVertName.end(), '.', '_');
-                auto* point = meshInstance->CreateVertexSelector(id.substr(charsToIgnore), idTurnedVertName);
+                auto* point =
+                    meshInstance->CreateVertexSelector(id.substr(charsToIgnore), idTurnedVertName);
                 if (point)
                     return &point->Point;
                 else
@@ -94,7 +98,7 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
                 return nullptr;
         }
         currNode = nextNode;
-        //If the current node has only 1 child, it might be a group instance
+        // If the current node has only 1 child, it might be a group instance
         if (currNode->GetChildren().size() == 1)
         {
             CSceneTreeNode* onlyChild = *currNode->GetChildren().begin();
@@ -115,7 +119,7 @@ std::pair<CSceneTreeNode*, std::string> CScene::WalkPath(const std::string& path
     CSceneTreeNode* currNode = *RootNode->GetTreeNodes().begin();
     for (; iter != pathComps.end(); ++iter)
     {
-        //If the current node has only 1 child, it might be a group instance
+        // If the current node has only 1 child, it might be a group instance
         if (currNode->GetChildren().size() == 1)
         {
             CSceneTreeNode* onlyChild = *currNode->GetChildren().begin();
@@ -141,25 +145,26 @@ void DFSTreeNodeUpdate(CSceneTreeNode* treeNode)
 
     if (auto* instEnt = treeNode->GetInstanceEntity())
     {
-        //Update the instance entity
+        // Update the instance entity
+        if (instEnt->IsDirty())
+            treeNode->SetEntityUpdated(true);
         instEnt->UpdateEntity();
     }
     else if (auto* ent = treeNode->GetOwner()->GetEntity())
     {
-        //Otherwise, update the scene node entity
+        // Otherwise, update the scene node entity
+        if (ent->IsDirty())
+            treeNode->SetEntityUpdated(true);
         ent->UpdateEntity();
     }
 }
 
 void CScene::Update()
 {
-    //Called every frame to make sure everything is up to date
+    // Called every frame to make sure everything is up to date
     DFSTreeNodeUpdate(GetRootTreeNode());
 }
 
-CPickingManager* CScene::GetPickingMgr() const
-{
-    return PickingMgr;
-}
+CPickingManager* CScene::GetPickingMgr() const { return PickingMgr; }
 
 }

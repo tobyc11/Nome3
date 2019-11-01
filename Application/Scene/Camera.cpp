@@ -86,7 +86,8 @@ void COrbitCameraController::WheelMoved(int degree)
 void COrbitCameraController::CalcTransform()
 {
     auto rot = Quaternion(-Pitch, -Yaw, 0.0f);
-    Transform.UpdateValue(Matrix3x4(rot.RotationMatrix()) * Matrix3x4(Location, Quaternion::IDENTITY, 1.0f));
+    Transform.UpdateValue(Matrix3x4(rot.RotationMatrix())
+                          * Matrix3x4(Location, Quaternion::IDENTITY, 1.0f));
 }
 
 }

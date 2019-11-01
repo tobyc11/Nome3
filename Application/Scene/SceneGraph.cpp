@@ -11,8 +11,8 @@ void CSceneTreeNode::L2WTransformUpdate()
         L2WTransform.UpdateValue(Owner->Transform.GetValue(Matrix3x4::IDENTITY));
         return;
     }
-    L2WTransform.UpdateValue(
-        Parent->L2WTransform.GetValue(Matrix3x4::IDENTITY) * Owner->Transform.GetValue(Matrix3x4::IDENTITY));
+    L2WTransform.UpdateValue(Parent->L2WTransform.GetValue(Matrix3x4::IDENTITY)
+                             * Owner->Transform.GetValue(Matrix3x4::IDENTITY));
 }
 
 CSceneTreeNode* CSceneTreeNode::FindChildOfOwner(CSceneNode* owner) const
@@ -43,7 +43,8 @@ std::string CSceneTreeNode::GetPath() const
     return Parent->GetPath() + "." + Owner->GetName();
 }
 
-CSceneTreeNode::CSceneTreeNode(CSceneNode* owner) : Owner(owner)
+CSceneTreeNode::CSceneTreeNode(CSceneNode* owner)
+    : Owner(owner)
 {
 }
 
@@ -57,7 +58,7 @@ CSceneTreeNode* CSceneTreeNode::CreateTree(CSceneNode* dagNode)
         treeChild->Parent = treeNode;
     }
 
-    //Tell the owner, and instantiate
+    // Tell the owner, and instantiate
     treeNode->Owner->TreeNodes.insert(treeNode);
     if (treeNode->Owner->Entity && treeNode->Owner->Entity->IsInstantiable())
         treeNode->InstanceEntity = treeNode->Owner->Entity->Instantiate(treeNode);
@@ -69,7 +70,7 @@ void CSceneTreeNode::RemoveTree()
     for (CSceneTreeNode* child : Children)
         child->RemoveTree();
 
-    //Note: the tree node may still be referenced after deletion, thus we reset all relavant info
+    // Note: the tree node may still be referenced after deletion, thus we reset all relavant info
     Parent = nullptr;
     Children.clear();
     auto iter = Owner->TreeNodes.find(this);
@@ -96,7 +97,9 @@ void CSceneNode::TransformMarkedDirty()
 }
 
 CSceneNode::CSceneNode(CScene* owningScene, std::string name, bool isRoot, bool isGroup)
-    : Scene(owningScene), Name(std::move(name)), bIsGroup(isGroup)
+    : Scene(owningScene)
+    , Name(std::move(name))
+    , bIsGroup(isGroup)
 {
     if (isRoot)
     {
@@ -105,13 +108,11 @@ CSceneNode::CSceneNode(CScene* owningScene, std::string name, bool isRoot, bool 
     }
 }
 
-CSceneNode::~CSceneNode()
-{
-}
+CSceneNode::~CSceneNode() {}
 
 void CSceneNode::AddParent(CSceneNode* newParent)
 {
-    //Don't do anything if it is already a parent, conceptually, this checks for multiedges
+    // Don't do anything if it is already a parent, conceptually, this checks for multiedges
     if (Parents.find(newParent) != Parents.end())
         return;
 
@@ -128,17 +129,17 @@ void CSceneNode::AddParent(CSceneNode* newParent)
 
 void CSceneNode::RemoveParent(CSceneNode* parent)
 {
-    //Make sure parent is indeed a parent
+    // Make sure parent is indeed a parent
     auto iter = Parents.find(parent);
     if (iter == Parents.end())
         return;
 
-    //Undo the relationship
+    // Undo the relationship
     Parents.erase(iter);
     auto iter2 = parent->Children.find(this);
     parent->Children.erase(iter2);
 
-    //Destroy the associated sub-trees
+    // Destroy the associated sub-trees
     for (CSceneTreeNode* parentTreeNode : parent->TreeNodes)
     {
         CSceneTreeNode* myTree = parentTreeNode->FindChildOfOwner(this);
@@ -153,20 +154,27 @@ CSceneNode* CSceneNode::CreateChildNode(const std::string& name)
     return child;
 }
 
-size_t CSceneNode::CountTreeNodes() const
+CSceneNode* CSceneNode::FindChildNode(const std::string& name)
 {
-    return TreeNodes.size();
+    for (const auto& child : Children)
+        if (child->GetName() == name)
+            return child.Get();
+    return nullptr;
 }
 
-const std::set<TAutoPtr<CSceneTreeNode>>& CSceneNode::GetTreeNodes() const
+CSceneNode* CSceneNode::FindOrCreateChildNode(const std::string& name)
 {
-    return TreeNodes;
+    auto* result = FindChildNode(name);
+    if (!result)
+        return CreateChildNode(name);
+    return result;
 }
 
-CEntity* CSceneNode::GetEntity() const
-{
-    return Entity;
-}
+size_t CSceneNode::CountTreeNodes() const { return TreeNodes.size(); }
+
+const std::set<TAutoPtr<CSceneTreeNode>>& CSceneNode::GetTreeNodes() const { return TreeNodes; }
+
+CEntity* CSceneNode::GetEntity() const { return Entity; }
 
 void CSceneNode::SetEntity(CEntity* ent)
 {
@@ -177,7 +185,7 @@ void CSceneNode::SetEntity(CEntity* ent)
     {
         if (Entity->IsInstantiable())
         {
-            //Uninstantiate
+            // Uninstantiate
             for (CSceneTreeNode* treeNode : TreeNodes)
             {
                 treeNode->InstanceEntity = nullptr;
@@ -195,6 +203,14 @@ void CSceneNode::SetEntity(CEntity* ent)
                 treeNode->InstanceEntity = Entity->Instantiate(treeNode);
             }
         }
+    }
+}
+
+void CSceneNode::NotifySurfaceDirty() const
+{
+    for (CSceneTreeNode* treeNode : TreeNodes)
+    {
+        treeNode->SetEntityUpdated(true);
     }
 }
 

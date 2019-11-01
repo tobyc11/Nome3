@@ -14,7 +14,10 @@ class CFunnel : public CMesh
 public:
     using Super = CMesh;
     CFunnel() = default;
-    CFunnel(const std::string& name) : CMesh(std::move(name)) {}
+    CFunnel(const std::string& name)
+        : CMesh(std::move(name))
+    {
+    }
 
     void UpdateEntity() override;
 };

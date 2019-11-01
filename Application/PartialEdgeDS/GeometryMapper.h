@@ -63,7 +63,7 @@ public:
                      const std::string &geometry_uid,
                      const Geometry &geometry);
 
-    bool copyModel(const std::string &model_uid);
+    bool copyModel(const std::string &model_uid, const std::string &new_model_uid);
 
 private:
     //OBJECT VARIABLES

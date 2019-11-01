@@ -38,10 +38,20 @@ bool GeometryMapper::addGeometry(const std::string &model_uid,
 }
 
 bool killModel(const std::string &model_uid) {
-    return true
+    std::map<char,int>::iterator it = map.find(model_uid);
+    if (it != map.end()) {
+        map.erase (it);
+        return true;
+    }
+    return false;
 }
 
-bool copyModel(const std::string &model_uid) {
+bool copyModel(const std::string &model_uid, const std::string &new_model_uid) {
+    std::map<char,int>::iterator it = map.find(model_uid);
+    if (it == map.end()) {
+        return false
+    }
+    map.insert(std::pair(new_model_uid, map[model_uid]);
     return true;
 }
 

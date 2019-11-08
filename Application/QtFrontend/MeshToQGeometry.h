@@ -1,9 +1,16 @@
 #pragma once
 
+// We use OpenMesh for now. Can easily replace with in-house library when needed.
+#ifdef STILL_USING_OPENMESH
 #define _USE_MATH_DEFINES
 #undef min
 #undef max
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
+#else
+#include <Scene/PolySoupMesh.h>
+typedef Nome::Scene::CPolySoupMesh CMeshImpl;
+#endif
 
 #include <QByteArray>
 #include <Qt3DRender/QAttribute>
@@ -12,8 +19,6 @@
 
 namespace Nome
 {
-
-typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
 
 class CAttribute
 {

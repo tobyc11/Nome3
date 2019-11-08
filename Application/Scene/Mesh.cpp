@@ -74,7 +74,7 @@ CMeshImpl::VertexHandle CMesh::AddVertex(const std::string& name, tc::Vector3 po
         return iter->second;
 
     CMeshImpl::VertexHandle vertex;
-    vertex = Mesh.add_vertex(CMeshImpl::Point(pos.x, pos.y, pos.z));
+    vertex = Mesh.add_vertex(pos);
     NameToVert.emplace(name, vertex);
     return vertex;
 }
@@ -100,8 +100,8 @@ void CMesh::AddFace(const std::string& name, const std::vector<std::string>& fac
 void CMesh::AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints)
 {
     auto faceHandle = Mesh.add_face(facePoints);
-    if (!faceHandle.is_valid())
-        printf("Could not add face %s into mesh %s\n", name.c_str(), GetName().c_str());
+    //if (!faceHandle.is_valid())
+    //    printf("Could not add face %s into mesh %s\n", name.c_str(), GetName().c_str());
     NameToFace.emplace(name, faceHandle);
 }
 
@@ -169,9 +169,9 @@ void CMeshInstance::UpdateEntity()
         return;
     MeshGenerator->UpdateEntity();
     CopyFromGenerator();
-    Mesh.request_vertex_status();
-    Mesh.request_edge_status();
-    Mesh.request_face_status();
+    //Mesh.request_vertex_status();
+    //Mesh.request_edge_status();
+    //Mesh.request_face_status();
     for (const std::string& face : FacesToDelete)
     {
         auto iter = NameToFace.find(face);
@@ -186,14 +186,14 @@ void CMeshInstance::UpdateEntity()
         }
     }
 
-    if (!Mesh.faces_empty())
-    {
-        Mesh.request_face_normals();
-        Mesh.request_vertex_normals();
-        Mesh.update_face_normals();
-        Mesh.update_vertex_normals();
-        // Update visual layer geometry
-    }
+    //if (!Mesh.faces_empty())
+    //{
+    //    Mesh.request_face_normals();
+    //    Mesh.request_vertex_normals();
+    //    Mesh.update_face_normals();
+    //    Mesh.update_vertex_normals();
+    //    // Update visual layer geometry
+    //}
 
     // Construct interactive points
     CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();

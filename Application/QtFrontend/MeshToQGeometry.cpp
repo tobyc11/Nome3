@@ -31,7 +31,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh, bool bGenPointGeom
     builder.AddAttribute(&attrNor);
 
     CMeshImpl::FaceIter fIter, fEnd = fromMesh.faces_end();
-    for (fIter = fromMesh.faces_sbegin(); fIter != fEnd; ++fIter)
+    for (fIter = fromMesh.faces_begin(); fIter != fEnd; ++fIter)
     {
         CVertexData v0, vPrev, vCurr;
         int faceVCount = 0;

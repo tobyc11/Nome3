@@ -5,16 +5,20 @@
 #include <Ray.h>
 
 // We use OpenMesh for now. Can easily replace with in-house library when needed.
+#ifdef STILL_USING_OPENMESH
 #define _USE_MATH_DEFINES
 #undef min
 #undef max
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
+#else
+#include "PolySoupMesh.h"
+typedef Nome::Scene::CPolySoupMesh CMeshImpl;
+#endif
 
 #include <map>
 #include <set>
 #include <utility>
-
-typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
 
 namespace Nome::Scene
 {

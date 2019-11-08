@@ -47,18 +47,20 @@ void CInteractiveMesh::UpdateGeometry()
 
     if (entity)
     {
-        // TODO: drop the old QGeometry otherwise memory leak?
         auto* meshInstance = dynamic_cast<Scene::CMeshInstance*>(entity);
         if (meshInstance)
         {
-            CMeshToQGeometry meshToQGeometry(meshInstance->GetMeshImpl(), true);
-            auto* vGeometry = meshToQGeometry.GetGeometry();
-            vGeometry->setParent(this);
+            delete GeometryRenderer;
+            delete Geometry;
 
-            auto* vGeomRenderer = new Qt3DRender::QGeometryRenderer(this);
-            vGeomRenderer->setGeometry(vGeometry);
-            vGeomRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
-            this->addComponent(vGeomRenderer);
+            CMeshToQGeometry meshToQGeometry(meshInstance->GetMeshImpl(), true);
+            Geometry = meshToQGeometry.GetGeometry();
+            Geometry->setParent(this);
+
+            GeometryRenderer = new Qt3DRender::QGeometryRenderer(this);
+            GeometryRenderer->setGeometry(Geometry);
+            GeometryRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
+            this->addComponent(GeometryRenderer);
 
             // Update or create the entity for drawing vertices
             if (!PointEntity)

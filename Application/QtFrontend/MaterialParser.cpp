@@ -120,6 +120,16 @@ bool CMaterialParser::Parse()
                         QShaderProgram::loadSource(QUrl(fragmentShaderCode.value())));
                 }
 
+                auto pointSizeNode = renderPassNode.child("PointSize");
+                if (pointSizeNode)
+                {
+                    auto value = ParseVariant(pointSizeNode.attribute("value").value());
+                    auto* pointSize = new QPointSize();
+                    pointSize->setValue(value.value<float>());
+                    pointSize->setSizeMode(QPointSize::Fixed);
+                    renderPass->addRenderState(pointSize);
+                }
+
                 auto cullFaceNode = renderPassNode.child("CullFace");
                 if (cullFaceNode)
                 {

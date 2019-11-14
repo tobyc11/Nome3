@@ -17,7 +17,7 @@ namespace Nome
 {
 
 CInteractiveMesh::CInteractiveMesh(Scene::CSceneTreeNode* node)
-    : SceneTreeNode(node)
+    : SceneTreeNode(node), PointEntity{}, PointMaterial{}, PointGeometry{}, PointRenderer{}
 {
     UpdateTransform();
     UpdateGeometry();
@@ -47,18 +47,43 @@ void CInteractiveMesh::UpdateGeometry()
 
     if (entity)
     {
-        // TODO: drop the old QGeometry otherwise memory leak?
         auto* meshInstance = dynamic_cast<Scene::CMeshInstance*>(entity);
         if (meshInstance)
         {
-            CMeshToQGeometry meshToQGeometry(meshInstance->GetMeshImpl());
-            auto* vGeometry = meshToQGeometry.GetGeometry();
-            vGeometry->setParent(this);
+            delete GeometryRenderer;
+            delete Geometry;
 
-            auto* vGeomRenderer = new Qt3DRender::QGeometryRenderer(this);
-            vGeomRenderer->setGeometry(vGeometry);
-            vGeomRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
-            this->addComponent(vGeomRenderer);
+            CMeshToQGeometry meshToQGeometry(meshInstance->GetMeshImpl(), true);
+            Geometry = meshToQGeometry.GetGeometry();
+            Geometry->setParent(this);
+
+            GeometryRenderer = new Qt3DRender::QGeometryRenderer(this);
+            GeometryRenderer->setGeometry(Geometry);
+            GeometryRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
+            this->addComponent(GeometryRenderer);
+
+            // Update or create the entity for drawing vertices
+            if (!PointEntity)
+            {
+                PointEntity = new Qt3DCore::QEntity(this);
+
+                auto xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
+                auto* lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
+                PointMaterial = lineMat;
+                PointMaterial->setParent(this);
+                PointEntity->addComponent(PointMaterial);
+            }
+            else
+            {
+                delete PointRenderer;
+                delete PointGeometry;
+            }
+            PointGeometry = meshToQGeometry.GetPointGeometry();
+            PointGeometry->setParent(PointEntity);
+            PointRenderer = new Qt3DRender::QGeometryRenderer(PointEntity);
+            PointRenderer->setGeometry(PointGeometry);
+            PointRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
+            PointEntity->addComponent(PointRenderer);
         }
         else
         {

@@ -21,12 +21,12 @@ class CEntity : public Flow::CFlowNode
 public:
     CEntity();
 
-    CEntity(std::string name)
+    explicit CEntity(std::string name)
         : Name(std::move(name))
     {
     }
 
-    ~CEntity() override {}
+    ~CEntity() override = default;
 
     const std::string& GetName() const { return Name; }
     // Don't use this, otherwise the Scene's EntityLibrary won't be updated with the new name

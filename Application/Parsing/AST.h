@@ -131,10 +131,10 @@ public:
         TF_TRANSLATE
     } Type;
 
-    AExpr* AxisX;
-    AExpr* AxisY;
-    AExpr* AxisZ;
-    AExpr* Deg; // Only valid for rotation
+    AExpr* AxisX {};
+    AExpr* AxisY {};
+    AExpr* AxisZ {};
+    AExpr* Deg {}; // Only valid for rotation
 
     inline static EClassId StaticId() { return EClassId::Transform; }
     static ATransform* Create(CASTContext& ctx);
@@ -148,8 +148,8 @@ public:
     static AExprList* Create(CASTContext& ctx);
 
     void AddExpr(AExpr* expr);
-    const std::vector<AExpr*>& GetExpressions() const;
-    std::vector<AIdent*> ConvertToIdents() const;
+    [[nodiscard]] const std::vector<AExpr*>& GetExpressions() const;
+    [[nodiscard]] std::vector<AIdent*> ConvertToIdents() const;
 
 private:
     std::vector<AExpr*> Expressions;
@@ -167,19 +167,19 @@ public:
     static ACommandArgument* Create(CASTContext& ctx, AIdent* param, AExpr* value,
                                     ACommandArgument* next = nullptr);
 
-    ACommand* GetParent() const { return Parent; }
-    ACommandArgument* GetPrev() const { return Prev; }
-    ACommandArgument* GetNext() const { return Next; }
-    AIdent* GetParameter() const { return Parameter; }
-    AExpr* GetValue() const { return Value; }
+    [[nodiscard]] ACommand* GetParent() const { return Parent; }
+    [[nodiscard]] ACommandArgument* GetPrev() const { return Prev; }
+    [[nodiscard]] ACommandArgument* GetNext() const { return Next; }
+    [[nodiscard]] AIdent* GetParameter() const { return Parameter; }
+    [[nodiscard]] AExpr* GetValue() const { return Value; }
 
 private:
     ACommand* Parent = nullptr;
     ACommandArgument* Prev = nullptr;
     ACommandArgument* Next = nullptr;
 
-    AIdent* Parameter;
-    AExpr* Value;
+    AIdent* Parameter {};
+    AExpr* Value {};
 };
 
 class ACommand
@@ -191,9 +191,9 @@ public:
                             AIdent* endKeyword, ACommandArgument* args = nullptr,
                             ACommand* subcommands = nullptr);
 
-    AIdent* GetBeginKeyword() const { return BeginKeyword; }
-    AIdent* GetEndKeyword() const { return EndKeyword; }
-    AIdent* GetName() const { return Name; }
+    [[nodiscard]] AIdent* GetBeginKeyword() const { return BeginKeyword; }
+    [[nodiscard]] AIdent* GetEndKeyword() const { return EndKeyword; }
+    [[nodiscard]] AIdent* GetName() const { return Name; }
 
     void SetNext(ACommand* next)
     {
@@ -202,8 +202,8 @@ public:
         if (next)
             next->Prev = this;
     }
-    AExpr* FindNamedArg(const std::string& name) const;
-    ACommandArgument* GetArguments() const { return Arguments; }
+    [[nodiscard]] AExpr* FindNamedArg(const std::string& name) const;
+    [[nodiscard]] ACommandArgument* GetArguments() const { return Arguments; }
     void SetArguments(ACommandArgument* args)
     {
         Arguments = args;
@@ -212,10 +212,10 @@ public:
     ACommandArgument* AddArgument(AIdent* param, AExpr* value);
     void AppendChild(ACommand* cmd);
 
-    std::vector<ACommand*> GatherSubcommands() const;
+    [[nodiscard]] std::vector<ACommand*> GatherSubcommands() const;
 
 private:
-    ACommand(CASTContext& ctx)
+    explicit ACommand(CASTContext& ctx)
         : Context(ctx)
     {
     }

@@ -1,4 +1,5 @@
 #include "Nome3DView.h"
+#include <Scene/Mesh.h>
 
 namespace Nome
 {
@@ -161,6 +162,24 @@ void CNome3DView::PostSceneUpdate()
         pair.first->Draw(pair.second);
         pair.second->Commit();
     }
+}
+
+void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
+{
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+            auto localRay = ray.Transformed(l2w.Inverse());
+
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            meshInst->PickVertices(localRay);
+        }
+    });
 }
 
 Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)

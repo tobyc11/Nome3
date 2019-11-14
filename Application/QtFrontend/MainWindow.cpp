@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "CodeWindow.h"
+#include "FrontendContext.h"
 #include "Nome3DView.h"
 #include "ui_MainWindow.h"
 
@@ -19,6 +20,9 @@
 
 namespace Nome
 {
+
+static CFrontendContext AnonFrontendContext;
+CFrontendContext* GFrtCtx = &AnonFrontendContext;
 
 CMainWindow::CMainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -184,6 +188,7 @@ void CMainWindow::SetupUI()
 
     // Initialize 3D view
     Nome3DView = std::make_unique<CNome3DView>();
+    GFrtCtx->NomeView = Nome3DView.get();
 
     auto* viewContainer = QWidget::createWindowContainer(Nome3DView.get());
     viewContainer->setObjectName("visualLayerContainer");

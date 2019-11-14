@@ -2,6 +2,7 @@
 #include "DebugDraw.h"
 #include "InteractiveMesh.h"
 #include <Scene/Scene.h>
+#include <Ray.h>
 
 #include <Qt3DExtras>
 
@@ -20,6 +21,8 @@ public:
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
+
+    void PickVertexWorldRay(const tc::Ray& ray);
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
 

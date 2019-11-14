@@ -1,0 +1,20 @@
+language: cpp
+os: osx
+compiler:
+  - gcc
+  - clang
+
+addons:
+  homebrew:
+    packages:
+      - qt
+      - open-mesh
+      - pugixml
+      - bison
+      - flex
+      - cmake
+    update: True
+
+
+script:
+ - cmake . && make

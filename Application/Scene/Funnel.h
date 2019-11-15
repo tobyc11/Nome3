@@ -21,5 +21,4 @@ public:
 
     void UpdateEntity() override;
 };
-
 }

@@ -1,12 +1,13 @@
 #include "Nome3DView.h"
+#include "FrontendContext.h"
+#include "MainWindow.h"
 #include <Scene/Mesh.h>
 
+#include <QDialog>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QStatusBar>
 #include <QTableWidget>
-#include <QTableWidgetItem>
-#include <QVBoxLayout>
-#include <QDialog>
 
 namespace Nome
 {
@@ -171,8 +172,11 @@ void CNome3DView::PostSceneUpdate()
     }
 }
 
-void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
+void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
 {
+    if (!additive)
+        SelectedVertices.clear();
+
     std::vector<std::pair<float, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
@@ -192,11 +196,15 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
 
     std::sort(hits.begin(), hits.end());
     if (hits.size() == 1)
+    {
         SelectedVertices.push_back(hits[0].second);
+        GFrtCtx->MainWindow->statusBar()->showMessage(
+            QString::fromStdString("Selected " + hits[0].second));
+    }
     else if (!hits.empty())
     {
         // Show a dialog for the user to choose one vertex
-        auto* dialog = new QDialog();
+        auto* dialog = new QDialog(GFrtCtx->MainWindow);
         dialog->setModal(true);
         auto* layout1 = new QHBoxLayout(dialog);
         auto* table = new QTableWidget();
@@ -219,6 +227,8 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
             {
                 int row = sel[0]->row();
                 SelectedVertices.push_back(hits[row].second);
+                GFrtCtx->MainWindow->statusBar()->showMessage(
+                    QString::fromStdString("Selected " + hits[row].second));
             }
             dialog->close();
         });
@@ -229,6 +239,10 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
         layout2->addWidget(btnCancel);
         layout1->addLayout(layout2);
         dialog->show();
+    }
+    else
+    {
+        GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
     }
 }
 

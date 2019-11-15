@@ -1,8 +1,8 @@
 #pragma once
 #include "DebugDraw.h"
 #include "InteractiveMesh.h"
-#include <Scene/Scene.h>
 #include <Ray.h>
+#include <Scene/Scene.h>
 
 #include <Qt3DExtras>
 
@@ -18,13 +18,16 @@ public:
     CNome3DView();
     ~CNome3DView() override;
 
-    const std::vector<std::string>& GetSelectedVertices() const { return SelectedVertices; }
+    [[nodiscard]] const std::vector<std::string>& GetSelectedVertices() const
+    {
+        return SelectedVertices;
+    }
 
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
 
-    void PickVertexWorldRay(const tc::Ray& ray);
+    void PickVertexWorldRay(const tc::Ray& ray, bool additive = true);
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
 

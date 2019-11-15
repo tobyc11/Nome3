@@ -47,6 +47,7 @@ CMainWindow::CMainWindow(const std::string& fileToOpen, QWidget* parent)
 
 CMainWindow::~CMainWindow()
 {
+    GFrtCtx->MainWindow = nullptr;
     UnloadNomeFile();
     delete ui;
 }
@@ -203,6 +204,8 @@ void CMainWindow::on_actionCommitTempMesh_triggered()
 
 void CMainWindow::SetupUI()
 {
+    GFrtCtx->MainWindow = this;
+
     // Add vertical layout for main window content
     //  Might not need to do this if layout is in the ui file
     auto* layout = new QVBoxLayout();

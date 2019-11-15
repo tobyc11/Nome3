@@ -22,6 +22,24 @@ void CFace::UpdateEntity()
 
 size_t CFace::CountVertices() const { return Points.GetSize(); }
 
+std::vector<std::string> CFace::GetPointSourceNames() const { return PointSource; }
+
+void CFace::SetPointSourceNames(const TAutoPtr<CScene>& scene, std::vector<std::string> points)
+{
+    PointSource = std::move(points);
+
+    for (const auto& point : PointSource)
+    {
+        Flow::TOutput<CVertexInfo*>* pointOutput = scene->FindPointOutput(point);
+        if (!pointOutput)
+        {
+            // Uhh what happened?
+            continue;
+        }
+        Points.Connect(*pointOutput);
+    }
+}
+
 bool CFace::AddFaceIntoMesh(CMesh* mesh) const
 {
     std::vector<std::string> nameList;

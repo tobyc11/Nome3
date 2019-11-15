@@ -17,6 +17,7 @@ public:
     Model *next;
     Model *prev;
     Region *region;
+    u_int64_t modelUID;
 
     Model();
     ~Model();
@@ -54,6 +55,8 @@ public:
     bool cutFaceByTwoVertexes(const std::string &vertexID1, const std::string &vetexID2);
     std::vector<Region *> getRegions() const;
     Model* killModel();
+    void mergeModel(Model *bModel);
+    void changeKeysInModel(std::map<std::pair<EGType, u_int64_t>, u_int64_t> *keyMap);
 };
 
 }

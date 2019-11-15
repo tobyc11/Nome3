@@ -12,47 +12,112 @@ GeometryMapper::GeometryMapper() {
 
 }
 
-bool GeometryMapper::copyModel(const std::string &model_uid){
-    return true;
+void GeometryMapper::killModel(u_int64_t modelUID)
+{
+    auto it = map.find(modelUID);
+    if (it != map.end())
+    {
+        map.erase(it);
+    }
+    else
+    {
+        // Throw an error and/or warning
+    }
+    
 }
 
-bool GeometryMapper::addGeometry(const std::string &model_uid,
-                                 const EGType &type,
-                                 const std::string &geometry_uid,
-                                 const Geometry &geometry) {
-
-    if (map[model_uid].empty()) { map.insert(std::pair(model_uid,
-                                            std::map<EGType,std::map<std::string, Geometry>>()));
-    }
-    if (map[model_uid][type].empty()) { map[model_uid].insert(std::pair(type,
-                                                             std::map<std::string, Geopmetry>()));
-    }
-    if (map[model_uid][type].find(geometry_uid) != map[model_uid][type].end()) {
-        std::cout <<"GeometryMapper::addGeometry(const std::string &" << model_uid << \
-        ", const EGType &" << type << ", const std::string &" << geometry_uid << "does exits!!";
-        return false;
+void GeometryMapper::addGeometry(u_int64_t modelUID,
+                                 EGType type,
+                                 u_int64_t geometryUID,
+                                 Geometry *geometry)
+{
+    if (map[modelUID].empty())
+    {
+        map.insert(std::pair(modelUID, std::map<std::pair<EGType, u_int64_t>, Geometry*>()));
     }
 
-    map[model_uid][type][geometry_uid] = geopmetry;
-    return true;
+    if (map[modelUID].find(geometry_key(type, geometryUID)) == map[modelUID].end())
+    {
+        map[modelUID][geometry_key(type, geometryUID)] = geometry;
+    }
+    else
+    {
+        //Throw an error and/or warning
+    }
+
 }
 
-bool killModel(const std::string &model_uid) {
-    std::map<char,int>::iterator it = map.find(model_uid);
-    if (it != map.end()) {
-        map.erase (it);
-        return true;
+u_int64_t GeometryMapper::copyModel(u_int64_t modelUID)
+{
+    if (map.find(modelUID) != map.end())
+    {
+        u_int64_t new_modelUID = idGenerator.newUID();
+        map.insert(std::pair(new_modelUID, std::map<std::pair<EGType, u_int64_t>, Geometry*>()));
+        auto model_iter = map[modelUID].begin();
+
+        while (model_iter != map[modelUID].end())
+        {
+            auto key = model_iter->first;
+            map[new_modelUID][key] = new Geometry(*(model_iter->second));
+            ++model_iter;
+        }
     }
-    return false;
+    else
+    {
+        // Throw an error and/or warning
+    }
+    
 }
 
-bool copyModel(const std::string &model_uid, const std::string &new_model_uid) {
-    std::map<char,int>::iterator it = map.find(model_uid);
-    if (it == map.end()) {
-        return false
+std::map<std::pair<EGType, u_int64_t>, u_int64_t> *GeometryMapper::mergeModels(u_int64_t aModelUID,
+                                                                               u_int64_t bModelUID)
+{
+    if (map.find(aModelUID) == map.end() || map.find(bModelUID) == map.end())
+    {
+        // Throw an error and/or warning
     }
-    map.insert(std::pair(new_model_uid, map[model_uid]);
-    return true;
+
+    auto aModel = map[aModelUID];
+    auto bModel = map[bModelUID];
+
+    // Create a new map of values to change in model B after the merge (this is what will be returned)
+    auto keysToChangeInB = new std::map<std::pair<EGType, u_int64_t>, u_int64_t>();
+
+    // Begin copying over bModel to aModel
+    auto bModel_iter = bModel.begin();
+    while (bModel_iter != bModel.end())
+    {
+        auto bKey = bModel_iter->first;
+        auto bValue = bModel_iter->second;
+        if (aModel.find(bKey) == aModel.end())
+        {
+            aModel[bKey] = bValue;
+        }
+        else
+        {
+            auto newKey = geometry_key(bKey.first, idGenerator.newUID());
+            aModel[newKey] = bValue;
+            (*keysToChangeInB)[bKey] = newKey.second;
+        }
+        
+        ++bModel_iter;
+    }
+
+    killModel(bModelUID);
+
+    return keysToChangeInB;
+}
+
+std::pair<EGType, u_int64_t> GeometryMapper::geometry_key(EGType type, u_int64_t geometryUID)
+{
+    return std::pair(type, geometryUID);
+}
+
+u_int64_t GeometryMapper::UIDGenerator::newUID()
+{
+    int64_t uid = counter;
+    counter++;
+    return uid;
 }
 
 }

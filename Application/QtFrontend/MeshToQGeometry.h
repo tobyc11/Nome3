@@ -74,7 +74,7 @@ public:
         AdvanceIndices();
     }
 
-    uint32_t GetVertexCount() const { return CurrVertexIndex; }
+    [[nodiscard]] uint32_t GetVertexCount() const { return CurrVertexIndex; }
 
 protected:
     void AdvanceIndices()
@@ -96,7 +96,7 @@ private:
 class CMeshToQGeometry
 {
 public:
-    explicit CMeshToQGeometry(const CMeshImpl& fromMesh);
+    explicit CMeshToQGeometry(const CMeshImpl& fromMesh, bool bGenPointGeometry = false);
 
     ~CMeshToQGeometry();
 
@@ -106,9 +106,11 @@ public:
     CMeshToQGeometry& operator=(CMeshToQGeometry&&) = delete;
 
     [[nodiscard]] Qt3DRender::QGeometry* GetGeometry() const { return Geometry; }
+    [[nodiscard]] Qt3DRender::QGeometry* GetPointGeometry() const { return PointGeometry; }
 
 private:
     Qt3DRender::QGeometry* Geometry = nullptr;
+    Qt3DRender::QGeometry* PointGeometry = nullptr;
 };
 
 }

@@ -24,7 +24,7 @@ class CPoint : public CEntity
 public:
     using Super = CEntity;
 
-    CPoint(std::string name)
+    explicit CPoint(std::string name)
         : CEntity(std::move(name))
     {
     }

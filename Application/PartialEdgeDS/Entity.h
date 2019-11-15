@@ -4,6 +4,8 @@
 
 #pragma once
 #include <string>
+#include <map>
+#include "GeometryMapper.h"
 
 namespace Nome::PartialEdgeDS {
 
@@ -20,6 +22,8 @@ enum class EType {
 class Entity
 {
 public:
+    static GeometryMapper mapper;
+
     virtual ~Entity() { };
     //TODO: ADD Init
     Entity(std::string name) : Name(std::move(name)) { }

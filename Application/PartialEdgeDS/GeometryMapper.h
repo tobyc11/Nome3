@@ -7,6 +7,31 @@
  * which references them. Will make duplicating geometry (and entire models)
  * easier to implement. */
 
+
+/**
+ *  TODO: OBJECT MEMBERS/METHODS FOR GEOMETRY MAPPER
+ *  * M[Model_ID][Geometry_Type][Geom_ID]
+ *
+ *  * KillModel(modelUID)
+ *  * AddGeom(modelUID, Geometric *Object) >> returns geom_id to where it was created
+ *      - for POINTS
+ *      - for CURVES
+ *      - for SURFACE
+ *  * Private: CopyModel(modelUID) -> (deep copy and move to new index) >> id where the copy is located
+ *
+ *  * getEntity(model_id, G_TYPE, geom_id)
+ *  * getAllPoints(model_id)
+ *  * getAllCurves(model_id)
+ *  * getAllSurfaces(model_id)
+ *  * model_append(model_a_id, model_b_id) Model A gets modified, b gets deleted
+ *      -   Merge Hash Tables, record collisions
+ *      -   return Map of B_old_Id -> B_new_ID (all of them, not just collisions)
+ *
+ *  * applyTransformation(model_id, T)
+ *  *  T ~ lambda x,y,z -> x', y', z
+*/
+
+
 #pragma once
 #include <map>
 #include <string>
@@ -16,7 +41,7 @@ namespace Nome::PartialEdgeDS
 
 {
 
-enum class EGType {
+enum EGType{
     POINT,
     CURVE,
     SURFACE
@@ -25,54 +50,42 @@ enum class EGType {
 class GeometryMapper
 {
 public:
+    // Constructors & destructors
     GeometryMapper();
     ~GeometryMapper();
 
-    /**
-     *  TODO: OBJECT MEMBERS/METHODS FOR GEOMETRY MAPPER
-     *  * M[Model_ID][Geometry_Type][Geom_ID]
-     *
-     *  * KillModel(model_uid)
-     *  * AddGeom(model_uid, Geometric *Object) >> returns geom_id to where it was created
-     *      - for POINTS
-     *      - for CURVES
-     *      - for SURFACE
-     *  * Private: CopyModel(model_uid) -> (deep copy and move to new index) >> id where the copy is located
-     *
-     *  * getEntity(model_id, G_TYPE, geom_id)
-     *  * getAllPoints(model_id)
-     *  * getAllCurves(model_id)
-     *  * getAllSurfaces(model_id)
-     *  * model_append(model_a_id, model_b_id) Model A gets modified, b gets deleted
-     *      -   Merge Hash Tables, record collisions
-     *      -   return Map of B_old_Id -> B_new_ID (all of them, not just collisions)
-     *
-     *  * applyTransformation(model_id, T)
-     *  *  T ~ lambda x,y,z -> x', y', z
-    */
+    // Public methods
+    void killModel(u_int64_t modelUID);
+    //After killing, the map at modelUID no longer exits
 
-    //OBJECT METHODS
-    //
-    //
-    //
-    //
-    bool killModel(const std::string &model_uid);
+    void addGeometry(u_int64_t modelUID,
+                     EGType type,
+                     u_int64_t geometryUID,
+                     Geometry *geometry);
 
-    bool addGeometry(const std::string &model_uid,
-                     const EGType &type,
-                     const std::string &geometry_uid,
-                     const Geometry &geometry);
-
-    bool copyModel(const std::string &model_uid, const std::string &new_model_uid);
+    u_int64_t copyModel(u_int64_t modelUID);
+    
+    //After merging, the map at bModelUID no longer exits
+    std::map<std::pair<EGType, u_int64_t>, u_int64_t> *mergeModels(u_int64_t aModelUID,
+                                                                   u_int64_t bModelUID);
 
 private:
-    //OBJECT VARIABLES
-    //Hash Table MODELS
-    //
-    std::map<std::string, std::map<EGType,std::map<std::string, *Geometry>>> map;
+    // Use for internal UID generation
+    class UIDGenerator
+    {
+    public:
+        u_int64_t newUID();
 
+    private:
+        u_int64_t counter; 
+    };
 
-    //TODO: once we implement GeometryMapper, we can get rid of flags, and just use HoFs
+    // Private fields
+    std::map<u_int64_t, std::map<std::pair<EGType, u_int64_t>, Geometry*>> map;
+    UIDGenerator idGenerator;
+
+    // Private methods
+    std::pair<EGType, u_int64_t> geometry_key(EGType type, u_int64_t geometryUID);
 };
-
 }
+

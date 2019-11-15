@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "CodeWindow.h"
+#include "FrontendContext.h"
 #include "Nome3DView.h"
 #include "ui_MainWindow.h"
 
@@ -15,10 +16,14 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QSlider>
+#include <QToolBar>
 #include <QVBoxLayout>
 
 namespace Nome
 {
+
+static CFrontendContext AnonFrontendContext;
+CFrontendContext* GFrtCtx = &AnonFrontendContext;
 
 CMainWindow::CMainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -42,6 +47,7 @@ CMainWindow::CMainWindow(const std::string& fileToOpen, QWidget* parent)
 
 CMainWindow::~CMainWindow()
 {
+    GFrtCtx->MainWindow = nullptr;
     UnloadNomeFile();
     delete ui;
 }
@@ -175,8 +181,31 @@ void CMainWindow::on_actionAbout_triggered()
                           "Toby Chen"));
 }
 
+void CMainWindow::on_actionAddFace_triggered()
+{
+    const auto& verts = Nome3DView->GetSelectedVertices();
+    if (verts.size() < 3)
+    {
+        statusBar()->showMessage("Selected vertices are less than 3");
+        return;
+    }
+    TemporaryMeshManager->AddFace(verts);
+}
+
+void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->ResetTemporaryMesh(); }
+
+void CMainWindow::on_actionCommitTempMesh_triggered()
+{
+    std::string code = TemporaryMeshManager->CommitTemporaryMesh(MeshName->text().toStdString(),
+                                                                 InstName->text().toStdString());
+    QInputDialog::getMultiLineText(this, tr("Code"), tr("Please manually copy the code for now:"),
+                                   QString::fromStdString(code));
+}
+
 void CMainWindow::SetupUI()
 {
+    GFrtCtx->MainWindow = this;
+
     // Add vertical layout for main window content
     //  Might not need to do this if layout is in the ui file
     auto* layout = new QVBoxLayout();
@@ -184,6 +213,7 @@ void CMainWindow::SetupUI()
 
     // Initialize 3D view
     Nome3DView = std::make_unique<CNome3DView>();
+    GFrtCtx->NomeView = Nome3DView.get();
 
     auto* viewContainer = QWidget::createWindowContainer(Nome3DView.get());
     viewContainer->setObjectName("visualLayerContainer");
@@ -193,6 +223,14 @@ void CMainWindow::SetupUI()
     viewContainer->setFocusPolicy(Qt::TabFocus);
 
     layout->addWidget(viewContainer);
+
+    // Qt Designer won't let us put text boxes into a toolbar, so we do it here
+    InstName = new QLineEdit();
+    InstName->setText("newInstance");
+    MeshName = new QLineEdit();
+    MeshName->setText("newMesh");
+    ui->toolBar->insertWidget(ui->actionCommitTempMesh, MeshName);
+    ui->toolBar->insertWidget(ui->actionCommitTempMesh, InstName);
 
     // Connect signals that are not otherwise auto-connected
     connect(ui->actionExit, &QAction::triggered, this, &CMainWindow::close);
@@ -282,10 +320,13 @@ void CMainWindow::PostloadSetup()
         Nome3DView->PostSceneUpdate();
     });
     SceneUpdateClock->start();
+
+    TemporaryMeshManager = std::make_unique<Scene::CTemporaryMeshManager>(Scene);
 }
 
 void CMainWindow::UnloadNomeFile()
 {
+    TemporaryMeshManager.reset(nullptr);
     SceneUpdateClock->stop();
     delete SceneUpdateClock;
     Nome3DView->UnloadScene();

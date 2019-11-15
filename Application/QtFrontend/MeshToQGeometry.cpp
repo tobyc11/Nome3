@@ -5,7 +5,7 @@
 namespace Nome
 {
 
-CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh)
+CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh, bool bGenPointGeometry)
 {
     // Per face normal, thus no shared vertices between faces
     struct CVertexData
@@ -88,12 +88,61 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh)
     normAttr->setCount(builder.GetVertexCount());
     attrNor.FillInQAttribute(normAttr);
     Geometry->addAttribute(normAttr);
+
+    if (bGenPointGeometry)
+    {
+        PointGeometry = new Qt3DRender::QGeometry();
+
+        std::vector<float> pointBufferData;
+        uint32_t vertexCount = 0;
+        for (const auto& v : fromMesh.vertices())
+        {
+            const auto& point = fromMesh.point(v);
+            pointBufferData.push_back(point[0]);
+            pointBufferData.push_back(point[1]);
+            pointBufferData.push_back(point[2]);
+            // TODO: if selected, change color to something else
+            pointBufferData.push_back(1.0f);
+            pointBufferData.push_back(1.0f);
+            pointBufferData.push_back(1.0f);
+            vertexCount++;
+        }
+
+        QByteArray copyOfBuffer { reinterpret_cast<const char*>(pointBufferData.data()),
+                                  static_cast<int>(pointBufferData.size() * sizeof(float)) };
+        auto* buffer = new Qt3DRender::QBuffer(Qt3DRender::QBuffer::VertexBuffer, PointGeometry);
+        buffer->setData(copyOfBuffer);
+
+        posAttr = new Qt3DRender::QAttribute(PointGeometry);
+        posAttr->setName(Qt3DRender::QAttribute::defaultPositionAttributeName());
+        posAttr->setAttributeType(Qt3DRender::QAttribute::VertexAttribute);
+        posAttr->setBuffer(buffer);
+        posAttr->setCount(vertexCount);
+        posAttr->setByteOffset(0);
+        posAttr->setByteStride(24);
+        posAttr->setVertexBaseType(Qt3DRender::QAttribute::Float);
+        posAttr->setVertexSize(3);
+        PointGeometry->addAttribute(posAttr);
+
+        auto* colorAttr = new Qt3DRender::QAttribute(PointGeometry);
+        colorAttr->setName(Qt3DRender::QAttribute::defaultColorAttributeName());
+        colorAttr->setAttributeType(Qt3DRender::QAttribute::VertexAttribute);
+        colorAttr->setBuffer(buffer);
+        colorAttr->setCount(vertexCount);
+        colorAttr->setByteOffset(12);
+        colorAttr->setByteStride(24);
+        colorAttr->setVertexBaseType(Qt3DRender::QAttribute::Float);
+        colorAttr->setVertexSize(3);
+        PointGeometry->addAttribute(colorAttr);
+    }
 }
 
 CMeshToQGeometry::~CMeshToQGeometry()
 {
     if (!Geometry->parent())
         delete Geometry;
+    if (PointGeometry && !PointGeometry->parent())
+        delete PointGeometry;
 }
 
 }

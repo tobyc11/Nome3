@@ -15,22 +15,14 @@ public:
     Model *next;
     Model *prev;
     Region *region;
+    u_int64_t modelUID;
 
     Model();
     ~Model();
 
-    /**
-     * TODO: Implement Merge Models for merging A and B
-     *  - First, Merge HashTables, get list of new B ids
-     *  - Apply changes to B for ids at Faces, Edges, Vertices
-     *  - Append Region(s) from B to A
-     *  - Null out *region
-     *  - Kill B -> return pointer to next guy after B
-     *  - Stitch to previous
-     *  - Free B
-    */
-
     Model* killModel();
+    void mergeModel(Model *bModel);
+    void changeKeysInModel(std::map<std::pair<EGType, u_int64_t>, u_int64_t> *keyMap);
 };
 
 }

@@ -33,33 +33,32 @@ void CScene::RemoveEntity(const std::string& name, bool bAlsoRemoveChildren)
     if (iter != EntityLibrary.end())
     {
         if (bAlsoRemoveChildren)
-        {
             while (tc::FStringUtils::StartsWith(iter->first, name))
-            {
-                auto savedIter = iter;
-                ++savedIter;
-                EntityLibrary.erase(iter);
-                iter = savedIter;
-            }
-        }
+                EntityLibrary.erase(iter++);
         else
             EntityLibrary.erase(iter);
     }
 }
 
-void CScene::RenameEntity(const std::string& oldName, const std::string& newName)
+bool CScene::RenameEntity(const std::string& oldName, const std::string& newName)
 {
     // New name already exists
     if (EntityLibrary.find(newName) != EntityLibrary.end())
-        throw std::runtime_error("Could not rename entity, new name already exists.");
+        return false;
 
+    // If entity with oldName not found
     auto iter = EntityLibrary.find(oldName);
-    if (iter != EntityLibrary.end())
+    if (iter == EntityLibrary.end())
+        return false;
+
+    while (tc::FStringUtils::StartsWith(iter->first, oldName))
     {
-        iter->second->SetName(newName);
-        EntityLibrary.insert({ newName, iter->second });
-        EntityLibrary.erase(iter);
+        auto nh = EntityLibrary.extract(iter++);
+        nh.key() = newName + nh.key().substr(oldName.length());
+        nh.mapped()->SetName(nh.key());
+        EntityLibrary.insert(std::move(nh));
     }
+    return true;
 }
 
 TAutoPtr<CEntity> CScene::FindEntity(const std::string& name) const

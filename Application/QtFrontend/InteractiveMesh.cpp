@@ -139,7 +139,7 @@ void CInteractiveMesh::InitInteractions()
 
     auto* picker = new Qt3DRender::QObjectPicker(this);
     picker->setHoverEnabled(true);
-    connect(picker, &Qt3DRender::QObjectPicker::pressed, [this](Qt3DRender::QPickEvent* pick) {
+    connect(picker, &Qt3DRender::QObjectPicker::pressed, [](Qt3DRender::QPickEvent* pick) {
         if (pick->button() == Qt3DRender::QPickEvent::LeftButton)
         {
             const auto& wi = pick->worldIntersection();

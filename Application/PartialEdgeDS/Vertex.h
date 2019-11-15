@@ -18,7 +18,7 @@ public:
     // or partial vertex
     //TODO: Add Point Geometry
     EType type;
-
+    Toby::Point
     Vertex();
     ~Vertex();
 

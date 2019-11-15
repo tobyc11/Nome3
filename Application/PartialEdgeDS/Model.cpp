@@ -30,4 +30,21 @@ Model* Model::killModel()
     return this->next;
 }
 
+bool cutFaceByTwoVertexes(const std::string &vertexID1, const std::string &vertexID2)
+{
+    return true;
+}
+
+std::vector<Region *> getRegions() const {
+    std::vector<Region *> regions;
+    Region *tempRegion = region;
+
+    while (tempRegion != NULL)
+    {
+        regions.push_back(tempRegion);
+        tempRegion = tempRegion->next;
+    }
+    return regions;
+}
+
 } /* namespace Nome::Scene::PartialEdgeDS */

@@ -16,7 +16,7 @@ class Loop: public Entity
 public:
     Face *face;
     Loop *next;
-    PEdge *pedge;
+    PEdge *pEdge;
 
     Loop();
     ~Loop();

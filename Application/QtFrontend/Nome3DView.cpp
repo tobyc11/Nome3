@@ -1,6 +1,13 @@
 #include "Nome3DView.h"
 #include <Scene/Mesh.h>
 
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QVBoxLayout>
+#include <QDialog>
+
 namespace Nome
 {
 
@@ -166,6 +173,7 @@ void CNome3DView::PostSceneUpdate()
 
 void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
 {
+    std::vector<std::pair<float, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
         auto* entity = node->GetInstanceEntity();
@@ -177,9 +185,51 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
             auto localRay = ray.Transformed(l2w.Inverse());
 
             auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-            meshInst->PickVertices(localRay);
+            auto pickResults = meshInst->PickVertices(localRay);
+            hits.insert(hits.end(), pickResults.begin(), pickResults.end());
         }
     });
+
+    std::sort(hits.begin(), hits.end());
+    if (hits.size() == 1)
+        SelectedVertices.push_back(hits[0].second);
+    else if (!hits.empty())
+    {
+        // Show a dialog for the user to choose one vertex
+        auto* dialog = new QDialog();
+        dialog->setModal(true);
+        auto* layout1 = new QHBoxLayout(dialog);
+        auto* table = new QTableWidget();
+        table->setRowCount(hits.size());
+        table->setColumnCount(2);
+        for (size_t i = 0; i < hits.size(); i++)
+        {
+            auto* dist = new QTableWidgetItem(QString::number(hits[i].first));
+            auto* item = new QTableWidgetItem(QString::fromStdString(hits[i].second));
+            table->setItem(i, 0, dist);
+            table->setItem(i, 1, item);
+        }
+        layout1->addWidget(table);
+        auto* layout2 = new QVBoxLayout();
+        auto* btnOk = new QPushButton();
+        btnOk->setText("OK");
+        connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
+            auto sel = table->selectedItems();
+            if (!sel.empty())
+            {
+                int row = sel[0]->row();
+                SelectedVertices.push_back(hits[row].second);
+            }
+            dialog->close();
+        });
+        auto* btnCancel = new QPushButton();
+        btnCancel->setText("Cancel");
+        connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
+        layout2->addWidget(btnOk);
+        layout2->addWidget(btnCancel);
+        layout1->addLayout(layout2);
+        dialog->show();
+    }
 }
 
 Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)

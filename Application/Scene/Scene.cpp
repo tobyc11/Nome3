@@ -27,6 +27,41 @@ void CScene::AddEntity(TAutoPtr<CEntity> entity)
     EntityLibrary.insert(std::make_pair(entity->GetName(), std::move(entity)));
 }
 
+void CScene::RemoveEntity(const std::string& name, bool bAlsoRemoveChildren)
+{
+    auto iter = EntityLibrary.find(name);
+    if (iter != EntityLibrary.end())
+    {
+        if (bAlsoRemoveChildren)
+        {
+            while (tc::FStringUtils::StartsWith(iter->first, name))
+            {
+                auto savedIter = iter;
+                ++savedIter;
+                EntityLibrary.erase(iter);
+                iter = savedIter;
+            }
+        }
+        else
+            EntityLibrary.erase(iter);
+    }
+}
+
+void CScene::RenameEntity(const std::string& oldName, const std::string& newName)
+{
+    // New name already exists
+    if (EntityLibrary.find(newName) != EntityLibrary.end())
+        throw std::runtime_error("Could not rename entity, new name already exists.");
+
+    auto iter = EntityLibrary.find(oldName);
+    if (iter != EntityLibrary.end())
+    {
+        iter->second->SetName(newName);
+        EntityLibrary.insert({ newName, iter->second });
+        EntityLibrary.erase(iter);
+    }
+}
+
 TAutoPtr<CEntity> CScene::FindEntity(const std::string& name) const
 {
     auto iter = EntityLibrary.find(name);

@@ -18,6 +18,8 @@ public:
     CNome3DView();
     ~CNome3DView() override;
 
+    const std::vector<std::string>& GetSelectedVertices() const { return SelectedVertices; }
+
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
@@ -31,6 +33,7 @@ private:
     tc::TAutoPtr<Scene::CScene> Scene;
     std::unordered_set<CInteractiveMesh*> InteractiveMeshes;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> EntityDrawData;
+    std::vector<std::string> SelectedVertices;
 };
 
 }

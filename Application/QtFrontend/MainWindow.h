@@ -2,6 +2,7 @@
 #include <Parsing/ASTContext.h>
 #include <Parsing/SourceManager.h>
 #include <Scene/Scene.h>
+#include <Scene/TemporaryMeshManager.h>
 #include <StrongPointer.h>
 
 #include <QFormLayout>
@@ -46,6 +47,10 @@ private slots:
     void on_actionInstance_triggered();
     void on_actionAbout_triggered();
 
+    void on_actionAddFace_triggered();
+    void on_actionResetTempMesh_triggered();
+    void on_actionCommitTempMesh_triggered();
+
 private:
     // Load nome files into the current window, only call one of them
     void SetupUI();
@@ -74,6 +79,8 @@ private:
     std::unique_ptr<QWidget> SliderWidget;
     QFormLayout* SliderLayout = nullptr;
     std::unordered_map<std::string, QLayout*> SliderNameToWidget;
+
+    std::unique_ptr<Scene::CTemporaryMeshManager> TemporaryMeshManager;
 };
 
 }

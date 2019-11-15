@@ -179,6 +179,24 @@ void CMainWindow::on_actionAbout_triggered()
                           "Toby Chen"));
 }
 
+void CMainWindow::on_actionAddFace_triggered()
+{
+    const auto& verts = Nome3DView->GetSelectedVertices();
+    if (verts.size() < 3)
+    {
+        statusBar()->showMessage("Selected vertices are less than 3");
+        return;
+    }
+    TemporaryMeshManager->AddFace(verts);
+}
+
+void CMainWindow::on_actionResetTempMesh_triggered()
+{
+    TemporaryMeshManager->ResetTemporaryMesh();
+}
+
+void CMainWindow::on_actionCommitTempMesh_triggered() {}
+
 void CMainWindow::SetupUI()
 {
     // Add vertical layout for main window content
@@ -287,10 +305,13 @@ void CMainWindow::PostloadSetup()
         Nome3DView->PostSceneUpdate();
     });
     SceneUpdateClock->start();
+
+    TemporaryMeshManager = std::make_unique<Scene::CTemporaryMeshManager>(Scene);
 }
 
 void CMainWindow::UnloadNomeFile()
 {
+    TemporaryMeshManager.reset(nullptr);
     SceneUpdateClock->stop();
     delete SceneUpdateClock;
     Nome3DView->UnloadScene();

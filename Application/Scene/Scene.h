@@ -28,9 +28,8 @@ public:
 
     // Adds an entity into the lookup map
     void AddEntity(TAutoPtr<CEntity> entity);
-    // TODO:
-    // void RemoveEntity(const std::string& name);
-    // void RenameEntity(const std::string& oldName, const std::string& newName);
+    void RemoveEntity(const std::string& name, bool bAlsoRemoveChildren = false);
+    bool RenameEntity(const std::string& oldName, const std::string& newName);
 
     // Finds an entity by its name
     TAutoPtr<CEntity> FindEntity(const std::string& name) const;

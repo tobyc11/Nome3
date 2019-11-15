@@ -2,6 +2,8 @@
 #include "Face.h"
 #include "InteractivePoint.h"
 
+#include <Ray.h>
+
 // We use OpenMesh for now. Can easily replace with in-house library when needed.
 #define _USE_MATH_DEFINES
 #undef min
@@ -120,6 +122,8 @@ public:
 
     // I am really not sure whether this is a good interface or not
     const CMeshImpl& GetMeshImpl() const { return Mesh; }
+
+    std::vector<std::pair<float, std::string>> PickVertices(const tc::Ray& localRay);
 
 private:
     TAutoPtr<CMesh> MeshGenerator;

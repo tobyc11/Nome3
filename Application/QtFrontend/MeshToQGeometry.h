@@ -74,7 +74,7 @@ public:
         AdvanceIndices();
     }
 
-    uint32_t GetVertexCount() const { return CurrVertexIndex; }
+    [[nodiscard]] uint32_t GetVertexCount() const { return CurrVertexIndex; }
 
 protected:
     void AdvanceIndices()

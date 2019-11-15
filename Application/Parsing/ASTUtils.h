@@ -18,7 +18,7 @@ struct CCommandHandle
 class CCommandRewriter
 {
 public:
-    CCommandRewriter(CCommandHandle& handle);
+    explicit CCommandRewriter(CCommandHandle& handle);
 
     void Rename(const std::string& newName);
 

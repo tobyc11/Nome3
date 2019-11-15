@@ -243,6 +243,32 @@ void CMeshInstance::CopyFromGenerator()
     NameToFace = MeshGenerator->NameToFace;
 }
 
+std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc::Ray& localRay)
+{
+    std::vector<std::pair<float, std::string>> result;
+    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+    for (const auto& pair : NameToVert)
+    {
+        const auto& posArr = Mesh.point(pair.second);
+        assert(posArr.size() == 3);
+        tc::Vector3 pos { posArr[0], posArr[1], posArr[2] };
+        tc::Vector3 projected = localRay.Project(pos);
+        auto dist = (pos - projected).Length();
+        auto t = (localRay.Origin - projected).Length();
+        if (dist < std::min(0.05f * t, 0.2f))
+        {
+            result.emplace_back(t, instPrefix + pair.first);
+        }
+    }
+    std::sort(result.begin(), result.end());
+
+    for (const auto& sel : result)
+    {
+        printf("t=%.3f v=%s\n", sel.first, sel.second.c_str());
+    }
+    return result;
+}
+
 void CVertexSelector::PointUpdate()
 {
     // Assume MeshInstance is connected

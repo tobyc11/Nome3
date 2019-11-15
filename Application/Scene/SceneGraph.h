@@ -94,7 +94,7 @@ public:
 
     // A signal/input that manages the possibly unassigned surface (color)
     // TODO: generalize this and tie this to the AST
-    void SetSurface(const TAutoPtr<CSurface> surface) { Surface = surface; }
+    void SetSurface(const TAutoPtr<CSurface>& surface) { Surface = surface; }
     TAutoPtr<CSurface> GetSurface() const { return Surface; }
     void NotifySurfaceDirty() const;
 

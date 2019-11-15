@@ -12,4 +12,14 @@ CEntity::CEntity()
     }
 }
 
+std::string CEntity::GetNameWithoutPrefix() const
+{
+
+    const auto& fullName = GetName();
+    size_t lastDot = fullName.find_last_of('.');
+    if (lastDot == std::string::npos)
+        return fullName;
+    return fullName.substr(lastDot + 1);
+}
+
 }

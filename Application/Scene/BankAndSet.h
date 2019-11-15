@@ -50,6 +50,7 @@ public:
 
     void WriteSliderValues();
 
+    // An observer is typically the GUI that is responsible for displaying the sliders
     void AddObserver(ISliderObserver* observer);
     void RemoveObserver(ISliderObserver* observer) { Observers.erase(observer); }
 

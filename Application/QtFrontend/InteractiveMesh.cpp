@@ -1,13 +1,13 @@
 #include "InteractiveMesh.h"
-#include "ColorMaterials.h"
+#include "FrontendContext.h"
 #include "MaterialParser.h"
 #include "MeshToQGeometry.h"
+#include "Nome3DView.h"
 #include "ResourceMgr.h"
 
 #include <Matrix3x4.h>
 #include <Scene/Mesh.h>
 
-#include <Qt3DExtras/QPhongMaterial>
 #include <Qt3DExtras/QSphereMesh>
 #include <Qt3DRender/QGeometryRenderer>
 #include <Qt3DRender/QObjectPicker>
@@ -17,7 +17,11 @@ namespace Nome
 {
 
 CInteractiveMesh::CInteractiveMesh(Scene::CSceneTreeNode* node)
-    : SceneTreeNode(node), PointEntity{}, PointMaterial{}, PointGeometry{}, PointRenderer{}
+    : SceneTreeNode(node)
+    , PointEntity {}
+    , PointMaterial {}
+    , PointGeometry {}
+    , PointRenderer {}
 {
     UpdateTransform();
     UpdateGeometry();
@@ -128,10 +132,24 @@ void CInteractiveMesh::UpdateMaterial()
 
 void CInteractiveMesh::InitInteractions()
 {
+    // Only mesh instances support vertex picking
+    auto* mesh = dynamic_cast<Scene::CMeshInstance*>(SceneTreeNode->GetInstanceEntity());
+    if (!mesh)
+        return;
+
     auto* picker = new Qt3DRender::QObjectPicker(this);
     picker->setHoverEnabled(true);
     connect(picker, &Qt3DRender::QObjectPicker::pressed, [](Qt3DRender::QPickEvent* pick) {
-        printf("%.3f %.3f\n", pick->position().x(), pick->position().y());
+        if (pick->button() == Qt3DRender::QPickEvent::LeftButton)
+        {
+            const auto& wi = pick->worldIntersection();
+            const auto& origin = GFrtCtx->NomeView->camera()->position();
+            auto dir = wi - origin;
+
+            tc::Ray ray({ origin.x(), origin.y(), origin.z() }, { dir.x(), dir.y(), dir.z() });
+            bool additive = pick->modifiers() & Qt::ShiftModifier;
+            GFrtCtx->NomeView->PickVertexWorldRay(ray, additive);
+        }
     });
     this->addComponent(picker);
 }

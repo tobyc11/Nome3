@@ -108,7 +108,8 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh, bool bGenPointGeom
             vertexCount++;
         }
 
-        QByteArray copyOfBuffer { reinterpret_cast<const char*>(pointBufferData.data()), static_cast<int>(pointBufferData.size()) };
+        QByteArray copyOfBuffer { reinterpret_cast<const char*>(pointBufferData.data()),
+                                  static_cast<int>(pointBufferData.size() * sizeof(float)) };
         auto* buffer = new Qt3DRender::QBuffer(Qt3DRender::QBuffer::VertexBuffer, PointGeometry);
         buffer->setData(copyOfBuffer);
 

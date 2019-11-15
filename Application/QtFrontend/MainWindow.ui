@@ -49,6 +49,10 @@
      <string>&amp;Edit</string>
     </property>
     <addaction name="actionMerge"/>
+    <addaction name="separator"/>
+    <addaction name="actionAddFace"/>
+    <addaction name="actionResetTempMesh"/>
+    <addaction name="actionCommitTempMesh"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAdd"/>
@@ -68,6 +72,7 @@
    </attribute>
    <addaction name="actionAddFace"/>
    <addaction name="actionResetTempMesh"/>
+   <addaction name="separator"/>
    <addaction name="actionCommitTempMesh"/>
   </widget>
   <action name="actionNew">

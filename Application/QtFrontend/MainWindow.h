@@ -6,6 +6,7 @@
 #include <StrongPointer.h>
 
 #include <QFormLayout>
+#include <QLineEdit>
 #include <QMainWindow>
 #include <QTimer>
 #include <string>
@@ -66,6 +67,8 @@ private:
 
     Ui::MainWindow* ui;
     std::unique_ptr<CNome3DView> Nome3DView;
+    QLineEdit* InstName;
+    QLineEdit* MeshName;
 
     bool bIsBlankFile;
 

@@ -16,7 +16,7 @@ public:
 
     void ResetTemporaryMesh();
     void AddFace(const std::vector<std::string>& facePoints);
-    void CommitTemporaryMesh(const std::string& entityName, const std::string& nodeName);
+    std::string CommitTemporaryMesh(const std::string& entityName, const std::string& nodeName);
 
 private:
     TAutoPtr<CScene> Scene;

@@ -16,6 +16,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QSlider>
+#include <QToolBar>
 #include <QVBoxLayout>
 
 namespace Nome
@@ -190,12 +191,15 @@ void CMainWindow::on_actionAddFace_triggered()
     TemporaryMeshManager->AddFace(verts);
 }
 
-void CMainWindow::on_actionResetTempMesh_triggered()
-{
-    TemporaryMeshManager->ResetTemporaryMesh();
-}
+void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->ResetTemporaryMesh(); }
 
-void CMainWindow::on_actionCommitTempMesh_triggered() {}
+void CMainWindow::on_actionCommitTempMesh_triggered()
+{
+    std::string code = TemporaryMeshManager->CommitTemporaryMesh(MeshName->text().toStdString(),
+                                                                 InstName->text().toStdString());
+    QInputDialog::getMultiLineText(this, tr("Code"), tr("Please manually copy the code for now:"),
+                                   QString::fromStdString(code));
+}
 
 void CMainWindow::SetupUI()
 {
@@ -216,6 +220,14 @@ void CMainWindow::SetupUI()
     viewContainer->setFocusPolicy(Qt::TabFocus);
 
     layout->addWidget(viewContainer);
+
+    // Qt Designer won't let us put text boxes into a toolbar, so we do it here
+    InstName = new QLineEdit();
+    InstName->setText("newInstance");
+    MeshName = new QLineEdit();
+    MeshName->setText("newMesh");
+    ui->toolBar->insertWidget(ui->actionCommitTempMesh, MeshName);
+    ui->toolBar->insertWidget(ui->actionCommitTempMesh, InstName);
 
     // Connect signals that are not otherwise auto-connected
     connect(ui->actionExit, &QAction::triggered, this, &CMainWindow::close);

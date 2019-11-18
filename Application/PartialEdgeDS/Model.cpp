@@ -61,7 +61,7 @@ std::vector<Region *> getRegions() const {
 void Model::mergeModel(Model *bModel)
 {
     //First, Merge HashTables, get list of new B ids
-    auto keysToChangeInB = Entity::mapper.mergeModels(modelUID, bModel->modelUID);
+    auto keysToChangeInB = Entity::mapper.mergeModels(uid, bModel->uid);
 
     //Apply changes to B for ids at Faces, Edges, Vertices
     changeKeysInModel(keysToChangeInB);

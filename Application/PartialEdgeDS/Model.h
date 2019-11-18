@@ -17,7 +17,6 @@ public:
     Model *next;
     Model *prev;
     Region *region;
-    u_int64_t modelUID;
 
     Model();
     ~Model();
@@ -52,7 +51,7 @@ public:
    *      -   return Map of B_old_Id -> B_new_ID (all of them, not just collisions)
 
   */
-    bool cutFaceByTwoVertexes(const std::string &vertexID1, const std::string &vetexID2);
+    bool cutFaceByTwoVertexes(const u_int64_t &vertexID1, const u_int64_t &vetexID2);
     std::vector<Region *> getRegions() const;
     Model* killModel();
     void mergeModel(Model *bModel);

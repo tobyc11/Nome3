@@ -68,7 +68,7 @@ public:
     bool killVertex(const u_int64_t &vertexUID);
 
     bool MEV(const u_int64_t &modelUID, const u_int64_t &fromVertexUID, const Geometry *&point, u_int64_t &toVertexUID, u_int64_t &edgeUID);
-    bool MFE(const u_int64_t &modelUID, const std::vector<u_int64_t > &edges, u_int64_t &faceUID);
+    bool MFE(const u_int64_t &modelUID, const std::vector<u_int64_t> &edges, u_int64_t &faceUID);
 
     bool KEV(const u_int64_t &modelUID, const u_int64_t &edgeUID);
     bool KFE(const u_int64_t &modelUID, const u_int64_t &edgeUID, const u_int64_t &faceUID);

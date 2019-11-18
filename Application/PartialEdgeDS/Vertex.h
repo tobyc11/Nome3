@@ -5,6 +5,7 @@
 #pragma once
 #include "Entity.h"
 #include <vector>
+#include "Geometry.h"
 
 namespace Nome::PartialEdgeDS
 {
@@ -18,11 +19,11 @@ public:
     // or partial vertex
     //TODO: Add Point Geometry
     EType type;
-    Toby::Point
+    Geometry *point;
     Vertex();
     ~Vertex();
 
-    Vertex* killVertex();
+    bool killVertex();
 
     std::vector<Edge *> getEdges() const;
 };

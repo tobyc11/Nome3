@@ -15,6 +15,7 @@ class Shell: public Entity
 public:
     Region *region;
     Shell *next;
+    Shell *prev;
     PFace *pface;
 
     Shell();

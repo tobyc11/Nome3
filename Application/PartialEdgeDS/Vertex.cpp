@@ -26,4 +26,12 @@ std::vector<Edge *> Vertex::getEdges() const {
     return edges;
 }
 
+Vertex* Vertex::killVertex() {
+    if (type == EType::PFACE)
+    {
+        delete(point);
+        parent
+    }
+}
+
 } /* namespace Nome::Scene::PartialEdgeDS */

@@ -1,6 +1,7 @@
 #pragma once
 #include <Qt3DRender/Qt3DRender>
 #include <Scene/RendererInterface.h>
+#include <memory>
 
 namespace Nome
 {

@@ -64,14 +64,20 @@ public:
                      u_int64_t geometryUID,
                      Geometry *geometry);
 
+    bool makeVertex(const Geometry *&point, u_int64_t &vertexUID);
+    bool killVertex(const u_int64_t &vertexUID);
+
+    bool MEV(const u_int64_t &modelUID, const u_int64_t &fromVertexUID, const Geometry *&point, u_int64_t &toVertexUID, u_int64_t &edgeUID);
+    bool MFE(const u_int64_t &modelUID, const std::vector<u_int64_t > &edges, u_int64_t &faceUID);
+
+    bool KEV(const u_int64_t &modelUID, const u_int64_t &edgeUID);
+    bool KFE(const u_int64_t &modelUID, const u_int64_t &edgeUID, const u_int64_t &faceUID);
+
     bool copyModel(const u_int64_t &modelUID, u_int64_t &newModelUID);
-    
+
     //After merging, the map at bModelUID no longer exits
     std::map<std::pair<EGType, u_int64_t>, u_int64_t> *mergeModels(u_int64_t aModelUID,
                                                                    u_int64_t bModelUID);
-    
-    //Euler Operators
-    void MEV(v_1, u)
 
 private:
     // Use for internal UID generation
@@ -81,7 +87,7 @@ private:
         u_int64_t newUID();
 
     private:
-        u_int64_t counter; 
+        u_int64_t counter;
     };
 
     // Private fields
@@ -92,4 +98,5 @@ private:
     std::pair<EGType, u_int64_t> geometry_key(EGType type, u_int64_t geometryUID);
 };
 }
+
 

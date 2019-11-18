@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Entity.h"
+#include <vector>
 
 namespace Nome::PartialEdgeDS {
 
@@ -19,6 +20,8 @@ public:
 
     Face();
     ~Face();
+
+    std::vector<Edge *> getEdges() const;
 
     Face* killFace();
 };

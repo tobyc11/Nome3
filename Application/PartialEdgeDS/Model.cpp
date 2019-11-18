@@ -32,6 +32,21 @@ Model* Model::killModel()
     return this->next;
 }
 
+bool cutFaceByTwoVertexes(const std::string &vertexID1, const std::string &vertexID2)
+{
+    return true;
+}
+
+std::vector<Region *> getRegions() const {
+    std::vector<Region *> regions;
+    Region *tempRegion = region;
+
+    while (tempRegion != NULL)
+    {
+        regions.push_back(tempRegion);
+        tempRegion = tempRegion->next;
+    }
+    return regions;
     /**
      * TODO: Implement Merge Models for merging A and B
      *  - First, Merge HashTables, get list of new B ids
@@ -46,7 +61,7 @@ Model* Model::killModel()
 void Model::mergeModel(Model *bModel)
 {
     //First, Merge HashTables, get list of new B ids
-    auto keysToChangeInB = Entity::mapper.mergeModels(modelUID, bModel->modelUID);
+    auto keysToChangeInB = Entity::mapper.mergeModels(uid, bModel->uid);
 
     //Apply changes to B for ids at Faces, Edges, Vertices
     changeKeysInModel(keysToChangeInB);

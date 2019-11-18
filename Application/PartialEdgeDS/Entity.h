@@ -26,10 +26,10 @@ public:
 
     virtual ~Entity() { };
     //TODO: ADD Init
-    Entity(std::string name) : Name(std::move(name)) { }
+    Entity(u_int64_t uid) : uid(std::move(uid)) { }
     bool isVisit = false;
 private:
-    std::string Name;
+    u_int64_t uid;
 };
 
 }

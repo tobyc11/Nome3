@@ -17,6 +17,7 @@ class PVertex: public Entity
 public:
     Edge *edge;
     PVertex *next; //TODO: Evaluate if we actually need this
+    PVertex *prev;
     Vertex *vertex;
 
     PVertex();

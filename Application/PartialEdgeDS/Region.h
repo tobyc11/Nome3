@@ -17,6 +17,7 @@ class Region: public Entity
 public:
     Model *model;
     Region *next;
+    Region *prev;
     Shell *shell;
 
     Region();

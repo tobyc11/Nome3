@@ -55,15 +55,16 @@ public:
     ~Manager();
 
     // Public methods
-    void killModel(u_int64_t modelUID);
+    bool killModel(u_int64_t modelUID);
     //After killing, the map at modelUID no longer exits
+    bool killGeometry(u_int64_t modelUID, u_int64_t geometryUID);
 
-    void addGeometry(u_int64_t modelUID,
+    bool addGeometry(u_int64_t modelUID,
                      EGType type,
                      u_int64_t geometryUID,
                      Geometry *geometry);
 
-    u_int64_t copyModel(u_int64_t modelUID);
+    bool copyModel(const u_int64_t &modelUID, u_int64_t &newModelUID);
     
     //After merging, the map at bModelUID no longer exits
     std::map<std::pair<EGType, u_int64_t>, u_int64_t> *mergeModels(u_int64_t aModelUID,
@@ -84,7 +85,7 @@ private:
     };
 
     // Private fields
-    std::map<u_int64_t, std::map<std::pair<EGType, u_int64_t>, Geometry*>> map;
+    std::map<u_int64_t, std::map<u_int64_t, std::pair<EGType, Entity *>>> map;
     UIDGenerator idGenerator;
 
     // Private methods

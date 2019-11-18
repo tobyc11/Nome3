@@ -2,7 +2,7 @@
 // Created by 殷子欣 on 2019/10/25.
 //
 
-#include "PartialEdgManager.h"
+#include "Manager.h"
 
 namespace Nome::PartialEdgeDS
 

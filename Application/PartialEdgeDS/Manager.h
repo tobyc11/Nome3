@@ -68,6 +68,9 @@ public:
     //After merging, the map at bModelUID no longer exits
     std::map<std::pair<EGType, u_int64_t>, u_int64_t> *mergeModels(u_int64_t aModelUID,
                                                                    u_int64_t bModelUID);
+    
+    //Euler Operators
+    void MEV(v_1, u)
 
 private:
     // Use for internal UID generation

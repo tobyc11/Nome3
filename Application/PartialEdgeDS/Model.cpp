@@ -27,7 +27,7 @@ Model* Model::killModel()
         this->region = NULL;
     }
 
-    //Kill GeometryMapper[Model_UID, _* ]
+    //Kill Manager[Model_UID, _* ]
 
     return this->next;
 }

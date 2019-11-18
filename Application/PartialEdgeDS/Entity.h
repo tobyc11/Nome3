@@ -5,7 +5,7 @@
 #pragma once
 #include <string>
 #include <map>
-#include "GeometryMapper.h"
+#include "Manager.h"
 
 namespace Nome::PartialEdgeDS {
 
@@ -22,7 +22,7 @@ enum class EType {
 class Entity
 {
 public:
-    static GeometryMapper mapper;
+    static Manager mapper;
 
     virtual ~Entity() { };
     //TODO: ADD Init

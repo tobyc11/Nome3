@@ -2,17 +2,17 @@
 // Created by 殷子欣 on 2019/10/25.
 //
 
-#include "GeometryMapper.h"
+#include "PartialEdgManager.h"
 
 namespace Nome::PartialEdgeDS
 
 {
 
-GeometryMapper::GeometryMapper() {
+Manager::Manager() {
 
 }
 
-void GeometryMapper::killModel(u_int64_t modelUID)
+void Manager::killModel(u_int64_t modelUID)
 {
     auto it = map.find(modelUID);
     if (it != map.end())
@@ -26,7 +26,7 @@ void GeometryMapper::killModel(u_int64_t modelUID)
     
 }
 
-void GeometryMapper::addGeometry(u_int64_t modelUID,
+void Manager::addGeometry(u_int64_t modelUID,
                                  EGType type,
                                  u_int64_t geometryUID,
                                  Geometry *geometry)
@@ -47,7 +47,7 @@ void GeometryMapper::addGeometry(u_int64_t modelUID,
 
 }
 
-u_int64_t GeometryMapper::copyModel(u_int64_t modelUID)
+u_int64_t Manager::copyModel(u_int64_t modelUID)
 {
     if (map.find(modelUID) != map.end())
     {
@@ -69,7 +69,7 @@ u_int64_t GeometryMapper::copyModel(u_int64_t modelUID)
     
 }
 
-std::map<std::pair<EGType, u_int64_t>, u_int64_t> *GeometryMapper::mergeModels(u_int64_t aModelUID,
+std::map<std::pair<EGType, u_int64_t>, u_int64_t> *Manager::mergeModels(u_int64_t aModelUID,
                                                                                u_int64_t bModelUID)
 {
     if (map.find(aModelUID) == map.end() || map.find(bModelUID) == map.end())
@@ -108,12 +108,12 @@ std::map<std::pair<EGType, u_int64_t>, u_int64_t> *GeometryMapper::mergeModels(u
     return keysToChangeInB;
 }
 
-std::pair<EGType, u_int64_t> GeometryMapper::geometry_key(EGType type, u_int64_t geometryUID)
+std::pair<EGType, u_int64_t> Manager::geometry_key(EGType type, u_int64_t geometryUID)
 {
     return std::pair(type, geometryUID);
 }
 
-u_int64_t GeometryMapper::UIDGenerator::newUID()
+u_int64_t Manager::UIDGenerator::newUID()
 {
     int64_t uid = counter;
     counter++;

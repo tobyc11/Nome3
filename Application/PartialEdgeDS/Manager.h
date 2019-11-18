@@ -47,12 +47,12 @@ enum EGType{
     SURFACE
 };
 
-class GeometryMapper
+class Manager
 {
 public:
     // Constructors & destructors
-    GeometryMapper();
-    ~GeometryMapper();
+    Manager();
+    ~Manager();
 
     // Public methods
     void killModel(u_int64_t modelUID);

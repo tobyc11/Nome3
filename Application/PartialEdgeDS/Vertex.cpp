@@ -9,6 +9,12 @@
 namespace Nome::PartialEdgeDS
 {
 
+Vertex::~Vertex()
+{
+    if (geometry != NULL) { delete(geometry); }
+    if (parent != NULL) { delete(parent); }
+}
+
 std::vector<Edge *> Vertex::getEdges() const {
 
     std::vector<Edge *> edges, tempEdges;
@@ -24,14 +30,6 @@ std::vector<Edge *> Vertex::getEdges() const {
     for (std::vector<Edge *>::iterator it = edges.begin(); it != edges.end(); it++) { (*it)->isVisit = false; }
 
     return edges;
-}
-
-Vertex* Vertex::killVertex() {
-    if (type == EType::PFACE)
-    {
-        delete(point);
-        parent
-    }
 }
 
 } /* namespace Nome::Scene::PartialEdgeDS */

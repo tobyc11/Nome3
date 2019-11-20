@@ -11,24 +11,32 @@ namespace Nome::PartialEdgeDS
 
 Shell::~Shell()
 {
-    this->killShell();
-
-    if (this->next != NULL)
-    {
-        delete this->next;
-        this->next = NULL;
+    if (prev == NULL && next == NULL && region != NULL) {
+        delete(region);
+        return;
     }
+
+    if (prev != NULL)
+    {
+        prev->next = next;
+    } else {
+        region->shell = next;
+    }
+
+    if (next != NULL) { next->prev = prev; }
+
 }
 
-Shell* Shell::killShell()
-{
-    if (this->pface != NULL)
-    {
-        delete this->pface;
-        this->pface = NULL;
-    }
+void Shell::killChildren() {
 
-    return this->next;
+    PFace *tempPFace = pFace, *deletePFace;
+    while (tempPFace != NULL)
+    {
+        tempPFace->killChildren();
+        deletePFace = tempPFace;
+        tempPFace = tempPFace->next;
+        delete(deletePFace);
+    }
 }
 
 } /* namespace Nome::Scene::PartialEdgeDS */

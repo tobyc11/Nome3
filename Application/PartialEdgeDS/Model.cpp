@@ -4,33 +4,75 @@
 
 #include "Model.h"
 #include "Region.h"
+#include "Vertex.h"
+#include "Edge.h"
+#include "Face.h"
+#include "PEdge.h"
+#include "PFace.h"
+#include <vector>
 
 namespace Nome::PartialEdgeDS
 {
 
 Model::~Model()
 {
-    this->killModel();
-
-    if (this->next != NULL)
-    {
-        delete this->next;
-        this->next = NULL;
-    }
+    if (prev != NULL) { prev->next = next; }
+    if (next != NULL) { next->prev = prev; }
 }
 
-Model* Model::killModel()
+
+bool Model::killVertex(const Vertex *&vertex) {
+    if (vertex->type == EType::PVERTEX) { return false; }
+    delete(vertex);
+    return true;
+}
+
+bool Model::killEdge(const Edge *&edge)
 {
-    if (this->region != NULL)
+    if (edge->type == EType::PEDGE) { return false; }
+    edge->killChildren();
+    delete(edge);
+    return true;
+}
+
+bool Model::killFace(const Edge *&edge, const Face *&face)
+{
+    std::vector<Edge *> edges = face->getEdges();
+    if (std::find(edges.begin(), edges.end(), edge) == edges.end()) { return false; }
+
+    edge->killChildren();
+    delete(edge);
+
+    PFace *pFace = face->pFace;
+
+    for (std::vector<Edge *>::iterator it = edges.begin(); it != edges.end(); it++)
     {
-        delete this->region;
-        this->region = NULL;
+        const Shell *&shell, const PFace *&next, const PFace *&prev, const Entity &*child, const EType &type
+        ((PEdge *)(*it)->parent)->child = NULL;
+        PFace *newPFace = new PFace(pFace->shell, pFace->next, pFace->prev, (*it), EType::EDGE);
+        (*it)->type = EType::PFACE;
+        (*it)->parent = newPFace;
+        pFace = newPFace;
+    }
+    face->killChildren();
+    delete(face);
+    return true;
+}
+
+void Model::killChildren() {
+
+    Region *tempRegion = region, *deleteRegion;
+    while (tempRegion != NULL)
+    {
+        tempRegion->killChildren();
+        tempRegion->model = NULL;
+        deleteRegion = tempRegion;
+        tempRegion = tempRegion->next;
+        delete(deleteRegion);
     }
 
-    //Kill Manager[Model_UID, _* ]
-
-    return this->next;
 }
+
 
 bool cutFaceByTwoVertexes(const std::string &vertexID1, const std::string &vertexID2)
 {

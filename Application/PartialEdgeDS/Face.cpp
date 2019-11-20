@@ -9,7 +9,27 @@
 
 namespace Nome::PartialEdgeDS
 {
-std::vector<Edge *> getEdges() const {
+
+Face::~Face()
+{
+    if (geometry != NULL) { delete(geometry); }
+    if (pFace != NULL) { delete(pFace); }
+}
+
+void Face::killChildren() {
+
+    Loop *tempLoop = loop, *deleteLoop;
+    while (tempLoop != NULL)
+    {
+        tempLoop->killChildren();
+        tempLoop->face = NULL;
+        deleteLoop = tempLoop;
+        tempLoop = tempLoop->next;
+        delete(deleteLoop);
+    }
+}
+
+std::vector<Edge *> Face::getEdges() const {
     std::vector<Edge *> edges;
     Loop *tempLoop = loop;
 

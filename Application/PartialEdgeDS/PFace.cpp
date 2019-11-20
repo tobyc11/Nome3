@@ -4,30 +4,56 @@
 
 #include "PFace.h"
 #include "Shell.h"
+#include "Face.h"
+#include "Edge.h"
+#include "Vertex.h"
 
 namespace Nome::PartialEdgeDS
 {
 
-PFace::~PFace()
+PFace::PFace(const Shell *&shell, const PFace *&next, const PFace *&prev, const Entity &*child, const EType &type) \
+            : shell(shell), next(next), prev(prev), child(child), type(type)
 {
-    this->killPFace();
-
-    if (this->next != NULL)
-    {
-        delete this->next;
-        this->next = NULL;
-    }
+  if (prev != NULL) { prev->next = this; }
+  if (next != NULL) { next->prev = this; }
 }
 
-PFace* PFace::killPFace()
+PFace::~PFace()
 {
-    if (this->child != NULL)
-    {
-        delete this->child;
-        this->child = NULL;
+    if (prev == NULL && next == NULL && shell != NULL) {
+        delete(shell);
+        return;
     }
 
-    return this->next;
+    if (prev != NULL) {
+        prev->next = next;
+    } else {
+        shell->pFace = next;
+    }
+
+    if (next != NULL) { next->prev = prev; }
+
+}
+
+void PFace::killChildren() {
+
+    if (child != NULL)
+        child->killChildren();
+        switch (type) {
+        case EType::FACE :
+            ((Face *)child)->pFace = NULL;
+            break;
+        case EType::EDGE :
+            ((Edge *)child)->parent = NULL;
+            break;
+        case EType::VERTEX :
+            ((Vertex *)child)->parent = NULL;
+            break;
+        case default:
+            break;
+        }
+        delete(child);
+    }
 }
 
 } /* namespace Nome::Scene::PartialEdgeDS */

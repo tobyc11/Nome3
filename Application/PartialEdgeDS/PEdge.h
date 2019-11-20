@@ -28,7 +28,6 @@ public:
     PEdge();
     ~PEdge();
 
-    PEdge* killPEdge();
 };
 
 } /* namespace Nome::Scene::PartialEdgeDS */

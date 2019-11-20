@@ -8,4 +8,23 @@
 namespace Nome::PartialEdgeDS
 {
 
+Edge::~Edge()
+{
+    if (geometry != NULL) { delete(geometry); }
+    if (parent != NULL) { delete(parent); }
+}
+
+void Edge::killChildren() {
+
+    for (int i = 0; i < 2; i++)
+    {
+        if (pVertices[i] != NULL)
+        {
+            pVertices[i]->killChildren();
+            pVertices[i]->parent = NULL;
+            delete(pVertices[i]);
+        }
+    }
+}
+
 } /* namespace Nome::Scene::PartialEdgeDS */

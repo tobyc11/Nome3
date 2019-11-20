@@ -15,15 +15,14 @@ class Vertex;
 class PVertex: public Entity
 {
 public:
-    Edge *edge;
+    Entity *parent;
+    EType type;
     PVertex *next; //TODO: Evaluate if we actually need this
     PVertex *prev;
     Vertex *vertex;
 
     PVertex();
     ~PVertex();
-
-    PVertex* killPVertex();
 
     std::vector<Edge *> getAndVisitEdges(Edge *edge) const;
 };

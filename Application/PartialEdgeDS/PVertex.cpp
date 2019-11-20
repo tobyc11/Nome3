@@ -10,6 +10,49 @@
 namespace Nome::PartialEdgeDS
 {
 
+PVertex::~PVertex()
+{
+    if (prev == NULL && next == NULL && parent != NULL) {
+        delete(parent);
+        return;
+    }
+
+    switch (type) {
+    case EType::EDGE :
+        Edge *edge = (Edge *)parent;
+        if (prev != NULL)
+        {
+            prev->next = NULL;
+            edge->pVertices[1] = NULL;
+        } else {
+            edge->pVertices[0] = NULL;
+            next->prev = NULL;
+        }
+        break;
+    case EType::PEDGE :
+        if (prev != NULL)
+        {
+            prev->next = next;
+        } else {
+            ((PEdge *)parent)->child = next;
+        }
+
+        if (next != NULL) { next->prev = prev; }
+        break;
+    case default :
+        break;
+    }
+
+}
+
+void PVertex::killChildren() {
+    if (vertex!= NULL)
+    {
+        vertex->parent = NULL;
+        delete(vertex);
+    }
+}
+
 std::vector<Edge *> PVertex::getAndVisitEdges(Edge *edge) const {
     std::vector<Edge *> edges, tempEdges;
     PEdge *tempPEdge;

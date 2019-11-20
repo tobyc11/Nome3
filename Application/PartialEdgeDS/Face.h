@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Entity.h"
+#include "Geometry.h"
 #include <vector>
 
 namespace Nome::PartialEdgeDS {
@@ -14,16 +15,14 @@ class Loop;
 class Face: public Entity
 {
 public:
-    PFace *pface;
+    PFace *pFace;
     Loop *loop;
     //TODO: Add Surface Geometry
-
+    Geometry *geometry;
     Face();
     ~Face();
 
     std::vector<Edge *> getEdges() const;
-
-    Face* killFace();
 };
 
 

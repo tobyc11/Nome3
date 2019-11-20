@@ -21,8 +21,6 @@ public:
 
     Loop();
     ~Loop();
-
-    Loop* killLoop();
 };
 
 } /* namespace Nome::Scene::PartialEdgeDS */

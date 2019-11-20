@@ -21,8 +21,6 @@ public:
 
     Edge();
     ~Edge();
-
-    Edge* killEdge();
 };
 
 } /* namespace Nome::Scene::PartialEdgeDS */

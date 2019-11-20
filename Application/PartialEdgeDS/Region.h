@@ -23,8 +23,6 @@ public:
     Region();
     ~Region();
 
-    Region* killRegion();
-
     std::vector<Face *> getFaces() const;
 };
 

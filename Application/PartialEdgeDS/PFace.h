@@ -23,9 +23,8 @@ public:
     PFace *mate;
 
     PFace();
+    PFace(const Shell *&shell, const PFace *&next, const PFace *&prev, const Entity &*child, const EType &type);
     ~PFace();
-
-    PFace* killPFace();
 };
 
 }

@@ -25,6 +25,8 @@ public:
     static Manager mapper;
 
     virtual ~Entity() { };
+
+    virtual void killChildren() { };
     //TODO: ADD Init
     Entity(u_int64_t uid) : uid(std::move(uid)) { }
     bool isVisit = false;

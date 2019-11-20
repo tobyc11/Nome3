@@ -53,18 +53,20 @@ public:
   */
     bool cutFaceByTwoVertexes(const u_int64_t &vertexID1, const u_int64_t &vetexID2);
     std::vector<Region *> getRegions() const;
-    Model* killModel();
+
     void mergeModel(Model *bModel);
     void changeKeysInModel(std::map<std::pair<EGType, u_int64_t>, u_int64_t> *keyMap);
 
     bool makeVertex(const Geometry *&point, Vertex *&vertex);
-    bool killVertex(const Vertex &vertex);
 
     bool makeEdge(const Vertex *&fromVertex, const Vertex *&toVertex, Edge *&edge);
     bool makeFace(const std::vector<Edge> &edges, Face *&face);
 
-    bool killEdge(const Edge &edge);
-    bool killFace(const Edge &edge, const Face &face);
+    bool killVertex(const Vertex *&vertex);
+    bool killEdge(const Edge *&edge);
+    bool killFace(const Edge *&edge, const Face *&face);
+
+
 };
 
 }

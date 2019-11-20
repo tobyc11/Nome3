@@ -19,7 +19,7 @@ public:
     PVertex* pVertices[2];
     // TODO: Add Curve Geometry
 
-    Edge();
+    Edge(const PVertex *&pVertices[2], const Entity *&parent, const EType &type);
     ~Edge();
 };
 

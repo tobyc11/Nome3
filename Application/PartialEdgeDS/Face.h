@@ -19,7 +19,7 @@ public:
     Loop *loop;
     //TODO: Add Surface Geometry
     Geometry *geometry;
-    Face();
+    Face(const PFace *&pFace, const Loop *&loop, const Geometry *&geometry);
     ~Face();
 
     std::vector<Edge *> getEdges() const;

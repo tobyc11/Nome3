@@ -9,6 +9,12 @@
 namespace Nome::PartialEdgeDS
 {
 
+Vertex::Vertex(const Entity *&parent, const EType &type, const Geometry *&geometry) : \
+           Entity(), parent(parent), geometry(geometry)
+{
+
+}
+
 Vertex::~Vertex()
 {
     if (geometry != NULL) { delete(geometry); }

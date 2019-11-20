@@ -18,7 +18,7 @@ public:
     Shell *prev;
     PFace *pFace;
 
-    Shell();
+    Shell(const Region *&region, const Shell *&next, const Shell *&prev, const pFace *&pFace);
     ~Shell();
 };
 

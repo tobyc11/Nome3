@@ -25,7 +25,8 @@ public:
     PEdge *radialPrev;
     PEdge *radialNext;
 
-    PEdge();
+    PEdge(const Loop *&loop, const Entity *&child, const EType &type, const PVertex *&pVertex, \
+          const PEdge *&loopedNext, const PEdge *&loopedPrev, const PEdge *&radialNext, const PEdge *&radialPrev);
     ~PEdge();
 
 };

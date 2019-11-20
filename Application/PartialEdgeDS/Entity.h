@@ -27,8 +27,10 @@ public:
     virtual ~Entity() { };
 
     virtual void killChildren() { };
-    //TODO: ADD Init
-    Entity(u_int64_t uid) : uid(std::move(uid)) { }
+    //TODO: ADD UID Generator
+    Entity() {
+        uid = 0;
+    }
     bool isVisit = false;
 private:
     u_int64_t uid;

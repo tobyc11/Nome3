@@ -11,6 +11,13 @@
 namespace Nome::PartialEdgeDS
 {
 
+Region::Region(const Model *&model, const Region *&next, const Region *&prev, const Shell *&shell) : \
+          Entity(), model(model), next(next), prev(prev), shell(shell)
+{
+    if (prev != NULL) { prev->next = this; }
+    if (next != NULL) { next->prev = this; }
+}
+
 Region::~Region()
 {
     if (prev == NULL && next == NULL && model != NULL) {

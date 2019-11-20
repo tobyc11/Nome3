@@ -10,6 +10,13 @@
 namespace Nome::PartialEdgeDS
 {
 
+PVertex::PVertex(const Entity *&parent, const EType &type, const PVertex *&next, const PVertex *&prev, const Vertex *&vertex) : \
+          Entity(), parent(parent), type(type), next(next), prev(prev), vertex(vertex)
+{
+    if (prev != NULL) { prev->next = this; }
+    if (next != NULL) { next->prev = this; }
+}
+
 PVertex::~PVertex()
 {
     if (prev == NULL && next == NULL && parent != NULL) {

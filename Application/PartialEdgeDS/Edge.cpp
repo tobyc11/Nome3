@@ -7,6 +7,11 @@
 
 namespace Nome::PartialEdgeDS
 {
+Edge::Edge(const PVertex *&pVertices[2], const Entity *&parent, const EType &type) : \
+           Entity(), pVertices(pVertices), parent(parent), type(type)
+{
+
+}
 
 Edge::~Edge()
 {

@@ -19,7 +19,7 @@ public:
     Loop *prev;
     PEdge *pEdge;
 
-    Loop();
+    Loop(const Face *&face, const Loop *&next, const Loop *&prev, const PEdge *&pEdge);
     ~Loop();
 };
 

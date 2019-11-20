@@ -21,7 +21,7 @@ public:
     PVertex *prev;
     Vertex *vertex;
 
-    PVertex();
+    PVertex(const Entity *&parent, const EType &type, const PVertex *&next, const PVertex *&prev, const Vertex *&vertex);
     ~PVertex();
 
     std::vector<Edge *> getAndVisitEdges(Edge *edge) const;

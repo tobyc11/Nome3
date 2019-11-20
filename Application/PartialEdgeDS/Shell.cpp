@@ -9,6 +9,13 @@
 namespace Nome::PartialEdgeDS
 {
 
+Shell::Shell(const Region *&region, const Shell *&next, const Shell *&prev, const pFace *&pFace) : \
+          Entity(), region(region), next(next), prev(prev), pFace(pFace)
+{
+    if (prev != NULL) { prev->next = this; }
+    if (next != NULL) { next->prev = this; }
+}
+
 Shell::~Shell()
 {
     if (prev == NULL && next == NULL && region != NULL) {

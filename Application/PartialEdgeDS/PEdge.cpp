@@ -9,6 +9,30 @@
 
 namespace Nome::PartialEdgeDS
 {
+
+PEdge::PEdge(const Loop *&loop, const Entity *&child, const EType &type, const PVertex *&pVertex, \
+             const PEdge *&loopedNext, const PEdge *&loopedPrev, const PEdge *&radialNext, const PEdge *&radialPrev) : \
+          Entity(), loop(loop), child(child), type(type), pVertex(pVertex), loopedNext(loopedNext), \
+          loopedPrev(loopedPrev), radialNext(radialNext), radialPrev(radialPrev)
+{
+    if (loopedPrev != NULL) { loopPrev->loopNext = this; }
+    if (loopedNext != NULL) { loopNext->loopPrev = this; }
+    if (radialPrev != NULL) { radialPrev->radialNext = this; }
+    if (radialNext != NULL) { radialNext->radialPrev = this; }
+}
+
+
+Loop *loop;
+Entity *child; // Can be a edge, or vertex
+EType type;
+// Extra Information
+//TODO: Add Orientation Flag
+PVertex *pVertex; // Start pvertex
+PEdge *loopedPrev;
+PEdge *loopedNext;
+PEdge *radialPrev;
+PEdge *radialNext;
+
 PEdge::~PEdge()
 {
     if (loopedPrev == NULL && loopedNext == NULL && loop != NULL) {

@@ -14,6 +14,13 @@
 namespace Nome::PartialEdgeDS
 {
 
+Model::Model(const Region *&region, const Model *&next, const Model *&prev) : \
+          Entity(), region(region), next(next), prev(prev))
+{
+    if (prev != NULL) { prev->next = this; }
+    if (next != NULL) { next->prev = this; }
+}
+
 Model::~Model()
 {
     if (prev != NULL) { prev->next = next; }

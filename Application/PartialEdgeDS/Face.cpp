@@ -10,6 +10,12 @@
 namespace Nome::PartialEdgeDS
 {
 
+Face::Face(const PFace *&pFace, const Loop *&loop, const Geometry *&geometry) : \
+           Entity(), pFace(pFace), loop(loop), geometry(geometry)
+{
+
+}
+
 Face::~Face()
 {
     if (geometry != NULL) { delete(geometry); }

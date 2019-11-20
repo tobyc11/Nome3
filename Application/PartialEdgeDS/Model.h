@@ -18,7 +18,7 @@ public:
     Model *prev;
     Region *region;
 
-    Model();
+    Model(const Region *&region, const Model *&next, const Model *&prev);
     ~Model();
 
     /**

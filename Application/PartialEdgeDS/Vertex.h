@@ -20,7 +20,7 @@ public:
     //TODO: Add Point Geometry
     EType type;
     Geometry *geometry;
-    Vertex();
+    Vertex(const Entity *&parent, const EType &type, const Geometry *&geometry);
     ~Vertex();
 
     std::vector<Edge *> getEdges() const;

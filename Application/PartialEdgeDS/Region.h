@@ -20,7 +20,7 @@ public:
     Region *prev;
     Shell *shell;
 
-    Region();
+    Region(const Model *&model, const Region *&next, const Region *&prev, const Shell *&shell);
     ~Region();
 
     std::vector<Face *> getFaces() const;

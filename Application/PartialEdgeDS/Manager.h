@@ -56,14 +56,20 @@ public:
     ~Manager();
 
     // Public methods
-    bool killModel(u_int64_t modelUID);
+    bool addModel(u_int64_t &modelUID);
+    bool killModel(const u_int64_t &modelUID);
     //After killing, the map at modelUID no longer exits
-    bool killGeometry(u_int64_t modelUID, u_int64_t geometryUID);
+    bool killGeometry(const u_int64_t &modelUID, const u_int64_t &geometryUID);
 
-    bool addGeometry(u_int64_t modelUID,
-                     EGType type,
-                     u_int64_t geometryUID,
-                     Geometry *geometry);
+    bool addGeometry(const u_int64_t &modelUID,
+                     const EGType &type,
+                     const u_int64_t &geometryUID,
+                     const Geometry *&geometry);
+
+    bool getEdgesOfVertex(const u_int64_t &modelUID, const u_int64_t &vertexUID, std::vector<Geometry *> &edges);
+    bool getEdgesOfFace(const u_int64_t &modelUID, const u_int64_t &faceUID, std::vector<Geometry *> &edges);
+    bool getVertexesOfEdge(const u_int64_t &modelUID, const u_int64_t &edgeUID, std::vector<Geometry *> &vertexes);
+    bool getVertexesOfFace(const u_int64_t &modelUID, const u_int64_t &faceUID, std::vector<Geometry *> &vertexes);
 
     bool makeVertex(const u_int64_t &modelUID, const Geometry *&point, u_int64_t &vertexUID);
     bool killVertex(const u_int64_t &modelUID, const u_int64_t &vertexUID);
@@ -77,8 +83,9 @@ public:
     bool copyModel(const u_int64_t &modelUID, u_int64_t &newModelUID);
 
     //After merging, the map at bModelUID no longer exits
-    std::map<std::pair<EGType, u_int64_t>, u_int64_t> *mergeModels(u_int64_t aModelUID,
-                                                                   u_int64_t bModelUID);
+    bool mergeModels(const u_int64_t &aModelUID,
+                     const u_int64_t &bModelUID,
+                     std::map<std::pair<EGType, u_int64_t>, u_int64_t> *&keysToChangeInB);
 
 private:
     // Use for internal UID generation

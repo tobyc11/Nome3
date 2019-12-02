@@ -12,7 +12,7 @@ Manager::Manager() {
 
 }
 
-bool Manager::killModel(u_int64_t modelUID)
+bool Manager::killModel(const u_int64_t &modelUID)
 {
     auto it = map.find(modelUID);
     if (it != map.end())
@@ -28,10 +28,10 @@ bool Manager::killModel(u_int64_t modelUID)
     
 }
 
-bool Manager::addGeometry(u_int64_t modelUID,
-                                 EGType type,
-                                 u_int64_t geometryUID,
-                                 Geometry *geometry)
+bool Manager::addGeometry(const u_int64_t &modelUID,
+                          const EGType &type,
+                          const u_int64_t &geometryUID,
+                          const Geometry *&geometry)
 {
     if (map[modelUID].empty())
     {
@@ -50,8 +50,8 @@ bool Manager::addGeometry(u_int64_t modelUID,
     }
 }
 
-bool Manager::killGeometry(u_int64_t modelUID,
-                                 u_int64_t geometryUID)
+bool Manager::killGeometry(const u_int64_t &modelUID,
+                           const u_int64_t &geometryUID)
 {
     if (map[modelUID].empty())
     {
@@ -108,41 +108,43 @@ bool Manager::KFE(const u_int64_t &modelUID, const u_int64_t &edgeUID, const u_i
 }
 
 
-u_int64_t Manager::copyModel(u_int64_t modelUID)
+bool copyModel(const u_int64_t &modelUID, u_int64_t &newModelUID);
 {
     if (map.find(modelUID) != map.end())
     {
-        u_int64_t new_modelUID = idGenerator.newUID();
-        map.insert(std::pair(new_modelUID, std::map<std::pair<EGType, u_int64_t>, Geometry*>()));
+        newModelUID = idGenerator.newUID();
+        map.insert(std::pair(newModelUID, std::map<std::pair<EGType, u_int64_t>, Geometry*>()));
         auto model_iter = map[modelUID].begin();
 
         while (model_iter != map[modelUID].end())
         {
             auto key = model_iter->first;
-            map[new_modelUID][key] = new Geometry(*(model_iter->second));
+            map[newModelUID][key] = new Geometry(*(model_iter->second));
             ++model_iter;
         }
+        return true;
     }
     else
     {
-        // Throw an error and/or warning
+        return false;
     }
     
 }
 
-std::map<std::pair<EGType, u_int64_t>, u_int64_t> *Manager::mergeModels(u_int64_t aModelUID,
-                                                                               u_int64_t bModelUID)
+bool Manager::mergeModels(const u_int64_t &aModelUID,
+                          const u_int64_t &bModelUID,
+                          std::map<std::pair<EGType, u_int64_t>, u_int64_t> *&keysToChangeInB);
 {
     if (map.find(aModelUID) == map.end() || map.find(bModelUID) == map.end())
     {
-        // Throw an error and/or warning
+        return false;
     }
 
     auto aModel = map[aModelUID];
     auto bModel = map[bModelUID];
 
     // Create a new map of values to change in model B after the merge (this is what will be returned)
-    auto keysToChangeInB = new std::map<std::pair<EGType, u_int64_t>, u_int64_t>();
+    keysToChangeInB = new std::map<std::pair<EGType, u_int64_t>, u_int64_t>();
 
     // Begin copying over bModel to aModel
     auto bModel_iter = bModel.begin();
@@ -166,7 +168,7 @@ std::map<std::pair<EGType, u_int64_t>, u_int64_t> *Manager::mergeModels(u_int64_
 
     killModel(bModelUID);
 
-    return keysToChangeInB;
+    return true;
 }
 
 std::pair<EGType, u_int64_t> Manager::geometry_key(EGType type, u_int64_t geometryUID)

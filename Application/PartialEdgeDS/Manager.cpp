@@ -12,40 +12,101 @@ Manager::Manager() {
 
 }
 
-void Manager::killModel(u_int64_t modelUID)
+bool Manager::killModel(u_int64_t modelUID)
 {
     auto it = map.find(modelUID);
     if (it != map.end())
     {
         map.erase(it);
+        return true;
     }
     else
     {
         // Throw an error and/or warning
+        return false;
     }
     
 }
 
-void Manager::addGeometry(u_int64_t modelUID,
+bool Manager::addGeometry(u_int64_t modelUID,
                                  EGType type,
                                  u_int64_t geometryUID,
                                  Geometry *geometry)
 {
     if (map[modelUID].empty())
     {
-        map.insert(std::pair(modelUID, std::map<std::pair<EGType, u_int64_t>, Geometry*>()));
+        map.insert(std::pair(modelUID, std::map<u_int64_t, std::pair<EGType, Geometry*>>()));
     }
 
-    if (map[modelUID].find(geometry_key(type, geometryUID)) == map[modelUID].end())
+    if (map[modelUID].find(geometryUID) == map[modelUID].end())
     {
-        map[modelUID][geometry_key(type, geometryUID)] = geometry;
+        map[modelUID][geometryUID] = std::pair<EGType, Geometry*>(type, geometry);
+        return true;
     }
     else
     {
         //Throw an error and/or warning
+        return false;
+    }
+}
+
+bool Manager::killGeometry(u_int64_t modelUID,
+                                 u_int64_t geometryUID)
+{
+    if (map[modelUID].empty())
+    {
+        return false;
     }
 
+    auto it = map[modelUID].find(geometryUID);
+    if (it == map[modelUID].end())
+    {
+        return false;
+    }
+    else
+    {
+        map[modelUID].erase(it);
+        return true;
+    }
 }
+
+bool Manager::makeVertex(const u_int64_t &modelUID, const Geometry *&point, u_int64_t &vertexUID)
+{
+    vertexUID = idGenerator.newUID();
+    return addGeometry(modelUID, POINT, vertexUID, point);
+}
+
+bool Manager::killVertex(const u_int64_t &modelUID, const u_int64_t &vertexUID)
+{
+    return killGeometry(modelUID, vertexUID);
+}
+
+
+bool Manager::MEV(const u_int64_t &modelUID, const u_int64_t &fromVertexUID, const Geometry *&point, u_int64_t &toVertexUID, u_int64_t &edgeUID)
+{
+    //CHECKS
+
+    //ADD GEOMETRY
+
+    //ADD TO MODEL
+}
+
+bool Manager::MFE(const u_int64_t &modelUID, const std::vector<u_int64_t> &edges, u_int64_t &faceUID)
+{
+
+}
+
+
+bool Manager::KEV(const u_int64_t &modelUID, const u_int64_t &edgeUID)
+{
+
+}
+
+bool Manager::KFE(const u_int64_t &modelUID, const u_int64_t &edgeUID, const u_int64_t &faceUID)
+{
+
+}
+
 
 u_int64_t Manager::copyModel(u_int64_t modelUID)
 {

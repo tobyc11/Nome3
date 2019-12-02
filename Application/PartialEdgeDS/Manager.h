@@ -34,6 +34,7 @@
 
 #pragma once
 #include <map>
+#include <vector>
 #include <string>
 #include "Geometry.h"
 
@@ -64,8 +65,8 @@ public:
                      u_int64_t geometryUID,
                      Geometry *geometry);
 
-    bool makeVertex(const Geometry *&point, u_int64_t &vertexUID);
-    bool killVertex(const u_int64_t &vertexUID);
+    bool makeVertex(const u_int64_t &modelUID, const Geometry *&point, u_int64_t &vertexUID);
+    bool killVertex(const u_int64_t &modelUID, const u_int64_t &vertexUID);
 
     bool MEV(const u_int64_t &modelUID, const u_int64_t &fromVertexUID, const Geometry *&point, u_int64_t &toVertexUID, u_int64_t &edgeUID);
     bool MFE(const u_int64_t &modelUID, const std::vector<u_int64_t> &edges, u_int64_t &faceUID);
@@ -91,7 +92,7 @@ private:
     };
 
     // Private fields
-    std::map<u_int64_t, std::map<u_int64_t, std::pair<EGType, Entity *>>> map;
+    std::map<u_int64_t, std::map<u_int64_t, std::pair<EGType, Geometry*>>> map;
     UIDGenerator idGenerator;
 
     // Private methods

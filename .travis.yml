@@ -13,6 +13,7 @@ addons:
       - bison
       - flex
       - cmake
+      - antlr
     update: True
 
 

@@ -1,4 +1,7 @@
 ﻿set(CMAKE_CXX_STANDARD 17)
+
+add_subdirectory(Parsing)
+
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed
@@ -50,6 +53,8 @@ macro(config_playground2 target)
 
     find_package(pugixml REQUIRED)
     target_link_libraries(${target} PRIVATE pugixml)
+
+    target_link_libraries(${target} PRIVATE NomParsing)
 endmacro()
 
 add_executable(Nome3 ${PG2_SOURCES} ${PG2_GENERATED_SOURCES})

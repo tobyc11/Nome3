@@ -11,6 +11,8 @@ install:
   # setup envionment
   - set PATH=C:\Qt\5.13\msvc2017_64\bin;%PATH%
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+  # Download Antlr 4 jar
+  - curl -fsSL -o antlr.jar https://www.antlr.org/download/antlr-4.7.2-complete.jar
 
   - cd C:\Tools\vcpkg
   - git pull
@@ -32,6 +34,7 @@ build_script:
     -DBISON_EXECUTABLE=C:/msys64/usr/bin/bison.exe
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/install
+    -DANTLR_EXECUTABLE=%APPVEYOR_BUILD_FOLDER%/antlr.jar
     
     type CMakeCache.txt
     

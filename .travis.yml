@@ -1,8 +1,7 @@
 language: cpp
 os: osx
-compiler:
-  - gcc
-  - clang
+osx_image: xcode11.3
+compiler: gcc
 
 addons:
   homebrew:
@@ -16,6 +15,5 @@ addons:
       - antlr
     update: True
 
-
 script:
- - cmake . && make
+ - cmake . -DCMAKE_INSTALL_PREFIX=$(pwd)/install && make && make install

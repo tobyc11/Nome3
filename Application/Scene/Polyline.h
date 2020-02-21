@@ -1,5 +1,6 @@
 #pragma once
 #include "Mesh.h"
+#include "Vector3.h"
 
 namespace Nome::Scene
 {
@@ -21,6 +22,7 @@ public:
     void SetClosed(bool closed);
 
 private:
+    void drawCircle(Vector3 center, Vector3 N, Vector3 B, float radius, float angles, float scale, int num_phi, int index);
     bool bClosed = false;
 };
 

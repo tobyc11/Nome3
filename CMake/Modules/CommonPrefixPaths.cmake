@@ -18,6 +18,9 @@ else()
     list(APPEND CMAKE_PREFIX_PATH /Users/${USER}/homebrew/opt/flex)
     list(APPEND CMAKE_PREFIX_PATH /Users/${USER}/homebrew/opt/bison)
     list(APPEND CMAKE_PROGRAM_PATH /Users/${USER}/homebrew/opt/antlr)
+    
+    # For antlr on ubuntu
+    list(APPEND CMAKE_PROGRAM_PATH /usr/share/java)
 endif()
 
 message(STATUS "Using CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")

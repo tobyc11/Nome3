@@ -110,11 +110,12 @@ void CPolyline::UpdateEntity()
 
     // Polygon's sides;
     int num_phi = int(controls->Position.x);
-    float twist = controls->Position.y;
-    float forget_the_name = controls->Position.z;
+    float twist = controls->Position.y * M_PI / 180;
+    float forget_the_name = controls->Position.z * M_PI / 180;
 
+    float dynamic_rotation_angle = twist / (numPoints - 1) + forget_the_name;
 
-    for (int i = 0; i < numPoints; i++)
+    for (unsigned long i = 0; i < numPoints; i++)
     {
         CVertexInfo* point = Points.GetValue(i, nullptr);
 
@@ -134,6 +135,8 @@ void CPolyline::UpdateEntity()
             if (i == 2) { Ns[0] = prevPerpendicular; }
             // calculate the rotaion angle of each joint
             angles[i - 2] = calculateRoatateAngle(Ns[i - 2], prevPerpendicular, points[i - 1] - points[i - 2]);
+            // add twist
+            angles[i - 2] += dynamic_rotation_angle;
             // set the current normal vector
             Ns[i - 1] = curPerpendicular;
         }
@@ -161,9 +164,9 @@ void CPolyline::UpdateEntity()
     }
 
     // get the result rotation angles
-    for (int i = numPoints - 2; i >= 1; i--) { angles[i - 1] += angles[i]; }
+    for (unsigned long i = numPoints - 2; i >= 1; i--) { angles[i - 1] += angles[i]; }
 
-//    for (int i = 0; i < numPoints - 1; i++)
+//    for (unsigned long i = 0; i < numPoints - 1; i++)
 //    {
 //        std::cout << "Path " << i << ":\n";
 //        std::cout << "\t N: " << Ns[i].x << ' ' << Ns[i].y << ' ' << Ns[i].z << '\n';
@@ -193,7 +196,7 @@ void CPolyline::UpdateEntity()
         drawCircle(points[0], T, N, radius, angles[0], N.Length(), num_phi, ++segmentCount);
     }
 
-    for (int i = 1; i < numPoints; i++)
+    for (unsigned long i = 1; i < numPoints; i++)
     {
         if (i == numPoints - 1)
         {
@@ -204,10 +207,11 @@ void CPolyline::UpdateEntity()
                 T = prevVector + curVector;
                 N = prevVector - curVector;
 
-                drawCircle(points[numPoints - 1], T, N, radius, 0, N.Length(), num_phi, ++segmentCount);
+                drawCircle(points[numPoints - 1], T, N, radius, dynamic_rotation_angle, N.Length(), num_phi, ++segmentCount);
             } else {
                 T = points[i] - points[i - 1];
-                drawCircle(points[i], T, Ns[i - 1], radius, angles[i - 1], 1, num_phi, ++segmentCount);
+                // add twist
+                drawCircle(points[i], T, Ns[i - 1], radius, angles[i - 1] + dynamic_rotation_angle, 1, num_phi, ++segmentCount);
             }
         } else
         {

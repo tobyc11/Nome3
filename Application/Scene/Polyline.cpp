@@ -110,10 +110,8 @@ void CPolyline::UpdateEntity()
 
     // Polygon's sides;
     int num_phi = int(controls->Position.x);
-    float twist = controls->Position.y * M_PI / 180;
+    float twist = controls->Position.y * M_PI / 180 / (numPoints - 1);
     float forget_the_name = controls->Position.z * M_PI / 180;
-
-    float dynamic_rotation_angle = twist / (numPoints - 1) + forget_the_name;
 
     for (unsigned long i = 0; i < numPoints; i++)
     {
@@ -136,7 +134,7 @@ void CPolyline::UpdateEntity()
             // calculate the rotaion angle of each joint
             angles[i - 2] = calculateRoatateAngle(Ns[i - 2], prevPerpendicular, points[i - 1] - points[i - 2]);
             // add twist
-            angles[i - 2] += dynamic_rotation_angle;
+            angles[i - 2] += twist;
             // set the current normal vector
             Ns[i - 1] = curPerpendicular;
         }
@@ -162,9 +160,12 @@ void CPolyline::UpdateEntity()
     } else {
         angles[numPoints - 2] = 0;
     }
+    angles[numPoints - 2] += twist;
 
     // get the result rotation angles
     for (unsigned long i = numPoints - 2; i >= 1; i--) { angles[i - 1] += angles[i]; }
+    // add rotation
+    for (unsigned long i = 0; i < numPoints - 1; i++) { angles[i] += forget_the_name; }
 
 //    for (unsigned long i = 0; i < numPoints - 1; i++)
 //    {
@@ -207,11 +208,12 @@ void CPolyline::UpdateEntity()
                 T = prevVector + curVector;
                 N = prevVector - curVector;
 
-                drawCircle(points[numPoints - 1], T, N, radius, dynamic_rotation_angle, N.Length(), num_phi, ++segmentCount);
+                // 0 is perfect.
+                drawCircle(points[numPoints - 1], T, N, radius, angles[i - 1] - twist, N.Length(), num_phi, ++segmentCount);
             } else {
                 T = points[i] - points[i - 1];
                 // add twist
-                drawCircle(points[i], T, Ns[i - 1], radius, angles[i - 1] + dynamic_rotation_angle, 1, num_phi, ++segmentCount);
+                drawCircle(points[i], T, Ns[i - 1], radius, angles[i - 1] - twist, 1, num_phi, ++segmentCount);
             }
         } else
         {

@@ -21,5 +21,7 @@ jobs:
       run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DANTLR_EXECUTABLE=$(pwd)/../antlr-4.8-complete.jar -DCMAKE_PREFIX_PATH=/usr/local/share/vcpkg/installed/x64-linux
     - name: make
       run: make
+      working-directory: build
     - name: make install
       run: make install
+      working-directory: build

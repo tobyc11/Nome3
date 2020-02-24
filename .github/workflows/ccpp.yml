@@ -14,7 +14,7 @@ jobs:
     - name: download dependencies
       run: wget https://www.antlr.org/download/antlr-4.8-complete.jar
     - name: install ubuntu packages
-      run: sudo apt-get update && sudo apt-get install -y qt3d5-dev qt3d-assimpsceneimport-plugin libpugixml-dev bison flex
+      run: sudo apt-get update && sudo apt-get install -y qt3d5-dev qt3d-*-plugin libpugixml-dev bison flex
     - name: configure
       run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DANTLR_EXECUTABLE=$(pwd)/../antlr-4.8-complete.jar
     - name: make

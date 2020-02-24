@@ -18,7 +18,7 @@ jobs:
     - name: install vcpkg packages
       run: vcpkg install openmesh
     - name: configure
-      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DANTLR_EXECUTABLE=$(pwd)/../antlr-4.8-complete.jar -DOPENMESH_LIBRARY_DIR=/usr/local/share/vcpkg/installed/x64-linux
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DANTLR_EXECUTABLE=$(pwd)/../antlr-4.8-complete.jar -DOPENMESH_LIBRARY_DIR=/usr/local/share/vcpkg/installed/x64-linux -Dpugixml_DIR=/usr/share/libpugixml-dev/cmake
     - name: make
       run: make
     - name: make install

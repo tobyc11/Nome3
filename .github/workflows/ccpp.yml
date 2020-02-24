@@ -11,10 +11,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: checkout submodules
       run: git submodule update --init --recursive
+    - name: download dependencies
+      run: wget https://www.antlr.org/download/antlr-4.8-complete.jar
     - name: install ubuntu packages
-      run: sudo apt-get update && sudo apt-get install -y qt3d5-dev libpugixml-dev bison flex antlr4 cmake
+      run: sudo apt-get update && sudo apt-get install -y qt3d5-dev libassimp-dev libpugixml-dev bison flex
     - name: configure
-      run: mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=$(pwd)/../install
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DANTLR_EXECUTABLE=$(pwd)/../antlr-4.8-complete.jar
     - name: make
       run: make
     - name: make install

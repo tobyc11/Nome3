@@ -15,8 +15,10 @@ jobs:
       run: wget https://www.antlr.org/download/antlr-4.8-complete.jar
     - name: install ubuntu packages
       run: sudo apt-get update && sudo apt-get install -y qt3d5-dev qt3d-*-plugin libpugixml-dev bison flex
+    - name: install vcpkg packages
+      run: vcpkg install openmesh
     - name: configure
-      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DANTLR_EXECUTABLE=$(pwd)/../antlr-4.8-complete.jar
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DANTLR_EXECUTABLE=$(pwd)/../antlr-4.8-complete.jar -DOPENMESH_LIBRARY_DIR=/usr/local/share/vcpkg/installed/x64-linux
     - name: make
       run: make
     - name: make install

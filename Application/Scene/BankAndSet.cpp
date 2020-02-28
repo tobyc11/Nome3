@@ -1,12 +1,10 @@
 #include "BankAndSet.h"
-#include <StringPrintf.h>
 
 namespace Nome::Scene
 {
 
 CSlider::CSlider(AST::ACommand* cmd, float value, float min, float max, float step)
     : Cmd(cmd)
-    , GuiValue(value)
     , Min(min)
     , Max(max)
     , Step(step)
@@ -16,7 +14,6 @@ CSlider::CSlider(AST::ACommand* cmd, float value, float min, float max, float st
 
 void CSlider::SetValue(float value)
 {
-    // TODO
     SetNumber(value);
 }
 

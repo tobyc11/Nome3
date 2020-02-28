@@ -19,11 +19,11 @@ public:
     float GetMin() const { return Min; }
     float GetMax() const { return Max; }
     float GetStep() const { return Step; }
-    float GetValue() const { return GuiValue; }
+    float GetValue() const { return GetNumber(); }
+    AST::ACommand* GetASTNode() const { return Cmd; }
 
 private:
     AST::ACommand* Cmd;
-    float GuiValue;
     float Min;
     float Max;
     float Step;

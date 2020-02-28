@@ -17,6 +17,7 @@
 #include <QSlider>
 #include <QToolBar>
 #include <QVBoxLayout>
+#include <StringPrintf.h>
 
 namespace Nome
 {
@@ -335,12 +336,22 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
     sliderLayout->setStretchFactor(sliderBar, 4);
     sliderLayout->setStretchFactor(sliderDisplay, 1);
 
-    connect(sliderBar, &QAbstractSlider::valueChanged, [sliderDisplay, &slider](int value) {
+    connect(sliderBar, &QAbstractSlider::valueChanged, [&, sliderDisplay](int value) {
         // Every "1" in value represents a step, since the slider only allows integers
         float fval = (float)value * slider.GetStep() + slider.GetMin();
-        QString sval = QString("%1").arg(fval);
-        sliderDisplay->setText(sval);
+        auto valueStr = tc::StringPrintf("%.2f", fval);
+        sliderDisplay->setText(QString::fromStdString(valueStr));
         slider.SetValue(fval);
+        // Update AST for the new value
+        auto* argExpr = slider.GetASTNode()->GetPositionalArgument(1);
+        std::vector<AST::CToken*> tokenList;
+        argExpr->CollectTokens(tokenList);
+        size_t insertLocation = SourceMgr->RemoveTokens(tokenList).value();
+
+        auto* token = SourceMgr->GetASTContext().MakeToken(valueStr);
+        auto* expr = SourceMgr->GetASTContext().Make<AST::ANumber>(token);
+        slider.GetASTNode()->SetPositionalArgument(1, expr);
+        SourceMgr->InsertToken(insertLocation, token);
     });
 
     SliderLayout->addRow(sliderName, sliderLayout);

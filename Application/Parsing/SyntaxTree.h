@@ -344,6 +344,7 @@ public:
     // The arguments are stored separately as private fields
     //     Named arguments and transforms are both ANamedArgument, but transforms are ordered
     void PushPositionalArgument(AExpr* expr) { PositionalArguments.push_back(expr); }
+    void SetPositionalArgument(size_t i, AExpr* expr) { PositionalArguments[i] = expr; }
     void AddNamedArgument(ANamedArgument* argument);
     void AddTransform(ANamedArgument* subCommand) { Transforms.push_back(subCommand); }
 

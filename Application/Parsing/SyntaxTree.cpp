@@ -233,7 +233,8 @@ void ACommand::CollectTokens(std::vector<CToken*>& tokenList) const
         arg->CollectTokens(tokenList);
     for (auto [name, arg] : NamedArguments)
         arg->CollectTokens(tokenList);
-    tokenList.push_back(CloseToken);
+    if (CloseToken)
+        tokenList.push_back(CloseToken);
 }
 
 std::ostream& operator<<(std::ostream& os, const AFile& node)

@@ -181,15 +181,42 @@ std::pair<int, size_t> CSourceManager::GlobalToBufOffset(size_t globalOffset) co
     return { bufId, bufOffset + pieceOffset };
 }
 
+std::optional<size_t> CSourceManager::RemoveTokens(const std::vector<AST::CToken*>& tokenList)
+{
+    std::optional<size_t> retVal;
+    for (auto* token : tokenList)
+    {
+        if (token->IsLocInvalid())
+            continue; // Or should it err?
+        const auto& [bufId, bufOffset] = token->GetLocation();
+        size_t globalOffset = BufOffsetToGlobal(bufId, bufOffset).value();
+        if (!retVal.has_value())
+            retVal = globalOffset;
+        size_t length = token->ToString().length();
+        RemoveText(globalOffset, length);
+    }
+    return retVal;
+}
+
+void CSourceManager::InsertToken(size_t globalOffset, AST::CToken* token) {
+    token->SetLocation(AddBuf, AddBuffer.length());
+    InsertText(globalOffset, token->ToString());
+}
+
 void CSourceManager::CommitASTChanges()
 {
     std::stack<AST::ACommand*> dfsStack;
     for (auto* cmd : GetASTContext().GetAstRoot()->GetCommands())
         dfsStack.push(cmd);
-    while (!dfsStack.empty()) {
+    while (!dfsStack.empty())
+    {
         auto* cmd = dfsStack.top();
         dfsStack.pop();
-        if (cmd->IsPendingSave()) {
+        for (auto* subCmd : cmd->GetSubCommands())
+            dfsStack.push(subCmd);
+        if (cmd->IsPendingSave())
+        {
+            cmd->SetPendingSave(false);
             // How to commit an AST node?
             // 1. Gather all the tokens to form a token vector
             std::vector<AST::CToken*> tokenList;
@@ -197,30 +224,50 @@ void CSourceManager::CommitASTChanges()
             std::cout << "---Begin Printing Token List---" << std::endl;
             for (auto* token : tokenList)
                 std::cout << token->ToString() << std::endl;
-            // 2. Generate a string from that token vector, and set token locations
-            std::string content;
-            for (auto* token : tokenList) {
-                content.append(" ");
-                token->SetLocation(1, AddBuffer.length() + content.length());
-                content.append(token->ToString());
+            if (tokenList.empty())
+                continue;
+            // We either rewrite the entire command, or only specific tokens
+            if (!tokenList[0]->IsLocInvalid())
+            {
+                // Token list contains valid items, let's only rewrite specific ones
+                throw std::runtime_error("case unhandled");
             }
-            content.append("\n"); //What do we do with CRLF platforms?
-            // 3. Insert new string into piece table
-            // Find out where to insert the text
-            size_t insertOffset = 0;
-            if (!dfsStack.empty()) {
-                // If the stack is empty, then we are the top node, so insert at 0
-                // otherwise insert at the end of the previous node
-                auto* prevToken = dfsStack.top()->GetCloseToken();
-                assert(prevToken);
-                auto [bufId, bufOffset] = prevToken->GetLocation();
-                insertOffset = BufOffsetToGlobal(bufId, bufOffset).value();
-                insertOffset += prevToken->ToString().length();
+            else
+            {
+                // 2. Generate a string from that token vector, and set token locations
+                std::string content;
+                for (auto* token : tokenList)
+                {
+                    content.append(" ");
+                    token->SetLocation(1, AddBuffer.length() + content.length());
+                    content.append(token->ToString());
+                }
+                content.append("\n"); // What do we do with CRLF platforms?
+                // 3. Insert new string into piece table
+                // Find out where to insert the text
+                size_t insertOffset = 0;
+                if (!dfsStack.empty())
+                {
+                    // If the stack is empty, then we are the top node, so insert at 0
+                    // otherwise insert at the end of the previous node
+                    auto* prevToken = dfsStack.top()->GetCloseToken();
+                    if (!prevToken)
+                    {
+                        // The previous node is probably a set or something that doesn't have endset
+                        // so we are forced to gather the whole token list and fetch the last
+                        // element
+                        std::vector<AST::CToken*> tokenListPrev;
+                        dfsStack.top()->CollectTokens(tokenListPrev);
+                        assert(!tokenListPrev.empty());
+                        prevToken = *(tokenListPrev.end() - 1);
+                    }
+                    auto [bufId, bufOffset] = prevToken->GetLocation();
+                    insertOffset = BufOffsetToGlobal(bufId, bufOffset).value();
+                    insertOffset += prevToken->ToString().length();
+                }
+                InsertText(insertOffset, content);
             }
-            InsertText(insertOffset, content);
         }
-        for (auto* subCmd : cmd->GetSubCommands())
-            dfsStack.push(subCmd);
     }
 }
 

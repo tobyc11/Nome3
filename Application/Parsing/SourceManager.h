@@ -32,6 +32,8 @@ public:
 
     [[nodiscard]] std::optional<size_t> BufOffsetToGlobal(int bufId, size_t bufOffset) const;
     [[nodiscard]] std::pair<int, size_t> GlobalToBufOffset(size_t globalOffset) const;
+    std::optional<size_t> RemoveTokens(const std::vector<AST::CToken*>& tokenList);
+    void InsertToken(size_t globalOffset, AST::CToken* token);
 
     void CommitASTChanges();
     void SaveFile() const;

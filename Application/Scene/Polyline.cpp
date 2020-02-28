@@ -1,5 +1,6 @@
 #include "Polyline.h"
 #include <iostream>
+#include <vector>
 
 namespace Nome::Scene
 {
@@ -99,11 +100,11 @@ void CPolyline::UpdateEntity()
 
     const float radius = 1; //hard coded
 
-    Vector3 points[numPoints];
+    std::vector<Vector3> points;
     // Normal vectors of each paths
-    Vector3 Ns[numPoints - 1];
+    std::vector<Vector3> Ns;
     // Rotation angles of each paths
-    float angles[numPoints - 1];
+    std::vector<float> angles;
 
     // get control arguments;
     CVertexInfo* controls = Points.GetValue(numPoints, nullptr);
@@ -117,7 +118,7 @@ void CPolyline::UpdateEntity()
     {
         CVertexInfo* point = Points.GetValue(i, nullptr);
 
-        points[i] = Vector3(point->Position.x, point->Position.y, point->Position.z); // current point
+        points.push_back(Vector3(point->Position.x, point->Position.y, point->Position.z)); // current point
 
         if (i > 1)
         {
@@ -130,13 +131,11 @@ void CPolyline::UpdateEntity()
 
             /* let the normal vector be the prevPerpendicular vector
              * in this case, the rotation angle is 0 */
-            if (i == 2) { Ns[0] = prevPerpendicular; }
+            if (i == 2) { Ns.push_back(prevPerpendicular); }
             // calculate the rotaion angle of each joint
-            angles[i - 2] = calculateRoatateAngle(Ns[i - 2], prevPerpendicular, points[i - 1] - points[i - 2]);
-            // add twist
-            angles[i - 2] += twist;
+            angles.push_back(calculateRoatateAngle(Ns[i - 2], prevPerpendicular, points[i - 1] - points[i - 2]) + twist);
             // set the current normal vector
-            Ns[i - 1] = curPerpendicular;
+            Ns.push_back(curPerpendicular);
         }
     }
 

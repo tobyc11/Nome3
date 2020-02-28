@@ -3,6 +3,12 @@
 namespace Nome::Scene
 {
 
+DEFINE_META_OBJECT(CPolyline)
+{
+    BindPositionalArgument(&CPolyline::Points, 1);
+    BindNamedArgument(&CPolyline::bClosed, "closed", 0);
+}
+
 void CPolyline::UpdateEntity()
 {
     if (!IsDirty())

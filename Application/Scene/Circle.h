@@ -10,7 +10,7 @@ class CCircle : public CMesh
     DEFINE_INPUT(float, Radius) { MarkDirty(); }
 
 public:
-    using Super = CMesh;
+    DECLARE_META_CLASS(CCircle, CMesh);
     CCircle() = default;
     CCircle(const std::string& name)
         : CMesh(std::move(name))

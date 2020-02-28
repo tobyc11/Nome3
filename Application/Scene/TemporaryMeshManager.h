@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene.h"
+#include <Parsing/ASTContext.h>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,7 @@ public:
 
     void ResetTemporaryMesh();
     void AddFace(const std::vector<std::string>& facePoints);
-    std::string CommitTemporaryMesh(const std::string& entityName, const std::string& nodeName);
+    std::string CommitTemporaryMesh(AST::CASTContext& ctx, const std::string& entityName, const std::string& nodeName);
 
 private:
     TAutoPtr<CScene> Scene;

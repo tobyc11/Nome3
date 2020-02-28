@@ -1,8 +1,37 @@
 #pragma once
+#include "ASTBinding.h"
 #include "Flow/FlowNode.h"
 #include "RendererInterface.h"
 #include <Matrix3x4.h> //For convenience
 #include <string>
+
+/*
+ * The meta class provides basic reflection support for entities
+ * Things we need:
+ *  - Command name
+ *  - Factory
+ *  - AST to property bindings
+ */
+#define DECLARE_META_CLASS(TClass, TSuper)                                                         \
+    using Super = TSuper;                                                                          \
+    class CMetaClass : public IMetaClass, public CASTBinding<TClass>                               \
+    {                                                                                              \
+    public:                                                                                        \
+        CMetaClass();                                                                              \
+        std::string GetClassName() override { return #TClass; }                                    \
+        CEntity* MakeEntity() override { return new TClass; }                                      \
+        bool DeserializeFromAST(AST::ACommand& cmd, CEntity& entity) override                      \
+        {                                                                                          \
+            return FromASTToObject(cmd, dynamic_cast<TClass&>(entity));                            \
+        }                                                                                          \
+    };                                                                                             \
+    friend class CMetaClass;                                                                       \
+    static CMetaClass MetaObject;                                                                  \
+    IMetaClass& GetMetaObject() const override { return MetaObject; }
+
+#define DEFINE_META_OBJECT(TClass)                                                                 \
+    TClass::CMetaClass TClass::MetaObject;                                                         \
+    TClass::CMetaClass::CMetaClass()
 
 namespace Nome::Scene
 {
@@ -13,12 +42,39 @@ using tc::Quaternion;
 using tc::TAutoPtr;
 using tc::Vector3;
 
+class CEntity;
 class CSceneTreeNode;
+
+// An abstract interface for the meta-class system for entity reflection
+class IMetaClass
+{
+public:
+    virtual std::string GetClassName() = 0;
+    virtual CEntity* MakeEntity() = 0;
+    virtual bool DeserializeFromAST(AST::ACommand& cmd, CEntity& entity) = 0;
+};
 
 // Represents an object in the scene, can be attached to a SceneNode
 class CEntity : public Flow::CFlowNode
 {
 public:
+    // This chunk should be kept in sync with DECLARE_META_CLASS above
+    // except some changes for CEntity being the root of all entities
+    class CMetaClass : public IMetaClass, public CASTBinding<CEntity, false>
+    {
+    public:
+        CMetaClass();
+        std::string GetClassName() override { return "CEntity"; }
+        CEntity* MakeEntity() override { return new CEntity; }
+        bool DeserializeFromAST(AST::ACommand& cmd, CEntity& entity) override
+        {
+            return FromASTToObject(cmd, entity);
+        }
+    };
+    friend class CMetaClass;
+    static CMetaClass MetaObject;
+    virtual IMetaClass& GetMetaObject() const { return MetaObject; }
+
     CEntity();
 
     explicit CEntity(std::string name)

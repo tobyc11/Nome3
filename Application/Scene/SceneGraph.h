@@ -1,6 +1,7 @@
 #pragma once
 #include "Surface.h"
 #include "Transforms.h"
+#include <Parsing/ASTContext.h>
 #include <SignalSlot.h>
 #include <map>
 #include <set>
@@ -28,6 +29,7 @@ public:
     CSceneNode* GetOwner() const { return Owner; }
     bool IsValid() const { return Owner; }
     CEntity* GetInstanceEntity() const { return InstanceEntity; }
+    CEntity* GetEntity() const;
     /// Returns whether the associated entity was changed or updated in the last frame
     bool WasEntityUpdated() const { return bEntityUpdated; }
     void SetEntityUpdated(bool value) { bEntityUpdated = value; }
@@ -61,6 +63,7 @@ private:
     bool bEntityUpdated = false;
 };
 
+// A scene node, which represents either a group or an instance call in Nom file
 class CSceneNode : public Flow::CFlowNode
 {
     DEFINE_INPUT(Matrix3x4, Transform);
@@ -98,6 +101,10 @@ public:
     TAutoPtr<CSurface> GetSurface() const { return Surface; }
     void NotifySurfaceDirty() const;
 
+    void SyncFromAST(AST::ACommand* cmd, CScene& scene);
+    AST::ACommand* BuildASTCommand(Nome::AST::CASTContext& ctx) const;
+    void SyncToAST(AST::CASTContext& ctx);
+
 private:
     std::string Name;
     /// Denotes whether this node is a group. Group names can be skipped in a path
@@ -113,6 +120,8 @@ private:
     // Associated entity, aka the generator instantiated
     TAutoPtr<CEntity> Entity;
     TAutoPtr<CSurface> Surface;
+
+    AST::ACommand* ASTSource {};
 };
 
 }

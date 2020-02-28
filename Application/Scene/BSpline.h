@@ -27,9 +27,10 @@ class CBSpline : public CMesh
     }
 
 public:
-    using Super = CMesh;
+    DECLARE_META_CLASS(CBSpline, CMesh);
+
     CBSpline() = default;
-    CBSpline(const std::string& name)
+    explicit CBSpline(const std::string& name)
         : CMesh(name)
     {
     }

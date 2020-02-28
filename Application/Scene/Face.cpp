@@ -4,6 +4,13 @@
 namespace Nome::Scene
 {
 
+DEFINE_META_OBJECT(CFace)
+{
+    BindPositionalArgument(&CFace::Points, 1);
+    // Handle argSurface
+    // Handle parent mesh connection
+}
+
 void CFace::MarkDirty()
 {
     // Mark this entity dirty

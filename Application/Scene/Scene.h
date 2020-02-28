@@ -1,6 +1,5 @@
 #pragma once
 #include "BankAndSet.h"
-#include "Camera.h"
 #include "Entity.h"
 #include "Point.h"
 #include "SceneGraph.h"
@@ -47,7 +46,7 @@ public:
 
     void Update();
 
-    template <typename TFunc> void ForEachSceneTreeNode(const TFunc& func)
+    template <typename TFunc> void ForEachSceneTreeNode(const TFunc& func) const
     {
         std::queue<CSceneTreeNode*> q;
         q.push(GetRootTreeNode());
@@ -60,6 +59,9 @@ public:
             q.pop();
         }
     }
+
+    // Return the selected scene tree nodes in order, if none, returns the whole scene
+    std::vector<CSceneTreeNode*> GetSelectedNodes() const;
 
     CPickingManager* GetPickingMgr() const;
 

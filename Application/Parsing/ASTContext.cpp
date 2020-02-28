@@ -1,70 +1,24 @@
 #include "ASTContext.h"
 
-namespace Nome
+namespace Nome::AST
 {
 
-CBlockAllocator::CBlockAllocator(size_t size)
-    : BytesLeft(size)
+CASTContext::CASTContext()
 {
-    Mem = p = malloc(size);
+    Slabs.push_back(std::make_unique<char[]>(InitialSize));
+    SlabLeft.push_back(InitialSize);
+    SlabUsedCount.push_back(0);
+    InitialSize *= 2;
 }
 
-CBlockAllocator::~CBlockAllocator()
+CToken* CASTContext::MakeToken(std::string identifier)
 {
-    if (Mem)
-        free(Mem);
+    return Make<CToken>(std::move(identifier), -1, 0);
 }
 
-CBlockAllocator::CBlockAllocator(CBlockAllocator&& o)
-    : Mem(std::exchange(o.Mem, nullptr))
-    , p(o.p)
-    , BytesLeft(o.BytesLeft)
+AIdent* CASTContext::MakeIdent(std::string identifier)
 {
+    return Make<AIdent>(MakeToken(std::move(identifier)));
 }
-
-CBlockAllocator& CBlockAllocator::operator=(CBlockAllocator&& o)
-{
-    if (Mem)
-        free(Mem);
-    Mem = std::exchange(o.Mem, nullptr);
-    p = o.p;
-    BytesLeft = o.BytesLeft;
-    return *this;
-}
-
-void* CBlockAllocator::aligned_alloc(std::size_t a, std::size_t size)
-{
-    if (std::align(a, size, p, BytesLeft))
-    {
-        void* result = p;
-        p = (char*)p + size;
-        BytesLeft -= size;
-        return result;
-    }
-    return nullptr;
-}
-
-CASTContext::~CASTContext() {}
-
-void* CASTContext::Alloc(size_t align, size_t size)
-{
-    if (Blocks.empty())
-    {
-        Blocks.emplace_back(NextBlockSize);
-        NextBlockSize *= 2;
-    }
-    void* result = Blocks[Blocks.size() - 1].aligned_alloc(align, size);
-    if (!result)
-    {
-        Blocks.emplace_back(NextBlockSize);
-        NextBlockSize *= 2;
-        result = Blocks[Blocks.size() - 1].aligned_alloc(align, size);
-    }
-    return result;
-}
-
-AExpr* CASTContext::GetExpr() const { return Expr; }
-
-void CASTContext::SetExpr(AExpr* value) { Expr = value; }
 
 }

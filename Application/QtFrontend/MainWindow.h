@@ -1,9 +1,7 @@
 #pragma once
-#include <Parsing/ASTContext.h>
 #include <Parsing/SourceManager.h>
 #include <Scene/Scene.h>
 #include <Scene/TemporaryMeshManager.h>
-#include <StrongPointer.h>
 
 #include <QFormLayout>
 #include <QLineEdit>
@@ -20,8 +18,6 @@ class MainWindow;
 namespace Nome
 {
 
-using tc::sp;
-
 class CCodeWindow;
 class CNome3DView;
 
@@ -31,7 +27,7 @@ class CMainWindow : public QMainWindow, public Scene::ISliderObserver
 
 public:
     explicit CMainWindow(QWidget* parent = nullptr);
-    explicit CMainWindow(const std::string& fileToOpen, QWidget* parent = nullptr);
+    explicit CMainWindow(const QString& fileToOpen, QWidget* parent = nullptr);
     ~CMainWindow() override;
 
     [[nodiscard]] const tc::TAutoPtr<Scene::CScene>& GetScene() const { return Scene; }
@@ -70,12 +66,11 @@ private:
     QLineEdit* InstName;
     QLineEdit* MeshName;
 
+    // Info about the currently open file
+    std::unique_ptr<CSourceManager> SourceMgr;
     bool bIsBlankFile;
 
     // Nome Context
-    sp<CSourceManager> SourceManager;
-    CSourceFile* SourceFile = nullptr;
-    sp<CASTContext> ASTContext;
     tc::TAutoPtr<Scene::CScene> Scene;
     QTimer* SceneUpdateClock = nullptr;
 

@@ -1,5 +1,4 @@
 #pragma once
-#include <LightRefBase.h>
 #include <VectorPool.h>
 #include <map>
 #include <set>
@@ -10,7 +9,7 @@ namespace Nome
 
 using tc::TVectorPool;
 
-class CStringBuffer : public tc::TLightRefBase<CStringBuffer>
+class CStringBuffer
 {
 public:
     typedef TVectorPool<size_t>::VectorPoolReference CLocation;

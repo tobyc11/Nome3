@@ -177,16 +177,9 @@ void DFSTreeNodeUpdate(CSceneTreeNode* treeNode)
     for (CSceneTreeNode* child : childNodes)
         DFSTreeNodeUpdate(child);
 
-    if (auto* instEnt = treeNode->GetInstanceEntity())
+    if (auto* ent = treeNode->GetEntity())
     {
         // Update the instance entity
-        if (instEnt->IsDirty())
-            treeNode->SetEntityUpdated(true);
-        instEnt->UpdateEntity();
-    }
-    else if (auto* ent = treeNode->GetOwner()->GetEntity())
-    {
-        // Otherwise, update the scene node entity
         if (ent->IsDirty())
             treeNode->SetEntityUpdated(true);
         ent->UpdateEntity();
@@ -197,6 +190,14 @@ void CScene::Update()
 {
     // Called every frame to make sure everything is up to date
     DFSTreeNodeUpdate(GetRootTreeNode());
+}
+
+std::vector<CSceneTreeNode*> CScene::GetSelectedNodes() const
+{
+    // TODO: selection is not currently implemented, so returns the whole scene
+    std::vector<CSceneTreeNode*> r;
+    ForEachSceneTreeNode([&r](CSceneTreeNode* node) { r.push_back(node); });
+    return r;
 }
 
 CPickingManager* CScene::GetPickingMgr() const { return PickingMgr; }

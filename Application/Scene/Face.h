@@ -16,7 +16,7 @@ class CFace : public CEntity
     DEFINE_OUTPUT_WITH_UPDATE(CFace*, Face) { UpdateEntity(); }
 
 public:
-    using Super = CEntity;
+    DECLARE_META_CLASS(CFace, CEntity);
     CFace() = default;
     explicit CFace(std::string name)
         : CEntity(std::move(name))

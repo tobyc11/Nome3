@@ -9,9 +9,10 @@ class CPolyline : public CMesh
     DEFINE_INPUT_ARRAY(CVertexInfo*, Points) { MarkDirty(); }
 
 public:
-    using Super = CMesh;
+    DECLARE_META_CLASS(CPolyline, CMesh);
+
     CPolyline() = default;
-    CPolyline(const std::string& name)
+    explicit CPolyline(std::string name)
         : CMesh(std::move(name))
     {
     }

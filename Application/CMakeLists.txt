@@ -28,18 +28,6 @@ file(GLOB PG2_TEST_SOURCES
     Tests/*.h Tests/*.cpp
 )
 
-find_package(BISON 3.0 REQUIRED)
-find_package(FLEX 2.6 REQUIRED)
-
-BISON_TARGET(NomeParser Parsing/NomeParser.y ${CMAKE_CURRENT_BINARY_DIR}/NomeParser.cpp)
-FLEX_TARGET(NomeScanner Parsing/NomeLexer.l ${CMAKE_CURRENT_BINARY_DIR}/NomeLexer.cpp)
-ADD_FLEX_BISON_DEPENDENCY(NomeScanner NomeParser)
-
-set(PG2_GENERATED_SOURCES
-    ${BISON_NomeParser_OUTPUTS}
-    ${FLEX_NomeScanner_OUTPUTS}
-)
-
 macro(config_playground2 target)
     target_link_libraries(${target} PRIVATE Foundation)
     target_link_libraries(${target} PRIVATE Math)
@@ -58,10 +46,10 @@ macro(config_playground2 target)
     target_link_libraries(${target} PRIVATE NomParsing)
 endmacro()
 
-add_executable(Nome3 ${PG2_SOURCES} ${PG2_GENERATED_SOURCES})
+add_executable(Nome3 ${PG2_SOURCES})
 config_playground2(Nome3)
 if(NOME_BUILD_TESTS)
-    add_executable(Nome3_test ${PG2_SOURCES} ${PG2_GENERATED_SOURCES} ${PG2_TEST_SOURCES})
+    add_executable(Nome3_test ${PG2_SOURCES} ${PG2_TEST_SOURCES})
     config_playground2(Nome3_test)
     target_compile_definitions(Nome3_test PRIVATE DISABLE_MAIN_FOR_TESTS)
 endif()

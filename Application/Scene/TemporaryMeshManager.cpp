@@ -44,14 +44,19 @@ void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
     TempMesh->Faces.Connect(face->Face);
 }
 
-std::string CTemporaryMeshManager::CommitTemporaryMesh(const std::string& entityName,
+std::string CTemporaryMeshManager::CommitTemporaryMesh(AST::CASTContext& ctx,
+                                                       const std::string& entityName,
                                                        const std::string& nodeName)
 {
     if (!TempMesh || !TempMeshNode)
         return "";
 
-    Scene->RenameEntity("__tempMesh", entityName);
+    if (!Scene->RenameEntity("__tempMesh", entityName))
+        throw std::runtime_error("Cannot rename the temporary mesh, new name already exists");
+    // TODO: make sure there is no name collision
+    // TODO: TempMesh->SyncToAST(ctx);
     TempMeshNode->SetName(nodeName);
+    TempMeshNode->SyncToAST(ctx);
 
     std::stringstream ss;
     ss << "mesh " << entityName << std::endl;

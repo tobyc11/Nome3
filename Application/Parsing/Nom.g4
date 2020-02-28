@@ -4,12 +4,13 @@ file : command* EOF;
 
 expression
    :  ident LPAREN expression RPAREN # Call
-   |  expression  POW expression # BinOp
-   |  expression  (TIMES | DIV)  expression # BinOp
-   |  expression  (PLUS | MINUS) expression # BinOp
-   |  LPAREN expression RPAREN # SubExp
-   |  (PLUS | MINUS)* atom # UnaryOp
-   |  '{' 'expr' expression '}' # SubExp
+   |  expression op=POW expression # BinOp
+   |  expression op=(TIMES | DIV)  expression # BinOp
+   |  expression op=(PLUS | MINUS) expression # BinOp
+   |  LPAREN expression RPAREN # SubExpParen
+   |  (PLUS | MINUS) expression # UnaryOp
+   |  beg='{' sec='expr' expression end='}' # SubExpCurly
+   |  atom # AtomExpr
    ;
 
 atom
@@ -32,43 +33,43 @@ argSurface : 'surface' ident ;
 argSlices : 'slices' expression ;
 argOrder : 'order' expression ;
 argTransform
-   : 'rotate' LPAREN expression expression expression RPAREN LPAREN expression RPAREN
-   | 'scale' LPAREN expression expression expression RPAREN
-   | 'translate' LPAREN expression expression expression RPAREN
+   : 'rotate' LPAREN exp1=expression exp2=expression exp3=expression RPAREN LPAREN exp4=expression RPAREN # argTransformTwo
+   | 'scale' LPAREN expression expression expression RPAREN # argTransformOne
+   | 'translate' LPAREN expression expression expression RPAREN # argTransformOne
    ;
 argColor : 'color' LPAREN expression expression expression RPAREN ;
 
 command
-   : 'point' ident LPAREN expression expression expression RPAREN 'endpoint' # CmdPoint
-   | 'polyline' ident LPAREN ident* RPAREN argClosed* 'endpolyline' # CmdPolyline
-   | 'face' ident LPAREN ident* RPAREN argSurface* 'endface' # CmdFace
-   | 'object' ident LPAREN ident* RPAREN 'endobject' # CmdObject
-   | 'mesh' ident command* 'endmesh' # CmdMesh
-   | 'group' ident command* 'endgroup' # CmdGroup
-   | 'circle' ident LPAREN expression expression RPAREN 'endcircle' # CmdCircle
-   | 'funnel' ident LPAREN expression expression expression expression RPAREN 'endfunnel' # CmdFunnel
-   | 'tunnel' ident LPAREN expression expression expression expression RPAREN 'endtunnel' # CmdTunnel
-   | 'beziercurve' ident LPAREN ident* RPAREN argSlices* 'endbeziercurve' # CmdBezierCurve
-   | 'bspline' ident LPAREN ident* RPAREN (argClosed | argSlices | argOrder)* 'endbspline' # CmdBspline
-   | 'instance' ident ident (argSurface | argTransform | argHidden)* 'endinstance' # CmdInstance
-   | 'surface' ident argColor 'endsurface' # CmdSurface
-   | 'background' argSurface 'endbackground' # CmdBackground
-   | 'foreground' argSurface 'endforeground' # CmdForeground
-   | 'insidefaces' argSurface 'endinsidefaces' # CmdInsideFaces
-   | 'outsidefaces' argSurface 'endoutsidefaces' # CmdOutsideFaces
-   | 'offsetfaces' argSurface 'endoffsetfaces' # CmdOffsetFaces
-   | 'frontfaces' argSurface 'endfrontfaces' # CmdFrontFaces
-   | 'backfaces' argSurface 'endbackfaces' # CmdBackFaces
-   | 'rimfaces' argSurface 'endrimfaces' # CmdRimFaces
-   | 'bank' ident set* 'endbank' # CmdBank
-   | 'delete' deleteFace* 'enddelete' # CmdDelete
-   | 'subdivision' ident 'type' ident 'subdivisions' expression 'endsubdivision' # CmdSubdivision
-   | 'offset' ident 'type' ident 'min' expression 'max' expression 'step' expression 'endoffset' # CmdOffset
+   : open='point' name=ident LPAREN expression expression expression RPAREN end='endpoint' # CmdExprListOne
+   | open='polyline' name=ident LPAREN (idList+=ident)* RPAREN argClosed* end='endpolyline' # CmdIdListOne
+   | open='face' name=ident LPAREN (idList+=ident)* RPAREN argSurface* end='endface' # CmdIdListOne
+   | open='object' name=ident LPAREN (idList+=ident)* RPAREN end='endobject' # CmdIdListOne
+   | open='mesh' name=ident command* end='endmesh' # CmdSubCmds
+   | open='group' name=ident command* end='endgroup' # CmdSubCmds
+   | open='circle' name=ident LPAREN expression expression RPAREN end='endcircle' # CmdExprListOne
+   | open='funnel' name=ident LPAREN expression expression expression expression RPAREN end='endfunnel' # CmdExprListOne
+   | open='tunnel' name=ident LPAREN expression expression expression expression RPAREN end='endtunnel' # CmdExprListOne
+   | open='beziercurve' name=ident LPAREN (idList+=ident)* RPAREN argSlices* end='endbeziercurve' # CmdIdListOne
+   | open='bspline' name=ident LPAREN (idList+=ident)* RPAREN (argClosed | argSlices | argOrder)* end='endbspline' # CmdIdListOne
+   | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
+   | open='surface' name=ident argColor end='endsurface' # CmdSurface
+   | open='background' argSurface end='endbackground' # CmdArgSurface
+   | open='foreground' argSurface end='endforeground' # CmdArgSurface
+   | open='insidefaces' argSurface end='endinsidefaces' # CmdArgSurface
+   | open='outsidefaces' argSurface end='endoutsidefaces' # CmdArgSurface
+   | open='offsetfaces' argSurface end='endoffsetfaces' # CmdArgSurface
+   | open='frontfaces' argSurface end='endfrontfaces' # CmdArgSurface
+   | open='backfaces' argSurface end='endbackfaces' # CmdArgSurface
+   | open='rimfaces' argSurface end='endrimfaces' # CmdArgSurface
+   | open='bank' name=ident set* end='endbank' # CmdBank
+   | open='delete' deleteFace* end='enddelete' # CmdDelete
+   | open='subdivision' name=ident k1='type' v1=ident k2='subdivisions' v2=expression end='endsubdivision' # CmdSubdivision
+   | open='offset' name=ident k1='type' v1=ident k2='min' v2=expression k3='max' v3=expression k4='step' v4=expression end='endoffset' # CmdOffset
    ;
 
-set : 'set' ident expression expression expression expression ;
+set : open='set' ident expression expression expression expression ;
 
-deleteFace : 'face' ident 'endface' ;
+deleteFace : open='face' ident end='endface' ;
 
 
 IDENT : VALID_ID_START VALID_ID_CHAR* ;

@@ -4,10 +4,9 @@
 #include "Nome3DView.h"
 #include "ui_MainWindow.h"
 
-#include <Parsing/NomeDriver.h>
-#include <Scene/ASTSceneBuilder.h>
+#include <Scene/ASTSceneAdapter.h>
+#include <Scene/Environment.h>
 #include <Scene/MeshMerger.h>
-#include <Scene/SceneModifier.h>
 
 #include <QDockWidget>
 #include <QFileDialog>
@@ -35,14 +34,14 @@ CMainWindow::CMainWindow(QWidget* parent)
     LoadEmptyNomeFile();
 }
 
-CMainWindow::CMainWindow(const std::string& fileToOpen, QWidget* parent)
+CMainWindow::CMainWindow(const QString& fileToOpen, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , bIsBlankFile(false)
 {
     ui->setupUi(this);
     SetupUI();
-    LoadNomeFile(fileToOpen);
+    LoadNomeFile(fileToOpen.toStdString());
 }
 
 CMainWindow::~CMainWindow()
@@ -101,19 +100,26 @@ void CMainWindow::on_actionOpen_triggered()
 
 void CMainWindow::on_actionReload_triggered()
 {
-    // You can't reload if the current file is not on disk
-    if (SourceFile && !bIsBlankFile)
-    {
-        std::string path = SourceFile->GetPath();
-        UnloadNomeFile();
-        LoadNomeFile(path);
-    }
+    UnloadNomeFile();
+    if (!SourceMgr || SourceMgr->GetMainSourcePath().empty())
+        LoadEmptyNomeFile();
+    else
+        LoadNomeFile(SourceMgr->GetMainSourcePath());
 }
 
 void CMainWindow::on_actionSave_triggered()
 {
-    Scene->GetBankAndSet().WriteSliderValues();
-    SourceManager->Save(SourceFile);
+    // Saves a list of all faces on the side
+    for (auto* node : Scene->GetSelectedNodes())
+    {
+        if (auto* ent = dynamic_cast<Scene::CMeshInstance*>(node->GetEntity()))
+        {
+            ent->GetMeshImpl();
+        }
+    }
+    // Call source manager to save the file
+    SourceMgr->SaveFile();
+    this->setWindowModified(false);
 }
 
 void CMainWindow::on_actionSceneAsObj_triggered()
@@ -154,24 +160,9 @@ void CMainWindow::on_actionMerge_triggered()
     sn->SetEntity(merger.Get());
 }
 
-void CMainWindow::on_actionPoint_triggered()
-{
-    Scene::CSceneModifier modifier { Scene, SourceManager, SourceFile, ASTContext };
-    std::string name = QInputDialog::getText(this, "Please input name", "name:").toStdString();
-    std::string x = QInputDialog::getText(this, "Please input", "x:").toStdString();
-    std::string y = QInputDialog::getText(this, "Please input", "y:").toStdString();
-    std::string z = QInputDialog::getText(this, "Please input", "z:").toStdString();
-    modifier.AddPoint(name, x, y, z);
-}
+void CMainWindow::on_actionPoint_triggered() {}
 
-void CMainWindow::on_actionInstance_triggered()
-{
-    Scene::CSceneModifier modifier { Scene, SourceManager, SourceFile, ASTContext };
-    std::string name = QInputDialog::getText(this, "Please input name", "name:").toStdString();
-    std::string ent =
-        QInputDialog::getText(this, "Please input entity name", "entity:").toStdString();
-    modifier.AddInstance(name, ent);
-}
+void CMainWindow::on_actionInstance_triggered() {}
 
 void CMainWindow::on_actionAbout_triggered()
 {
@@ -196,8 +187,10 @@ void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->Res
 
 void CMainWindow::on_actionCommitTempMesh_triggered()
 {
-    std::string code = TemporaryMeshManager->CommitTemporaryMesh(MeshName->text().toStdString(),
-                                                                 InstName->text().toStdString());
+    std::string code = TemporaryMeshManager->CommitTemporaryMesh(
+        SourceMgr->GetASTContext(), MeshName->text().toStdString(), InstName->text().toStdString());
+    SourceMgr->CommitASTChanges();
+    this->setWindowModified(true);
     QInputDialog::getMultiLineText(this, tr("Code"), tr("Please manually copy the code for now:"),
                                    QString::fromStdString(code));
 }
@@ -237,11 +230,7 @@ void CMainWindow::SetupUI()
     connect(ui->actionAboutQt, &QAction::triggered, this, &QApplication::aboutQt);
 }
 
-void CMainWindow::PreloadSetup()
-{
-    SourceManager = new CSourceManager();
-    ASTContext = new CASTContext();
-}
+void CMainWindow::PreloadSetup() {}
 
 void CMainWindow::LoadEmptyNomeFile()
 {
@@ -250,6 +239,7 @@ void CMainWindow::LoadEmptyNomeFile()
     setWindowFilePath("untitled.nom");
     bIsBlankFile = true;
     Scene = new Scene::CScene();
+    Scene::GEnv.Scene = Scene.Get();
     PostloadSetup();
 }
 
@@ -259,51 +249,27 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
 
     setWindowFilePath(QString::fromStdString(filePath));
     bIsBlankFile = false;
-
-    SourceFile = SourceManager->Open(filePath);
-    // Parse the input nome file
+    SourceMgr = std::make_unique<CSourceManager>(filePath);
+    bool parseSuccess = SourceMgr->ParseMainSource();
+    if (!parseSuccess)
     {
-        CNomeDriver driver { ASTContext, SourceManager, SourceFile };
-        driver.ParseToAST();
-    }
-    // TODO: add a check whether parsing was successful, and let the user decide whether to continue
-    // anyway Builds a new scene out of the AST
-    Scene::CASTSceneBuilder builder { *ASTContext, SourceManager, SourceFile };
-    try
-    {
-        builder.Traverse();
-    }
-    catch (const CSemanticError& exception)
-    {
-        printf("Semantic error encountered during scene building:\n");
-        printf("%s\n", exception.what());
-
-        auto reply =
-            QMessageBox::question(this, "Error", "See console for details. Continue anyway?",
-                                  QMessageBox::Yes | QMessageBox::No);
-        if (reply == QMessageBox::No)
+        auto resp = QMessageBox::question(
+            this, "Parser error",
+            "The file did not completely successfully parse, do you still want "
+            "to continue anyway? (See console for more information!)");
+        if (!resp)
         {
+            // Does not continue
             UnloadNomeFile();
             LoadEmptyNomeFile();
             return;
         }
     }
-    catch (const std::runtime_error& exception)
-    {
-        printf("Exception thrown during scene building (file parsing):\n");
-        printf("%s\n", exception.what());
+    Scene = new Scene::CScene();
+    Scene::GEnv.Scene = Scene.Get();
+    Scene::CASTSceneAdapter adapter;
+    adapter.TraverseFile(SourceMgr->GetASTContext().GetAstRoot(), *Scene);
 
-        auto reply =
-            QMessageBox::question(this, "Error", "See console for details. Continue anyway?",
-                                  QMessageBox::Yes | QMessageBox::No);
-        if (reply == QMessageBox::No)
-        {
-            UnloadNomeFile();
-            LoadEmptyNomeFile();
-            return;
-        }
-    }
-    Scene = builder.GetScene();
     PostloadSetup();
 }
 
@@ -332,11 +298,6 @@ void CMainWindow::UnloadNomeFile()
     Nome3DView->UnloadScene();
     assert(Scene->GetRefCount() == 1);
     Scene = nullptr;
-    ASTContext = nullptr;
-    if (SourceFile)
-        SourceManager->Close(SourceFile);
-    SourceFile = nullptr;
-    SourceManager = nullptr;
 }
 
 void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
@@ -379,7 +340,7 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
         float fval = (float)value * slider.GetStep() + slider.GetMin();
         QString sval = QString("%1").arg(fval);
         sliderDisplay->setText(sval);
-        slider.SetNumber(fval);
+        slider.SetValue(fval);
     });
 
     SliderLayout->addRow(sliderName, sliderLayout);

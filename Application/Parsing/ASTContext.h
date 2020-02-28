@@ -1,60 +1,61 @@
 #pragma once
-#include <LightRefBase.h>
+#include "SyntaxTree.h"
 #include <memory>
+#include <utility>
 #include <vector>
 
-namespace Nome
+namespace Nome::AST
 {
 
-struct CBlockAllocator
-{
-    void* Mem;
-    void* p;
-    size_t BytesLeft;
-
-    CBlockAllocator(size_t size);
-    ~CBlockAllocator();
-
-    CBlockAllocator(const CBlockAllocator&) = delete;
-    CBlockAllocator& operator=(const CBlockAllocator&) = delete;
-
-    CBlockAllocator(CBlockAllocator&& o);
-    CBlockAllocator& operator=(CBlockAllocator&& o);
-
-    void* aligned_alloc(std::size_t a, std::size_t size);
-
-    template <typename T> T* aligned_alloc(std::size_t a = alignof(T))
-    {
-        return aligned_alloc(a, sizeof(T));
-    }
-};
-
-class AExpr;
-class ACommand;
-
-class CASTContext : public tc::TLightRefBase<CASTContext>
+class CASTContext
 {
 public:
-    ~CASTContext();
+    CASTContext();
 
-    void* Alloc(size_t align, size_t size);
+    template <typename T, typename... Args> T* Make(Args&&... args)
+    {
+        size_t i = 0;
+        bool found = false;
+        for (i = 0; i < Slabs.size(); ++i)
+        {
+            if (SlabLeft[i] > sizeof(T) * 2)
+            {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            Slabs.push_back(std::make_unique<char[]>(InitialSize));
+            SlabLeft.push_back(InitialSize);
+            SlabUsedCount.push_back(0);
+            InitialSize *= 2;
+        }
+        void* p = Slabs[i].get() + SlabUsedCount[i];
+        size_t size = SlabLeft[i];
+        if (std::align(alignof(T), sizeof(T), p, size))
+        {
+            T* result = new (p) T(std::forward<Args>(args)...);
+            size -= sizeof(T);
+            SlabUsedCount[i] += SlabLeft[i] - size;
+            SlabLeft[i] = size;
+            return result;
+        }
+        return nullptr;
+    }
 
-    void AppendCommand(ACommand* command) { Commands.push_back(command); }
+    CToken* MakeToken(std::string identifier);
+    AIdent* MakeIdent(std::string identifier);
 
-    const std::vector<ACommand*>& GetCommands() const { return Commands; }
-
-    AExpr* GetExpr() const;
-    void SetExpr(AExpr* value);
+    [[nodiscard]] AFile* GetAstRoot() const { return ASTRoot; }
+    void SetAstRoot(AFile* astRoot) { ASTRoot = astRoot; }
 
 private:
-    std::vector<CBlockAllocator> Blocks;
-    size_t NextBlockSize = 1024;
-
-    // The AST represents a file, which consists of a list of commands
-    std::vector<ACommand*> Commands;
-
-    // An ASTContext can also represent a single expression
-    AExpr* Expr;
+    size_t InitialSize = 1024 * 32;
+    std::vector<std::unique_ptr<char[]>> Slabs;
+    std::vector<size_t> SlabUsedCount;
+    std::vector<size_t> SlabLeft;
+    AST::AFile* ASTRoot {};
 };
 
 }

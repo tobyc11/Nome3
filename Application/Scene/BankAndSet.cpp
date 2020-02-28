@@ -4,19 +4,20 @@
 namespace Nome::Scene
 {
 
-CSlider::CSlider(CCommandHandle handle, float value, float min, float max, float step)
-    : Handle(handle)
+CSlider::CSlider(AST::ACommand* cmd, float value, float min, float max, float step)
+    : Cmd(cmd)
     , GuiValue(value)
     , Min(min)
     , Max(max)
     , Step(step)
 {
+    this->SetNumber(value);
 }
 
-void CSlider::WriteValue()
+void CSlider::SetValue(float value)
 {
-    CCommandRewriter rewriter { Handle };
-    rewriter.ReplaceArg(0, std::to_string(GuiValue));
+    // TODO
+    SetNumber(value);
 }
 
 CBankAndSet::~CBankAndSet()
@@ -26,15 +27,14 @@ CBankAndSet::~CBankAndSet()
             observer->OnSliderRemoving(*nameSlider.second, nameSlider.first);
 }
 
-void CBankAndSet::AddSlider(const std::string& name, CCommandHandle handle, float value, float min,
+void CBankAndSet::AddSlider(const std::string& name, AST::ACommand* cmd, float value, float min,
                             float max, float step)
 {
     if (GetSlider(name))
     {
         throw std::runtime_error("Slider already exists");
     }
-    auto* slider = new CSlider(handle, value, min, max, step);
-    slider->SetNumber(value);
+    auto* slider = new CSlider(cmd, value, min, max, step);
     Sliders.insert({ name, slider });
 
     for (auto* observer : Observers)
@@ -52,14 +52,6 @@ CSlider* CBankAndSet::GetSlider(const std::string& name)
     if (iter != Sliders.end())
         return iter->second;
     return nullptr;
-}
-
-void CBankAndSet::WriteSliderValues()
-{
-    for (const auto& pair : Sliders)
-    {
-        pair.second->WriteValue();
-    }
 }
 
 void CBankAndSet::AddObserver(ISliderObserver* observer)

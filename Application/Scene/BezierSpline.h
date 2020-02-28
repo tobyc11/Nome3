@@ -42,7 +42,7 @@ class CBezierSpline : public CMesh
     }
 
 public:
-    using Super = CMesh;
+    DECLARE_META_CLASS(CBezierSpline, CMesh);
     CBezierSpline() = default;
     CBezierSpline(const std::string& name)
         : CMesh(std::move(name))

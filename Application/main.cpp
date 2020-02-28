@@ -2,7 +2,7 @@
 
 #include "QtFrontend/MainWindow.h"
 #include <QApplication>
-#include <QTimer>
+#include <QCommandLineParser>
 
 #undef main
 int main(int argc, char** argv)
@@ -14,8 +14,25 @@ int main(int argc, char** argv)
     QCoreApplication::setOrganizationName("UCBerkeley");
     QCoreApplication::setApplicationVersion("3.0");
 
-    Nome::CMainWindow mainWindow;
-    mainWindow.show();
+    QCommandLineParser parser;
+    parser.setApplicationDescription(QCoreApplication::applicationName());
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addPositionalArgument("file", "The file(s) to open.");
+    parser.process(application);
+
+    Nome::CMainWindow* mainWindow = nullptr;
+    const QStringList posArgs = parser.positionalArguments();
+    for (const QString& file : posArgs)
+    {
+        Nome::CMainWindow* newWin = new Nome::CMainWindow(file);
+        newWin->show();
+        mainWindow = newWin;
+    }
+
+    if (!mainWindow)
+        mainWindow = new Nome::CMainWindow;
+    mainWindow->show();
 
     return application.exec();
 }

@@ -3,6 +3,8 @@
 namespace Nome::Scene
 {
 
+DEFINE_META_OBJECT(CEntity) {}
+
 CEntity::CEntity()
 {
     if (Name.empty())

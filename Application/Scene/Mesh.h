@@ -28,7 +28,7 @@ class CMesh : public CEntity
     DEFINE_INPUT_ARRAY(CFace*, Faces) { MarkDirty(); }
 
 public:
-    using Super = CEntity;
+    DECLARE_META_CLASS(CMesh, CEntity);
     CMesh();
     explicit CMesh(std::string name);
 
@@ -124,6 +124,8 @@ public:
     const CMeshImpl& GetMeshImpl() const { return Mesh; }
 
     std::vector<std::pair<float, std::string>> PickVertices(const tc::Ray& localRay);
+    void MarkAsSelected(const std::set<std::string>& vertNames, bool bSel);
+    void DeselectAll();
 
 private:
     TAutoPtr<CMesh> MeshGenerator;
@@ -140,6 +142,7 @@ private:
     std::set<std::string> FacesToDelete;
 
     std::map<std::string, std::pair<CMeshInstancePoint*, uint32_t>> PickingVerts;
+    std::set<std::string> CurrSelectedVerts;
 };
 
 class CVertexSelector : public Flow::CFlowNode

@@ -5,6 +5,12 @@
 namespace Nome::Scene
 {
 
+DEFINE_META_OBJECT(CCircle)
+{
+    BindPositionalArgument(&CCircle::Segments, 1, 0);
+    BindPositionalArgument(&CCircle::Radius, 1, 1);
+}
+
 void CCircle::UpdateEntity()
 {
     if (!IsDirty())

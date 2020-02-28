@@ -6,7 +6,16 @@
 namespace Nome::Scene
 {
 
-CMesh::CMesh() {}
+DEFINE_META_OBJECT(CMesh)
+{
+    // `mesh` command has no properties
+    // `object` is currently unhandled
+}
+
+#define VERT_COLOR 255, 255, 255
+#define VERT_SEL_COLOR 255, 255, 100
+
+CMesh::CMesh() = default;
 
 CMesh::CMesh(std::string name)
     : CEntity(std::move(name))
@@ -170,8 +179,13 @@ void CMeshInstance::UpdateEntity()
     MeshGenerator->UpdateEntity();
     CopyFromGenerator();
     Mesh.request_vertex_status();
+    Mesh.request_vertex_colors();
     Mesh.request_edge_status();
     Mesh.request_face_status();
+    for (auto vH : Mesh.vertices())
+    {
+        Mesh.set_color(vH, { VERT_COLOR });
+    }
     for (const std::string& face : FacesToDelete)
     {
         auto iter = NameToFace.find(face);
@@ -267,6 +281,38 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc:
         printf("t=%.3f v=%s\n", sel.first, sel.second.c_str());
     }
     return result;
+}
+
+void CMeshInstance::MarkAsSelected(const std::set<std::string>& vertNames, bool bSel)
+{
+    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+    size_t prefixLen = instPrefix.length();
+    for (const auto& name : vertNames)
+    {
+        auto iter = NameToVert.find(name.substr(prefixLen));
+        if (iter == NameToVert.end())
+            continue;
+        CurrSelectedVerts.insert(name.substr(prefixLen));
+        auto handle = iter->second;
+        const auto& original = Mesh.color(handle);
+        printf("Before: %d %d %d\n", original[0], original[1], original[2]);
+        if (bSel)
+            Mesh.set_color(handle, { VERT_SEL_COLOR });
+        else
+            Mesh.set_color(handle, { VERT_COLOR });
+    }
+    GetSceneTreeNode()->SetEntityUpdated(true);
+}
+
+void CMeshInstance::DeselectAll()
+{
+    for (const auto& name : CurrSelectedVerts)
+    {
+        auto handle = NameToVert[name];
+        Mesh.set_color(handle, { VERT_COLOR });
+        GetSceneTreeNode()->SetEntityUpdated(true);
+    }
+    CurrSelectedVerts.clear();
 }
 
 void CVertexSelector::PointUpdate()

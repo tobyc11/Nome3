@@ -1,5 +1,7 @@
 #include "SceneGraph.h"
+#include "ASTSceneAdapter.h"
 #include "Entity.h"
+#include <Parsing/ASTContext.h>
 
 namespace Nome::Scene
 {
@@ -13,6 +15,13 @@ void CSceneTreeNode::L2WTransformUpdate()
     }
     L2WTransform.UpdateValue(Parent->L2WTransform.GetValue(Matrix3x4::IDENTITY)
                              * Owner->Transform.GetValue(Matrix3x4::IDENTITY));
+}
+
+CEntity* CSceneTreeNode::GetEntity() const
+{
+    if (InstanceEntity)
+        return InstanceEntity;
+    return GetOwner()->GetEntity();
 }
 
 CSceneTreeNode* CSceneTreeNode::FindChildOfOwner(CSceneNode* owner) const
@@ -212,6 +221,67 @@ void CSceneNode::NotifySurfaceDirty() const
     {
         treeNode->SetEntityUpdated(true);
     }
+}
+
+void CSceneNode::SyncFromAST(AST::ACommand* cmd, CScene& scene)
+{
+    if (ASTSource)
+        throw AST::CSemanticError("SceneNode already has an associated AST command", cmd);
+    ASTSource = cmd;
+    // This function is called for either a group or an instance;
+    // for a group, there isn't much to be done
+    if (cmd->GetCommand() == "group")
+        return;
+
+    TAutoPtr<CTransform> lastTransform;
+    for (auto* namedArg : cmd->GetTransforms())
+    {
+        auto* transform = CASTSceneAdapter::ConvertASTTransform(namedArg);
+        if (lastTransform)
+            transform->Input.Connect(lastTransform->Output);
+        lastTransform = transform;
+    }
+    if (lastTransform)
+        Transform.Connect(lastTransform->Output);
+}
+
+void CSceneNode::SyncToAST(AST::CASTContext& ctx)
+{
+    if (ASTSource)
+    {
+        throw std::runtime_error("Can't sync to existing AST node yet");
+    }
+    if (!GetEntity())
+        throw std::runtime_error("Can't sync groups yet");
+    ASTSource = BuildASTCommand(ctx);
+    ASTSource->SetPendingSave(true);
+    ctx.GetAstRoot()->AddChild(ASTSource);
+}
+
+AST::ACommand* CSceneNode::BuildASTCommand(AST::CASTContext& ctx) const
+{
+    auto* node = ctx.Make<AST::ACommand>(ctx.MakeToken("instance"), ctx.MakeToken("endinstance"));
+    // There should be a way to map Type<->AST node easily?
+    //   name:String         0:ident
+    //   entity:EntityRef    1:ident
+    //   transform:???       transform:[rotate:vec vec, translate: vec]
+    //   surface:EntityRef   surface:ident
+    auto* zero = ctx.MakeIdent(GetName());
+    node->PushPositionalArgument(zero);
+    auto* one = ctx.MakeIdent(GetEntity()->GetName());
+    node->PushPositionalArgument(one);
+    if (GetSurface())
+    {
+        auto* child = ctx.MakeIdent(GetSurface()->GetName());
+        auto* surface = ctx.Make<AST::ANamedArgument>(ctx.MakeToken("surface"));
+        surface->AddChild(child);
+        node->AddNamedArgument(surface);
+    }
+    if (Transform.IsConnected())
+        throw std::runtime_error("Can't write transformations into AST yet");
+    std::cout << "Dumping newly generated instance command" << std::endl;
+    std::cout << *node << std::endl;
+    return node;
 }
 
 }

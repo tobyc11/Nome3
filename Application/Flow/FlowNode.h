@@ -34,7 +34,7 @@ public:
     // Unmark dirty
     void UnmarkDirty() { Dirty = false; }
 
-    bool IsDirty() const { return Dirty; }
+    [[nodiscard]] bool IsDirty() const { return Dirty; }
 
     // Set a new value, and unmark dirty
     void UpdateValue(T val)
@@ -50,7 +50,7 @@ public:
         return defaultValue;
     }
 
-    size_t CountConnections() const { return ConnectedInputs.size(); }
+    [[nodiscard]] size_t CountConnections() const { return ConnectedInputs.size(); }
 
     // Trigger an update to the value, returns whether the update was successful
     bool Update() const
@@ -126,7 +126,7 @@ public:
         ConnectedOutput = nullptr;
     }
 
-    bool IsConnected() const { return ConnectedOutput; }
+    [[nodiscard]] bool IsConnected() const { return ConnectedOutput; }
 
     T GetValue(const T& defaultValue) const
     {

@@ -22,7 +22,9 @@ class CPoint : public CEntity
     void UpdateEntity() override;
 
 public:
-    using Super = CEntity;
+    DECLARE_META_CLASS(CPoint, CEntity);
+
+    CPoint() = default;
 
     explicit CPoint(std::string name)
         : CEntity(std::move(name))

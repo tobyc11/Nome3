@@ -11,6 +11,9 @@ class CSurface : public CEntity
     DEFINE_INPUT(float, ColorB) {}
 
 public:
+    DECLARE_META_CLASS(CSurface, CEntity);
+
+    using CEntity::CEntity;
 };
 
 }

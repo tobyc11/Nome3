@@ -177,7 +177,7 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
     if (!additive)
         SelectedVertices.clear();
 
-    std::vector<std::pair<float, std::string>> hits;
+    std::vector<std::tuple<float ,Scene::CMeshInstance*, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
         auto* entity = node->GetInstanceEntity();
@@ -190,16 +190,21 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
 
             auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
             auto pickResults = meshInst->PickVertices(localRay);
-            hits.insert(hits.end(), pickResults.begin(), pickResults.end());
+            for (const auto& [dist, name] : pickResults)
+                hits.emplace_back(dist, meshInst, name);
+            if (!additive)
+                meshInst->DeselectAll();
         }
     });
 
     std::sort(hits.begin(), hits.end());
     if (hits.size() == 1)
     {
-        SelectedVertices.push_back(hits[0].second);
+        const auto& [dist, meshInst, vertName] = hits[0];
+        SelectedVertices.push_back(vertName);
         GFrtCtx->MainWindow->statusBar()->showMessage(
-            QString::fromStdString("Selected " + hits[0].second));
+            QString::fromStdString("Selected " + vertName));
+        meshInst->MarkAsSelected({vertName}, true);
     }
     else if (!hits.empty())
     {
@@ -212,9 +217,10 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
         table->setColumnCount(2);
         for (size_t i = 0; i < hits.size(); i++)
         {
-            auto* dist = new QTableWidgetItem(QString::number(hits[i].first));
-            auto* item = new QTableWidgetItem(QString::fromStdString(hits[i].second));
-            table->setItem(i, 0, dist);
+            const auto& [dist, meshInst, vertName] = hits[i];
+            auto* distWidget = new QTableWidgetItem(QString::number(dist));
+            auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
+            table->setItem(i, 0, distWidget);
             table->setItem(i, 1, item);
         }
         layout1->addWidget(table);
@@ -226,9 +232,11 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
             if (!sel.empty())
             {
                 int row = sel[0]->row();
-                SelectedVertices.push_back(hits[row].second);
+                const auto& [dist, meshInst, vertName] = hits[row];
+                SelectedVertices.push_back(vertName);
                 GFrtCtx->MainWindow->statusBar()->showMessage(
-                    QString::fromStdString("Selected " + hits[row].second));
+                    QString::fromStdString("Selected " + vertName));
+                meshInst->MarkAsSelected({vertName}, true);
             }
             dialog->close();
         });

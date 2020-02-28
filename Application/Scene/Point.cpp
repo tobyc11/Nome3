@@ -3,6 +3,13 @@
 namespace Nome::Scene
 {
 
+DEFINE_META_OBJECT(CPoint)
+{
+    BindPositionalArgument(&CPoint::X, 1, 0);
+    BindPositionalArgument(&CPoint::Y, 1, 1);
+    BindPositionalArgument(&CPoint::Z, 1, 2);
+}
+
 void CPoint::MarkDirty()
 {
     Super::MarkDirty();

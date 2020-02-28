@@ -12,7 +12,7 @@ class CTunnel : public CMesh
     DEFINE_INPUT(float, Ratio) { MarkDirty(); }
 
 public:
-    using Super = CMesh;
+    DECLARE_META_CLASS(CTunnel, CMesh);
     CTunnel() = default;
     CTunnel(const std::string& name)
         : CMesh(std::move(name))

@@ -18,7 +18,7 @@
     {                                                                                              \
     public:                                                                                        \
         CMetaClass();                                                                              \
-        std::string GetClassName() override { return #TClass; }                                    \
+        std::string ClassName() override { return #TClass; }                                       \
         CEntity* MakeEntity() override { return new TClass; }                                      \
         bool DeserializeFromAST(AST::ACommand& cmd, CEntity& entity) override                      \
         {                                                                                          \
@@ -49,7 +49,7 @@ class CSceneTreeNode;
 class IMetaClass
 {
 public:
-    virtual std::string GetClassName() = 0;
+    virtual std::string ClassName() = 0;
     virtual CEntity* MakeEntity() = 0;
     virtual bool DeserializeFromAST(AST::ACommand& cmd, CEntity& entity) = 0;
 };
@@ -64,7 +64,7 @@ public:
     {
     public:
         CMetaClass();
-        std::string GetClassName() override { return "CEntity"; }
+        std::string ClassName() override { return "CEntity"; }
         CEntity* MakeEntity() override { return new CEntity; }
         bool DeserializeFromAST(AST::ACommand& cmd, CEntity& entity) override
         {

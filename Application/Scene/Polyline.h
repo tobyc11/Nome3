@@ -1,12 +1,22 @@
 #pragma once
 #include "Mesh.h"
+#include <vector>
 
 namespace Nome::Scene
 {
 
+struct CPolylineInfo
+{
+    std::vector<CVertexInfo *> Positions;
+    bool IsClosed;
+    std::string Name;
+};
+
 class CPolyline : public CMesh
 {
     DEFINE_INPUT_ARRAY(CVertexInfo*, Points) { MarkDirty(); }
+
+    DEFINE_OUTPUT_WITH_UPDATE(CPolylineInfo *, Polyline) { UpdateEntity(); }
 
 public:
     using Super = CMesh;
@@ -22,6 +32,8 @@ public:
 
 private:
     bool bClosed = false;
+
+    CPolylineInfo PI;
 };
 
 }

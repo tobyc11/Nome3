@@ -2,10 +2,13 @@
 #include <iostream>
 #include <vector>
 
+#undef M_PI
+
 namespace Nome::Scene
 {
 
-    void CSweep::drawCircle(Vector3 center, Vector3 T, Vector3 N, float radius, float angle, float scale, int num_phi, int index)
+    void CSweep::drawCrossSection(std::vector<Vector3> crossSection, Vector3 center, Vector3 T, Vector3 N,
+            float angle, float scale, int index)
     {
 
         Vector3 B = Vector3((-1.0f * N.y) * T.z + T.y * N.z,N.x * T.z - T.x * N.z,(-1.0f * N.x) * T.y + T.x * N.y);
@@ -13,24 +16,14 @@ namespace Nome::Scene
         N.Normalize();
         B.Normalize();
 
-        const float du = (2.0f * M_PI) / num_phi;
-
-        for (int j = 0; j < num_phi; ++j)
+        for (unsigned long i = 0; i < crossSection.size(); i++)
         {
-            float u = angle + j * du;
+            float x = crossSection[i].x * cosf(angle) - crossSection[i].y * sinf(angle);
+            float y = crossSection[i].x * sinf(angle) + crossSection[i].y * cosf(angle);
+            Vector3 transformVector = N * x * scale + B * y;
+            Vector3 curVertex = center + transformVector;
 
-            // compute position of circle point
-            // https://math.stackexchange.com/questions/1958939/parametric-equation-for-rectangular-tubing-with-corner-radius
-
-            float x = radius * cosf(u) * scale;
-            float y = radius * sinf(u);
-
-            Vector3 tansformVector = N * x + B * y;
-
-            Vector3 currVertex = center + tansformVector;
-
-            AddVertex("v" + std::to_string(index) + "_" + std::to_string(j),
-                      { currVertex.x, currVertex.y, currVertex.z });
+            AddVertex("v" + std::to_string(index) + "_" + std::to_string(i), { curVertex.x, curVertex.y, curVertex.z });
         }
     }
 
@@ -39,8 +32,8 @@ namespace Nome::Scene
         float value = vectorA.DotProduct(vectorB) / vectorA.Length() / vectorB.Length();
         float epsilon = 1e-4;
         if (fabs(value - 1) < epsilon) { return 0; }
-        if (fabs(value + 1) < epsilon) { return M_PI; }
-        if (fabs(value) < epsilon) {return M_PI / 2; }
+        if (fabs(value + 1) < epsilon) { return (float)tc::M_PI; }
+        if (fabs(value) < epsilon) {return (float)tc::M_PI / 2; }
 
         return acosf(vectorA.DotProduct(vectorB) / vectorA.Length() / vectorB.Length()) ;
     }
@@ -78,9 +71,11 @@ namespace Nome::Scene
         Vector3 perpendicular = getPerpendicularVector(vectorB, vectorA).Normalized();
         Vector3 direction = crossProduct(T, vectorA).Normalized();
 
-        if (direction.DotProduct(perpendicular) >= 0) {
+        if (direction.DotProduct(perpendicular) >= 0)
+        {
             return angle;
-        } else {
+        }
+        else {
             return -angle;
         }
     }
@@ -93,30 +88,38 @@ namespace Nome::Scene
         Super::UpdateEntity();
 
         // the last point is control arguments
-        auto numPoints = Points.GetSize() - 1;
+        CPolylineInfo *pathInfo = Path.GetValue(nullptr);
+        CPolylineInfo *crossSectionInfo = CrossSection.GetValue(nullptr);
 
+        if (pathInfo == nullptr || crossSectionInfo == nullptr) { return; }
+
+        // detect if is a closed polyline
+        bool isClosed = pathInfo->IsClosed;
+        unsigned long numPoints = pathInfo->Positions.size();
         // if there's just one point, exit
-        if (numPoints < 2) { return; }
-
-        const float radius = 1; //hard coded
+        if ((!isClosed && numPoints < 2) || (isClosed && numPoints < 3)) { return; }
 
         std::vector<Vector3> points;
         // Normal vectors of each paths
         std::vector<Vector3> Ns;
         // Rotation angles of each paths
         std::vector<float> angles;
-
-        // get control arguments;
-        CVertexInfo* controls = Points.GetValue(numPoints, nullptr);
+        // Cross sections
+        std::vector<Vector3> crossSection;
 
         // Polygon's sides;
-        int num_phi = int(controls->Position.x);
-        float twist = controls->Position.y * M_PI / 180 / (numPoints - 1);
-        float forget_the_name = controls->Position.z * M_PI / 180;
+        float twist =  Twist.GetValue(0) * (float)tc::M_PI / 180 / (numPoints - 1);
+        float azimuth = Azimuth.GetValue(0) * (float)tc::M_PI / 180;
+
+        for (unsigned long i = 0; i < crossSectionInfo->Positions.size(); i++)
+        {
+            CVertexInfo* point = crossSectionInfo->Positions[i];
+            crossSection.push_back(Vector3(point->Position.x, point->Position.y, point->Position.z));
+        }
 
         for (unsigned long i = 0; i < numPoints; i++)
         {
-            CVertexInfo* point = Points.GetValue(i, nullptr);
+            CVertexInfo* point = pathInfo->Positions[i];
 
             points.push_back(Vector3(point->Position.x, point->Position.y, point->Position.z)); // current point
 
@@ -139,11 +142,6 @@ namespace Nome::Scene
             }
         }
 
-        // detect if is a closed polyline
-        bool isClosed = (points[0] == points[numPoints - 1]);
-        // closed polyline should have at least 3 points
-        if (isClosed && numPoints < 3) { return; }
-
         if (isClosed)
         {
             Vector3 prevVector = points[1] - points[0];
@@ -164,14 +162,7 @@ namespace Nome::Scene
         // get the result rotation angles
         for (unsigned long i = numPoints - 2; i >= 1; i--) { angles[i - 1] += angles[i]; }
         // add rotation
-        for (unsigned long i = 0; i < numPoints - 1; i++) { angles[i] += forget_the_name; }
-
-//    for (unsigned long i = 0; i < numPoints - 1; i++)
-//    {
-//        std::cout << "Path " << i << ":\n";
-//        std::cout << "\t N: " << Ns[i].x << ' ' << Ns[i].y << ' ' << Ns[i].z << '\n';
-//        std::cout << "\t Angle: " << ": " << angles[i] * 180 / M_PI << std::endl;
-//    }
+        for (unsigned long i = 0; i < numPoints - 1; i++) { angles[i] += azimuth; }
 
         // the count of drawing segments
         int segmentCount = 0;
@@ -184,7 +175,7 @@ namespace Nome::Scene
             N = Ns[0];
 
             // generate points in a circle perpendicular to the curve at the current point
-            drawCircle(points[0], T, N, radius, angles[0], 1, num_phi, ++segmentCount);
+            drawCrossSection(crossSection, points[0], T, N, angles[0], 1, ++segmentCount);
         } else
         {
             Vector3 prevVector = (points[1] - points[0]).Normalized();
@@ -193,7 +184,7 @@ namespace Nome::Scene
             T = prevVector + curVector;
             N = prevVector - curVector;
 
-            drawCircle(points[0], T, N, radius, angles[0], N.Length(), num_phi, ++segmentCount);
+            drawCrossSection(crossSection, points[0], T, N, angles[0], N.Length(), ++segmentCount);
         }
 
         for (unsigned long i = 1; i < numPoints; i++)
@@ -208,11 +199,13 @@ namespace Nome::Scene
                     N = prevVector - curVector;
 
                     // 0 is perfect.
-                    drawCircle(points[numPoints - 1], T, N, radius, angles[i - 1] - twist, N.Length(), num_phi, ++segmentCount);
+                    drawCrossSection(crossSection, points[numPoints - 1], T, N, angles[i - 1] - twist,
+                            N.Length(), ++segmentCount);
                 } else {
                     T = points[i] - points[i - 1];
                     // add twist
-                    drawCircle(points[i], T, Ns[i - 1], radius, angles[i - 1] - twist, 1, num_phi, ++segmentCount);
+                    drawCrossSection(crossSection, points[i], T, Ns[i - 1], angles[i - 1] - twist,
+                            1, ++segmentCount);
                 }
             } else
             {
@@ -221,19 +214,19 @@ namespace Nome::Scene
 
                 T = prevVector + curVector;
                 N = prevVector - curVector;
-                drawCircle(points[i], T, N, radius, angles[i], N.Length(), num_phi, ++segmentCount);
+                drawCrossSection(crossSection, points[i], T, N, angles[i], N.Length(), ++segmentCount);
             }
         }
 
         // Create faces
         for (int k = 0; k < segmentCount - 1; k++)
         {
-            for (int i = 0; i < num_phi; i++)
+            for (unsigned long i = 0; i < crossSection.size(); i++)
             {
                 // CCW winding
                 // v1_next v1_i
                 // v2_next v2_i
-                int next = (i + 1) % num_phi;
+                int next = (i + 1) % crossSection.size();
                 int next_k = (k + 1) % segmentCount;
                 std::vector<std::string> upperFace = {
                         "v" + std::to_string(next_k + 1) + "_" + std::to_string(next),

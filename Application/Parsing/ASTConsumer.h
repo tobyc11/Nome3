@@ -47,9 +47,11 @@ public:
         else if (cmd->GetBeginKeyword()->Identifier == "sweep")
         {
             // We assume the AST itself is valid
-            auto* pointList = ast_as<AExprList*>(cmd->FindNamedArg("point_list"));
-            auto idents = pointList->ConvertToIdents();
-            static_cast<T*>(this)->VisitSweep(cmd->GetName(), idents);
+            AIdent *path = static_cast<AIdent*>(cmd->FindNamedArg("path"));
+            AIdent *crossSection = static_cast<AIdent*>(cmd->FindNamedArg("cross_section"));
+            AExpr *azimuth = cmd->FindNamedArg("azimuth");
+            AExpr *twist = cmd->FindNamedArg("twist");
+            static_cast<T*>(this)->VisitSweep(cmd->GetName(), path, crossSection, azimuth, twist);
         }
         else if (cmd->GetBeginKeyword()->Identifier == "face")
         {
@@ -150,7 +152,7 @@ public:
 
     void VisitPoint(AIdent* name, AExpr* x, AExpr* y, AExpr* z) {}
     void VisitPolyline(AIdent* name, const std::vector<AIdent*>& points, bool closed) {}
-    void VisitSweep(AIdent* name, const std::vector<AIdent*>& points) {}
+    void VisitSweep(AIdent* name, AIdent *path, AIdent *crossSection, AExpr *azimuth, AExpr *twist) {}
     void VisitFace(AIdent* name, const std::vector<AIdent*>& points, AIdent* surface) {}
     void VisitObject(AIdent* name, const std::vector<AIdent*>& faceRefs) {}
     void VisitMesh(AIdent* name, const std::vector<ACommand*>& faces) {}

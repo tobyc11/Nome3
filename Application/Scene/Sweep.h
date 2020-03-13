@@ -1,5 +1,6 @@
 #pragma once
 #include "Mesh.h"
+#include "Polyline.h"
 #include "Vector3.h"
 
 namespace Nome::Scene
@@ -7,7 +8,11 @@ namespace Nome::Scene
 
     class CSweep : public CMesh
     {
-    DEFINE_INPUT_ARRAY(CVertexInfo*, Points) { MarkDirty(); }
+    DEFINE_INPUT(CPolylineInfo *, Path) { MarkDirty(); }
+    DEFINE_INPUT(CPolylineInfo *, CrossSection) { MarkDirty(); }
+    DEFINE_INPUT(float, Azimuth) { MarkDirty(); }
+    DEFINE_INPUT(float, Twist) { MarkDirty(); }
+    DEFINE_INPUT(float, Height) { MarkDirty(); }
 
     public:
         using Super = CMesh;
@@ -20,7 +25,8 @@ namespace Nome::Scene
         void UpdateEntity() override;
 
     private:
-        void drawCircle(Vector3 center, Vector3 N, Vector3 B, float radius, float angles, float scale, int num_phi, int index);
+        void drawCrossSection(std::vector<Vector3> crossSection, Vector3 center, Vector3 T, Vector3 N,
+                              float angle, float scale, int index);
     };
 
 }

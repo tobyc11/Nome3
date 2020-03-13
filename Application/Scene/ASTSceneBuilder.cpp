@@ -50,19 +50,41 @@ void CASTSceneBuilder::VisitPolyline(AIdent* name, const std::vector<AIdent*>& p
     Scene->AddEntity(polyline.Get());
 }
 
-void CASTSceneBuilder::VisitSweep(AIdent* name, const std::vector<AIdent*>& points)
+void CASTSceneBuilder::VisitSweep(AIdent* name, AIdent *path, AIdent *crossSection, AExpr *azimuth, AExpr *twist)
 {
     TAutoPtr<CSweep> sweep = new CSweep(name->Identifier);
-    for (auto* ident : points)
+
+    TAutoPtr<CEntity> pathEntity = Scene->FindEntity(path->Identifier);
+    if (!pathEntity)
     {
-        Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
-        if (!pointOutput)
-        {
-            throw CSemanticError(
-                    tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), name);
-        }
-        sweep->Points.Connect(*pointOutput);
+        throw CSemanticError(
+                tc::StringPrintf("Cannot find entity %s", path->Identifier.c_str()), path);
     }
+    CPolyline *pathLine = dynamic_cast<CPolyline *>(pathEntity.Get());
+    if (!pathLine)
+    {
+        throw CSemanticError(
+                tc::StringPrintf("Entity %s is not a polyline", path->Identifier.c_str()), path);
+    }
+
+    TAutoPtr<CEntity> crossEntity = Scene->FindEntity(crossSection->Identifier);
+    if (!crossEntity)
+    {
+        throw CSemanticError(
+                tc::StringPrintf("Cannot find entity %s", crossSection->Identifier.c_str()), crossSection);
+    }
+    CPolyline *crossLine = dynamic_cast<CPolyline *>(crossEntity.Get());
+    if (!crossLine)
+    {
+        throw CSemanticError(
+                tc::StringPrintf("Entity %s is not a polyline", crossSection->Identifier.c_str()), crossSection);
+    }
+
+    sweep->Path.Connect(pathLine->Polyline);
+    sweep->CrossSection.Connect(crossLine->Polyline);
+    CONNECT_AST_EXPR_TO(twist, sweep->Twist);
+    CONNECT_AST_EXPR_TO(azimuth, sweep->Azimuth);
+
     Scene->AddEntity(sweep.Get());
 }
 

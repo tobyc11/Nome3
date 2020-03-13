@@ -152,11 +152,13 @@ polyline: POLYLINE IDENT '(' ident_list ')' polyline_ext ENDPOLYLINE
 
 polyline_ext: %empty | CLOSED { driver->Ext.NamedArgs[$1] = driver->MakeIdent("true"); };
 
-sweep: SWEEP IDENT '(' ident_list ')' ENDSWEEP
+sweep: SWEEP IDENT '(' IDENT IDENT num_exp num_exp ')' ENDSWEEP
 {
-    $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $SWEEP, $ENDSWEEP, nullptr);
-    driver->Ext.MoveTo(*driver, $$);
-	driver->MoveIdentList($$, "point_list");
+    $$ = Nome::ACommand::Create(*driver->GetASTContext(), $2, $SWEEP, $ENDSWEEP);
+	$$->AddArgument(driver->MakeIdent("path"), $4);
+	$$->AddArgument(driver->MakeIdent("cross_section"), $5);
+	$$->AddArgument(driver->MakeIdent("azimuth"), $6);
+	$$->AddArgument(driver->MakeIdent("twist"), $7);
 }
 
 face: FACE IDENT '(' ident_list ')' face_ext ENDFACE

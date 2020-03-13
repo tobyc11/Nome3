@@ -28,7 +28,7 @@ public:
 
     void VisitPoint(AIdent* name, AExpr* x, AExpr* y, AExpr* z);
     void VisitPolyline(AIdent* name, const std::vector<AIdent*>& points, bool closed);
-    void VisitSweep(AIdent* name, const std::vector<AIdent*>& points);
+    void VisitSweep(AIdent* name, AIdent *path, AIdent *crossSection, AExpr *azimuth, AExpr *twist);
     void VisitFace(AIdent* name, const std::vector<AIdent*>& points, AIdent* surface);
     void VisitObject(AIdent* name, const std::vector<AIdent*>& faceRefs);
     void VisitMesh(AIdent* name, const std::vector<ACommand*>& faces);

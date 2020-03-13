@@ -40,6 +40,7 @@ void yyerror(YYLTYPE* loc, yyscan_t scanner, Nome::CNomeDriver* driver, const ch
 %token <Ident> EXPR SIN COS TAN COT SEC CSC ARCSIN ARCCOS ARCTAN ARCCOT ARCSEC ARCCSC
 %token <Ident> POINT ENDPOINT
 %token <Ident> POLYLINE ENDPOLYLINE CLOSED
+%token <Ident> SWEEP ENDSWEEP
 %token <Ident> FACE ENDFACE
 %token <Ident> OBJECT ENDOBJECT
 %token <Ident> MESH ENDMESH
@@ -67,7 +68,7 @@ void yyerror(YYLTYPE* loc, yyscan_t scanner, Nome::CNomeDriver* driver, const ch
 %type <CommandArgument> command_arg_list
 %type <ExprList> plain_exp_list
 %type <Expr> exp num_exp
-%type <Command> point polyline face object mesh group circle funnel tunnel bezier_curve bspline instance surface background foreground insidefaces outsidefaces offsetfaces frontfaces backfaces rimfaces bank set delete face_for_deletion subdivision offset
+%type <Command> point polyline sweep face object mesh group circle funnel tunnel bezier_curve bspline instance surface background foreground insidefaces outsidefaces offsetfaces frontfaces backfaces rimfaces bank set delete face_for_deletion subdivision offset
 %type <Transform> transform
 %type <Ident> kwd_or_ident
 
@@ -78,9 +79,9 @@ input:
 | num_exp { driver->GetASTContext()->SetExpr($1); }
 ;
 
-kwd_or_ident: IDENT | POINT | POLYLINE | FACE | OBJECT | MESH | GROUP | CIRCLE | FUNNEL | TUNNEL | BEZIERCURVE | BSPLINE | INSTANCE;
+kwd_or_ident: IDENT | POINT | POLYLINE | SWEEP | FACE | OBJECT | MESH | GROUP | CIRCLE | FUNNEL | TUNNEL | BEZIERCURVE | BSPLINE | INSTANCE;
 
-command: point | polyline | face | object | mesh | group |circle | funnel | tunnel | bezier_curve | bspline |
+command: point | polyline | sweep | face | object | mesh | group |circle | funnel | tunnel | bezier_curve | bspline |
   instance | surface | background | foreground | insidefaces | outsidefaces | offsetfaces |
   frontfaces | backfaces | rimfaces | bank | delete | subdivision | offset
 | '(' kwd_or_ident IDENT command_arg_list command_list ')' {
@@ -150,6 +151,13 @@ polyline: POLYLINE IDENT '(' ident_list ')' polyline_ext ENDPOLYLINE
 };
 
 polyline_ext: %empty | CLOSED { driver->Ext.NamedArgs[$1] = driver->MakeIdent("true"); };
+
+sweep: SWEEP IDENT '(' ident_list ')' ENDSWEEP
+{
+    $$ = Nome::ACommand::Create(*driver->GetASTContext(), $IDENT, $SWEEP, $ENDSWEEP, nullptr);
+    driver->Ext.MoveTo(*driver, $$);
+	driver->MoveIdentList($$, "point_list");
+}
 
 face: FACE IDENT '(' ident_list ')' face_ext ENDFACE
 {

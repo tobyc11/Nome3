@@ -5,6 +5,7 @@
 #include "Funnel.h"
 #include "Point.h"
 #include "Polyline.h"
+#include "Sweep.h"
 #include "Surface.h"
 #include "Tunnel.h"
 #include <StringPrintf.h>
@@ -47,6 +48,22 @@ void CASTSceneBuilder::VisitPolyline(AIdent* name, const std::vector<AIdent*>& p
     }
     polyline->SetClosed(closed);
     Scene->AddEntity(polyline.Get());
+}
+
+void CASTSceneBuilder::VisitSweep(AIdent* name, const std::vector<AIdent*>& points)
+{
+    TAutoPtr<CSweep> sweep = new CSweep(name->Identifier);
+    for (auto* ident : points)
+    {
+        Flow::TOutput<CVertexInfo*>* pointOutput = Scene->FindPointOutput(ident->Identifier);
+        if (!pointOutput)
+        {
+            throw CSemanticError(
+                    tc::StringPrintf("Cannot find point %s", ident->Identifier.c_str()), name);
+        }
+        sweep->Points.Connect(*pointOutput);
+    }
+    Scene->AddEntity(sweep.Get());
 }
 
 void CASTSceneBuilder::VisitFace(AIdent* name, const std::vector<AIdent*>& points, AIdent* surface)

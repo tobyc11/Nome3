@@ -68,6 +68,8 @@ endpoint                    { LEXER_IDENT; return ENDPOINT; }
 polyline                    { LEXER_IDENT; return POLYLINE; }
 endpolyline                 { LEXER_IDENT; return ENDPOLYLINE; }
 closed                      { LEXER_IDENT; return CLOSED; }
+sweep                       { LEXER_IDENT; return SWEEP; }
+endsweep                    { LEXER_IDENT; return ENDSWEEP; }
 face                        { LEXER_IDENT; return FACE; }
 endface                     { LEXER_IDENT; return ENDFACE; }
 object                      { LEXER_IDENT; return OBJECT; }

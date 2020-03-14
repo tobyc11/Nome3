@@ -134,6 +134,8 @@ AST::AExpr* CCommandSubpart::GetExpr(AST::ACommand* cmd) const
     {
         // Otherwise fetch the named argument
         auto* namedArg = cmd->GetNamedArgument(NamedArgName);
+        if (!namedArg)
+            return nullptr;
         expr = namedArg->GetArgument(Index);
     }
 
@@ -174,6 +176,9 @@ bool TBindingTranslator<Flow::TInput<float>>::FromASTToValue(AST::ACommand* comm
                                                              Flow::TInput<float>& value)
 {
     auto* expr = subpart.GetExpr(command);
+    // Just return if the corresponding element is not found in the AST
+    if (!expr)
+        return false;
     CExprToNodeGraph converter { expr, GEnv.Scene->GetBankAndSet(), &value };
     return true;
 }

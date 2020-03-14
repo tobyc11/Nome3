@@ -26,6 +26,7 @@ public:
     {
     }
 
+    void MarkDirty() override;
     void UpdateEntity() override;
 
     void SetClosed(bool closed);

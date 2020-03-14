@@ -3,6 +3,15 @@
 namespace Nome::Scene
 {
 
+void CPolyline::MarkDirty()
+{
+    // Mark this entity dirty
+    Super::MarkDirty();
+
+    // And also mark the Face output dirty
+    Polyline.MarkDirty();
+}
+
 void CPolyline::UpdateEntity()
 {
     if (!IsDirty())

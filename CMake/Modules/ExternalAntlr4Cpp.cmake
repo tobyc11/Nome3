@@ -38,7 +38,7 @@ else()
     set(ANTLR4_SHARED_LIBRARIES
         ${ANTLR4_OUTPUT_DIR}/libantlr4-runtime.dll.a)
     set(ANTLR4_RUNTIME_LIBRARIES
-        ${ANTLR4_OUTPUT_DIR}/cygantlr4-runtime-4.7.2.dll)
+        ${ANTLR4_OUTPUT_DIR}/cygantlr4-runtime-4.8.dll)
   elseif(APPLE)
     set(ANTLR4_RUNTIME_LIBRARIES
         ${ANTLR4_OUTPUT_DIR}/libantlr4-runtime.dylib)
@@ -97,6 +97,7 @@ else()
       GIT_REPOSITORY ${ANTLR4_GIT_REPOSITORY}
       GIT_TAG ${ANTLR4_TAG}
       DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}
+          UPDATE_COMMAND ""
       BUILD_COMMAND ""
       BUILD_IN_SOURCE 1
       SOURCE_DIR ${ANTLR4_ROOT}

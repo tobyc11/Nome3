@@ -1,6 +1,7 @@
 #include "ASTBinding.h"
 #include "Environment.h"
 #include "Point.h"
+#include "Polyline.h"
 #include "Scene.h"
 #include <Flow/FlowNode.h>
 #include <Flow/FlowNodeArray.h>
@@ -204,6 +205,34 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
         }
         value.Connect(*pointOutput);
     }
+    return true;
+}
+
+template <>
+bool TBindingTranslator<Flow::TInput<CPolylineInfo *>>::FromASTToValue(
+        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CPolylineInfo *>& value)
+{
+    auto* ident = subpart.GetExpr(command);
+    if (ident->GetKind() != AST::EKind::Ident)
+        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident",
+                                  command);
+
+    std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
+    TAutoPtr<CEntity> entity = GEnv.Scene->FindEntity(identVal);
+    if (!entity)
+    {
+        throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()),
+                                  ident);
+    }
+
+    CPolyline *polyline = dynamic_cast<CPolyline *>(entity.Get());
+    if (!polyline)
+    {
+        throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a polyline", identVal.c_str()),
+                                  ident);
+    }
+
+    value.Connect(polyline->Polyline);
     return true;
 }
 

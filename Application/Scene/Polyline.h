@@ -7,7 +7,7 @@ namespace Nome::Scene
 
 struct CPolylineInfo
 {
-    std::vector<CVertexInfo *> Positions;
+    std::vector<CVertexInfo*> Positions;
     bool IsClosed;
     std::string Name;
 };
@@ -16,7 +16,7 @@ class CPolyline : public CMesh
 {
     DEFINE_INPUT_ARRAY(CVertexInfo*, Points) { MarkDirty(); }
 
-    DEFINE_OUTPUT_WITH_UPDATE(CPolylineInfo *, Polyline) { UpdateEntity(); }
+    DEFINE_OUTPUT_WITH_UPDATE(CPolylineInfo*, Polyline) { UpdateEntity(); }
 
 public:
     DECLARE_META_CLASS(CPolyline, CMesh);

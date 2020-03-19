@@ -209,8 +209,8 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
 }
 
 template <>
-bool TBindingTranslator<Flow::TInput<CPolylineInfo *>>::FromASTToValue(
-        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CPolylineInfo *>& value)
+bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(
+        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CPolylineInfo*>& value)
 {
     auto* ident = subpart.GetExpr(command);
     if (ident->GetKind() != AST::EKind::Ident)
@@ -225,7 +225,7 @@ bool TBindingTranslator<Flow::TInput<CPolylineInfo *>>::FromASTToValue(
                                   ident);
     }
 
-    CPolyline *polyline = dynamic_cast<CPolyline *>(entity.Get());
+    CPolyline* polyline = dynamic_cast<CPolyline*>(entity.Get());
     if (!polyline)
     {
         throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a polyline", identVal.c_str()),

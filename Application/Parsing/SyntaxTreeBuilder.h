@@ -26,6 +26,7 @@ public:
     antlrcpp::Any visitArgColor(NomParser::ArgColorContext* context) override;
 
     antlrcpp::Any visitCmdExprListOne(NomParser::CmdExprListOneContext* context) override;
+    antlrcpp::Any visitCmdExprListOneIdListOne(NomParser::CmdExprListOneIdListOneContext* context) override;
     antlrcpp::Any visitCmdIdListOne(NomParser::CmdIdListOneContext* context) override;
     antlrcpp::Any visitCmdSubCmds(NomParser::CmdSubCmdsContext* context) override;
     antlrcpp::Any visitCmdInstance(NomParser::CmdInstanceContext* context) override;

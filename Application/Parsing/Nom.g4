@@ -27,6 +27,8 @@ ident
    | '$' IDENT
    ;
 
+idList : LPAREN (identList+=ident)* RPAREN ;
+
 argClosed : 'closed' ;
 argHidden : 'hidden' ;
 argSurface : 'surface' ident ;
@@ -41,17 +43,17 @@ argColor : 'color' LPAREN expression expression expression RPAREN ;
 
 command
    : open='point' name=ident LPAREN expression expression expression RPAREN end='endpoint' # CmdExprListOne
-   | open='polyline' name=ident LPAREN (idList+=ident)* RPAREN argClosed* end='endpolyline' # CmdIdListOne
+   | open='polyline' name=ident idList argClosed* end='endpolyline' # CmdIdListOne
    | open='sweep' name=ident LPAREN expression expression expression expression RPAREN end='endsweep' # CmdExprListOne
-   | open='face' name=ident LPAREN (idList+=ident)* RPAREN argSurface* end='endface' # CmdIdListOne
-   | open='object' name=ident LPAREN (idList+=ident)* RPAREN end='endobject' # CmdIdListOne
+   | open='face' name=ident idList argSurface* end='endface' # CmdIdListOne
+   | open='object' name=ident idList end='endobject' # CmdIdListOne
    | open='mesh' name=ident command* end='endmesh' # CmdSubCmds
    | open='group' name=ident command* end='endgroup' # CmdSubCmds
    | open='circle' name=ident LPAREN expression expression RPAREN end='endcircle' # CmdExprListOne
    | open='funnel' name=ident LPAREN expression expression expression expression RPAREN end='endfunnel' # CmdExprListOne
    | open='tunnel' name=ident LPAREN expression expression expression expression RPAREN end='endtunnel' # CmdExprListOne
-   | open='beziercurve' name=ident LPAREN (idList+=ident)* RPAREN argSlices* end='endbeziercurve' # CmdIdListOne
-   | open='bspline' name=ident LPAREN (idList+=ident)* RPAREN (argClosed | argSlices | argOrder)* end='endbspline' # CmdIdListOne
+   | open='beziercurve' name=ident idList argSlices* end='endbeziercurve' # CmdIdListOne
+   | open='bspline' name=ident idList (argClosed | argSlices | argOrder)* end='endbspline' # CmdIdListOne
    | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
    | open='surface' name=ident argColor end='endsurface' # CmdSurface
    | open='background' argSurface end='endbackground' # CmdArgSurface

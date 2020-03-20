@@ -83,6 +83,14 @@ antlrcpp::Any CFileBuilder::visitArgColor(NomParser::ArgColorContext* context)
     return result;
 }
 
+antlrcpp::Any CFileBuilder::visitIdList(NomParser::IdListContext *context)
+{
+    auto* list = new AST::AVector(ConvertToken(context->LPAREN()), ConvertToken(context->RPAREN()));
+    for (auto* expr : context->identList)
+        list->AddChild(visit(expr).as<AST::AExpr*>());
+    return static_cast<AST::AExpr*>(list);
+}
+
 antlrcpp::Any CFileBuilder::visitCmdExprListOne(NomParser::CmdExprListOneContext* context)
 {
     auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
@@ -98,17 +106,13 @@ antlrcpp::Any CFileBuilder::visitCmdExprListOneIdListOne(NomParser::CmdExprListO
 {
     auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
     cmd->PushPositionalArgument(visit(context->name));
-    auto* list = new AST::AVector(ConvertToken(context->LPAREN(0)), ConvertToken(context->RPAREN(0)));
+    auto* list = new AST::AVector(ConvertToken(context->LPAREN()), ConvertToken(context->RPAREN()));
     for (auto* expr : context->expression())
         list->AddChild(visit(expr).as<AST::AExpr*>());
     cmd->PushPositionalArgument(list);
     // Control List is optional
-    if (context->LPAREN(1) == NULL) { return cmd; }
-
-    list = new AST::AVector(ConvertToken(context->LPAREN(1)), ConvertToken(context->RPAREN(1)));
-    for (auto* expr : context->idList)
-        list->AddChild(visit(expr).as<AST::AExpr*>());
-    cmd->PushPositionalArgument(list);
+    for (auto* arg : context->idList())
+        cmd->PushPositionalArgument(visit(arg));
     return cmd;
 }
 
@@ -116,10 +120,7 @@ antlrcpp::Any CFileBuilder::visitCmdIdListOne(NomParser::CmdIdListOneContext* co
 {
     auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
     cmd->PushPositionalArgument(visit(context->name));
-    auto* list = new AST::AVector(ConvertToken(context->LPAREN()), ConvertToken(context->RPAREN()));
-    for (auto* expr : context->idList)
-        list->AddChild(visit(expr).as<AST::AExpr*>());
-    cmd->PushPositionalArgument(list);
+    cmd->PushPositionalArgument(visit(context->idList()));
     // Handle arguments other than name
     for (auto* arg : context->argOrder())
         cmd->AddNamedArgument(visit(arg));

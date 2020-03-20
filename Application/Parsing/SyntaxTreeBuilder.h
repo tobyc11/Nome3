@@ -51,6 +51,7 @@ public:
     antlrcpp::Any visitScientific(NomParser::ScientificContext* context) override;
     antlrcpp::Any visitIdent(NomParser::IdentContext* context) override;
     antlrcpp::Any visitAtomExpr(NomParser::AtomExprContext* context) override;
+    antlrcpp::Any visitIdList(NomParser::IdListContext *context) override;
 
 private:
     AST::CToken* ConvertToken(antlr4::Token* token);

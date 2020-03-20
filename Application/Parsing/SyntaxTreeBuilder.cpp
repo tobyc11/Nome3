@@ -111,8 +111,7 @@ antlrcpp::Any CFileBuilder::visitCmdExprListOneIdListOne(NomParser::CmdExprListO
         list->AddChild(visit(expr).as<AST::AExpr*>());
     cmd->PushPositionalArgument(list);
     // Control List is optional
-    for (auto* arg : context->idList())
-        cmd->PushPositionalArgument(visit(arg));
+    cmd->PushPositionalArgument(visit(context->idList()));
     return cmd;
 }
 

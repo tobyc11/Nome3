@@ -22,7 +22,7 @@ Vector3 crossProduct(Vector3 vectorA, Vector3 vectorB)
 }
 
 void CSweep::drawCrossSection(std::vector<Vector3> crossSection, Vector3 center, Vector3 T, Vector3 N,
-                              float angle, float scale, int index)
+                              float angle, float scaleX, float scaleY, int index)
 {
 
     Vector3 B = crossProduct(T, N);
@@ -30,13 +30,13 @@ void CSweep::drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
     N.Normalize();
     B.Normalize();
 
-    for (unsigned long i = 0; i < crossSection.size(); i++)
+    for (size_t i = 0; i < crossSection.size(); i++)
     {
         // make rotations
         float x = crossSection[i].x * cosf(angle) - crossSection[i].y * sinf(angle);
         float y = crossSection[i].x * sinf(angle) + crossSection[i].y * cosf(angle);
         // do thransform
-        Vector3 transformVector = N * x * scale + B * y;
+        Vector3 transformVector = N * x * scaleX + B * y * scaleY;
         // add offset
         Vector3 curVertex = center + transformVector;
 
@@ -110,7 +110,7 @@ void CSweep::UpdateEntity()
 
     // detect if is a closed polyline
     bool isClosed = pathInfo->IsClosed;
-    unsigned long numPoints = pathInfo->Positions.size();
+    size_t numPoints = pathInfo->Positions.size();
     // if the number of points cannot build a model, exit
     if ((!isClosed && numPoints < 2) || (isClosed && numPoints < 3) || crossSectionInfo->Positions.size() < 3) { return; }
 
@@ -126,13 +126,13 @@ void CSweep::UpdateEntity()
     float twist =  Twist.GetValue(0) * (float)tc::M_PI / 180 / (numPoints - 1);
     float azimuth = Azimuth.GetValue(0) * (float)tc::M_PI / 180;
 
-    for (unsigned long i = 0; i < crossSectionInfo->Positions.size(); i++)
+    for (size_t i = 0; i < crossSectionInfo->Positions.size(); i++)
     {
         CVertexInfo* point = crossSectionInfo->Positions[i];
         crossSection.push_back(Vector3(point->Position.x, point->Position.y, point->Position.z));
     }
 
-    for (unsigned long i = 0; i < numPoints; i++)
+    for (size_t i = 0; i < numPoints; i++)
     {
         CVertexInfo* point = pathInfo->Positions[i];
 
@@ -151,7 +151,8 @@ void CSweep::UpdateEntity()
              * in this case, the rotation angle is 0 */
             if (i == 2) { Ns.push_back(prevPerpendicular); }
             // calculate the rotaion angle of each joint
-            angles.push_back(calculateRoatateAngle(Ns[i - 2], prevPerpendicular, points[i - 1] - points[i - 2]) + twist);
+            angles.push_back(calculateRoatateAngle(Ns[i - 2], prevPerpendicular,
+                          points[i - 1] - points[i - 2]) + twist);
             // set the current normal vector
             Ns.push_back(curPerpendicular);
         }
@@ -169,15 +170,16 @@ void CSweep::UpdateEntity()
         angles[numPoints - 2] = calculateRoatateAngle(Ns[numPoints - 2], prevPerpendicular, points[numPoints - 1] - points[numPoints - 2]);
         // add the rotation angle of the closed joint
         angles[0] += calculateRoatateAngle(curPerpendicular, Ns[0], prevVector);
-    } else {
+    }
+    else {
         angles[numPoints - 2] = 0;
     }
     angles[numPoints - 2] += twist;
 
     // get the result rotation angles
-    for (unsigned long i = numPoints - 2; i >= 1; i--) { angles[i - 1] += angles[i]; }
+    for (size_t i = numPoints - 2; i >= 1; i--) { angles[i - 1] += angles[i]; }
     // add rotation
-    for (unsigned long i = 0; i < numPoints - 1; i++) { angles[i] += azimuth; }
+    for (size_t i = 0; i < numPoints - 1; i++) { angles[i] += azimuth; }
 
     // the count of drawing segments
     int segmentCount = 0;
@@ -190,19 +192,21 @@ void CSweep::UpdateEntity()
         N = Ns[0];
 
         // generate points in a circle perpendicular to the curve at the current point
-        drawCrossSection(crossSection, points[0], T, N, angles[0], 1, ++segmentCount);
-    } else
-    {
+        drawCrossSection(crossSection, points[0], T, N, angles[0], 1,
+                  1, ++segmentCount);
+    }
+    else {
         Vector3 prevVector = (points[1] - points[0]).Normalized();
         Vector3 curVector = (points[0] - points[numPoints - 2]).Normalized();
 
         T = prevVector + curVector;
         N = prevVector - curVector;
 
-        drawCrossSection(crossSection, points[0], T, N, angles[0], N.Length(), ++segmentCount);
+        drawCrossSection(crossSection, points[0], T, N, angles[0], N.Length(),
+                  1, ++segmentCount);
     }
 
-    for (unsigned long i = 1; i < numPoints; i++)
+    for (size_t i = 1; i < numPoints; i++)
     {
         if (i == numPoints - 1)
         {
@@ -216,27 +220,30 @@ void CSweep::UpdateEntity()
 
                 // 0 is perfect.
                 drawCrossSection(crossSection, points[numPoints - 1], T, N, angles[i - 1] - twist,
-                                 N.Length(), ++segmentCount);
-            } else {
+                                 N.Length(), 1, ++segmentCount);
+            }
+            else {
                 T = points[i] - points[i - 1];
                 // add twist
                 drawCrossSection(crossSection, points[i], T, Ns[i - 1], angles[i - 1] - twist,
-                                 1, ++segmentCount);
+                                 1, 1, ++segmentCount);
             }
-        } else {
+        }
+        else {
             Vector3 prevVector = (points[i + 1] - points[i]).Normalized();
             Vector3 curVector = (points[i] - points[i - 1]).Normalized();
 
             T = prevVector + curVector;
             N = prevVector - curVector;
-            drawCrossSection(crossSection, points[i], T, N, angles[i], N.Length(), ++segmentCount);
+            drawCrossSection(crossSection, points[i], T, N, angles[i], N.Length(),
+                             1, ++segmentCount);
         }
     }
 
     // Create faces
     for (int k = 0; k < segmentCount - 1; k++)
     {
-        for (unsigned long i = 0; i < crossSection.size(); i++)
+        for (size_t i = 0; i < crossSection.size(); i++)
         {
             // CCW winding
             // v1_next v1_i

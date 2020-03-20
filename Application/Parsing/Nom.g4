@@ -42,9 +42,10 @@ argTransform
 argColor : 'color' LPAREN expression expression expression RPAREN ;
 
 command
-   : open='point' name=ident LPAREN expression expression expression RPAREN idList* end='endpoint' # CmdExprListOneIdListOne
+   : open='point' name=ident LPAREN expression expression expression RPAREN idList end='endpoint' # CmdExprListOneIdListOne
    | open='polyline' name=ident idList argClosed* end='endpolyline' # CmdIdListOne
    | open='sweep' name=ident LPAREN expression expression expression expression RPAREN end='endsweep' # CmdExprListOne
+   | open='sweepcontrol' name=ident LPAREN expression expression expression expression RPAREN end='endsweepcontrol' # CmdExprListOne
    | open='face' name=ident idList argSurface* end='endface' # CmdIdListOne
    | open='object' name=ident idList end='endobject' # CmdIdListOne
    | open='mesh' name=ident command* end='endmesh' # CmdSubCmds

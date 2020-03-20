@@ -1,6 +1,5 @@
 #pragma once
 #include "Mesh.h"
-#include <vector>
 
 namespace Nome::Scene
 {

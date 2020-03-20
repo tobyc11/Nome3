@@ -156,15 +156,42 @@ void CSweep::UpdateEntity()
              * in this case, the rotation angle is 0 */
             if (i == 2) { Ns.push_back(prevPerpendicular); }
             // calculate the rotaion angle of each joint
-            angles[i - 2] += calculateRoatateAngle(Ns[i - 2], prevPerpendicular,
-                                                   points[i - 1] - points[i - 2]) + twist;
+            angles.push_back(calculateRoatateAngle(Ns[i - 2], prevPerpendicular,
+                                                   points[i - 1] - points[i - 2]) + twist);
             // set the current normal vector
             Ns.push_back(curPerpendicular);
         }
 
         scaleX.push_back(1.0f);
         scaleY.push_back(1.0f);
-        angles.push_back(0.0f);
+
+    }
+
+    if (isClosed)
+    {
+        Vector3 prevVector = points[1] - points[0];
+        Vector3 curVector = points[0] - points[numPoints - 2];
+
+        Vector3 sumVector = (prevVector.Normalized() - curVector.Normalized());
+        Vector3 curPerpendicular = getPerpendicularVector(sumVector, prevVector);
+        Vector3 prevPerpendicular = getPerpendicularVector(sumVector, -curVector);
+
+        angles.push_back(calculateRoatateAngle(Ns[numPoints - 2], prevPerpendicular,
+                      points[numPoints - 1] - points[numPoints - 2]));
+        // add the rotation angle of the closed joint
+        angles[0] += calculateRoatateAngle(curPerpendicular, Ns[0], prevVector);
+    }
+    angles.push_back(twist);
+    angles.push_back(twist);
+
+    // get the result rotation angles
+    for (size_t i = numPoints - 2; i >= 1; i--) { angles[i - 1] += angles[i]; }
+    // add rotation
+    for (size_t i = 0; i < numPoints; i++)
+    {
+        CVertexInfo* point = pathInfo->Positions[i];
+
+        angles[i] += azimuth;
 
         for (size_t j = 0; j < point->ControlPoints.size(); j++)
         {
@@ -177,27 +204,6 @@ void CSweep::UpdateEntity()
             }
         }
     }
-
-    if (isClosed)
-    {
-        Vector3 prevVector = points[1] - points[0];
-        Vector3 curVector = points[0] - points[numPoints - 2];
-
-        Vector3 sumVector = (prevVector.Normalized() - curVector.Normalized());
-        Vector3 curPerpendicular = getPerpendicularVector(sumVector, prevVector);
-        Vector3 prevPerpendicular = getPerpendicularVector(sumVector, -curVector);
-
-        angles[numPoints - 2] += calculateRoatateAngle(Ns[numPoints - 2], prevPerpendicular, points[numPoints - 1] - points[numPoints - 2]);
-        // add the rotation angle of the closed joint
-        angles[0] += calculateRoatateAngle(curPerpendicular, Ns[0], prevVector);
-    }
-    angles[numPoints - 2] += twist;
-    angles[numPoints - 1] += angles[numPoints - 2];
-
-    // get the result rotation angles
-    for (size_t i = numPoints - 2; i >= 1; i--) { angles[i - 1] += angles[i]; }
-    // add rotation
-    for (size_t i = 0; i < numPoints - 1; i++) { angles[i] += azimuth; }
 
     // the count of drawing segments
     int segmentCount = 0;

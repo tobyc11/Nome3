@@ -99,19 +99,9 @@ antlrcpp::Any CFileBuilder::visitCmdExprListOne(NomParser::CmdExprListOneContext
     for (auto* expr : context->expression())
         list->AddChild(visit(expr).as<AST::AExpr*>());
     cmd->PushPositionalArgument(list);
-    return cmd;
-}
-
-antlrcpp::Any CFileBuilder::visitCmdExprListOneIdListOne(NomParser::CmdExprListOneIdListOneContext* context)
-{
-    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
-    cmd->PushPositionalArgument(visit(context->name));
-    auto* list = new AST::AVector(ConvertToken(context->LPAREN()), ConvertToken(context->RPAREN()));
-    for (auto* expr : context->expression())
-        list->AddChild(visit(expr).as<AST::AExpr*>());
-    cmd->PushPositionalArgument(list);
-    // Control List is optional
-    cmd->PushPositionalArgument(visit(context->idList()));
+    // Handle arguments other than name
+    for (auto* arg : context->idList())
+        cmd->PushPositionalArgument(visit(arg));
     return cmd;
 }
 

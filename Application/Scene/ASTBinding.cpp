@@ -256,6 +256,7 @@ bool TBindingTranslator<Flow::TInputArray<CSweepControlPointInfo*>>::FromASTToVa
         AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CSweepControlPointInfo*>& value)
 {
     auto* vec = subpart.GetExpr(command);
+    if (vec == NULL) { return false; }
     if (vec->GetKind() != AST::EKind::Vector)
         throw AST::CSemanticError("TInputArray<CControlPointInfo*> is not matched with a vector",
                                   command);

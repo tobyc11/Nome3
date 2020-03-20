@@ -33,10 +33,10 @@ void CSweep::drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
     for (size_t i = 0; i < crossSection.size(); i++)
     {
         // make rotations
-        float x = crossSection[i].x * cosf(angle) - crossSection[i].y * sinf(angle);
-        float y = crossSection[i].x * sinf(angle) + crossSection[i].y * cosf(angle);
+        float x = crossSection[i].x * scaleX * cosf(angle) - crossSection[i].y * scaleY * sinf(angle);
+        float y = crossSection[i].x * scaleX * sinf(angle) + crossSection[i].y * scaleY *cosf(angle);
         // do thransform
-        Vector3 transformVector = N * x * scaleX + B * y * scaleY;
+        Vector3 transformVector = N * x + B * y ;
         // add offset
         Vector3 curVertex = center + transformVector;
 
@@ -121,6 +121,11 @@ void CSweep::UpdateEntity()
     std::vector<float> angles;
     // Cross sections
     std::vector<Vector3> crossSection;
+    // Scales
+    std::vector<float> scaleX;
+    std::vector<float> scaleY;
+
+    std::string name = GetName();
 
     // Polygon's sides;
     float twist =  Twist.GetValue(0) * (float)tc::M_PI / 180 / (numPoints - 1);
@@ -151,10 +156,25 @@ void CSweep::UpdateEntity()
              * in this case, the rotation angle is 0 */
             if (i == 2) { Ns.push_back(prevPerpendicular); }
             // calculate the rotaion angle of each joint
-            angles.push_back(calculateRoatateAngle(Ns[i - 2], prevPerpendicular,
-                          points[i - 1] - points[i - 2]) + twist);
+            angles[i - 2] += calculateRoatateAngle(Ns[i - 2], prevPerpendicular,
+                                                   points[i - 1] - points[i - 2]) + twist;
             // set the current normal vector
             Ns.push_back(curPerpendicular);
+        }
+
+        scaleX.push_back(1.0f);
+        scaleY.push_back(1.0f);
+        angles.push_back(0.0f);
+
+        for (size_t j = 0; j < point->ControlPoints.size(); j++)
+        {
+            CSweepControlPointInfo* CI = point->ControlPoints[j];
+            if (CI->OwnerName == name)
+            {
+                scaleX[i] *= CI->ScaleX;
+                scaleY[i] *= CI->ScaleY;
+                angles[i] += CI->Rotate * tc::M_PI / 180;
+            }
         }
     }
 
@@ -167,14 +187,12 @@ void CSweep::UpdateEntity()
         Vector3 curPerpendicular = getPerpendicularVector(sumVector, prevVector);
         Vector3 prevPerpendicular = getPerpendicularVector(sumVector, -curVector);
 
-        angles[numPoints - 2] = calculateRoatateAngle(Ns[numPoints - 2], prevPerpendicular, points[numPoints - 1] - points[numPoints - 2]);
+        angles[numPoints - 2] += calculateRoatateAngle(Ns[numPoints - 2], prevPerpendicular, points[numPoints - 1] - points[numPoints - 2]);
         // add the rotation angle of the closed joint
         angles[0] += calculateRoatateAngle(curPerpendicular, Ns[0], prevVector);
     }
-    else {
-        angles[numPoints - 2] = 0;
-    }
     angles[numPoints - 2] += twist;
+    angles[numPoints - 1] += angles[numPoints - 2];
 
     // get the result rotation angles
     for (size_t i = numPoints - 2; i >= 1; i--) { angles[i - 1] += angles[i]; }
@@ -192,8 +210,8 @@ void CSweep::UpdateEntity()
         N = Ns[0];
 
         // generate points in a circle perpendicular to the curve at the current point
-        drawCrossSection(crossSection, points[0], T, N, angles[0], 1,
-                  1, ++segmentCount);
+        drawCrossSection(crossSection, points[0], T, N, angles[0], scaleX[0],
+                         scaleY[0], ++segmentCount);
     }
     else {
         Vector3 prevVector = (points[1] - points[0]).Normalized();
@@ -202,8 +220,8 @@ void CSweep::UpdateEntity()
         T = prevVector + curVector;
         N = prevVector - curVector;
 
-        drawCrossSection(crossSection, points[0], T, N, angles[0], N.Length(),
-                  1, ++segmentCount);
+        drawCrossSection(crossSection, points[0], T, N, angles[0], N.Length() * scaleX[0],
+                         scaleY[0], ++segmentCount);
     }
 
     for (size_t i = 1; i < numPoints; i++)
@@ -219,14 +237,14 @@ void CSweep::UpdateEntity()
                 N = prevVector - curVector;
 
                 // 0 is perfect.
-                drawCrossSection(crossSection, points[numPoints - 1], T, N, angles[i - 1] - twist,
-                                 N.Length(), 1, ++segmentCount);
+                drawCrossSection(crossSection, points[i], T, N, angles[i] - twist,
+                                 N.Length() * scaleX[i], scaleY[i], ++segmentCount);
             }
             else {
                 T = points[i] - points[i - 1];
                 // add twist
-                drawCrossSection(crossSection, points[i], T, Ns[i - 1], angles[i - 1] - twist,
-                                 1, 1, ++segmentCount);
+                drawCrossSection(crossSection, points[i], T, Ns[i - 1], angles[i] - twist,
+                                 scaleX[i], scaleY[i], ++segmentCount);
             }
         }
         else {
@@ -235,8 +253,8 @@ void CSweep::UpdateEntity()
 
             T = prevVector + curVector;
             N = prevVector - curVector;
-            drawCrossSection(crossSection, points[i], T, N, angles[i], N.Length(),
-                             1, ++segmentCount);
+            drawCrossSection(crossSection, points[i], T, N, angles[i], N.Length() * scaleX[i],
+                             scaleY[i], ++segmentCount);
         }
     }
 

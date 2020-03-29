@@ -17,3 +17,15 @@ addons:
 
 script:
  - cmake . -DCMAKE_INSTALL_PREFIX=$(pwd)/install && make && make install
+
+before_deploy: mkdir artifacts && zip -r artifacts/nome3-macos.zip install
+
+deploy:
+  provider: releases
+  api_key:
+    secure: nuPVrW9jwtV3CJYIVivK/EDstzK7vMXdyJIqpxf7lmaynCnsUQqJf4Ewe7iWroC0eSx9XTRz4bC4niS31iS0+B0qbgF+vQlTEWvV4rohD2NkykjZ6GoA7ozdPF9jGSA4lKRYPc8Pc17Q4XQMd4HGDHuTkCwrxFEBGIufJy1ZDhrI5pBhxrH8NmpBJMfGvYzkxzO/pm1v+/27gkcS0kXFdFI5Gl6yL8Q5yp+RxNkho+mM6iSUkFNXh2p4Dat0KErT24A2bDe1FdubEavUsfgED52QiFrsdUBnY/f5VeUZVBGKd6NULwWO3StswDcpd0RbNkFMttczWz13uYaIcIu5o6ovU9fyjM1DNocj7uowEjrECD3ak96KGmGSvXYcI2C5pUYXRQD5PdIlgAbiZSmBXw1Q+TM38Yx17K8olbAXyx+9t+pgJCFvrjGqXDmSuHJ++gV1K9I40YLjlN9Bb/mjI7azIP/amH7HQzIoHF7Zp5qbhGARmXzPISWZ1eKpNQSkv3baBR6p3Lh1ncGvONbxBqMWoQwdSU9B4slWbn/M4bz+ky+NcrcUL23amtTz4HYFXvVHYMms7/M5osMx2FfE4jqHxEe3Ihja2Vkx5Kxp+DqDNNe7mONv0Cf/gl73mQythQWI5CKjGcwmPq8sdzdfgnL2rmCMN+i7lcnxpXik3QU=
+  file_glob: true
+  file: "$PWD/artifacts/*"
+  skip_cleanup: true
+  on:
+    repo: cyj0912/Nome3

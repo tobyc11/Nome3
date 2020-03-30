@@ -29,3 +29,4 @@ deploy:
   skip_cleanup: true
   on:
     repo: cyj0912/Nome3
+    tags: true

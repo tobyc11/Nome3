@@ -8,6 +8,7 @@
 #include "Point.h"
 #include "Polyline.h"
 #include "Sweep.h"
+#include "SweepControlPoint.h"
 #include "Surface.h"
 #include "Tunnel.h"
 #include <StringPrintf.h>
@@ -30,19 +31,19 @@ namespace Nome::Scene
 
 static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "point", ECommandKind::Entity },       { "polyline", ECommandKind::Entity },
-    { "sweep", ECommandKind::Entity },       { "face", ECommandKind::Entity },
-    { "object", ECommandKind::Entity },      { "mesh", ECommandKind::Entity },
-    { "group", ECommandKind::Instance },     { "circle", ECommandKind::Entity },
-    { "funnel", ECommandKind::Entity },      { "tunnel", ECommandKind::Entity },
-    { "beziercurve", ECommandKind::Entity }, { "bspline", ECommandKind::Entity },
-    { "instance", ECommandKind::Instance },  { "surface", ECommandKind::Entity },
-    { "background", ECommandKind::Dummy },   { "foreground", ECommandKind::Dummy },
-    { "insidefaces", ECommandKind::Dummy },  { "outsidefaces", ECommandKind::Dummy },
-    { "offsetfaces", ECommandKind::Dummy },  { "frontfaces", ECommandKind::Dummy },
-    { "backfaces", ECommandKind::Dummy },    { "rimfaces", ECommandKind::Dummy },
-    { "bank", ECommandKind::BankSet },       { "set", ECommandKind::BankSet },
-    { "delete", ECommandKind::Instance },    { "subdivision", ECommandKind::Dummy },
-    { "offset", ECommandKind::Dummy }
+    { "sweep", ECommandKind::Entity },       { "sweepcontrol", ECommandKind::Entity },
+    { "face", ECommandKind::Entity },        { "object", ECommandKind::Entity },
+    { "mesh", ECommandKind::Entity },        { "group", ECommandKind::Instance },
+    { "circle", ECommandKind::Entity },      { "funnel", ECommandKind::Entity },
+    { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
+    { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
+    { "surface", ECommandKind::Entity },     { "background", ECommandKind::Dummy },
+    { "foreground", ECommandKind::Dummy },   { "insidefaces", ECommandKind::Dummy },
+    { "outsidefaces", ECommandKind::Dummy }, { "offsetfaces", ECommandKind::Dummy },
+    { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
+    { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
+    { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
+    { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -70,6 +71,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CPolyline(name);
     else if (cmd == "sweep")
         return new CSweep(name);
+    else if (cmd == "sweepcontrol")
+        return new CSweepControlPoint(name);
     else if (cmd == "surface")
         return new CSurface(name);
     else if (cmd == "tunnel")

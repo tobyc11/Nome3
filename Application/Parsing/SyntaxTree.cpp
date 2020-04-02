@@ -194,7 +194,8 @@ void ACommand::AddNamedArgument(ANamedArgument* argument)
 
 std::string ACommand::GetPositionalIdentAsString(size_t index) const
 {
-    if (!PositionalArguments.empty() && PositionalArguments.at(index)->GetKind() == EKind::Ident)
+    if (!PositionalArguments.empty() && PositionalArguments.at(index)->GetKind() == EKind::Ident
+        && PositionalArguments.size() > index)
     {
         return static_cast<AIdent*>(PositionalArguments.at(index))->ToString();
     }
@@ -204,7 +205,7 @@ std::string ACommand::GetPositionalIdentAsString(size_t index) const
 AExpr* ACommand::GetPositionalArgument(size_t index) const
 {
     if (index >= PositionalArguments.size())
-        throw CSemanticError("Argument index out of bound", this);
+        return nullptr;
     return static_cast<AExpr*>(PositionalArguments[index]);
 }
 

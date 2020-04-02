@@ -99,6 +99,9 @@ antlrcpp::Any CFileBuilder::visitCmdExprListOne(NomParser::CmdExprListOneContext
     for (auto* expr : context->expression())
         list->AddChild(visit(expr).as<AST::AExpr*>());
     cmd->PushPositionalArgument(list);
+    // Handle arguments other than name
+    for (auto* arg : context->idList())
+        cmd->PushPositionalArgument(visit(arg));
     return cmd;
 }
 

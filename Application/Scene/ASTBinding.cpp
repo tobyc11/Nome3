@@ -2,7 +2,7 @@
 #include "Environment.h"
 #include "Point.h"
 #include "Polyline.h"
-#include "Scene.h"
+#include "SweepControlPoint.h"
 #include <Flow/FlowNode.h>
 #include <Flow/FlowNodeArray.h>
 #include <Parsing/SyntaxTree.h>
@@ -185,10 +185,28 @@ bool TBindingTranslator<Flow::TInput<float>>::FromASTToValue(AST::ACommand* comm
 }
 
 template <>
+bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command,
+                                                             const CCommandSubpart& subpart,
+                                                             std::string& value)
+{
+    auto* ident = subpart.GetExpr(command);
+    if (ident == NULL) { return false; }
+
+    if (ident->GetKind() != AST::EKind::Ident)
+        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident",
+                                  command);
+
+    value = static_cast<const AST::AIdent*>(ident)->ToString();
+
+    return true;
+}
+template <>
 bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
     AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CVertexInfo*>& value)
 {
     auto* vec = subpart.GetExpr(command);
+    if (vec == NULL) { return false; }
+
     if (vec->GetKind() != AST::EKind::Vector)
         throw AST::CSemanticError("TInputArray<CVertexInfo*> is not matched with a vector",
                                   command);
@@ -209,10 +227,12 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
 }
 
 template <>
-bool TBindingTranslator<Flow::TInput<CPolylineInfo *>>::FromASTToValue(
-        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CPolylineInfo *>& value)
+bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(
+        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CPolylineInfo*>& value)
 {
     auto* ident = subpart.GetExpr(command);
+    if (ident == NULL) { return false; }
+
     if (ident->GetKind() != AST::EKind::Ident)
         throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident",
                                   command);
@@ -225,7 +245,7 @@ bool TBindingTranslator<Flow::TInput<CPolylineInfo *>>::FromASTToValue(
                                   ident);
     }
 
-    CPolyline *polyline = dynamic_cast<CPolyline *>(entity.Get());
+    CPolyline* polyline = dynamic_cast<CPolyline*>(entity.Get());
     if (!polyline)
     {
         throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a polyline", identVal.c_str()),
@@ -233,6 +253,38 @@ bool TBindingTranslator<Flow::TInput<CPolylineInfo *>>::FromASTToValue(
     }
 
     value.Connect(polyline->Polyline);
+    return true;
+}
+
+template <>
+bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
+        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CControlPointInfo*>& value)
+{
+    auto* vec = subpart.GetExpr(command);
+    if (vec == NULL) { return false; }
+
+    if (vec->GetKind() != AST::EKind::Vector)
+        throw AST::CSemanticError("TInputArray<CControlPointInfo*> is not matched with a vector",
+                                  command);
+    for (const auto* ident : static_cast<AST::AVector*>(vec)->GetItems())
+    {
+        if (ident->GetKind() != AST::EKind::Ident)
+            throw AST::CSemanticError("Identifier required", ident);
+
+        std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
+        TAutoPtr<CEntity> entity = GEnv.Scene->FindEntity(identVal);
+        if (!entity)
+        {
+            throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()),
+                                      ident);
+        }
+
+        if (typeid(*entity.Get()) == typeid(CSweepControlPoint))
+        {
+            CSweepControlPoint* sweepControlPoint = dynamic_cast<CSweepControlPoint*>(entity.Get());
+            value.Connect(sweepControlPoint->SweepControlPoint);
+        }
+    }
     return true;
 }
 

@@ -3,7 +3,6 @@
 #include "Point.h"
 #include "Polyline.h"
 #include "SweepControlPoint.h"
-#include "Scene.h"
 #include <Flow/FlowNode.h>
 #include <Flow/FlowNodeArray.h>
 #include <Parsing/SyntaxTree.h>
@@ -191,6 +190,8 @@ bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command,
                                                              std::string& value)
 {
     auto* ident = subpart.GetExpr(command);
+    if (ident == NULL) { return false; }
+
     if (ident->GetKind() != AST::EKind::Ident)
         throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident",
                                   command);
@@ -204,6 +205,8 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
     AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CVertexInfo*>& value)
 {
     auto* vec = subpart.GetExpr(command);
+    if (vec == NULL) { return false; }
+
     if (vec->GetKind() != AST::EKind::Vector)
         throw AST::CSemanticError("TInputArray<CVertexInfo*> is not matched with a vector",
                                   command);
@@ -228,6 +231,8 @@ bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(
         AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CPolylineInfo*>& value)
 {
     auto* ident = subpart.GetExpr(command);
+    if (ident == NULL) { return false; }
+
     if (ident->GetKind() != AST::EKind::Ident)
         throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident",
                                   command);
@@ -257,6 +262,7 @@ bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
 {
     auto* vec = subpart.GetExpr(command);
     if (vec == NULL) { return false; }
+
     if (vec->GetKind() != AST::EKind::Vector)
         throw AST::CSemanticError("TInputArray<CControlPointInfo*> is not matched with a vector",
                                   command);

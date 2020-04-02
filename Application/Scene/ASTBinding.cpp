@@ -252,8 +252,8 @@ bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(
 }
 
 template <>
-bool TBindingTranslator<Flow::TInputArray<CSweepControlPointInfo*>>::FromASTToValue(
-        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CSweepControlPointInfo*>& value)
+bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
+        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CControlPointInfo*>& value)
 {
     auto* vec = subpart.GetExpr(command);
     if (vec == NULL) { return false; }
@@ -273,19 +273,11 @@ bool TBindingTranslator<Flow::TInputArray<CSweepControlPointInfo*>>::FromASTToVa
                                       ident);
         }
 
-        CSweepControlPoint* sweepControlPoint = dynamic_cast<CSweepControlPoint*>(entity.Get());
-        if (!sweepControlPoint)
+        if (typeid(*entity.Get()) == typeid(CSweepControlPoint))
         {
-            throw AST::CSemanticError(tc::StringPrintf("Entity is not a control point %s", identVal.c_str()),
-                                      ident);
+            CSweepControlPoint* sweepControlPoint = dynamic_cast<CSweepControlPoint*>(entity.Get());
+            value.Connect(sweepControlPoint->SweepControlPoint);
         }
-        value.Connect(sweepControlPoint->SweepControlPoint);
-//        if (typeid(entity.Get()) == typeid(CSweepControlPoint))
-//        {
-//            CSweepControlPoint* sweepControlPoint = dynamic_cast<CSweepControlPoint*>(entity.Get());
-//            value.Connect(sweepControlPoint->SweepControlPoint);
-//            return true;
-//        }
     }
     return true;
 }

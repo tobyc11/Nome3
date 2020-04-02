@@ -1,5 +1,6 @@
 #include "Sweep.h"
 #include <vector>
+#include "SweepControlPoint.h"
 
 #undef M_PI
 
@@ -195,12 +196,13 @@ void CSweep::UpdateEntity()
 
         for (size_t j = 0; j < point->ControlPoints.size(); j++)
         {
-            CSweepControlPointInfo* CI = point->ControlPoints[j];
+            CControlPointInfo* CI = point->ControlPoints[j];
             if (CI->OwnerName == name)
             {
-                scaleX[i] *= CI->ScaleX;
-                scaleY[i] *= CI->ScaleY;
-                angles[i] += CI->Rotate * tc::M_PI / 180;
+                CSweepControlPointInfo* SI = dynamic_cast<CSweepControlPointInfo*>(CI);
+                scaleX[i] *= SI->ScaleX;
+                scaleY[i] *= SI->ScaleY;
+                angles[i] += SI->Rotate * tc::M_PI / 180;
             }
         }
     }

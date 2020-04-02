@@ -1,40 +1,37 @@
 #pragma once
-#include "Entity.h"
+#include "ControlPoint.h"
 
 namespace Nome::Scene
 {
 
-struct CSweepControlPointInfo
+struct CSweepControlPointInfo : public CControlPointInfo
 {
     float ScaleX;
     float ScaleY;
     float Rotate;
-    std::string OwnerName;
-    std::string Name;
 };
 
-class CSweepControlPoint : public CEntity {
+class CSweepControlPoint : public CControlPoint {
     DEFINE_INPUT(float, ScaleX) { MarkDirty(); }
     DEFINE_INPUT(float, ScaleY) { MarkDirty(); }
     DEFINE_INPUT(float, Rotate) { MarkDirty(); }
 
-DEFINE_OUTPUT_WITH_UPDATE(CSweepControlPointInfo*, SweepControlPoint) { UpdateEntity(); }
+    DEFINE_OUTPUT_WITH_UPDATE(CControlPointInfo*, SweepControlPoint) { UpdateEntity(); }
 
     void MarkDirty() override;
     void UpdateEntity() override;
 
 public:
-    DECLARE_META_CLASS(CSweepControlPoint, CEntity);
+    DECLARE_META_CLASS(CSweepControlPoint, CControlPoint);
 
     CSweepControlPoint() = default;
 
     explicit CSweepControlPoint(std::string name)
-            : CEntity(std::move(name))
+            : CControlPoint(std::move(name))
     {
     }
 
 private:
-    std::string OwnerName;
     CSweepControlPointInfo SI;
 };
 

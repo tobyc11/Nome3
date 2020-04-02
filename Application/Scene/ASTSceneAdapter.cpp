@@ -8,6 +8,7 @@
 #include "Point.h"
 #include "Polyline.h"
 #include "Sweep.h"
+#include "SweepControlPoint.h"
 #include "Surface.h"
 #include "Tunnel.h"
 #include <StringPrintf.h>

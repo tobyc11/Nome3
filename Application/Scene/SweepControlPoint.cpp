@@ -25,7 +25,7 @@ void CSweepControlPoint::UpdateEntity()
     SI.Rotate = Rotate.GetValue(0.0f);
     SI.OwnerName = OwnerName;
     SI.Name = GetName();
-    SweepControlPoint.UpdateValue(&SI);
+    SweepControlPoint.UpdateValue(dynamic_cast<CControlPointInfo*>(&SI));
     SetValid(true);
 }
 

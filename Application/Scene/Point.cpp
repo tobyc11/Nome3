@@ -21,10 +21,10 @@ void CPoint::UpdateEntity()
 {
     Super::UpdateEntity();
 
-    std::vector<CSweepControlPointInfo*> controlPoints;
+    std::vector<CControlPointInfo*> controlPoints;
     for (size_t i = 0; i < ControlPoints.GetSize(); i++)
     {
-        CSweepControlPointInfo *CI = ControlPoints.GetValue(i, nullptr);
+        CControlPointInfo* CI = ControlPoints.GetValue(i, nullptr);
         if (CI != NULL) { controlPoints.push_back(CI); }
     }
 

@@ -72,6 +72,7 @@ Vector3 CBSpline::FindPoint(int degree, float t) {
     for (int i = 0; i < ControlPoints.GetSize(); i++) {
         ret += ControlPoints.GetValue(i, nullptr)->Position*NFactor(i, degree, t);
     }
+    return ret;
 }
 
 Vector3 CBSpline::deBoor(int k , int degree, int i, double x, std::vector<float> knots) {

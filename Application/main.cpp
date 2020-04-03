@@ -15,23 +15,29 @@ int main(int argc, char** argv)
     QCoreApplication::setApplicationVersion("3.0");
 
     QCommandLineParser parser;
+    QCommandLineOption detached3dview { QStringList() << "d"
+                                                      << "detached3dview",
+                                        "Detach the 3D view from the main window" };
     parser.setApplicationDescription(QCoreApplication::applicationName());
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addPositionalArgument("file", "The file(s) to open.");
+    parser.addOption(detached3dview);
     parser.process(application);
+
+    bool detach3DView = !parser.isSet(detached3dview);
 
     Nome::CMainWindow* mainWindow = nullptr;
     const QStringList posArgs = parser.positionalArguments();
     for (const QString& file : posArgs)
     {
-        Nome::CMainWindow* newWin = new Nome::CMainWindow(file);
+        Nome::CMainWindow* newWin = new Nome::CMainWindow(file, nullptr, detach3DView);
         newWin->show();
         mainWindow = newWin;
     }
 
     if (!mainWindow)
-        mainWindow = new Nome::CMainWindow;
+        mainWindow = new Nome::CMainWindow(nullptr, detach3DView);
     mainWindow->show();
 
     return application.exec();

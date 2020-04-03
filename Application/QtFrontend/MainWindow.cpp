@@ -25,20 +25,22 @@ namespace Nome
 static CFrontendContext AnonFrontendContext;
 CFrontendContext* GFrtCtx = &AnonFrontendContext;
 
-CMainWindow::CMainWindow(QWidget* parent)
+CMainWindow::CMainWindow(QWidget* parent, bool bDetached3d)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , bIsBlankFile(true)
+    , bDetached3DView(bDetached3d)
 {
     ui->setupUi(this);
     SetupUI();
     LoadEmptyNomeFile();
 }
 
-CMainWindow::CMainWindow(const QString& fileToOpen, QWidget* parent)
+CMainWindow::CMainWindow(const QString& fileToOpen, QWidget* parent, bool bDetached3d)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , bIsBlankFile(false)
+    , bDetached3DView(bDetached3d)
 {
     ui->setupUi(this);
     SetupUI();
@@ -50,6 +52,15 @@ CMainWindow::~CMainWindow()
     GFrtCtx->MainWindow = nullptr;
     UnloadNomeFile();
     delete ui;
+}
+
+void CMainWindow::closeEvent(QCloseEvent* event)
+{
+    if (bDetached3DView)
+    {
+        Nome3DView->close();
+    }
+    QWidget::closeEvent(event);
 }
 
 void CMainWindow::on_actionNew_triggered()
@@ -209,14 +220,20 @@ void CMainWindow::SetupUI()
     Nome3DView = std::make_unique<CNome3DView>();
     GFrtCtx->NomeView = Nome3DView.get();
 
-    auto* viewContainer = QWidget::createWindowContainer(Nome3DView.get());
-    viewContainer->setObjectName("visualLayerContainer");
-    QSize screenSize = Nome3DView->screen()->size();
-    viewContainer->setMinimumSize(QSize(640, 480));
-    viewContainer->setMaximumSize(screenSize);
-    viewContainer->setFocusPolicy(Qt::TabFocus);
-
-    layout->addWidget(viewContainer);
+    if (!bDetached3DView)
+    {
+        auto* viewContainer = QWidget::createWindowContainer(Nome3DView.get());
+        viewContainer->setObjectName("visualLayerContainer");
+        QSize screenSize = Nome3DView->screen()->size();
+        viewContainer->setMinimumSize(QSize(640, 480));
+        viewContainer->setMaximumSize(screenSize);
+        viewContainer->setFocusPolicy(Qt::TabFocus);
+        layout->addWidget(viewContainer);
+    }
+    else
+    {
+        Nome3DView->show();
+    }
 
     // Qt Designer won't let us put text boxes into a toolbar, so we do it here
     InstName = new QLineEdit();

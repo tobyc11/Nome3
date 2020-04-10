@@ -18,14 +18,16 @@ DEFINE_META_OBJECT(CSweep)
 // do cross pruduct with vectorA and vectorB
 Vector3 crossProduct(Vector3 vectorA, Vector3 vectorB)
 {
-    return Vector3(vectorA.y * vectorB.z - vectorA.z * vectorB.y, vectorA.z * vectorB.x - vectorA.x * vectorB.z,
+    return Vector3(vectorA.y * vectorB.z - vectorA.z * vectorB.y,
+                   vectorA.z * vectorB.x - vectorA.x * vectorB.z,
                    vectorA.x * vectorB.y - vectorA.y * vectorB.x);
 }
 
-void CSweep::drawCrossSection(std::vector<Vector3> crossSection, Vector3 center, Vector3 T, Vector3 N,
-                              float angle, float scaleX, float scaleY, int index)
+void CSweep::drawCrossSection(std::vector<Vector3> crossSection,
+                              Vector3 center, Vector3 T, Vector3 N,
+                              float angle, float scaleX, float scaleY,
+                              float scaleN, int index)
 {
-
     Vector3 B = crossProduct(T, N);
 
     N.Normalize();
@@ -37,7 +39,7 @@ void CSweep::drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
         float x = crossSection[i].x * scaleX * cosf(angle) - crossSection[i].y * scaleY * sinf(angle);
         float y = crossSection[i].x * scaleX * sinf(angle) + crossSection[i].y * scaleY *cosf(angle);
         // do thransform
-        Vector3 transformVector = N * x + B * y ;
+        Vector3 transformVector = N * x * scaleN + B * y ;
         // add offset
         Vector3 curVertex = center + transformVector;
 
@@ -219,7 +221,7 @@ void CSweep::UpdateEntity()
 
         // generate points in a circle perpendicular to the curve at the current point
         drawCrossSection(crossSection, points[0], T, N, angles[0], scaleX[0],
-                         scaleY[0], ++segmentCount);
+                         scaleY[0], 1, ++segmentCount);
     }
     else {
         Vector3 prevVector = (points[1] - points[0]).Normalized();
@@ -228,8 +230,8 @@ void CSweep::UpdateEntity()
         T = prevVector + curVector;
         N = prevVector - curVector;
 
-        drawCrossSection(crossSection, points[0], T, N, angles[0], N.Length() * scaleX[0],
-                         scaleY[0], ++segmentCount);
+        drawCrossSection(crossSection, points[0], T, N, angles[0], scaleX[0],
+                         scaleY[0], N.Length(), ++segmentCount);
     }
 
     for (size_t i = 1; i < numPoints; i++)
@@ -246,13 +248,13 @@ void CSweep::UpdateEntity()
 
                 // 0 is perfect.
                 drawCrossSection(crossSection, points[i], T, N, angles[i] - twist,
-                                 N.Length() * scaleX[i], scaleY[i], ++segmentCount);
+                                 scaleX[i], scaleY[i], N.Length(), ++segmentCount);
             }
             else {
                 T = points[i] - points[i - 1];
                 // add twist
                 drawCrossSection(crossSection, points[i], T, Ns[i - 1], angles[i] - twist,
-                                 scaleX[i], scaleY[i], ++segmentCount);
+                                 scaleX[i], scaleY[i], 1, ++segmentCount);
             }
         }
         else {
@@ -261,15 +263,15 @@ void CSweep::UpdateEntity()
 
             T = prevVector + curVector;
             N = prevVector - curVector;
-            drawCrossSection(crossSection, points[i], T, N, angles[i], N.Length() * scaleX[i],
-                             scaleY[i], ++segmentCount);
+            drawCrossSection(crossSection, points[i], T, N, angles[i], scaleX[i],
+                             scaleY[i], N.Length(), ++segmentCount);
         }
     }
 
     // Create faces
     for (int k = 0; k < segmentCount - 1; k++)
     {
-        for (size_t i = 0; i < crossSection.size(); i++)
+        for (size_t i = 0; i < crossSection.size() - 1; i++)
         {
             // CCW winding
             // v1_next v1_i

@@ -25,8 +25,9 @@ public:
     void UpdateEntity() override;
 
 private:
-    void drawCrossSection(std::vector<Vector3> crossSection, Vector3 center, Vector3 T, Vector3 N,
-                          float angle, float scaleX, float scaleY, int index);
+    void drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
+                          Vector3 T, Vector3 N, float angle, float scaleX,
+                          float scaleY, float scaleN, int index);
 };
 
 }

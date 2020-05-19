@@ -55,7 +55,6 @@ private slots:
 private:
     // Load nome files into the current window, only call one of them
     void SetupUI();
-    void PreloadSetup();
     void LoadEmptyNomeFile();
     void LoadNomeFile(const std::string& filePath);
     void PostloadSetup();
@@ -72,7 +71,7 @@ private:
     bool bDetached3DView = false;
 
     // Info about the currently open file
-    std::unique_ptr<CSourceManager> SourceMgr;
+    std::shared_ptr<CSourceManager> SourceMgr;
     bool bIsBlankFile;
 
     // Nome Context

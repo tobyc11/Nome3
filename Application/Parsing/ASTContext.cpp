@@ -21,4 +21,12 @@ AIdent* CASTContext::MakeIdent(std::string identifier)
     return Make<AIdent>(MakeToken(std::move(identifier)));
 }
 
+AVector* CASTContext::MakeVector(const std::vector<AExpr*>& children)
+{
+    auto* vec = Make<AVector>(MakeToken("("), MakeToken(")"));
+    for (AExpr* expr : children)
+        vec->AddChild(expr);
+    return vec;
+}
+
 }

@@ -3,6 +3,7 @@
 #include "Flow/FlowNode.h"
 #include "RendererInterface.h"
 #include <Matrix3x4.h> //For convenience
+#include <Parsing/ASTContext.h>
 #include <string>
 
 /*
@@ -107,12 +108,14 @@ public:
     bool IsEntityValid() const { return bIsValid; }
     void SetValid(bool value) { bIsValid = value; }
 
-    virtual void Draw(IDebugDraw* draw) {};
+    virtual void Draw(IDebugDraw*) {};
 
     // Some entities(generators) allow actual instance objects for each scene tree node
     //  so that each instance can be customized, like delete face
     virtual bool IsInstantiable() { return false; }
     virtual CEntity* Instantiate(CSceneTreeNode* treeNode) { return nullptr; }
+
+    virtual AST::ACommand* SyncToAST(AST::CASTContext& ctx, bool createNewNode);
 
 private:
     std::string Name;

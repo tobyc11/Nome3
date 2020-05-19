@@ -27,15 +27,13 @@ public:
     void UpdateEntity() override;
 
     size_t CountVertices() const;
-    std::vector<std::string> GetPointSourceNames() const;
     void SetPointSourceNames(const TAutoPtr<CScene>& scene, std::vector<std::string> points);
 
     // Returns whether successful
     bool AddFaceIntoMesh(CMesh* mesh) const;
 
-private:
-    // TODO: this should be implemented as AST binding
-    std::vector<std::string> PointSource;
+    // AST Handling
+    AST::ACommand* MakeCommandNode(AST::CASTContext& ctx, AST::ACommand* parent);
 };
 
 }

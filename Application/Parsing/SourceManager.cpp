@@ -198,78 +198,96 @@ std::optional<size_t> CSourceManager::RemoveTokens(const std::vector<AST::CToken
     return retVal;
 }
 
-void CSourceManager::InsertToken(size_t globalOffset, AST::CToken* token) {
-    token->SetLocation(AddBuf, AddBuffer.length());
-    InsertText(globalOffset, token->ToString());
+size_t CSourceManager::InsertToken(size_t globalOffset, AST::CToken* token)
+{
+    return InsertToken(globalOffset, token, "", "");
 }
 
-void CSourceManager::CommitASTChanges()
+size_t CSourceManager::InsertToken(size_t globalOffset, AST::CToken* token,
+                                   const std::string& before, const std::string& after)
 {
-    std::stack<AST::ACommand*> dfsStack;
-    for (auto* cmd : GetASTContext().GetAstRoot()->GetCommands())
-        dfsStack.push(cmd);
-    while (!dfsStack.empty())
-    {
-        auto* cmd = dfsStack.top();
-        dfsStack.pop();
-        for (auto* subCmd : cmd->GetSubCommands())
-            dfsStack.push(subCmd);
-        if (cmd->IsPendingSave())
-        {
-            cmd->SetPendingSave(false);
-            // How to commit an AST node?
-            // 1. Gather all the tokens to form a token vector
-            std::vector<AST::CToken*> tokenList;
-            cmd->CollectTokens(tokenList);
-            std::cout << "---Begin Printing Token List---" << std::endl;
-            for (auto* token : tokenList)
-                std::cout << token->ToString() << std::endl;
-            if (tokenList.empty())
-                continue;
-            // We either rewrite the entire command, or only specific tokens
-            if (!tokenList[0]->IsLocInvalid())
-            {
-                // Token list contains valid items, let's only rewrite specific ones
-                throw std::runtime_error("case unhandled");
-            }
-            else
-            {
-                // 2. Generate a string from that token vector, and set token locations
-                std::string content;
-                for (auto* token : tokenList)
-                {
-                    content.append(" ");
-                    token->SetLocation(1, AddBuffer.length() + content.length());
-                    content.append(token->ToString());
-                }
-                content.append("\n"); // What do we do with CRLF platforms?
-                // 3. Insert new string into piece table
-                // Find out where to insert the text
-                size_t insertOffset = 0;
-                if (!dfsStack.empty())
-                {
-                    // If the stack is empty, then we are the top node, so insert at 0
-                    // otherwise insert at the end of the previous node
-                    auto* prevToken = dfsStack.top()->GetCloseToken();
-                    if (!prevToken)
-                    {
-                        // The previous node is probably a set or something that doesn't have endset
-                        // so we are forced to gather the whole token list and fetch the last
-                        // element
-                        std::vector<AST::CToken*> tokenListPrev;
-                        dfsStack.top()->CollectTokens(tokenListPrev);
-                        assert(!tokenListPrev.empty());
-                        prevToken = *(tokenListPrev.end() - 1);
-                    }
-                    auto [bufId, bufOffset] = prevToken->GetLocation();
-                    insertOffset = BufOffsetToGlobal(bufId, bufOffset).value();
-                    insertOffset += prevToken->ToString().length();
-                }
-                InsertText(insertOffset, content);
-            }
-        }
-    }
+    token->SetLocation(AddBuf, AddBuffer.length() + before.length());
+    auto textToInsert = before + token->ToString() + after;
+    InsertText(globalOffset, textToInsert);
+    return globalOffset + textToInsert.length();
 }
+
+bool CSourceManager::AppendCmdAfter(AST::ACommand* parent, AST::ACommand* after,
+                                    AST::ACommand* newCommand)
+{
+    std::vector<AST::CToken*> tokenList;
+    after->CollectTokens(tokenList);
+
+    if (tokenList.empty())
+        return false;
+
+    AST::CToken* afterToken = tokenList.back();
+    const auto& afterLoc = afterToken->GetLocation();
+    auto optGlobalOff = BufOffsetToGlobal(afterLoc.BufId, afterLoc.Start);
+    if (!optGlobalOff)
+        return false;
+
+    tokenList.clear();
+    newCommand->CollectTokens(tokenList);
+    if (tokenList.empty())
+        return false;
+
+    for (auto* t : tokenList)
+        if (!t->IsLocInvalid())
+            return false;
+
+    if (!parent->AddChildAfter(after, newCommand))
+        return false;
+
+    auto off = optGlobalOff.value() + afterToken->ToString().length();
+    for (auto* t : tokenList)
+    {
+        off = InsertToken(off, t, " ", "");
+    }
+    return true;
+}
+
+bool Nome::CSourceManager::AppendCmdEndOfFile(Nome::AST::ACommand* newCommand)
+{
+    size_t offset = 0;
+    if (!ASTRoot->GetCommands().empty())
+    {
+        std::vector<AST::CToken*> tokenList;
+        ASTRoot->GetCommands().back()->CollectTokens(tokenList);
+
+        AST::CToken* afterToken = tokenList.back();
+        const auto& afterLoc = afterToken->GetLocation();
+        auto optGlobalOff = BufOffsetToGlobal(afterLoc.BufId, afterLoc.Start);
+        if (!optGlobalOff)
+            return false;
+        offset = optGlobalOff.value() + afterToken->ToString().length();
+    }
+
+    std::vector<AST::CToken*> tokenList;
+    newCommand->CollectTokens(tokenList);
+
+    if (tokenList.empty())
+        return false;
+
+    for (auto* t : tokenList)
+        if (!t->IsLocInvalid())
+            return false;
+
+    ASTRoot->AddChild(newCommand);
+
+    bool first = true;
+    for (auto* t : tokenList)
+    {
+        if (first)
+            offset = InsertToken(offset, t, "\n", "");
+        else
+            offset = InsertToken(offset, t, " ", "");
+        first = false;
+    }
+    return true;
+}
+
+void CSourceManager::CommitASTChanges() { }
 
 void CSourceManager::SaveFile() const
 {

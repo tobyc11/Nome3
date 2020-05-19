@@ -172,9 +172,9 @@ void CMainWindow::on_actionMerge_triggered()
     sn->SetEntity(merger.Get());
 }
 
-void CMainWindow::on_actionPoint_triggered() {}
+void CMainWindow::on_actionPoint_triggered() { }
 
-void CMainWindow::on_actionInstance_triggered() {}
+void CMainWindow::on_actionInstance_triggered() { }
 
 void CMainWindow::on_actionAbout_triggered()
 {
@@ -199,12 +199,9 @@ void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->Res
 
 void CMainWindow::on_actionCommitTempMesh_triggered()
 {
-    std::string code = TemporaryMeshManager->CommitTemporaryMesh(
+    TemporaryMeshManager->CommitTemporaryMesh(
         SourceMgr->GetASTContext(), MeshName->text().toStdString(), InstName->text().toStdString());
-    SourceMgr->CommitASTChanges();
     this->setWindowModified(true);
-    QInputDialog::getMultiLineText(this, tr("Code"), tr("Please manually copy the code for now:"),
-                                   QString::fromStdString(code));
 }
 
 void CMainWindow::SetupUI()
@@ -248,12 +245,9 @@ void CMainWindow::SetupUI()
     connect(ui->actionAboutQt, &QAction::triggered, this, &QApplication::aboutQt);
 }
 
-void CMainWindow::PreloadSetup() {}
-
 void CMainWindow::LoadEmptyNomeFile()
 {
     // Called from the constructor
-    PreloadSetup();
     setWindowFilePath("untitled.nom");
     bIsBlankFile = true;
     Scene = new Scene::CScene();
@@ -263,11 +257,9 @@ void CMainWindow::LoadEmptyNomeFile()
 
 void CMainWindow::LoadNomeFile(const std::string& filePath)
 {
-    PreloadSetup();
-
     setWindowFilePath(QString::fromStdString(filePath));
     bIsBlankFile = false;
-    SourceMgr = std::make_unique<CSourceManager>(filePath);
+    SourceMgr = std::make_shared<CSourceManager>(filePath);
     bool parseSuccess = SourceMgr->ParseMainSource();
     if (!parseSuccess)
     {
@@ -275,10 +267,9 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
             this, "Parser error",
             "The file did not completely successfully parse, do you still want "
             "to continue anyway? (See console for more information!)");
-        if (!resp)
+        if (resp != QMessageBox::Yes)
         {
             // Does not continue
-            UnloadNomeFile();
             LoadEmptyNomeFile();
             return;
         }
@@ -286,7 +277,22 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
     Scene = new Scene::CScene();
     Scene::GEnv.Scene = Scene.Get();
     Scene::CASTSceneAdapter adapter;
-    adapter.TraverseFile(SourceMgr->GetASTContext().GetAstRoot(), *Scene);
+    try
+    {
+        adapter.TraverseFile(SourceMgr->GetASTContext().GetAstRoot(), *Scene);
+    }
+    catch (const AST::CSemanticError& e)
+    {
+        printf("Error encountered during scene generation:\n%s\n", e.what());
+        auto resp = QMessageBox::question(
+            this, "Scene Generation Error",
+            "See console for details. Do you want to keep what you already have?");
+        if (resp != QMessageBox::Yes)
+        {
+            LoadEmptyNomeFile();
+            return;
+        }
+    }
 
     PostloadSetup();
 }
@@ -305,7 +311,7 @@ void CMainWindow::PostloadSetup()
     });
     SceneUpdateClock->start();
 
-    TemporaryMeshManager = std::make_unique<Scene::CTemporaryMeshManager>(Scene);
+    TemporaryMeshManager = std::make_unique<Scene::CTemporaryMeshManager>(Scene, SourceMgr);
 }
 
 void CMainWindow::UnloadNomeFile()

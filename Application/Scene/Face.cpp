@@ -1,5 +1,6 @@
 #include "Face.h"
 #include "Mesh.h"
+#include <StringUtils.h>
 
 namespace Nome::Scene
 {
@@ -29,13 +30,9 @@ void CFace::UpdateEntity()
 
 size_t CFace::CountVertices() const { return Points.GetSize(); }
 
-std::vector<std::string> CFace::GetPointSourceNames() const { return PointSource; }
-
 void CFace::SetPointSourceNames(const TAutoPtr<CScene>& scene, std::vector<std::string> points)
 {
-    PointSource = std::move(points);
-
-    for (const auto& point : PointSource)
+    for (const auto& point : points)
     {
         Flow::TOutput<CVertexInfo*>* pointOutput = scene->FindPointOutput(point);
         if (!pointOutput)
@@ -86,6 +83,29 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
     }
     mesh->AddFace(GetName(), nameList);
     return true;
+}
+
+AST::ACommand* CFace::MakeCommandNode(AST::CASTContext& ctx, AST::ACommand* parent)
+{
+    if (!tc::FStringUtils::StartsWith(GetName(), parent->GetName()))
+        return nullptr;
+    std::string faceLocalName;
+    if (parent->GetName().empty())
+        faceLocalName = GetName();
+    else
+        faceLocalName = GetName().substr(parent->GetName().length() + 1);
+    auto* faceNode = ctx.Make<AST::ACommand>(ctx.MakeToken("face"), ctx.MakeToken("endface"));
+    faceNode->PushPositionalArgument(ctx.MakeIdent(faceLocalName)); // 1st positional arg is name
+    // 2nd positional arg is point ident vector
+    auto pointNames = Points.MapOutput<std::string>([](const auto& output) {
+        auto* vs = dynamic_cast<CVertexSelector*>(output.GetOwner());
+        return vs->GetPath();
+    });
+    std::vector<AST::AExpr*> identList;
+    for (const auto& pointName : pointNames)
+        identList.push_back(ctx.MakeIdent(pointName));
+    faceNode->PushPositionalArgument(ctx.MakeVector(identList));
+    return faceNode;
 }
 
 }

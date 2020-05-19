@@ -7,11 +7,6 @@
 namespace Nome::Scene
 {
 
-CTemporaryMeshManager::CTemporaryMeshManager(TAutoPtr<CScene> scene)
-    : Scene(std::move(scene))
-{
-}
-
 void CTemporaryMeshManager::ResetTemporaryMesh()
 {
     if (!TempMeshNode)
@@ -53,35 +48,17 @@ std::string CTemporaryMeshManager::CommitTemporaryMesh(AST::CASTContext& ctx,
 
     if (!Scene->RenameEntity("__tempMesh", entityName))
         throw std::runtime_error("Cannot rename the temporary mesh, new name already exists");
-    // TODO: make sure there is no name collision
-    // TODO: TempMesh->SyncToAST(ctx);
-    TempMeshNode->SetName(nodeName);
-    TempMeshNode->SyncToAST(ctx);
+    if (!TempMeshNode->SetName(nodeName))
+        throw std::runtime_error("Cannot rename the scene node to the desired name");
 
-    std::stringstream ss;
-    ss << "mesh " << entityName << std::endl;
-    size_t count = TempMesh->Faces.GetSize();
-    for (size_t i = 0; i < count; i++)
-    {
-        auto* face = TempMesh->Faces.GetValue(i, nullptr);
-        ss << "    face " << face->GetNameWithoutPrefix() << " (";
-        bool first = true;
-        for (const auto& pointName : face->GetPointSourceNames())
-        {
-            if (first)
-                first = false;
-            else
-                ss << " ";
-            ss << pointName;
-        }
-        ss << ") endface" << std::endl;
-    }
-    ss << "endmesh" << std::endl;
-    ss << "instance " << nodeName << " " << entityName << " endinstance" << std::endl;
+    auto* meshCmd = TempMesh->SyncToAST(ctx, true);
+    SourceMgr->AppendCmdEndOfFile(meshCmd);
+    auto* instanceCmd = TempMeshNode->BuildASTCommand(ctx);
+    SourceMgr->AppendCmdEndOfFile(instanceCmd);
 
     TempMesh = nullptr;
     TempMeshNode = nullptr;
-    return ss.str();
+    return "";
 }
 
 }

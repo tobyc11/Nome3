@@ -44,6 +44,18 @@ public:
         return defaultValue;
     }
 
+    template <typename U>
+    std::vector<U> MapOutput(std::function<U(const TOutput<T>&)> f) const
+    {
+        std::vector<U> result;
+        for (TInput<T>* input : InputArray)
+        {
+            // Assuming ConnectedOutput is not nullptr
+            result.push_back(f(*input->ConnectedOutput));
+        }
+        return result;
+    }
+
 private:
     CFlowNode* Owner;
     std::function<void(TInput<T>*)> DirtyNotifyRoutine;

@@ -64,6 +64,8 @@ public:
 
     void Connect(TInput<T>& input);
 
+    CFlowNode* GetOwner() const { return Owner; }
+
 private:
     CFlowNode* Owner;
     std::function<void()> UpdateRoutine;

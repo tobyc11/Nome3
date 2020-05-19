@@ -1,5 +1,6 @@
 #include "SyntaxTree.h"
 
+#include <algorithm>
 #include <utility>
 
 namespace Nome::AST
@@ -13,14 +14,30 @@ CToken::CToken(std::string text, unsigned int bufId, unsigned int start)
 
 std::string CToken::ToString() const { return Text; }
 
-void ANode::AddChild(ANode* node)
+bool ANode::CanBeChild(ANode* node) const
 {
     uint32_t i = ChildKindRange & 0xFFFF;
     uint32_t j = ChildKindRange >> 16;
     auto k = static_cast<uint32_t>(node->Kind);
-    if (k < i || k >= j)
+    return !(k < i || k >= j);
+}
+
+void ANode::AddChild(ANode* node)
+{
+    if (!CanBeChild(node))
         throw CSemanticError("Node is not allowed to be added as a child", node);
     Children.push_back(node);
+}
+
+bool ANode::AddChildAfter(const ANode* after, ANode* child)
+{
+    if (!CanBeChild(child))
+        throw CSemanticError("Node is not allowed to be added as a child", child);
+    auto afterIter = std::find(Children.begin(), Children.end(), after);
+    if (afterIter == Children.end())
+        return false;
+    Children.insert(afterIter, child);
+    return true;
 }
 
 std::any AExpr::Accept(IExprVisitor* visitor)
@@ -139,7 +156,7 @@ ACall::ACall(CToken* funcToken, AVector* argumentList)
     AddChild(argumentList);
 }
 
-IExprVisitor::~IExprVisitor() {}
+IExprVisitor::~IExprVisitor() { }
 
 std::vector<ACommand*> AFile::GetCommands() const
 {
@@ -227,15 +244,17 @@ std::vector<ACommand*> ACommand::GetSubCommands() const
 
 void ACommand::CollectTokens(std::vector<CToken*>& tokenList) const
 {
-    tokenList.push_back(Token);
+    tokenList.push_back(GetOpenToken());
     for (auto* expr : PositionalArguments)
         expr->CollectTokens(tokenList);
     for (auto* arg : Transforms)
         arg->CollectTokens(tokenList);
     for (auto [name, arg] : NamedArguments)
         arg->CollectTokens(tokenList);
-    if (CloseToken)
-        tokenList.push_back(CloseToken);
+    for (auto* sub : GetSubCommands())
+        sub->CollectTokens(tokenList);
+    if (GetCloseToken())
+        tokenList.push_back(GetCloseToken());
 }
 
 std::ostream& operator<<(std::ostream& os, const AFile& node)

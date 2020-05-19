@@ -74,7 +74,7 @@ public:
     ~CSceneNode() override;
 
     const std::string& GetName() const { return Name; }
-    void SetName(std::string name) { Name = std::move(name); }
+    bool SetName(std::string newName);
     bool IsGroup() const { return bIsGroup; }
 
     // Hierarchy management

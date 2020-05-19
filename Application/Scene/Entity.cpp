@@ -24,4 +24,12 @@ std::string CEntity::GetNameWithoutPrefix() const
     return fullName.substr(lastDot + 1);
 }
 
+AST::ACommand* CEntity::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
+{
+    ctx;
+    createNewNode;
+    throw "unimplemented";
+    return nullptr;
+}
+
 }

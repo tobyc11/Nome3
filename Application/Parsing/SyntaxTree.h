@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace Nome::AST
@@ -59,7 +60,9 @@ enum class EKind : uint16_t
 class ANode
 {
 public:
+    bool CanBeChild(ANode* node) const;
     void AddChild(ANode* node);
+    bool AddChildAfter(const ANode* after, ANode* child);
     [[nodiscard]] EKind GetKind() const { return Kind; }
     [[nodiscard]] CToken* GetOpenToken() const { return Token; }
     [[nodiscard]] CToken* GetCloseToken() const { return CloseToken; }
@@ -376,12 +379,13 @@ class CSemanticError : public std::exception
 {
 public:
     CSemanticError(std::string message, const ANode* where)
-        : Message(message)
+        : Message(std::move(message))
         , Node(where)
     {
     }
 
-    [[nodiscard]] char const* what() const noexcept;
+    [[nodiscard]] char const* what() const noexcept override;
+    [[nodiscard]] const ANode* GetNode() const { return Node; }
 
 private:
     std::string Message;

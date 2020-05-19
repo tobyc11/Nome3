@@ -2,6 +2,7 @@
 // Render related
 #include "SceneGraph.h"
 #include <StringPrintf.h>
+#include <StringUtils.h>
 
 namespace Nome::Scene
 {
@@ -139,6 +140,27 @@ void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexH
 bool CMesh::IsInstantiable() { return true; }
 
 CEntity* CMesh::Instantiate(CSceneTreeNode* treeNode) { return new CMeshInstance(this, treeNode); }
+
+AST::ACommand* CMesh::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
+{
+    if (!createNewNode)
+        throw "unimplemented";
+    auto* node = ctx.Make<AST::ACommand>(ctx.MakeToken("mesh"), ctx.MakeToken("endmesh"));
+    node->PushPositionalArgument(ctx.MakeIdent(GetName()));
+    size_t numFaces = Faces.GetSize();
+    for (size_t i = 0; i < numFaces; i++)
+    {
+        auto* pFace = Faces.GetValue(i, nullptr);
+        // Test whether the face is a sub-entity of mine
+        //   For any sub-entity, we also serialize their AST
+        //   Otherwise, this should have been an `object` command, which is unimplemented rn
+        if (!tc::FStringUtils::StartsWith(pFace->GetName(), this->GetName()))
+            throw std::runtime_error("Mesh's child faces corruption");
+
+        node->AddSubCommand(pFace->MakeCommandNode(ctx, node));
+    }
+    return node;
+}
 
 std::string CMeshInstancePoint::GetPointPath() const
 {
@@ -336,6 +358,14 @@ void CVertexSelector::PointUpdate()
     VI.Position = { p[0], p[1], p[2] };
     VI.Position = mi->GetSceneTreeNode()->L2WTransform.GetValue(Matrix3x4::IDENTITY) * VI.Position;
     Point.UpdateValue(&VI);
+}
+
+std::string CVertexSelector::GetPath() const
+{
+    auto* mi = MeshInstance.GetValue(nullptr);
+    if (!mi)
+        throw std::runtime_error("Vertex selector cannot find its mesh instance");
+    return mi->GetSceneTreeNode()->GetPath() + "." + TargetName;
 }
 
 }

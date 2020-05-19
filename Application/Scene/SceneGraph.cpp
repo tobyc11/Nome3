@@ -117,7 +117,18 @@ CSceneNode::CSceneNode(CScene* owningScene, std::string name, bool isRoot, bool 
     }
 }
 
-CSceneNode::~CSceneNode() {}
+CSceneNode::~CSceneNode() { }
+
+bool CSceneNode::SetName(std::string newName)
+{
+    // Grab all children of one parent to test for name conflict
+    if (!Parents.empty())
+        for (const auto& childPtr : (*Parents.begin())->Children)
+            if (childPtr->GetName() == newName)
+                return false;
+    Name = std::move(newName);
+    return true;
+}
 
 void CSceneNode::AddParent(CSceneNode* newParent)
 {
@@ -247,15 +258,7 @@ void CSceneNode::SyncFromAST(AST::ACommand* cmd, CScene& scene)
 
 void CSceneNode::SyncToAST(AST::CASTContext& ctx)
 {
-    if (ASTSource)
-    {
-        throw std::runtime_error("Can't sync to existing AST node yet");
-    }
-    if (!GetEntity())
-        throw std::runtime_error("Can't sync groups yet");
-    ASTSource = BuildASTCommand(ctx);
-    ASTSource->SetPendingSave(true);
-    ctx.GetAstRoot()->AddChild(ASTSource);
+    throw "don't use";
 }
 
 AST::ACommand* CSceneNode::BuildASTCommand(AST::CASTContext& ctx) const

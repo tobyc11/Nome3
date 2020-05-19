@@ -54,6 +54,7 @@ public:
 
     bool IsInstantiable() override;
     CEntity* Instantiate(CSceneTreeNode* treeNode) override;
+    AST::ACommand* SyncToAST(AST::CASTContext& ctx, bool createNewNode) override;
 
 private:
     friend class CMeshInstance;
@@ -157,6 +158,8 @@ public:
     {
         VI.Name = resultName;
     }
+
+    std::string GetPath() const;
 
 private:
     std::string TargetName;

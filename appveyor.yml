@@ -6,7 +6,7 @@ install:
   - git submodule update --init --recursive
   # update msys2
   - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
-  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Sy"
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Syu"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm --needed -S bison flex"
   # setup envionment
   - set PATH=C:\Qt\5.13\msvc2017_64\bin;%PATH%

@@ -54,6 +54,20 @@ void CPolyline::UpdateEntity()
     SetValid(true);
 }
 
+void CPolyline::SetPointSourceNames(const TAutoPtr<CScene>& scene, std::vector<std::string> points)
+{
+    PointSource = std::move(points);
+    for (const auto& point : PointSource)
+    {
+        Flow::TOutput<CVertexInfo*>* pointOutput = scene->FindPointOutput(point);
+        if (!pointOutput)
+        {
+            continue;
+        }
+        Points.Connect(*pointOutput);
+    }
+}
+
 void CPolyline::SetClosed(bool closed)
 {
     bClosed = closed;

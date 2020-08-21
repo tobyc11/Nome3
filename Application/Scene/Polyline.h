@@ -28,13 +28,14 @@ public:
 
     void MarkDirty() override;
     void UpdateEntity() override;
-
+    void SetPointSourceNames(const TAutoPtr<CScene>& scene, std::vector<std::string> points);
     void SetClosed(bool closed);
 
 private:
     bool bClosed = false;
 
     CPolylineInfo PI;
+    std::vector<std::string> PointSource;
 };
 
 }

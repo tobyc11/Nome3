@@ -1,6 +1,7 @@
 #include "TemporaryMeshManager.h"
 
 #include "Mesh.h"
+#include "Polyline.h"
 #include <sstream>
 #include <utility>
 
@@ -14,13 +15,25 @@ void CTemporaryMeshManager::ResetTemporaryMesh()
     else
         TempMeshNode->SetEntity(nullptr);
 
+    if (!TempPolylineNode)
+        TempPolylineNode = Scene->GetRootNode()->CreateChildNode("__tempPolylineNode");
+    else
+        TempPolylineNode->SetEntity(nullptr);
+
+
+
     // Make entity and its corresponding scene node
     Scene->RemoveEntity("__tempMesh", true);
     TempMesh = new CMesh("__tempMesh");
     Scene->AddEntity(TempMesh);
     FaceCounter = 0;
 
+    Scene->RemoveEntity("__tempPolyline", true);
+    TempPolyline = new CPolyline("__tempPolyline");
+    Scene->AddEntity(TempPolyline);
+
     TempMeshNode->SetEntity(TempMesh);
+    TempPolylineNode->SetEntity(TempPolyline);
 }
 
 void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
@@ -37,6 +50,17 @@ void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
     Scene->AddEntity(tc::static_pointer_cast<CEntity>(face));
 
     TempMesh->Faces.Connect(face->Face);
+}
+
+void CTemporaryMeshManager::AddPolyline(const std::vector<std::string>& facePoints)
+{
+    std::cout << "Inside Add Polyline" << std::endl;
+
+    if (!TempPolyline || !TempPolylineNode)
+        ResetTemporaryMesh();
+    const std::string entityNamePrefix = "__tempPolyline." + std::to_string(num_polylines);
+    TempPolyline->SetPointSourceNames(Scene, facePoints); //?
+    TempPolyline->SetClosed(false); // hardcoding the closed bool to true
 }
 
 std::string CTemporaryMeshManager::CommitTemporaryMesh(AST::CASTContext& ctx,

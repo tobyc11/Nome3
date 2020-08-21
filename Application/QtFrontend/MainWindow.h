@@ -49,6 +49,7 @@ private slots:
     void on_actionAbout_triggered();
 
     void on_actionAddFace_triggered();
+    void on_actionAddPolyline_triggered(); 
     void on_actionResetTempMesh_triggered();
     void on_actionCommitTempMesh_triggered();
 

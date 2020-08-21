@@ -195,6 +195,19 @@ void CMainWindow::on_actionAddFace_triggered()
     TemporaryMeshManager->AddFace(verts);
 }
 
+void CMainWindow::on_actionAddPolyline_triggered()
+{
+    const auto& verts = Nome3DView->GetSelectedVertices();
+    if (verts.size() < 2)
+    {
+        statusBar()->showMessage("Selected vertices are less than 2");
+        return;
+    }
+    TemporaryMeshManager->AddPolyline(verts);
+    std::cout << "finished adding polyline in MainWindow" << std::endl;
+}
+
+
 void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->ResetTemporaryMesh(); }
 
 void CMainWindow::on_actionCommitTempMesh_triggered()

@@ -51,6 +51,7 @@
     <addaction name="actionMerge"/>
     <addaction name="separator"/>
     <addaction name="actionAddFace"/>
+    <addaction name="actionAddPolyline"/>
     <addaction name="actionResetTempMesh"/>
     <addaction name="actionCommitTempMesh"/>
    </widget>
@@ -71,6 +72,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionAddFace"/>
+   <addaction name="actionAddPolyline"/>
    <addaction name="actionResetTempMesh"/>
    <addaction name="separator"/>
    <addaction name="actionCommitTempMesh"/>
@@ -141,6 +143,11 @@
    <property name="text">
     <string>Add Face</string>
    </property>
+  </action>
+  <action name="actionAddPolyline">
+    <property name="text">
+      <string>Add Polyline</string>
+    </property>
   </action>
   <action name="actionResetTempMesh">
    <property name="text">

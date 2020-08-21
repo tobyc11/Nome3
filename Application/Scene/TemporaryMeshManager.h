@@ -42,6 +42,7 @@ private:
     
     unsigned int FaceCounter = 0;
     unsigned int num_polylines = 0;
+    unsigned int polyline_prev_num_points = 0;
 };
 
 }

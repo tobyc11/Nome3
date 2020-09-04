@@ -87,7 +87,7 @@ void CASTSceneAdapter::TraverseFile(AST::AFile* astRoot, CScene& scene)
         VisitCommandBankSet(cmd, scene);
     InstanciateUnder = GEnv.Scene->GetRootNode();
     for (auto* cmd : astRoot->GetCommands())
-        VisitCommandSyncScene(cmd, scene);
+        VisitCommandSyncScene(cmd, scene, false);
 }
 
 void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
@@ -115,7 +115,7 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
     CmdTraverseStack.pop_back();
 }
 
-void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene)
+void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, bool insubMesh)
 {
     CmdTraverseStack.push_back(cmd);
     auto kind = ClassifyCommand(cmd->GetCommand());
@@ -126,20 +126,39 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene)
     }
     else if (kind == ECommandKind::Entity)
     {
+
         TAutoPtr<CEntity> entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
         entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
         GEnv.Scene->AddEntity(entity);
 
         if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
+        {
             if (auto* face = dynamic_cast<CFace*>(entity.Get()))
+            {
                 mesh->Faces.Connect(face->Face);
+            }
+        }
 
-        ParentEntity = entity;
-        EntityNamePrefix = cmd->GetName() + ".";
+        // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one). 
+        // Previously, there was an error where the subcommands' ParentEntity were not always pointing to the mesh.
+        if (insubMesh == false)
+        {
+            ParentEntity = entity;
+            EntityNamePrefix = cmd->GetName() + ".";
+        }
+
         for (auto* sub : cmd->GetSubCommands())
-            VisitCommandSyncScene(sub, scene);
-        EntityNamePrefix = "";
-        ParentEntity = nullptr;
+        {
+            VisitCommandSyncScene(sub, scene, true);
+        }
+
+        // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one).
+        // Previously, there was an error where EntityNamePrefix and ParentEntity were being reset before the subcommands were finished processing.
+        if (insubMesh == false)
+        {
+            EntityNamePrefix = "";
+            ParentEntity = nullptr; 
+        }
     }
     else if (cmd->GetCommand() == "instance")
     {
@@ -162,7 +181,10 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene)
         InstanciateUnder = GEnv.Scene->CreateGroup(cmd->GetName());
         InstanciateUnder->SyncFromAST(cmd, scene);
         for (auto* sub : cmd->GetSubCommands())
-            VisitCommandSyncScene(sub, scene);
+        {
+            VisitCommandSyncScene(sub, scene, false);
+            std::cout << "test" << std::endl;
+        }
         InstanciateUnder = GEnv.Scene->GetRootNode();
     }
     CmdTraverseStack.pop_back();

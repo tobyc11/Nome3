@@ -26,7 +26,7 @@ public:
 
 private:
     void VisitCommandBankSet(AST::ACommand* cmd, CScene& scene);
-    void VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene);
+    void VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, bool insubMesh);
 
     std::vector<AST::ACommand*> CmdTraverseStack;
     CSceneNode* InstanciateUnder = nullptr;

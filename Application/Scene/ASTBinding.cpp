@@ -278,8 +278,8 @@ bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
             throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()),
                                       ident);
         }
-
-        if (typeid(*entity.Get()) == typeid(CSweepControlPoint))
+        auto& e = *entity.Get();
+        if (typeid(e) == typeid(CSweepControlPoint))
         {
             CSweepControlPoint* sweepControlPoint = dynamic_cast<CSweepControlPoint*>(entity.Get());
             value.Connect(sweepControlPoint->SweepControlPoint);

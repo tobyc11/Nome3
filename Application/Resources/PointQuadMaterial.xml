@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Material>
+    <Parameter name="pointRadius" value="float: 5" />
+    <Parameter name="pointAmbientColor" value="vec3: 0.8 0.8 0.8" />
+    <Parameter name="pointTexture" value="texture2d: qrc:/Textures/dot32.png" />
+    <Parameter name="surfaceWidth" value="float: 1024.0" />
+    <Parameter name="surfaceHeight" value="float: 1024.0" />
+    <Effect>
+        <Technique>
+            <FilterKey name="renderingStyle" value="forward" />
+            <GraphicsApiFilter api="OpenGL" profile="Core" majorVersion="3" minorVersion="1" />
+            <RenderPass>
+                <ShaderProgram vertexShaderCode="qrc:/Shaders/default.vert" geometryShaderCode="qrc:/Shaders/PointCloud.geom" fragmentShaderCode="qrc:/Shaders/PointCloud.frag" />
+                <CullFace mode="Back" />
+                <Blend op="Add" srcFactor="SourceAlpha" dstFactor="OneMinusSourceAlpha"/>
+            </RenderPass>
+        </Technique>
+    </Effect>
+</Material>

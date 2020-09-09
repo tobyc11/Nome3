@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Material>
+    <Parameter name="ka" value="vec3: 0.1 0.1 0.1" />
+    <Parameter name="kd" value="vec3: 0.7 0.7 0.7" />
+    <Parameter name="ks" value="vec3: 0.95 0.95 0.95" />
+    <Parameter name="shininess" value="float: 150.0" />
+    <Parameter name="light.position" value="vec4: 0.0 0.0 0.0 1.0" />
+    <Parameter name="light.intensity" value="vec3: 1.0 1.0 1.0" />
+    <Parameter name="line.width" value="float: 1.0" />
+    <Parameter name="line.color" value="vec4: 1.0 1.0 1.0 1.0" />
+    <Effect>
+        <Technique>
+            <FilterKey name="renderingStyle" value="forward" />
+            <GraphicsApiFilter api="OpenGL" profile="Core" majorVersion="3" minorVersion="1" />
+            <RenderPass>
+                <ShaderProgram vertexShaderCode="qrc:/Shaders/Wireframe.vert" geometryShaderCode="qrc:/Shaders/Wireframe.geom" fragmentShaderCode="qrc:/Shaders/Wireframe.frag" />
+                <CullFace mode="NoCulling" />
+            </RenderPass>
+        </Technique>
+    </Effect>
+</Material>

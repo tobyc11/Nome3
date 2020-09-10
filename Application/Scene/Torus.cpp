@@ -19,9 +19,9 @@ DEFINE_META_OBJECT(CTorus)
     BindPositionalArgument(&CTorus::MajorRadius, 1, 1);
     BindPositionalArgument(&CTorus::MinorRadius, 1, 2);
     BindPositionalArgument(&CTorus::ThetaMax, 1, 3);
-    BindPositionalArgument(&CTorus::PhiMin, 1, 4);
-    BindPositionalArgument(&CTorus::PhiMax, 1, 5);
-    BindPositionalArgument(&CTorus::Segments, 1, 6);
+    // BindPositionalArgument(&CTorus::PhiMin, 1, 4);
+    BindPositionalArgument(&CTorus::PhiMax, 1, 4);
+    BindPositionalArgument(&CTorus::Segments, 1, 5);
 }
 void CTorus::UpdateEntity()
 {
@@ -38,7 +38,7 @@ void CTorus::UpdateEntity()
     float majorRadius = MajorRadius.GetValue(1.0f);
     float minorRadius = MinorRadius.GetValue(1.0f);
     float thetaMax = ThetaMax.GetValue(1.0f);
-    float phiMin = PhiMin.GetValue(1.0f);
+    // float phiMin = PhiMin.GetValue(1.0f);
     float phiMax= PhiMax.GetValue(1.0f);
 
     // number of circles or cross sections
@@ -46,7 +46,7 @@ void CTorus::UpdateEntity()
 
     const float epsilon = 1e-4;
     const float dt = (thetaMax*(float)tc::M_PI/180.0f) / (numSegments);
-    const float du = (2.0f * (float)tc::M_PI) / numPhi;
+    const float du = (phiMax * (float)tc::M_PI / 180.0f) / numPhi;
 
 
 

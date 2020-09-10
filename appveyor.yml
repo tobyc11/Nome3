@@ -4,10 +4,20 @@ image: Visual Studio 2017
 install:
   - cd %APPVEYOR_BUILD_FOLDER%
   - git submodule update --init --recursive
-  # update msys2
+  # update msys2  
+  - curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
+  - curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig
+  - pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig
+  - pacman -U --config <(echo) msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
+  - rm -r /etc/pacman.d/gnupg/
+  - pacman-key --init
+  - pacman-key --populate msys2
   - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Syu"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm --needed -S bison flex"
+
+
+# pacman -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
   # setup envionment
   - set PATH=C:\Qt\5.13\msvc2017_64\bin;%PATH%
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"

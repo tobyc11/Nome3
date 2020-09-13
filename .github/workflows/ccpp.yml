@@ -12,7 +12,7 @@ jobs:
     - name: checkout submodules
       run: git submodule update --init --recursive
     - name: download dependencies
-      run: wget https://www.antlr.org/download/antlr-4.7.2-complete.jar
+      run: wget https://www.antlr.org/download/antlr-4.8-complete.jar
     - name: install ubuntu packages
       run: sudo apt-get update && sudo apt-get install -y qt3d5-dev qt3d-*-plugin bison flex uuid-dev
     - name: install vcpkg packages

@@ -38,13 +38,14 @@ CSourceManager::CSourceManager(std::string mainSource)
 bool CSourceManager::ParseMainSource()
 {
     std::ifstream ifs(MainSource);
-    const std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    //std::string content(std::istreambuf_iterator<char>(ifs));
     ifs.close();
 
     MainSourceBuffer = CStringBuffer(content);
     PieceTable.emplace_back(OrigBuf, 0, content.length());
 
-    ANTLRInputStream input(content);
+    ANTLRInputStream input((std::string &)content);
     NomLexer lexer(&input);
     CommonTokenStream tokens(&lexer);
 

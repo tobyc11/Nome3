@@ -19,7 +19,6 @@ DEFINE_META_OBJECT(CTorus)
     BindPositionalArgument(&CTorus::MajorRadius, 1, 1);
     BindPositionalArgument(&CTorus::MinorRadius, 1, 2);
     BindPositionalArgument(&CTorus::ThetaMax, 1, 3);
-    // BindPositionalArgument(&CTorus::PhiMin, 1, 4);
     BindPositionalArgument(&CTorus::PhiMax, 1, 4);
     BindPositionalArgument(&CTorus::Segments, 1, 5);
 }
@@ -31,7 +30,6 @@ void CTorus::UpdateEntity()
 
     // Clear mesh
     Super::UpdateEntity();
-
 
     // Initialize torus parameters from document 
     int numPhi = static_cast<int>(VerticesPerRing.GetValue(16.0f));
@@ -47,8 +45,6 @@ void CTorus::UpdateEntity()
     const float epsilon = 1e-4;
     const float dt = (thetaMax*(float)tc::M_PI/180.0f) / (numSegments);
     const float du = (phiMax * (float)tc::M_PI / 180.0f) / numPhi;
-
-
 
     // Create torus, creating one cross section at each iteration
     for (int i = 0; i < numSegments + 1; i++) // numSegments + 1; for some reason numSegments was outputting an off by one torus...

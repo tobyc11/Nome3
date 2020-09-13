@@ -38,7 +38,7 @@ CSourceManager::CSourceManager(std::string mainSource)
 bool CSourceManager::ParseMainSource()
 {
     std::ifstream ifs(MainSource);
-    std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    const std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     ifs.close();
 
     MainSourceBuffer = CStringBuffer(content);

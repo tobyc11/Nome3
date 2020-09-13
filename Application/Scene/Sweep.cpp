@@ -67,7 +67,7 @@ Vector3 getPerpendicularVector(Vector3 vectorA, Vector3 vectorB)
 
     if (fabs(scale) < epsilon) { return vectorA.Normalized(); }
 
-    return (vectorA - vectorB.Normalized() * vectorA.Length() * cosf(getAngle(vectorA, vectorB))).Normalized();
+    return vectorA - vectorB.Normalized() * vectorA.Length() * cosf(getAngle(vectorA, vectorB));
 }
 
 // multiply a vector to a matrix
@@ -120,6 +120,8 @@ void CSweep::UpdateEntity()
     std::vector<Vector3> points;
     // Normal vectors of each paths
     std::vector<Vector3> Ns;
+    // Sum vectors of each joint
+    std::vector<Vector3> sums;
     // Rotation angles of each paths
     std::vector<float> angles;
     // Cross sections
@@ -151,16 +153,18 @@ void CSweep::UpdateEntity()
             Vector3 prevVector = points[i] - points[i - 1];
             Vector3 curVector = points[i - 1] - points[i - 2];
 
-            Vector3 sumVector = (prevVector.Normalized() - curVector.Normalized());
+            Vector3 sumVector = prevVector.Normalized() - curVector.Normalized();
             Vector3 curPerpendicular = getPerpendicularVector(sumVector, prevVector);
             Vector3 prevPerpendicular = getPerpendicularVector(sumVector, -curVector);
+
+            sums.push_back(sumVector);
 
             /* let the normal vector be the prevPerpendicular vector
              * in this case, the rotation angle is 0 */
             if (i == 2) { Ns.push_back(prevPerpendicular); }
             // calculate the rotaion angle of each joint
             angles.push_back(calculateRoatateAngle(Ns[i - 2], prevPerpendicular,
-                                                   points[i - 1] - points[i - 2]) + twist);
+                                        points[i - 1] - points[i - 2]) + twist);
             // set the current normal vector
             Ns.push_back(curPerpendicular);
         }
@@ -175,12 +179,14 @@ void CSweep::UpdateEntity()
         Vector3 prevVector = points[1] - points[0];
         Vector3 curVector = points[0] - points[numPoints - 2];
 
-        Vector3 sumVector = (prevVector.Normalized() - curVector.Normalized());
+        Vector3 sumVector = prevVector.Normalized() - curVector.Normalized();
         Vector3 curPerpendicular = getPerpendicularVector(sumVector, prevVector);
         Vector3 prevPerpendicular = getPerpendicularVector(sumVector, -curVector);
 
+        sums.push_back(sumVector);
         angles.push_back(calculateRoatateAngle(Ns[numPoints - 2], prevPerpendicular,
                       points[numPoints - 1] - points[numPoints - 2]));
+        Ns.push_back(curPerpendicular);
         // add the rotation angle of the closed joint
         angles[0] += calculateRoatateAngle(curPerpendicular, Ns[0], prevVector);
     }
@@ -228,7 +234,7 @@ void CSweep::UpdateEntity()
         Vector3 curVector = (points[0] - points[numPoints - 2]).Normalized();
 
         T = prevVector + curVector;
-        N = prevVector - curVector;
+        N = sums[numPoints - 2];
 
         drawCrossSection(crossSection, points[0], T, N, angles[0], scaleX[0],
                          scaleY[0], N.Length(), ++segmentCount);
@@ -244,7 +250,7 @@ void CSweep::UpdateEntity()
                 Vector3 curVector = (points[0] - points[numPoints - 2]).Normalized();
 
                 T = prevVector + curVector;
-                N = prevVector - curVector;
+                N = sums[i - 1];
 
                 // 0 is perfect.
                 drawCrossSection(crossSection, points[i], T, N, angles[i] - twist,
@@ -262,7 +268,7 @@ void CSweep::UpdateEntity()
             Vector3 curVector = (points[i] - points[i - 1]).Normalized();
 
             T = prevVector + curVector;
-            N = prevVector - curVector;
+            N = sums[i - 1];
             drawCrossSection(crossSection, points[i], T, N, angles[i], scaleX[i],
                              scaleY[i], N.Length(), ++segmentCount);
         }

@@ -279,7 +279,8 @@ bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
                                       ident);
         }
 
-        if (typeid(*entity.Get()) == typeid(CSweepControlPoint))
+        auto& e = *entity.Get();
+        if (typeid(e) == typeid(CSweepControlPoint))
         {
             CSweepControlPoint* sweepControlPoint = dynamic_cast<CSweepControlPoint*>(entity.Get());
             value.Connect(sweepControlPoint->SweepControlPoint);

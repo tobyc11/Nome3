@@ -4,6 +4,8 @@
 set(ANTLR4_WITH_STATIC_CRT OFF)
 # add external build for antlrcpp
 include(ExternalAntlr4Cpp)
+# add antrl4cpp artifacts to project environment
+include_directories(${ANTLR4_INCLUDE_DIRS})
 
 # Generate Lexer and Parser with ANTLR
 find_package(ANTLR REQUIRED)

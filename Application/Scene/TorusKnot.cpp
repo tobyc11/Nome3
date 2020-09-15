@@ -13,6 +13,7 @@ typedef struct
     float z;
 } Point;
 
+
 DEFINE_META_OBJECT(CTorusKnot)
 {
     BindPositionalArgument(&CTorusKnot::P_Val, 1, 0);

@@ -69,7 +69,7 @@ public:
     Vector3 Project(const Vector3& point) const
     {
         Vector3 offset = point - Origin;
-        return Origin + offset.DotProduct(Direction) * Direction;
+        return Origin + offset.DotProduct(Direction) * Direction; 
     }
 
     /// Return distance of a point from the ray.

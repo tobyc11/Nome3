@@ -57,7 +57,6 @@ void CTorus::UpdateEntity()
 
         float t1 = t0 + epsilon;
 
-
         // p1 is p0 advanced infinitesimally along the curve
 
         Point p1 = {majorRadius*cos(t1), majorRadius*sinf(t1), 0 }; //uncomment this to do torus instead 
@@ -112,7 +111,6 @@ void CTorus::UpdateEntity()
     // Create faces
     if (thetaMax == 360)
     {
-
         for (int k = 0; k < numSegments + 1; k++)
         {
             for (int i = 0; i < numPhi; i++)

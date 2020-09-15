@@ -23,7 +23,6 @@ DEFINE_META_OBJECT(CTorusKnot)
 }
 void CTorusKnot::UpdateEntity()
 {
-
     if (!IsDirty())
         return;
 
@@ -41,15 +40,13 @@ void CTorusKnot::UpdateEntity()
     const float dt = (2.0f * (float)tc::M_PI) / (numSegments);
     const float du = (2.0f * (float)tc::M_PI) / numPhi;
 
-
     for (int i = 0; i < numSegments; i++) // Create torus knot, creating one cross section at each iteration
     {
         float t0 = i * dt;
         float r0 = (2 + cosf(_q * t0)) * 0.5;
         
         Point p0 = { r0 * cosf(_p * t0), r0 * sinf(_p * t0), -sinf(_q * t0) }; 
-        // Point p0 = { sinf(t0), cos(t0), 0}; // uncomment this to do torus instead
-        
+        // Point p0 = { sinf(t0), cos(t0), 0}; // uncomment this to do torus instead    
         
         // Below, we'll work on approximating the Frenet frame { T, N, B } for the curve at the current point
 
@@ -105,7 +102,6 @@ void CTorusKnot::UpdateEntity()
 
             AddVertex("v" + std::to_string(i + 1) + "_" + std::to_string(j),
                       { curr_vertex.x, curr_vertex.y, curr_vertex.z });
-
         }
     }
     // Create faces

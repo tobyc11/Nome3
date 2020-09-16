@@ -16,7 +16,7 @@ CNome3DView::CNome3DView()
 {
     Root = new Qt3DCore::QEntity();
     this->setRootEntity(Root);
-    MakeGridEntity(Root);
+    // MakeGridEntity(Root); Removing grid entity per Professor Sequin's request
 
     // Make a point light
     auto* lightEntity = new Qt3DCore::QEntity(Root);

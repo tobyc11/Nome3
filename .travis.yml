@@ -15,7 +15,7 @@ addons:
     update: true
 script:
 - cmake . -DCMAKE_INSTALL_PREFIX=$(pwd)/install && make && make install
-before_deploy: mkdir artifacts && zip -r artifacts/nome3-macos.zip install
+- mkdir artifacts && zip -r artifacts/nome3-macos.zip install
 deploy:
   provider: releases
   api_key:
@@ -23,6 +23,5 @@ deploy:
   file_glob: true
   file: $PWD/artifacts/*
   skip_cleanup: true
-  true:
-    repo: randy/Nome3
+  on:
     tags: true

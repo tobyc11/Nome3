@@ -291,7 +291,7 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc:
         tc::Vector3 projected = localRay.Project(pos);
         auto dist = (pos - projected).Length();
         auto t = (localRay.Origin - projected).Length();
-        if (dist < std::min(0.05f * t, 0.25f))
+        if (dist < std::min(0.005f * t, 0.25f))
         {
             result.emplace_back(t, instPrefix + pair.first);
         }

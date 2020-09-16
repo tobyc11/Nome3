@@ -95,7 +95,6 @@ void CTorusKnot::UpdateEntity()
             float y = tubeRadius * sinf(u);
 
             Point p2 = { x * N.x + y * B.x, x * N.y + y * B.y, x * N.z + y * B.z };
-
             Point curr_vertex;
             curr_vertex.x = p0.x + p2.x;
             curr_vertex.y = p0.y + p2.y;

@@ -68,6 +68,8 @@ void CBSpline::UpdateEntity() {
     size_t howMany = ControlPoints.GetSize();
     int order = (int) Order.GetValue(3);
 
+    SamplePositions.clear();
+
     for (float steps = 0; steps <= n; steps++) {
         float t =  ((steps / Segments.GetValue(8.0f)) * (howMany - order + 1)) + (order - 1);
         Vector3 ret = {0,0,0};

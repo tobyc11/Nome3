@@ -230,7 +230,7 @@ void CMainWindow::SetupUI()
     Nome3DView = std::make_unique<CNome3DView>();
     GFrtCtx->NomeView = Nome3DView.get();
 
-    if (!bDetached3DView)
+    if (true)// (!bDetached3DView) Temporarily changing this to True to avoid overlapping windows
     {
         auto* viewContainer = QWidget::createWindowContainer(Nome3DView.get());
         viewContainer->setObjectName("visualLayerContainer");

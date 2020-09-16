@@ -2,30 +2,27 @@ language: cpp
 os: osx
 osx_image: xcode11.3
 compiler: gcc
-
 addons:
   homebrew:
     packages:
-      - qt
-      - open-mesh
-      - pugixml
-      - bison
-      - flex
-      - cmake
-      - antlr
-    update: True
-
+    - qt
+    - open-mesh
+    - pugixml
+    - bison
+    - flex
+    - cmake
+    - antlr
+    update: true
 script:
- - cmake . -DCMAKE_INSTALL_PREFIX=$(pwd)/install && make && make install
-
+- cmake . -DCMAKE_INSTALL_PREFIX=$(pwd)/install && make && make install
 before_deploy: mkdir artifacts && zip -r artifacts/nome3-macos.zip install
-
 deploy:
   provider: releases
-  github_token: 491e001c84e19e9584b8e3ebb8e30db1a1601200
+  api_key:
+    secure: EFtzSO9VUc0giP+5ziy58vZBeyOObz5aXefHCcjpWtpf7/BePVWa//ugmPqPFBcm+Zi32NifJtQ57cVpFKtP6fvgwXyYdwX/TMtFNHd9JCCJ8GZNyg0Q969T+HthAu3vlMsCmGISnA0E5zOiQcHZ9zZVvKM627CMIwwnPcnQu/CkT4BOZaBEG8VXpymVN269bFSf7fJmkOIHRWUcO8/LpEj9P1bgmo24azOKWdKgbmULCZKCRYzrEIse/DaHcEoT8o+dsZyxcgfpO4FZi4urQLAj345pdR9ZkuuZ2155SaTk0GqKL0gm+Vx9tftUOGAFfj5zN1yUSicuIC9UMKRoby4CkcTD+VglZ1mTGCCMg1sJYog54yPgrWg2MAyl66xKGOAkrvN9oLNdjc1zwHkCa6vxhvRhUlN9Ch8VlkpFHp9ehA6JrgIwspTTNBwzrzDKtCT5Q3SXeN2nsvuyXQPZuklK23wSz+wNCqShg3WMeFszLNaFUQN8zSf9xpzwDnbcDWEXtq72SDn9WCOhQ4oXPhUaLfV0JS2a1kInQ3usW+hZR1rx4MJIOKktS6bJS764tVR1v3217j/sLuW5QJygd0PXAEYNIRdNXKHhbiNnhueuhZ5OojJqBKZVSQXpyPoZMDASB1MEvO56m+QgqDV1xRn+CcAGIm+8bU786XMSl+8=
   file_glob: true
-  file: "$PWD/artifacts/*"
+  file: $PWD/artifacts/*
   skip_cleanup: true
-  on:
+  true:
     repo: randy/Nome3
     tags: true

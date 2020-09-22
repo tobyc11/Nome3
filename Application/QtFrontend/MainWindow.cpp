@@ -3,7 +3,6 @@
 #include "FrontendContext.h"
 #include "Nome3DView.h"
 #include "ui_MainWindow.h"
-
 #include <Scene/ASTSceneAdapter.h>
 #include <Scene/Environment.h>
 #include <Scene/MeshMerger.h>
@@ -151,25 +150,52 @@ void CMainWindow::on_actionMerge_triggered()
 {
     // One shot merging, and add a new entity and its corresponding node
     Scene->Update();
-    tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge");
+    tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge"); //CmeshMerger is basically a CMesh, but with a MergeIn method. Merger will contain ALL the merged vertices (from various meshes)
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        if (node->GetOwner()->GetName() == "globalMergeNode")
+        if (node->GetOwner()->GetName() == "globalMergeNode") // If the node owner is a globalMergeNode, skip as that was a previously merger mesh (from a previous Merge process). We only want to merge vertices from our actual (non-merged) meshes.
             return;
-        auto* entity = node->GetInstanceEntity();
-        if (!entity)
-        {
-            entity = node->GetOwner()->GetEntity();
-        }
+        auto* entity = node->GetInstanceEntity(); // Else, get the instance
+        if (!entity) // Check to see if the an entity is instantiable (e.g., polyline, funnel, mesh, etc.), and not just an instance identifier.
+            entity = node->GetOwner()->GetEntity(); // If it's not instantiable, get entity instead of instance entity
 
+        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))  //set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
+            merger->MergeIn(*mesh);
+    });
+    // TODO: Next 3 lines are super buggy, but needed to perform Catmull. Need to figure out why can open another file (or reopen/reload the same file) after merging. Often crashes when used on larger scenes.
+    Scene = new Scene::CScene();
+    Scene::GEnv.Scene = Scene.Get();
+    PostloadSetup();
+    Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
+    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices. 
+    sn->SetEntity(merger.Get()); // Set sn, which is the scene node, to point to entity merger 
+
+}
+
+void CMainWindow::on_actionSubdivide_triggered()
+{
+    // One shot merging, and add a new entity and its corresponding node
+    Scene->Update();
+    tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalCatmull"); 
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        //std::cout << node->GetOwner()->GetName() << std::endl;
+        if (node->GetOwner()->GetName()== "globalCatmullNode") 
+            return;
+        auto* entity = node->GetInstanceEntity();  // this is non-null if the entity is instantiable like a torus knot or polyline
+        if (!entity) // if it's not instantiable, like a face, then get the entity associated with it
+            entity = node->GetOwner()->GetEntity(); 
         if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
         {
-            merger->MergeIn(*mesh);
+            //std::cout << mesh->GetName() << std::endl;
+            merger->Catmull(*mesh);
         }
+        
     });
 
-    Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger));
-    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode");
-    sn->SetEntity(merger.Get());
+    Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(
+        merger)); 
+    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); 
+    sn->SetEntity(merger.Get());  
+    
 }
 
 void CMainWindow::on_actionPoint_triggered() { }
@@ -204,7 +230,6 @@ void CMainWindow::on_actionAddPolyline_triggered()
         return;
     }
     TemporaryMeshManager->AddPolyline(verts);
-    std::cout << "finished adding polyline in MainWindow" << std::endl;
 }
 
 

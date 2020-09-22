@@ -50,7 +50,6 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
 {
     using namespace Scene;
     Scene = scene;
-
     Scene->Update();
     Scene->ForEachSceneTreeNode([this](CSceneTreeNode* node) {
         printf("%s\n", node->GetPath().c_str());
@@ -177,7 +176,7 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
     if (!additive)
         SelectedVertices.clear();
 
-    std::vector<std::tuple<float ,Scene::CMeshInstance*, std::string>> hits;
+    std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
         auto* entity = node->GetInstanceEntity();
@@ -187,7 +186,9 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
         {
             const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
             auto localRay = ray.Transformed(l2w.Inverse());
-            localRay.Direction = localRay.Direction.Normalized(); // // Normalize to fix "scale" error caused by l2w.Inverse()
+            localRay.Direction =
+                localRay.Direction
+                    .Normalized(); // // Normalize to fix "scale" error caused by l2w.Inverse()
             auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
             auto pickResults = meshInst->PickVertices(localRay);
             for (const auto& [dist, name] : pickResults)
@@ -204,7 +205,7 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
         SelectedVertices.push_back(vertName);
         GFrtCtx->MainWindow->statusBar()->showMessage(
             QString::fromStdString("Selected " + vertName));
-        meshInst->MarkAsSelected({vertName}, true);
+        meshInst->MarkAsSelected({ vertName }, true);
     }
     else if (!hits.empty())
     {
@@ -236,7 +237,7 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
                 SelectedVertices.push_back(vertName);
                 GFrtCtx->MainWindow->statusBar()->showMessage(
                     QString::fromStdString("Selected " + vertName));
-                meshInst->MarkAsSelected({vertName}, true);
+                meshInst->MarkAsSelected({ vertName }, true);
             }
             dialog->close();
         });

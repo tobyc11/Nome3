@@ -1,7 +1,7 @@
 #pragma once
 #include "Mesh.h"
 #include <LangUtils.h>
-
+#include <OpenMesh/Tools/Subdivider/Uniform/CatmullClarkT.hh>
 namespace Nome::Scene
 {
 
@@ -19,6 +19,9 @@ public:
 
     // No update yet, please just use one time
     void MergeIn(const CMeshInstance& meshInstance);
+
+    // Buggy, preset to 3 subdivision steps
+    void Catmull(const CMeshInstance& meshInstance);
 
 private:
     std::pair<CMeshImpl::VertexHandle, float> FindClosestVertex(const tc::Vector3& pos);

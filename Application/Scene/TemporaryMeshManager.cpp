@@ -56,7 +56,6 @@ void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
 void CTemporaryMeshManager::AddPolyline(const std::vector<std::string>& facePoints)
 {
     std::vector<std::string> currPoints =  std::vector<std::string>(facePoints.begin() + polyline_prev_num_points, facePoints.end());
-    std::cout << "Inside Add Polyline" << std::endl;
     CSceneNode* TempPolylineNode = nullptr;
     if (!TempPolylineNode)
         TempPolylineNode = Scene->GetRootNode()->CreateChildNode("__tempPolylineNode"

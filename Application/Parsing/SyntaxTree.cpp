@@ -201,10 +201,11 @@ ACommand::ACommand(CToken* openToken, CToken* closeToken)
 {
 }
 
+// Color is an example of a named argument
 void ACommand::AddNamedArgument(ANamedArgument* argument)
 {
     auto iter = NamedArguments.find(argument->GetName());
-    if (iter != NamedArguments.end())
+    if (iter != NamedArguments.end()) 
         throw CSemanticError("Named argument is repeated.", argument);
     NamedArguments[argument->GetName()] = argument;
 }

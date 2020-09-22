@@ -134,22 +134,15 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (kind == ECommandKind::Entity)
     {
-
         TAutoPtr<CEntity> entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
-        entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
-        GEnv.Scene->AddEntity(entity);
-
+        entity->GetMetaObject().DeserializeFromAST(*cmd, *entity); 
+        GEnv.Scene->AddEntity(entity); // All entities are added in an EntityLibrary dictionary
         if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
-        {
             if (auto* face = dynamic_cast<CFace*>(entity.Get()))
-            {
                 mesh->Faces.Connect(face->Face);
-            }
-        }
 
-        // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one).
-        // Previously, there was an error where the subcommands' ParentEntity were not always
-        // pointing to the mesh.
+        // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one face).
+        // Previously, faces' ParentEntity was not set to "mesh" command 
         if (insubMesh == false)
         {
             ParentEntity = entity;
@@ -157,13 +150,9 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         }
 
         for (auto* sub : cmd->GetSubCommands())
-        {
             VisitCommandSyncScene(sub, scene, true);
-        }
 
-        // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one).
-        // Previously, there was an error where EntityNamePrefix and ParentEntity were being reset
-        // before the subcommands were finished processing.
+        // Added insubMesh bool to allow Meshes to process multiple faces.
         if (insubMesh == false)
         {
             EntityNamePrefix = "";
@@ -172,13 +161,30 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (cmd->GetCommand() == "instance")
     {
+        // Instance transformations/surfaces are not handled in here, 
         auto* sceneNode = InstanciateUnder->CreateChildNode(cmd->GetName());
         sceneNode->SyncFromAST(cmd, scene);
         // TODO: move the following logic into SyncFromAST
+
+        // Check to see if there is a surface color associated with this instance. If surface exists, then attach it to this instance scene node.
+        auto surface = cmd->GetNamedArgument("surface"); 
+        if (surface)
+        {
+            std::cout << "Found a surface color for this instance " << std::endl;
+            auto surfaceEntityNameExpr = cmd->GetNamedArgument("surface")->GetArgument(0)[0]; // Returns a casted AExpr that was an AIdent before casting
+            auto surfaceIdentifier = static_cast<AST::AIdent*>(&surfaceEntityNameExpr)->ToString(); // Downcast it back to an AIdent so we can use AIdent's ToString() 
+            auto surfaceEntity = GEnv.Scene->FindEntity(surfaceIdentifier);
+            std::cout << surfaceIdentifier << std::endl;
+            if (surfaceEntity)
+                sceneNode->SetSurface(dynamic_cast<CSurface*>(surfaceEntity.Get()));
+
+        }
+
+
         auto entityName = cmd->GetPositionalIdentAsString(1);
         auto entity = GEnv.Scene->FindEntity(entityName);
         if (entity)
-            sceneNode->SetEntity(entity);
+            sceneNode->SetEntity(entity);                                           
         else if (auto group = GEnv.Scene->FindGroup(entityName))
             group->AddParent(sceneNode);
         else
@@ -191,10 +197,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         InstanciateUnder = GEnv.Scene->CreateGroup(cmd->GetName());
         InstanciateUnder->SyncFromAST(cmd, scene);
         for (auto* sub : cmd->GetSubCommands())
-        {
             VisitCommandSyncScene(sub, scene, false);
-            std::cout << "test" << std::endl;
-        }
         InstanciateUnder = GEnv.Scene->GetRootNode();
     }
     CmdTraverseStack.pop_back();

@@ -49,6 +49,7 @@
      <string>&amp;Edit</string>
     </property>
     <addaction name="actionMerge"/>
+    <addaction name="actionSubdivide"/>
     <addaction name="separator"/>
     <addaction name="actionAddFace"/>
     <addaction name="actionAddPolyline"/>
@@ -138,6 +139,11 @@
    <property name="text">
     <string>&amp;Merge</string>
    </property>
+  </action>
+  <action name="actionSubdivide">
+    <property name="text">
+      <string>&amp;Subdivide</string>
+    </property>
   </action>
   <action name="actionAddFace">
    <property name="text">

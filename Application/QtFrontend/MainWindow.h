@@ -44,6 +44,7 @@ private slots:
     void on_actionSceneAsObj_triggered();
     void on_actionSceneAsStl_triggered();
     void on_actionMerge_triggered();
+    void on_actionSubdivide_triggered();
     void on_actionPoint_triggered();
     void on_actionInstance_triggered();
     void on_actionAbout_triggered();

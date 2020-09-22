@@ -10,11 +10,13 @@
 #undef max
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 
+
 #include <map>
 #include <set>
 #include <utility>
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
+
 
 namespace Nome::Scene
 {

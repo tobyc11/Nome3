@@ -1,0 +1,32 @@
+point pX (1 0 0) endpoint
+point pY (0 1 0) endpoint
+point pZ (0 0 1) endpoint
+point nX (-1 0 0) endpoint
+point nY (0 -1 0) endpoint
+point nZ (0 0 -1) endpoint
+
+surface red color(0.94 0.4 0.4) endsurface
+surface green color(171/255 240/255 102/255) endsurface
+surface blue color(102/255 240/255 240/255) endsurface
+surface purple color(171/255 102/255 240/255) endsurface
+
+mesh octahedron_top
+    face right_front (pY pX pZ) surface red endface
+    face left_front (pY pZ nX) surface green endface
+    face left_back (pY nX nZ) surface blue endface
+    face right_back (pY nZ pX) surface purple endface
+endmesh
+
+mesh octahedron_bott
+    face left_back_bott (nY nZ nX) surface red endface
+    face right_back_bott (nY nX pZ) surface green endface
+    face right_front_bott (nY pZ pX) surface blue endface
+    face left_front_bott (nY pX nZ) surface purple endface
+endmesh
+
+group octahedron
+    instance octa_top1 octahedron_top endinstance
+    instance octa_bott1 octahedron_bott endinstance
+endgroup
+
+instance octa1 octahedron endinstance

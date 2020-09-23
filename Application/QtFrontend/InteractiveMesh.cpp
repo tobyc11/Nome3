@@ -105,7 +105,7 @@ void CInteractiveMesh::UpdateMaterial()
 {
     QVector3D instanceColor { 1.0f, 0.5f, 0.1f };
 
-    // If the scene tree node is not within a group, then we can directly use its color
+    // If the scene tree node is not within a group, then we can directly use its surface color
     if (!SceneTreeNode->GetParent()->GetOwner()->IsGroup()) 
     {
         if (auto surface = SceneTreeNode->GetOwner()->GetSurface()) 
@@ -115,23 +115,24 @@ void CInteractiveMesh::UpdateMaterial()
             instanceColor.setZ(surface->ColorB.GetValue(1.0f));
         }
     }
-    else // else, the scenetreenode is within a group. In this case, we keep bubbling up (going up the tree) until we get to an instance command with a color specified. 
+    else // else, the scenetreenode is within a group, and we keep bubbling up (going up the tree) until we get to an instance scene node with the color specified. 
     {
         bool setColor = false;
         auto currNode = SceneTreeNode;
-        while(currNode->GetParent()->GetOwner()->IsGroup()) { //while temp is a group
-            if (auto surface = currNode->GetOwner()->GetSurface()) {  // if the scenetreenode itself already is assigned a surface color, then this color is prioritzed over the instance node color. 
+        while(currNode->GetParent()->GetOwner()->IsGroup()) { //while currNode is within a group
+            if (auto surface = currNode->GetOwner()->GetSurface()) {  // if the currNode itself is assigned a surface color, then this color is prioritzed. we set the color and break.
                 instanceColor.setX(surface->ColorR.GetValue(1.0f));
                 instanceColor.setY(surface->ColorG.GetValue(1.0f));
                 instanceColor.setZ(surface->ColorB.GetValue(1.0f));
                 setColor = true;
+                break;
             }
             currNode = currNode->GetParent();
         }
 
         if (!setColor) // If the surface color hasn't been set yet
         {
-            currNode = currNode->GetParent(); //here, currNode's parent is guaranteed to be a instance scene tree node due to while loop
+            currNode = currNode->GetParent(); //here, currNode's parent is guaranteed to be a instance scene tree node due to previous while loop
 
             if (auto surface = currNode->GetOwner()->GetSurface())
             {

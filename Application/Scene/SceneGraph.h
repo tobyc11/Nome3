@@ -37,7 +37,7 @@ public:
     // Note: linear time is prob too slow
     CSceneTreeNode* FindChildOfOwner(CSceneNode* owner) const;
     CSceneTreeNode* FindChild(const std::string& name) const;
-
+    CSceneTreeNode* GetParent() const { return Parent; } // Randy added this 9/22/2020
     const std::set<CSceneTreeNode*>& GetChildren() const { return Children; }
     std::string GetPath() const;
 

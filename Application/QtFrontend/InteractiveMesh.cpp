@@ -104,11 +104,44 @@ void CInteractiveMesh::UpdateGeometry()
 void CInteractiveMesh::UpdateMaterial()
 {
     QVector3D instanceColor { 1.0f, 0.5f, 0.1f };
-    if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
+    if (!SceneTreeNode->GetParent()->GetOwner()->IsGroup()) 
     {
-        instanceColor.setX(surface->ColorR.GetValue(1.0f));
-        instanceColor.setY(surface->ColorG.GetValue(1.0f));
-        instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+        if (auto surface = SceneTreeNode->GetOwner()
+                               ->GetSurface()) // unfortunately this means all the scene tree nodes
+                                               // with the same Owner (scene node) must share one
+                                               // color. TODO:  Instead, lets assign it to the
+                                               // Instance scene node and extract it from there.
+        {
+            instanceColor.setX(surface->ColorR.GetValue(1.0f));
+            instanceColor.setY(surface->ColorG.GetValue(1.0f));
+            instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+        }
+    }
+    else // if the scenetreenode is within a group, we want to get to the top instance node (before the first group). The top instance node stores the color. 
+    {
+        bool setColor = false;
+        auto temp = SceneTreeNode;
+        while(temp->GetParent()->GetOwner()->IsGroup()) { //while temp is a group
+            if (auto surface = temp->GetOwner()->GetSurface()) {  // if the scenetreenode itself already is assigned a surface color, then this color is prioritzed over the instance node color. 
+                instanceColor.setX(surface->ColorR.GetValue(1.0f));
+                instanceColor.setY(surface->ColorG.GetValue(1.0f));
+                instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+                setColor = true;
+            }
+            temp = temp->GetParent();
+        }
+
+        if (!setColor) // if the surface color hasn't been set yet
+        {
+            temp = temp->GetParent(); // this parent is guaranteed to be a instance scene tree node due to while loop
+
+            if (auto surface = temp->GetOwner()->GetSurface())
+            {
+                instanceColor.setX(surface->ColorR.GetValue(1.0f));
+                instanceColor.setY(surface->ColorG.GetValue(1.0f));
+                instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+            }
+        }
     }
 
     if (!Material)

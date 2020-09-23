@@ -167,26 +167,32 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         // TODO: move the following logic into SyncFromAST
 
         // Check to see if there is a surface color associated with this instance. If surface exists, then attach it to this instance scene node.
-        auto surface = cmd->GetNamedArgument("surface"); 
+        // surface color for group vs mesh instance logic is handled in InteractiveMesh.cpp (at the rendering stage).
+        auto surface = cmd->GetNamedArgument("surface");
         if (surface)
         {
-            std::cout << "Found a surface color for this instance " << std::endl;
-            auto surfaceEntityNameExpr = cmd->GetNamedArgument("surface")->GetArgument(0)[0]; // Returns a casted AExpr that was an AIdent before casting
-            auto surfaceIdentifier = static_cast<AST::AIdent*>(&surfaceEntityNameExpr)->ToString(); // Downcast it back to an AIdent so we can use AIdent's ToString() 
+            std::cout << "Found a surface color for this mesh/generator instance " << std::endl;
+            auto surfaceEntityNameExpr = surface->GetArgument(
+                0)[0]; // Returns a casted AExpr that was an AIdent before casting
+            auto surfaceIdentifier = static_cast<AST::AIdent*>(&surfaceEntityNameExpr)
+                                         ->ToString(); // Downcast it back to an AIdent so we
+                                                       // can use AIdent's ToString()
             auto surfaceEntity = GEnv.Scene->FindEntity(surfaceIdentifier);
-            std::cout << surfaceIdentifier << std::endl;
             if (surfaceEntity)
                 sceneNode->SetSurface(dynamic_cast<CSurface*>(surfaceEntity.Get()));
-
         }
-
 
         auto entityName = cmd->GetPositionalIdentAsString(1);
         auto entity = GEnv.Scene->FindEntity(entityName);
         if (entity)
-            sceneNode->SetEntity(entity);                                           
-        else if (auto group = GEnv.Scene->FindGroup(entityName))
+        {
+            sceneNode->SetEntity(entity);
+            auto surface = cmd->GetNamedArgument("surface");
+        }
+        else if (auto group = GEnv.Scene->FindGroup(entityName)) //if the entityName is actually a group's identifier
+        {
             group->AddParent(sceneNode);
+        }
         else
             throw AST::CSemanticError(
                 tc::StringPrintf("Instantiation failed, unknown generator: %s", entityName.c_str()),

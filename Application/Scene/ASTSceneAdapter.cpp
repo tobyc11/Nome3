@@ -166,17 +166,15 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         sceneNode->SyncFromAST(cmd, scene);
         // TODO: move the following logic into SyncFromAST
 
-        // Check to see if there is a surface color associated with this instance. If surface exists, then attach it to this instance scene node.
-        // surface color for group vs mesh instance logic is handled in InteractiveMesh.cpp (at the rendering stage).
+        // Check to see if there is a surface color associated with this instance. If the surface argument exists, then set the scene node's surface to be it.
+        // Surface color for group vs mesh instance logic is handled in InteractiveMesh.cpp (at the rendering stage).
         auto surface = cmd->GetNamedArgument("surface");
         if (surface)
         {
             std::cout << "Found a surface color for this mesh/generator instance " << std::endl;
             auto surfaceEntityNameExpr = surface->GetArgument(
                 0)[0]; // Returns a casted AExpr that was an AIdent before casting
-            auto surfaceIdentifier = static_cast<AST::AIdent*>(&surfaceEntityNameExpr)
-                                         ->ToString(); // Downcast it back to an AIdent so we
-                                                       // can use AIdent's ToString()
+            auto surfaceIdentifier = static_cast<AST::AIdent*>(&surfaceEntityNameExpr)->ToString(); // Downcast it back to an AIdent
             auto surfaceEntity = GEnv.Scene->FindEntity(surfaceIdentifier);
             if (surfaceEntity)
                 sceneNode->SetSurface(dynamic_cast<CSurface*>(surfaceEntity.Get()));
@@ -189,7 +187,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
             sceneNode->SetEntity(entity);
             auto surface = cmd->GetNamedArgument("surface");
         }
-        else if (auto group = GEnv.Scene->FindGroup(entityName)) //if the entityName is actually a group's identifier
+        else if (auto group = GEnv.Scene->FindGroup(entityName)) // If the entityName is a group identifier
         {
             group->AddParent(sceneNode);
         }

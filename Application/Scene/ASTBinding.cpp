@@ -3,6 +3,7 @@
 #include "Point.h"
 #include "Polyline.h"
 #include "SweepControlPoint.h"
+#include "Surface.h"
 #include <Flow/FlowNode.h>
 #include <Flow/FlowNodeArray.h>
 #include <Parsing/SyntaxTree.h>
@@ -286,6 +287,37 @@ bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
             value.Connect(sweepControlPoint->SweepControlPoint);
         }
     }
+    return true;
+}
+
+
+template <>
+bool TBindingTranslator<Flow::TInputArray<CSurfaceInfo*>>::FromASTToValue(
+        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CSurfaceInfo*>& value)
+{
+    auto* ident = subpart.GetExpr(command);
+    if (ident == NULL) { return false; }
+
+    if (ident->GetKind() != AST::EKind::Ident)
+        throw AST::CSemanticError("TInput<CSurfaceInfo*> is not matched with a Ident",
+                        command);
+
+    std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
+    TAutoPtr<CEntity> entity = GEnv.Scene->FindEntity(identVal);
+    if (!entity)
+    {
+        throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()),
+                        ident);
+    }
+
+    CSurface* surf = dynamic_cast<CSurface*>(entity.Get());
+    if (!surf)
+    {
+        throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a surface", identVal.c_str()),
+                        ident);
+    }
+
+    value.Connect(surf->Surface);
     return true;
 }
 

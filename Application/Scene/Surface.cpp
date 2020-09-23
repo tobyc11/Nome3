@@ -10,4 +10,14 @@ DEFINE_META_OBJECT(CSurface)
     BindNamedArgument(&CSurface::ColorB, "color", 0, 2);
 }
 
+void CSurface::UpdateEntity() {
+
+    Super::UpdateEntity();
+
+    info.surfacename = GetName();
+    info.ColorR = ColorR.GetValue(0.0f);
+    info.ColorG = ColorG.GetValue(0.0f);
+    info.ColorB = ColorB.GetValue(0.0f);
+}
+
 }

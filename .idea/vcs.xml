@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/build/Application/Parsing/antlr4_runtime/src/antlr4_runtime" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/build/Application/Parsing/antlr4_runtime/src/antlr4_runtime/runtime/Cpp/runtime/thirdparty/utfcpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/build/Application/Parsing/antlr4_runtime/src/antlr4_runtime/runtime/Cpp/runtime/thirdparty/utfcpp/extern/gtest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/build/Application/Parsing/antlr4_runtime/src/antlr4_runtime/runtime/PHP" vcs="Git" />
+  </component>
+</project>

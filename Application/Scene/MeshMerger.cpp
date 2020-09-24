@@ -25,41 +25,54 @@ void CMeshMerger::Catmull(const CMeshInstance& meshInstance)
     // Execute 3 subdivision steps
     CMeshImpl otherMesh = meshInstance.GetMeshImpl();
     catmull.attach(otherMesh);
-    catmull(3);
+    std::cout << "Apply catmullclark subdivision, may take a minute or so" << std::endl;
+    catmull(2);
     catmull.detach();
     auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
-
     // Copy over all the vertices and check for overlapping
     std::unordered_map<CMeshImpl::VertexHandle, CMeshImpl::VertexHandle> vertMap;
+    float maxY = -1 * std::numeric_limits<double>::infinity();
+    std::cout << "inside catmull Complete, process vertices. Please wait." << std::endl;
+    float minY = std::numeric_limits<double>::infinity();
+    for (auto vi = otherMesh.vertices_begin(); vi != otherMesh.vertices_end(); ++vi)
+    {
+        std::cout << vi->idx() << std::endl;
+        const auto& posArray = otherMesh.point(*vi);
+        Vector3 localPos = Vector3(posArray[0], posArray[1], posArray[2]);
+        Vector3 worldPos = tf * localPos;
+        maxY = std::max(maxY, worldPos.y);
+        minY = std::min(minY, worldPos.y);
+    }
     for (auto vi = otherMesh.vertices_begin(); vi != otherMesh.vertices_end();
          ++vi) // Iterate through all the vertices in the mesh (the non-merger mesh, aka the one
                // you're trying copy vertices from)
     {
+        std::cout << vi->idx() << std::endl;
         const auto& posArray = otherMesh.point(*vi);
         Vector3 localPos = Vector3(posArray[0], posArray[1],
                                    posArray[2]);
         Vector3 worldPos = tf * localPos; 
+        /* Dont need since merged nodes have no overlapping vertices
         auto [closestVert, distance] = FindClosestVertex(
             worldPos); 
         if (distance < Epsilon)
         { 
             vertMap[*vi] = closestVert;
-        }
-        else 
-        {
-            auto vnew = Mesh.add_vertex({ worldPos.x, worldPos.y, worldPos.z }); 
-            vertMap[*vi] = vnew;
-            std::string vName = "v"
-                + std::to_string(VertCount); 
-            NameToVert.insert({ vName, vnew }); 
-            ++VertCount;
-        }
+        }*/
+        //else
+        auto vnew = Mesh.add_vertex({ worldPos.x, worldPos.y + (maxY - minY) + 10, worldPos.z}); 
+        vertMap[*vi] = vnew;
+        std::string vName = "v" + std::to_string(VertCount); 
+        NameToVert.insert({ vName, vnew }); 
+        ++VertCount;
+        
     }
 
     // Add faces
     for (auto fi = otherMesh.faces_begin(); fi != otherMesh.faces_end();
          ++fi) 
     {
+        std::cout << fi->idx() << std::endl;
         std::vector<CMeshImpl::VertexHandle> verts;
         for (auto vert : otherMesh.fv_range(*fi))
             verts.emplace_back(vertMap[vert]); 

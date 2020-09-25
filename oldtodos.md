@@ -1,3 +1,4 @@
+# OUTDATED (from Fall 2019)
 # Introductory assignments
 
 Listed below are a few programming tasks that can hopefully get you familier with the Nome 3 codebase.

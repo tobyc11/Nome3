@@ -1,0 +1,10 @@
+bank knot_slider
+  set p 3 1 10 1
+  set q 2 1 10 1
+  set n 15 5 100 1
+  set r 0.1 0 1.5 0.1
+  set num_seg 200 100 300 5
+endbank
+
+torusknot knot ({expr $knot_slider.p} {expr $knot_slider.q} {expr $knot_slider.n} {expr $knot_slider.r} {expr $knot_slider.num_seg}) endtorusknot
+instance knot1 knot scale (10 10 10) endinstance

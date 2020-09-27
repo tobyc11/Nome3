@@ -29,4 +29,4 @@ group octahedron
     instance octa_bott1 octahedron_bott endinstance
 endgroup
 
-instance octa1 octahedron surface red endinstance
+instance octa1 octahedron endinstance

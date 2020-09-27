@@ -4,7 +4,6 @@
 #include "MeshToQGeometry.h"
 #include "Nome3DView.h"
 #include "ResourceMgr.h"
-
 #include <Matrix3x4.h>
 #include <Scene/Mesh.h>
 
@@ -157,6 +156,7 @@ void CInteractiveMesh::UpdateMaterial()
     auto surface = SceneTreeNode->GetOwner()->GetSurface();
     if (LineMaterial && surface)
     {
+        // it's not entering here
         auto* lineMat = dynamic_cast<CXMLMaterial*>(LineMaterial);
         lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
     }
@@ -210,15 +210,14 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
         LineMaterial = lineMat;
         LineMaterial->setObjectName(QStringLiteral("lineMaterial"));
         LineMaterial->setParent(this);
-        lineEntity->addComponent(LineMaterial);
-
+        lineEntity->addComponent(LineMaterial); 
         if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
         {
             QVector3D instanceColor;
             instanceColor.setX(surface->ColorR.GetValue(1.0f));
             instanceColor.setY(surface->ColorG.GetValue(1.0f));
             instanceColor.setZ(surface->ColorB.GetValue(1.0f));
-            lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
+            lineMat->FindParameterByName("instanceColor")->setValue(instanceColor); 
         }
     }
 

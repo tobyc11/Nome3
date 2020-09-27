@@ -113,10 +113,11 @@ void CTorusKnot::UpdateEntity()
             int next = (i + 1) % numPhi;
             int next_k = (k + 1) % numSegments;
             std::vector<std::string> upperFace = {
-                "v" + std::to_string(k + 1) + "_" + std::to_string(next),
-                "v" + std::to_string(k + 1) + "_" + std::to_string(i),
+                "v" + std::to_string(next_k + 1) + "_" + std::to_string(next), 
                 "v" + std::to_string(next_k + 1) + "_" + std::to_string(i),
-                "v" + std::to_string(next_k + 1) + "_" + std::to_string(next)
+                "v" + std::to_string(k + 1) + "_" + std::to_string(i),
+                "v" + std::to_string(k + 1) + "_" + std::to_string(next)
+
             };
             AddFace("f1_" + std::to_string(i), upperFace);
         }

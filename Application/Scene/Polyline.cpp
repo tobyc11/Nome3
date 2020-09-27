@@ -22,7 +22,6 @@ void CPolyline::UpdateEntity()
 {
     if (!IsDirty())
         return;
-
     Super::UpdateEntity();
 
     std::vector<CMeshImpl::VertexHandle> vertArray;
@@ -44,7 +43,6 @@ void CPolyline::UpdateEntity()
         vertArray.push_back(firstVert);
         positions.push_back(positions[0]);
     }
-
     AddLineStrip("polyline", vertArray);
 
     PI.Positions = positions;

@@ -35,6 +35,7 @@ private:
     bool bClosed = false;
     CPolylineInfo PI;
     std::vector<std::string> PointSource;
+
 };
 
 }

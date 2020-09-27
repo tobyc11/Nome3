@@ -1,0 +1,27 @@
+bank slider
+  set num_slices 10 1 100 1
+  set width 1 1 100 1
+  set height 1 1 100 1
+endbank
+
+point p1 (-1*{expr $slider.width} 0 0) endpoint
+point p2 (-2*{expr $slider.width} 2*{expr $slider.height} 0) endpoint
+point p3 (-1*{expr $slider.width} 4*{expr $slider.height} 0) endpoint
+point p4 (1*{expr $slider.width} 4*{expr $slider.height} 0) endpoint
+point p5 (2*{expr $slider.width} 2*{expr $slider.height} 0) endpoint
+point p6 (1*{expr $slider.width} 0 0) endpoint
+
+beziercurve b_curve (p1 p2 p3 p4 p5 p6) slices {expr $slider.num_slices} endbeziercurve
+
+instance bc b_curve endinstance
+instance bc b_curve rotate (0 1 0) (30) endinstance
+instance bc b_curve rotate (0 1 0) (60) endinstance
+instance bc b_curve rotate (0 1 0) (90) endinstance
+instance bc b_curve rotate (0 1 0) (120) endinstance
+instance bc b_curve rotate (0 1 0) (150) endinstance
+instance bc b_curve rotate (0 1 0) (180) endinstance
+instance bc b_curve rotate (0 1 0) (210) endinstance
+instance bc b_curve rotate (0 1 0) (240) endinstance
+instance bc b_curve rotate (0 1 0) (270) endinstance
+instance bc b_curve rotate (0 1 0) (300) endinstance
+instance bc b_curve rotate (0 1 0) (330) endinstance

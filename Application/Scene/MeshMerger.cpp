@@ -22,17 +22,16 @@ void CMeshMerger::Catmull(const CMeshInstance& meshInstance)
 {
 
     OpenMesh::Subdivider::Uniform::CatmullClarkT<CMeshImpl> catmull; // https://www.graphics.rwth-aachen.de/media/openmesh_static/Documentations/OpenMesh-4.0-Documentation/a00020.html
-    // Execute 3 subdivision steps
+    // Execute 2 subdivision steps
     CMeshImpl otherMesh = meshInstance.GetMeshImpl();
     catmull.attach(otherMesh);
-    std::cout << "Apply catmullclark subdivision, may take a minute or so" << std::endl;
+    std::cout << "Apply catmullclark subdivision, may take a few minutes or so" << std::endl;
     catmull(2);
     catmull.detach();
     auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
     // Copy over all the vertices and check for overlapping
     std::unordered_map<CMeshImpl::VertexHandle, CMeshImpl::VertexHandle> vertMap;
     float maxY = -1 * std::numeric_limits<double>::infinity();
-    std::cout << "inside catmull Complete, process vertices. Please wait." << std::endl;
     float minY = std::numeric_limits<double>::infinity();
     for (auto vi = otherMesh.vertices_begin(); vi != otherMesh.vertices_end(); ++vi)
     {

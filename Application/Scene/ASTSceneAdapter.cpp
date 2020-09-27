@@ -171,26 +171,21 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         auto surface = cmd->GetNamedArgument("surface");
         if (surface)
         {
-            std::cout << "Found a surface color for this mesh/generator instance " << std::endl;
             auto surfaceEntityNameExpr = surface->GetArgument(
                 0)[0]; // Returns a casted AExpr that was an AIdent before casting
             auto surfaceIdentifier = static_cast<AST::AIdent*>(&surfaceEntityNameExpr)->ToString(); // Downcast it back to an AIdent
             auto surfaceEntity = GEnv.Scene->FindEntity(surfaceIdentifier);
             if (surfaceEntity)
                 sceneNode->SetSurface(dynamic_cast<CSurface*>(surfaceEntity.Get()));
+            
         }
 
         auto entityName = cmd->GetPositionalIdentAsString(1);
         auto entity = GEnv.Scene->FindEntity(entityName);
         if (entity)
-        {
             sceneNode->SetEntity(entity);
-            auto surface = cmd->GetNamedArgument("surface");
-        }
         else if (auto group = GEnv.Scene->FindGroup(entityName)) // If the entityName is a group identifier
-        {
             group->AddParent(sceneNode);
-        }
         else
             throw AST::CSemanticError(
                 tc::StringPrintf("Instantiation failed, unknown generator: %s", entityName.c_str()),

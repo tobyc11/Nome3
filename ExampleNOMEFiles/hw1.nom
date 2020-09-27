@@ -1,0 +1,70 @@
+point p1 (0 2 1) endpoint
+point p2 (1 0 1) endpoint
+point p3 (-1 0 1) endpoint
+circle testcircle (20 1) endcircle
+torus torus1 (5 5 0.1 180 360 60) endtorus
+torus torus2 (5 5 0.1 180 360 30) endtorus
+mesh triangle
+    face f1 (p1 p2 p3) endface
+endmesh
+
+group diamond
+	instance triangle0 triangle endinstance
+	instance triangle1 triangle rotate (0 1 0) (90) translate (-1 0 1) endinstance
+	instance triangle1 triangle rotate (0 0 1) (180) endinstance
+	instance triangle1 triangle rotate (0 0 1) (180) rotate (0 1 0) (90) translate (-1 0 1) endinstance
+endgroup
+
+group diamonds_in_circle
+	instance diamond_main diamond endinstance
+	instance diamond1 diamond scale(0.5 0.5 0.5) translate (1.5 0 0.5) endinstance
+	instance diamond2 diamond scale(0.5 0.5 0.5) translate (-1.5 0 0.5) endinstance
+	instance diamond1 diamond scale(0.5 0.5 0.5) translate (0 0 -1) endinstance
+	instance diamond1 diamond scale(0.5 0.5 0.5) translate (0 0 2) endinstance
+
+	instance circle1 testcircle rotate (1 0 0) (90) translate (0 0 0.5) scale (2 2 2) endinstance
+	instance circle2 testcircle rotate (0 0 1) (90) translate (0 0 0.5) scale (2 2 2) endinstance
+	instance circle3 testcircle rotate (0 1 0) (90) translate (0 0 0.5) scale (2 2 2) endinstance
+endgroup
+
+group four_torus
+	instance t1 torus1 scale (2 2 2) rotate (1 0 0) (45) translate (0 0 5) endinstance
+	instance t1 torus1 scale (2 2 2) rotate (1 0 0) (225) translate (0 0 5) endinstance
+	instance t1 torus1 scale (2 2 2) rotate (1 0 0) (-45) translate (0 0 5) endinstance
+	instance t1 torus1 scale (2 2 2) rotate (1 0 0) (-225) translate (0 0 5) endinstance
+endgroup
+
+group four_torus2
+	instance t1 torus2 scale (2 2 2) rotate (1 0 0) (45) translate (0 0 5) endinstance
+	instance t1 torus2 scale (2 2 2) rotate (1 0 0) (225) translate (0 0 5) endinstance
+	instance t1 torus2 scale (2 2 2) rotate (1 0 0) (-45) translate (0 0 5) endinstance
+	instance t1 torus2 scale (2 2 2) rotate (1 0 0) (-225) translate (0 0 5) endinstance
+endgroup
+
+group supercircle
+	instance ftorus1 four_torus2 endinstance
+	instance ftorus1 four_torus2 rotate (0 1 0) (90) translate (-5 0 5) endinstance
+
+	instance dc2 diamonds_in_circle scale (5 5 5) endinstance
+	instance dc1 diamonds_in_circle translate (3 3 0) endinstance
+	instance dc1 diamonds_in_circle translate (3 -3 0) endinstance
+	instance dc1 diamonds_in_circle translate (-3 -3 0) endinstance
+	instance dc1 diamonds_in_circle translate (-3 3 0) endinstance
+	instance dc1 diamonds_in_circle translate (3 3 8) endinstance
+	instance dc1 diamonds_in_circle translate (3 -3 8) endinstance
+	instance dc1 diamonds_in_circle translate (-3 -3 8) endinstance
+	instance dc1 diamonds_in_circle translate (-3 3 8) endinstance
+endgroup
+
+instance ftorus1 four_torus scale (5 5 5) translate (0 0 -25) endinstance
+instance ftorus1 four_torus rotate (0 1 0) (90) scale (5 5 5) translate (-25 0 0) endinstance
+instance dcircle0 diamonds_in_circle scale (25 25 25) translate (0 0 -25) endinstance
+instance scircle1 supercircle translate (20 20 15) endinstance
+instance scircle1 supercircle translate (20 -20 15) endinstance
+instance scircle1 supercircle translate (-20 20 15) endinstance
+instance scircle1 supercircle translate (-20 -20 15) endinstance
+
+instance scircle1 supercircle translate (20 20 -25) endinstance
+instance scircle1 supercircle translate (20 -20 -25) endinstance
+instance scircle1 supercircle translate (-20 20 -25) endinstance
+instance scircle1 supercircle translate (-20 -20 -25) endinstance

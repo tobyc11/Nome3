@@ -1,0 +1,38 @@
+bank circle_slider
+  set num_vert 20 5 100 1
+  set radius 1 1 100 1
+endbank
+
+circle testcircle ({expr $circle_slider.num_vert} {expr $circle_slider.radius}) endcircle
+
+group circles
+	instance circle1 testcircle scale (0.1, 0.1, 0.1) translate (0, 0, ($circle_slider.radius ^ 2.0 - ((0.1 * $circle_slider.radius) ^ 2.0)) ^ 0.5) endinstance
+	instance circle2 testcircle scale (0.2, 0.2, 0.2) translate (0, 0, ($circle_slider.radius ^ 2.0 - ((0.2 * $circle_slider.radius) ^ 2.0)) ^ 0.5) endinstance
+	instance circle3 testcircle scale (0.3, 0.3, 0.3) translate (0, 0, ($circle_slider.radius ^ 2.0 - ((0.3 * $circle_slider.radius) ^ 2.0)) ^ 0.5) endinstance
+	instance circle4 testcircle scale (0.4, 0.4, 0.4) translate (0, 0, ($circle_slider.radius ^ 2.0 - ((0.4 * $circle_slider.radius) ^ 2.0)) ^ 0.5) endinstance
+	instance circle5 testcircle scale (0.5, 0.5, 0.5) translate (0, 0, ($circle_slider.radius ^ 2.0 - ((0.5 * $circle_slider.radius) ^ 2.0)) ^ 0.5) endinstance
+	instance circle6 testcircle scale (0.6, 0.6, 0.6) translate (0, 0, ($circle_slider.radius ^ 2.0 - ((0.6 * $circle_slider.radius) ^ 2.0)) ^ 0.5) endinstance
+	instance circle7 testcircle scale (0.7, 0.7, 0.7) translate (0, 0, ($circle_slider.radius ^ 2.0 - ((0.7 * $circle_slider.radius) ^ 2.0)) ^ 0.5) endinstance
+	instance circle8 testcircle scale (0.8, 0.8, 0.8) translate (0, 0, ($circle_slider.radius ^ 2.0 - ((0.8 * $circle_slider.radius) ^ 2.0)) ^ 0.5) endinstance
+	instance circle9 testcircle scale (0.9, 0.9, 0.9) translate (0, 0, ($circle_slider.radius ^ 2.0 - ((0.9 * $circle_slider.radius) ^ 2.0)) ^ 0.5) endinstance
+	
+	instance circle10 testcircle endinstance
+	instance circle11 testcircle scale (0.1, 0.1, 0.1) translate (0, 0, -(($circle_slider.radius ^ 2.0 - ((0.1 * $circle_slider.radius) ^ 2.0)) ^ 0.5)) endinstance
+	instance circle12 testcircle scale (0.2, 0.2, 0.2) translate (0, 0, -(($circle_slider.radius ^ 2.0 - ((0.2 * $circle_slider.radius) ^ 2.0)) ^ 0.5)) endinstance
+	instance circle13 testcircle scale (0.3, 0.3, 0.3) translate (0, 0, -(($circle_slider.radius ^ 2.0 - ((0.3 * $circle_slider.radius) ^ 2.0)) ^ 0.5)) endinstance
+	instance circle14 testcircle scale (0.4, 0.4, 0.4) translate (0, 0, -(($circle_slider.radius ^ 2.0 - ((0.4 * $circle_slider.radius) ^ 2.0)) ^ 0.5)) endinstance
+	instance circle15 testcircle scale (0.5, 0.5, 0.5) translate (0, 0, -(($circle_slider.radius ^ 2.0 - ((0.5 * $circle_slider.radius) ^ 2.0)) ^ 0.5)) endinstance
+	instance circle16 testcircle scale (0.6, 0.6, 0.6) translate (0, 0, -(($circle_slider.radius ^ 2.0 - ((0.6 * $circle_slider.radius) ^ 2.0)) ^ 0.5)) endinstance
+	instance circle17 testcircle scale (0.7, 0.7, 0.7) translate (0, 0, -(($circle_slider.radius ^ 2.0 - ((0.7 * $circle_slider.radius) ^ 2.0)) ^ 0.5)) endinstance
+	instance circle18 testcircle scale (0.8, 0.8, 0.8) translate (0, 0, -(($circle_slider.radius ^ 2.0 - ((0.8 * $circle_slider.radius) ^ 2.0)) ^ 0.5)) endinstance
+	instance circle19 testcircle scale (0.9, 0.9, 0.9) translate (0, 0, -(($circle_slider.radius ^ 2.0 - ((0.9 * $circle_slider.radius) ^ 2.0)) ^ 0.5)) endinstance
+	
+	
+	instance circle20 testcircle scale (0.93, 0.93, 0.93) translate (0, 0, ($circle_slider.radius ^ 2.0 - ((0.93 * $circle_slider.radius) ^ 2.0)) ^ 0.5) endinstance
+	instance circle21 testcircle scale (0.97, 0.97, 0.97) translate (0, 0, ($circle_slider.radius ^ 2.0 - ((0.97 * $circle_slider.radius) ^ 2.0)) ^ 0.5) endinstance
+	
+	instance circle22 testcircle scale (0.93, 0.93, 0.93) translate (0, 0, -(($circle_slider.radius ^ 2.0 - ((0.93 * $circle_slider.radius) ^ 2.0)) ^ 0.5)) endinstance
+	instance circle23 testcircle scale (0.97, 0.97, 0.97) translate (0, 0, -(($circle_slider.radius ^ 2.0 - ((0.97 * $circle_slider.radius) ^ 2.0)) ^ 0.5)) endinstance
+endgroup 
+
+instance circles_inst circles endinstance

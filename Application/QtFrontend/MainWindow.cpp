@@ -162,9 +162,9 @@ void CMainWindow::on_actionMerge_triggered()
             merger->MergeIn(*mesh);
     });
     // TODO: Next 3 lines are super buggy, but needed to perform Catmull. Need to figure out why can open another file (or reopen/reload the same file) after merging. Often crashes when used on larger scenes.
-    /*Scene = new Scene::CScene();
-    Scene::GEnv.Scene = Scene.Get();
-    PostloadSetup();*/
+    //Scene = new Scene::CScene();
+    //Scene::GEnv.Scene = Scene.Get();
+    //PostloadSetup();
 
     Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
     auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices. 

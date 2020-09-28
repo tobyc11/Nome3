@@ -66,11 +66,11 @@ void CInteractiveMesh::UpdateGeometry()
             this->addComponent(GeometryRenderer);
 
             // Update or create the entity for drawing vertices
-            if (!PointEntity)
+            if (!PointEntity) 
             {
                 PointEntity = new Qt3DCore::QEntity(this);
 
-                auto xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
+                auto xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml"); //this uses instanceColor, and also uses LineShading.frag for final color
                 auto* lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
                 PointMaterial = lineMat;
                 PointMaterial->setParent(this);
@@ -156,7 +156,6 @@ void CInteractiveMesh::UpdateMaterial()
     auto surface = SceneTreeNode->GetOwner()->GetSurface();
     if (LineMaterial && surface)
     {
-        // it's not entering here
         auto* lineMat = dynamic_cast<CXMLMaterial*>(LineMaterial);
         lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
     }

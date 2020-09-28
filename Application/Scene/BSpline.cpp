@@ -89,41 +89,20 @@ void CBSpline::UpdateEntity() {
     AddLineStrip("curve", handles);
 }
 
-void CBSpline::initializeColors(float r, float g, float b) { // RANDY THIS DOESN"T WORK FOR MORE THAN THAN ONE INSTANCE OF THIS ENTITY. IF IT"S A PROPERTY OF THE INSTANCE, THEN THEY WILL BOTH POINT TO THE SAME ENTITY (AND HENCE PROPERTIES)
-    ColorRGBvals.push_back(r); 
-    ColorRGBvals.push_back(g);
-    ColorRGBvals.push_back(b);
-}
+
 
 void CBSpline::Draw(IDebugDraw* draw)
 {
-    if (ColorRGBvals.size() == 0)
+    tc::Color c1 = tc::Color::YELLOW;
+    tc::Color c2 = tc::Color::RED;
+    auto iter = SamplePositions.begin();
+    while (iter != SamplePositions.end() - 1)
     {
-        tc::Color c1 = tc::Color::YELLOW;
-        tc::Color c2 = tc::Color::RED;
-        auto iter = SamplePositions.begin();
-        while (iter != SamplePositions.end() - 1)
-        {
-            const auto& p0 = *iter;
-            const auto& p1 = *(++iter);
-            draw->LineSegment(p0, c1, p1, c2);
-            std::swap(c1, c2);
-        }
+        const auto& p0 = *iter;
+        const auto& p1 = *(++iter);
+        draw->LineSegment(p0, c1, p1, c2);
+        std::swap(c1, c2);
     }
-    else
-    {
-        tc::Color c1 = tc::Color(ColorRGBvals[0], ColorRGBvals[1], ColorRGBvals[2]);
-        tc::Color c2 = tc::Color(ColorRGBvals[0], ColorRGBvals[1], ColorRGBvals[2]);
-        auto iter = SamplePositions.begin();
-        while (iter != SamplePositions.end() - 1)
-        {
-            const auto& p0 = *iter;
-            const auto& p1 = *(++iter);
-            draw->LineSegment(p0, c1, p1, c2);
-            std::swap(c1, c2);
-        }
-    }
-   
 }
 
 }

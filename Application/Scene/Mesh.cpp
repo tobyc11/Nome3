@@ -14,7 +14,7 @@ DEFINE_META_OBJECT(CMesh)
 }
 
 #define VERT_COLOR 255, 255, 255
-#define VERT_SEL_COLOR 255, 255, 100
+#define VERT_SEL_COLOR 0, 255, 0
 
 CMesh::CMesh() = default;
 
@@ -291,6 +291,9 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc:
         tc::Vector3 projected = localRay.Project(pos);
         auto dist = (pos - projected).Length();
         auto t = (localRay.Origin - projected).Length();
+
+        //std::cout << std::to_string(dist) + "dist" << std::endl;
+        //std::cout << t << std::endl;
         if (dist < std::min(0.005f * t, 0.25f))
         {
             result.emplace_back(t, instPrefix + pair.first);

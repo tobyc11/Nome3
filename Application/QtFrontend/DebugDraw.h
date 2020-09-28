@@ -21,7 +21,8 @@ public:
     void LineSegment(tc::Vector3 from, tc::Vector3 to) override;
 
     void DrawPoint(tc::Vector3 pos, tc::Color color) override;
-    void LineSegment(tc::Vector3 from, tc::Color fromColor, tc::Vector3 to, tc::Color toColor) override;
+    void LineSegment(tc::Vector3 from, tc::Color fromColor, tc::Vector3 to,
+                     tc::Color toColor) override;
 
 private:
     QByteArray PointData;

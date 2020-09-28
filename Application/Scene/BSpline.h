@@ -41,13 +41,11 @@ public:
     void UpdateEntity() override;
     void Draw(IDebugDraw* draw) override;
     float NFactor(int i, int j, float t);
-    void initializeColors(float r, float g, float b);  // 9/24 added
 
 private:
     CBSplineMath Math;
     bool bClosed = false;
     std::vector<Vector3> SamplePositions;
-    std::vector<float> ColorRGBvals; //9/24 added
 };
 
 }

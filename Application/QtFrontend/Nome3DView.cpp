@@ -186,9 +186,7 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
         {
             const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
             auto localRay = ray.Transformed(l2w.Inverse());
-            localRay.Direction =
-                localRay.Direction
-                    .Normalized(); // // Normalize to fix "scale" error caused by l2w.Inverse()
+            localRay.Direction = localRay.Direction.Normalized(); // // Normalize to fix "scale" error caused by l2w.Inverse()
             auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
             auto pickResults = meshInst->PickVertices(localRay);
             for (const auto& [dist, name] : pickResults)

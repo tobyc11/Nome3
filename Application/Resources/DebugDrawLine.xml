@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <Material>
-    <Parameter name="instanceColor" value="vec3: 1.0 1.0 1.0" />
+    <Parameter name="instanceColor" value="vec3: 0.0 0.0 0.0" />
     <Effect>
         <Technique>
             <FilterKey name="renderingStyle" value="forward" />

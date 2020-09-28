@@ -109,6 +109,7 @@ void CMesh::AddFace(const std::string& name, const std::vector<std::string>& fac
 
 void CMesh::SetFaceColor(const std::string& name, CMeshImpl::Color color) {
     auto face = NameToFace.at(name);
+    Mesh.request_face_colors();
     Mesh.set_color(face, color);
 }
 

@@ -15,9 +15,9 @@ void CSurface::UpdateEntity() {
     Super::UpdateEntity();
 
     info.surfacename = GetName();
-    info.ColorR = ColorR.GetValue(0.0f);
-    info.ColorG = ColorG.GetValue(0.0f);
-    info.ColorB = ColorB.GetValue(0.0f);
+    info.Color = {ColorR.GetValue(0.0f), ColorG.GetValue(0.0f), ColorB.GetValue(0.0f)};
+    Surface.UpdateValue(&info);
+    SetValid(true);
 }
 
 }

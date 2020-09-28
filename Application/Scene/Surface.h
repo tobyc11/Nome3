@@ -7,9 +7,7 @@ namespace Nome::Scene
 struct CSurfaceInfo {
 
     std::string surfacename;
-    float ColorR;
-    float ColorG;
-    float ColorB;
+    Vector3 Color;
 
 };
 

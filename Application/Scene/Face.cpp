@@ -84,6 +84,10 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
     }
 
     mesh->AddFace(GetName(), nameList);
+    auto* surface = Surface.GetValue(0, nullptr);
+    Vector3 rgb = surface->Color;
+    CMeshImpl::Color cols = CMeshImpl::Color(rgb.x, rgb.y, rgb.z);
+    mesh->SetFaceColor(GetName(), cols);
     return true;
 }
 
@@ -108,7 +112,7 @@ AST::ACommand* CFace::MakeCommandNode(AST::CASTContext& ctx, AST::ACommand* pare
     for (const auto& pointName : pointNames)
         identList.push_back(ctx.MakeIdent(pointName));
     faceNode->PushPositionalArgument(ctx.MakeVector(identList));
-
+    faceNode->AddNamedArgument(ctx.Make<AST::ANamedArgument>(ctx.MakeToken("surface")));
     return faceNode;
 }
 

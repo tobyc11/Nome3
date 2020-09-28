@@ -54,6 +54,8 @@ public:
     void SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexHandle> vnames,
                      std::map<std::string, CMeshImpl::FaceHandle> fnames);
 
+    void SetFaceColor(const std::string& name, CMeshImpl::Color color);
+
     bool IsInstantiable() override;
     CEntity* Instantiate(CSceneTreeNode* treeNode) override;
     AST::ACommand* SyncToAST(AST::CASTContext& ctx, bool createNewNode) override;

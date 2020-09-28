@@ -2,6 +2,9 @@
 #include "Point.h"
 #include <Flow/FlowNodeArray.h>
 #include "Surface.h"
+#include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+
+typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
 
 namespace Nome::Scene
 {

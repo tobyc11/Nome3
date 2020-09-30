@@ -3,7 +3,6 @@
 #include "Point.h"
 #include "Polyline.h"
 #include "SweepControlPoint.h"
-#include "Surface.h"
 #include <Flow/FlowNode.h>
 #include <Flow/FlowNodeArray.h>
 #include <Parsing/SyntaxTree.h>
@@ -187,15 +186,17 @@ bool TBindingTranslator<Flow::TInput<float>>::FromASTToValue(AST::ACommand* comm
 
 template <>
 bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command,
-                                                             const CCommandSubpart& subpart,
-                                                             std::string& value)
+                                                     const CCommandSubpart& subpart,
+                                                     std::string& value)
 {
     auto* ident = subpart.GetExpr(command);
-    if (ident == NULL) { return false; }
+    if (ident == NULL)
+    {
+        return false;
+    }
 
     if (ident->GetKind() != AST::EKind::Ident)
-        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident",
-                                  command);
+        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident", command);
 
     value = static_cast<const AST::AIdent*>(ident)->ToString();
 
@@ -206,7 +207,10 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
     AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CVertexInfo*>& value)
 {
     auto* vec = subpart.GetExpr(command);
-    if (vec == NULL) { return false; }
+    if (vec == NULL)
+    {
+        return false;
+    }
 
     if (vec->GetKind() != AST::EKind::Vector)
         throw AST::CSemanticError("TInputArray<CVertexInfo*> is not matched with a vector",
@@ -229,14 +233,16 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
 
 template <>
 bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(
-        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CPolylineInfo*>& value)
+    AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CPolylineInfo*>& value)
 {
     auto* ident = subpart.GetExpr(command);
-    if (ident == NULL) { return false; }
+    if (ident == NULL)
+    {
+        return false;
+    }
 
     if (ident->GetKind() != AST::EKind::Ident)
-        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident",
-                                  command);
+        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident", command);
 
     std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
     TAutoPtr<CEntity> entity = GEnv.Scene->FindEntity(identVal);
@@ -259,10 +265,14 @@ bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(
 
 template <>
 bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
-        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CControlPointInfo*>& value)
+    AST::ACommand* command, const CCommandSubpart& subpart,
+    Flow::TInputArray<CControlPointInfo*>& value)
 {
     auto* vec = subpart.GetExpr(command);
-    if (vec == NULL) { return false; }
+    if (vec == NULL)
+    {
+        return false;
+    }
 
     if (vec->GetKind() != AST::EKind::Vector)
         throw AST::CSemanticError("TInputArray<CControlPointInfo*> is not matched with a vector",
@@ -287,37 +297,6 @@ bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
             value.Connect(sweepControlPoint->SweepControlPoint);
         }
     }
-    return true;
-}
-
-
-template <>
-bool TBindingTranslator<Flow::TInputArray<CSurfaceInfo*>>::FromASTToValue(
-        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CSurfaceInfo*>& value)
-{
-    auto* ident = subpart.GetExpr(command);
-    if (ident == NULL) { return false; }
-
-    if (ident->GetKind() != AST::EKind::Ident)
-        throw AST::CSemanticError("TInput<CSurfaceInfo*> is not matched with a Ident",
-                        command);
-
-    std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
-    TAutoPtr<CEntity> entity = GEnv.Scene->FindEntity(identVal);
-    if (!entity)
-    {
-        throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()),
-                        ident);
-    }
-
-    CSurface* surf = dynamic_cast<CSurface*>(entity.Get());
-    if (!surf)
-    {
-        throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a surface", identVal.c_str()),
-                        ident);
-    }
-
-    value.Connect(surf->Surface);
     return true;
 }
 

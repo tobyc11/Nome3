@@ -171,6 +171,22 @@ void CNome3DView::PostSceneUpdate()
     }
 }
 
+// Randy added 9/27
+void CNome3DView::ClearSelectedVertices() { 
+    SelectedVertices.clear(); 
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            meshInst->DeselectAll();
+        }
+    });
+}
+
 void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
 {
     if (!additive)
@@ -197,6 +213,12 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
     });
 
     std::sort(hits.begin(), hits.end());
+    /*
+    if (!hits.empty()) // 9/30 change. tring to make vertex selection more user-friendly.
+    {
+        hits.resize(1); 
+    }*/
+
     if (hits.size() == 1)
     {
         const auto& [dist, meshInst, vertName] = hits[0];
@@ -253,6 +275,7 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
     }
 }
 
+// Currently not used
 Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
 {
     const float size = 100.0f;

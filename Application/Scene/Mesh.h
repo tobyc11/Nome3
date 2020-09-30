@@ -10,13 +10,11 @@
 #undef max
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 
-
 #include <map>
 #include <set>
 #include <utility>
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
-
 
 namespace Nome::Scene
 {
@@ -53,8 +51,6 @@ public:
 
     void SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexHandle> vnames,
                      std::map<std::string, CMeshImpl::FaceHandle> fnames);
-
-    void SetFaceColor(const std::string& name, CMeshImpl::Color color);
 
     bool IsInstantiable() override;
     CEntity* Instantiate(CSceneTreeNode* treeNode) override;

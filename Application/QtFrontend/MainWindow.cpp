@@ -194,7 +194,6 @@ void CMainWindow::on_actionSubdivide_triggered()
         }
         
     });
-
     Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(
         merger)); 
     auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); 
@@ -223,6 +222,7 @@ void CMainWindow::on_actionAddFace_triggered()
         return;
     }
     TemporaryMeshManager->AddFace(verts);
+    Nome3DView->ClearSelectedVertices(); // Randy added 9/27
 }
 
 void CMainWindow::on_actionAddPolyline_triggered()
@@ -234,6 +234,7 @@ void CMainWindow::on_actionAddPolyline_triggered()
         return;
     }
     TemporaryMeshManager->AddPolyline(verts);
+    Nome3DView->ClearSelectedVertices(); // Randy added 9/27
 }
 
 

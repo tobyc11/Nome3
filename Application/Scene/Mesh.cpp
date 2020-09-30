@@ -107,11 +107,6 @@ void CMesh::AddFace(const std::string& name, const std::vector<std::string>& fac
     AddFace(name, faceVHandles);
 }
 
-void CMesh::SetFaceColor(const std::string& name, CMeshImpl::Color color) {
-    auto face = NameToFace.at(name);
-    Mesh.request_face_colors();
-    Mesh.set_color(face, color);
-}
 
 void CMesh::AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints)
 {
@@ -210,7 +205,6 @@ void CMeshInstance::UpdateEntity()
     Mesh.request_vertex_colors();
     Mesh.request_edge_status();
     Mesh.request_face_status();
-    Mesh.request_face_colors();
     for (auto vH : Mesh.vertices())
     {
         Mesh.set_color(vH, { VERT_COLOR });

@@ -1,7 +1,6 @@
 #pragma once
 #include "Point.h"
 #include <Flow/FlowNodeArray.h>
-#include "Surface.h"
 
 namespace Nome::Scene
 {
@@ -13,7 +12,7 @@ class CFace : public CEntity
 {
     // Face points, in order
     DEFINE_INPUT_ARRAY(CVertexInfo*, Points) { MarkDirty(); }
-    DEFINE_INPUT_ARRAY(CSurfaceInfo*, Surface) { MarkDirty(); }
+
     DEFINE_OUTPUT_WITH_UPDATE(CFace*, Face) { UpdateEntity(); }
 
 public:

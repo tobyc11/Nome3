@@ -1,3 +1,4 @@
+
 #include "Face.h"
 #include "Mesh.h"
 #include <StringUtils.h>
@@ -8,7 +9,6 @@ namespace Nome::Scene
 DEFINE_META_OBJECT(CFace)
 {
     BindPositionalArgument(&CFace::Points, 1);
-    BindNamedArgument(&CFace::Surface, "surface", 0);
     // Handle argSurface
     // Handle parent mesh connection
 }
@@ -82,12 +82,7 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
         mesh->AddVertex(newName, point->Position);
         nameList.push_back(newName);
     }
-
     mesh->AddFace(GetName(), nameList);
-    auto* surface = Surface.GetValue(0, nullptr);
-    Vector3 rgb = surface->Color;
-    CMeshImpl::Color cols = CMeshImpl::Color(rgb.x, rgb.y, rgb.z);
-    mesh->SetFaceColor(GetName(), cols);
     return true;
 }
 
@@ -101,7 +96,6 @@ AST::ACommand* CFace::MakeCommandNode(AST::CASTContext& ctx, AST::ACommand* pare
     else
         faceLocalName = GetName().substr(parent->GetName().length() + 1);
     auto* faceNode = ctx.Make<AST::ACommand>(ctx.MakeToken("face"), ctx.MakeToken("endface"));
-
     faceNode->PushPositionalArgument(ctx.MakeIdent(faceLocalName)); // 1st positional arg is name
     // 2nd positional arg is point ident vector
     auto pointNames = Points.MapOutput<std::string>([](const auto& output) {
@@ -112,7 +106,6 @@ AST::ACommand* CFace::MakeCommandNode(AST::CASTContext& ctx, AST::ACommand* pare
     for (const auto& pointName : pointNames)
         identList.push_back(ctx.MakeIdent(pointName));
     faceNode->PushPositionalArgument(ctx.MakeVector(identList));
-    faceNode->AddNamedArgument(ctx.Make<AST::ANamedArgument>(ctx.MakeToken("surface")));
     return faceNode;
 }
 

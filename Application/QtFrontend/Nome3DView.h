@@ -23,6 +23,7 @@ public:
         return SelectedVertices;
     }
 
+    void ClearSelectedVertices(); // Randy added on 9/27
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();

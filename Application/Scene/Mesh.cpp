@@ -295,7 +295,7 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc:
 
         //std::cout << std::to_string(dist) + "dist" << std::endl;
         //std::cout << t << std::endl;
-        if (dist < std::min(0.005f * t, 0.25f))
+        if (dist < std::min(0.01f * t, 0.25f))
         {
             result.emplace_back(t, instPrefix + pair.first);
         }

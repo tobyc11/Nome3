@@ -114,7 +114,7 @@ void CInteractiveMesh::UpdateMaterial()
             instanceColor.setZ(surface->ColorB.GetValue(1.0f));
         }
     }
-    else // else, the scenetreenode is within a group, and we keep bubbling up (going up the tree) until we get to an instance scene node with the color specified. 
+    else // else, the scenetreenode is within a group, and we keep bubbling up from where we are (going up the tree) until we get to an instance scene node that has a surface color
     {
         bool setColor = false;
         auto currNode = SceneTreeNode;

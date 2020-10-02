@@ -172,8 +172,9 @@ void CNome3DView::PostSceneUpdate()
 }
 
 // Randy added 9/27
-void CNome3DView::ClearSelectedVertices() { 
-    SelectedVertices.clear(); 
+void CNome3DView::ClearSelectedVertices()
+{
+    SelectedVertices.clear();
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
         auto* entity = node->GetInstanceEntity();
@@ -202,21 +203,24 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
         {
             const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
             auto localRay = ray.Transformed(l2w.Inverse());
-            localRay.Direction = localRay.Direction.Normalized(); // // Normalize to fix "scale" error caused by l2w.Inverse()
+            localRay.Direction =
+                localRay.Direction
+                    .Normalized(); // // Normalize to fix "scale" error caused by l2w.Inverse()
             auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
             auto pickResults = meshInst->PickVertices(localRay);
             for (const auto& [dist, name] : pickResults)
                 hits.emplace_back(dist, meshInst, name);
-            if (!additive)
+            if (!additive) // If shift was not pressed and we attempt to select entity
                 meshInst->DeselectAll();
         }
     });
 
     std::sort(hits.begin(), hits.end());
     /*
-    if (!hits.empty()) // 9/30 change. tring to make vertex selection more user-friendly.
+    if (!hits.empty()) // 9/30 change. tring to make vertex selection more user-friendly. Nvm, not
+    using for now because it is misleading, may want to specify a face's vertex
     {
-        hits.resize(1); 
+        hits.resize(1);
     }*/
 
     if (hits.size() == 1)
@@ -258,6 +262,16 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
                 GFrtCtx->MainWindow->statusBar()->showMessage(
                     QString::fromStdString("Selected " + vertName));
                 meshInst->MarkAsSelected({ vertName }, true);
+
+                // Hacky way to highlight all vertices in the same location 
+                // Purpose is to make vert selection experience more user-friendly
+                 float selected_dist = round(dist*100);
+                 for (int i = 0; i < hits.size(); i++) {
+                     const auto& [dist, meshInst, vertName] = hits[i];
+                     if (round(dist*100) == selected_dist) {
+                         meshInst->MarkAsSelected({ vertName }, true);
+                     }
+                 }
             }
             dialog->close();
         });

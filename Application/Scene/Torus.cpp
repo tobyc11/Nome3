@@ -116,15 +116,20 @@ void CTorus::UpdateEntity()
             for (int i = 0; i < numPhi; i++)
             {
                 // CCW winding
-                // v1_next v1_i
-                // v2_next v2_i
                 int next = (i + 1) % numPhi;
                 int next_k = (k + 1) % numSegments;
                 std::vector<std::string> upperFace = {
+                    /* Old method was incorrectly CW (back face was showing in the front)
                     "v" + std::to_string(k + 1) + "_" + std::to_string(next),
                     "v" + std::to_string(k + 1) + "_" + std::to_string(i),
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(i),
-                    "v" + std::to_string(next_k + 1) + "_" + std::to_string(next)
+                    "v" + std::to_string(next_k + 1) + "_" + std::to_string(next)*/
+
+                    // CCW 
+                    "v" + std::to_string(next_k + 1) + "_" + std::to_string(next),
+                    "v" + std::to_string(next_k + 1) + "_" + std::to_string(i),
+                    "v" + std::to_string(k + 1) + "_" + std::to_string(i),
+                    "v" + std::to_string(k + 1) + "_" + std::to_string(next),
                 };
                 AddFace("f1_" + std::to_string(i), upperFace);
             }
@@ -137,8 +142,6 @@ void CTorus::UpdateEntity()
             for (int i = 0; i < numPhi; i++)
             {
                 // CCW winding
-                // v1_next v1_i
-                // v2_next v2_i
                 int next = (i + 1) % numPhi;
                 int next_k = (k + 1) % (numSegments + 1);
                 std::vector<std::string> upperFace = {

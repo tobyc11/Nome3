@@ -23,6 +23,7 @@ void CTemporaryMeshManager::ResetTemporaryMesh()
 
 
     // Make entity and its corresponding scene node
+    //Commented out on 9/30. Instead of creating a single tempMesh node, I'm now creating a tempMesh (dummyMesh) for each face added
     Scene->RemoveEntity("__tempMesh", true);
     TempMesh = new CMesh("__tempMesh");
     Scene->AddEntity(TempMesh);
@@ -39,18 +40,22 @@ void CTemporaryMeshManager::ResetTemporaryMesh()
 
 void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
 {
-    if (!TempMesh || !TempMeshNode)
-        ResetTemporaryMesh();
+    // 10/1: I am using a dummy mesh instead of the testMesh because the faces NEED To be connected in a single mesh!!!!!!!!
 
-    // This function should roughly mirror the structure of CASTSceneBuilder::VisitFace
-    const std::string entityNamePrefix = "__tempMesh.";
     const std::string faceName = "f" + std::to_string(FaceCounter);
-
-    TAutoPtr<CFace> face = new CFace(entityNamePrefix + faceName);
+    TAutoPtr<CFace> face = new CFace(faceName);
+    Scene->AddEntity(tc::static_pointer_cast<CEntity>(face)); // Add face as an entity. Technically, this step can be skipped because we are directly adding it to a single mesh below
     face->SetPointSourceNames(Scene, facePoints);
-    Scene->AddEntity(tc::static_pointer_cast<CEntity>(face));
+    TAutoPtr<CMesh> dummyMesh = new CMesh("Added" + faceName);
+    dummyMesh->Faces.Connect(face->Face); 
+    Scene->AddEntity(tc::static_pointer_cast<CEntity>(dummyMesh)); //needs to instanciated as a mesh face, not just a face
 
-    TempMesh->Faces.Connect(face->Face);
+    // added below two line to try to allow Add Face to work with temp mesh vertices
+    auto sceneNode = Scene->GetRootNode()->CreateChildNode("Added" + faceName);
+    auto entity = Scene->FindEntity("Added" + faceName); // needs to be the dummyMesh, instead of the face
+    sceneNode->SetEntity(entity); // this doesn't work right now because you can't create an instance of a single face
+
+    FaceCounter += 1;
 }
 
 void CTemporaryMeshManager::AddPolyline(const std::vector<std::string>& facePoints)
@@ -75,6 +80,7 @@ std::string CTemporaryMeshManager::CommitTemporaryMesh(AST::CASTContext& ctx,
                                                        const std::string& entityName,
                                                        const std::string& nodeName)
 {
+    
     if (!TempMesh || !TempMeshNode)
         return "";
 
@@ -82,6 +88,8 @@ std::string CTemporaryMeshManager::CommitTemporaryMesh(AST::CASTContext& ctx,
         throw std::runtime_error("Cannot rename the temporary mesh, new name already exists");
     if (!TempMeshNode->SetName(nodeName))
         throw std::runtime_error("Cannot rename the scene node to the desired name");
+    
+
 
     auto* meshCmd = TempMesh->SyncToAST(ctx, true);
     SourceMgr->AppendCmdEndOfFile(meshCmd);

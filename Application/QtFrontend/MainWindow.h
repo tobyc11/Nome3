@@ -41,8 +41,11 @@ private slots:
     void on_actionOpen_triggered();
     void on_actionReload_triggered();
     void on_actionSave_triggered();
+
+    /* 10/1 Commenting out to avoid annoying error message when opening executable
     void on_actionSceneAsObj_triggered();
     void on_actionSceneAsStl_triggered();
+    */
     void on_actionMerge_triggered();
     void on_actionSubdivide_triggered();
     void on_actionPoint_triggered();

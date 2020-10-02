@@ -240,12 +240,16 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
         auto* table = new QTableWidget();
         table->setRowCount(hits.size());
         table->setColumnCount(2);
+        QStringList titles; 
+        titles.append(QString::fromStdString("Closeness Rank"));
+        titles.append(QString::fromStdString("Vertex Name"));
+        table->setHorizontalHeaderLabels(titles);
         for (size_t i = 0; i < hits.size(); i++)
         {
             const auto& [dist, meshInst, vertName] = hits[i];
             auto* distWidget = new QTableWidgetItem(QString::number(dist));
             auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
-            table->setItem(i, 0, distWidget);
+            table->setItem(i, 0, distWidget); // i is row num, and 0 is col num
             table->setItem(i, 1, item);
         }
         layout1->addWidget(table);

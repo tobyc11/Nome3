@@ -133,6 +133,7 @@ void CMainWindow::on_actionSave_triggered()
     this->setWindowModified(false);
 }
 
+/* 10/1 Commenting out to avoid annoying error message on open
 void CMainWindow::on_actionSceneAsObj_triggered()
 {
     QMessageBox::information(this, tr("Sorry"), tr("This feature is in the works"));
@@ -144,7 +145,7 @@ void CMainWindow::on_actionSceneAsStl_triggered()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Scene as Stl"), "",
                                                     tr("Stl Files (*.stl);;All Files (*)"));
-}
+}*/
 
 void CMainWindow::on_actionMerge_triggered()
 {

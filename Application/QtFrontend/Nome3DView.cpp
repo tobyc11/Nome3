@@ -244,10 +244,19 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
         titles.append(QString::fromStdString("Closeness Rank"));
         titles.append(QString::fromStdString("Vertex Name"));
         table->setHorizontalHeaderLabels(titles);
+        int closenessRank = 1;
         for (size_t i = 0; i < hits.size(); i++)
         {
             const auto& [dist, meshInst, vertName] = hits[i];
-            auto* distWidget = new QTableWidgetItem(QString::number(dist));
+            if (i != 0) { 
+                const auto& [prevDist, prevMeshInst, prevVertName] = hits[i - 1];
+                if (round(dist * 100) != round(prevDist * 100)) {
+                    closenessRank += 1;
+                } 
+                // else, stay the same
+            } 
+
+            auto* distWidget = new QTableWidgetItem(QString::number(closenessRank));
             auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
             table->setItem(i, 0, distWidget); // i is row num, and 0 is col num
             table->setItem(i, 1, item);

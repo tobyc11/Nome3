@@ -1,6 +1,7 @@
 #include "ASTBinding.h"
 #include "Environment.h"
 #include "Point.h"
+#include "SweepPath.h"
 #include "Polyline.h"
 #include "SweepControlPoint.h"
 #include <Flow/FlowNode.h>
@@ -232,8 +233,8 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
 }
 
 template <>
-bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(
-    AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CPolylineInfo*>& value)
+bool TBindingTranslator<Flow::TInput<CSweepPathInfo*>>::FromASTToValue(
+    AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CSweepPathInfo*>& value)
 {
     auto* ident = subpart.GetExpr(command);
     if (ident == NULL)
@@ -242,7 +243,7 @@ bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(
     }
 
     if (ident->GetKind() != AST::EKind::Ident)
-        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident", command);
+        throw AST::CSemanticError("TInput<CSweepPathInfo*> is not matched with a Ident", command);
 
     std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
     TAutoPtr<CEntity> entity = GEnv.Scene->FindEntity(identVal);
@@ -252,14 +253,24 @@ bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(
                                   ident);
     }
 
-    CPolyline* polyline = dynamic_cast<CPolyline*>(entity.Get());
-    if (!polyline)
+    CSweepPath* path = dynamic_cast<CSweepPath*>(entity.Get());
+    if (!path)
     {
-        throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a polyline", identVal.c_str()),
+        throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a sweep path", identVal.c_str()),
                                   ident);
     }
 
-    value.Connect(polyline->Polyline);
+    auto& e = *entity.Get();
+    if (typeid(e) == typeid(CPolyline))
+    {
+        CPolyline* polyline = dynamic_cast<CPolyline*>(path);
+        value.Connect(polyline->Polyline);
+    }
+    else
+    {
+        throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a sweep path", identVal.c_str()),
+                                  ident);
+    }
     return true;
 }
 

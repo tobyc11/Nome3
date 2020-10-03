@@ -106,8 +106,8 @@ void CSweep::UpdateEntity()
     Super::UpdateEntity();
 
     // the last point is control arguments
-    CPolylineInfo *pathInfo = Path.GetValue(nullptr);
-    CPolylineInfo *crossSectionInfo = CrossSection.GetValue(nullptr);
+    CSweepPathInfo *pathInfo = Path.GetValue(nullptr);
+    CSweepPathInfo *crossSectionInfo = CrossSection.GetValue(nullptr);
 
     if (pathInfo == nullptr || crossSectionInfo == nullptr) { return; }
 

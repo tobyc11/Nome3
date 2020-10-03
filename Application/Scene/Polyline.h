@@ -1,28 +1,22 @@
 #pragma once
 #include "Mesh.h"
+#include "SweepPath.h"
 
 namespace Nome::Scene
 {
 
-struct CPolylineInfo
-{
-    std::vector<CVertexInfo*> Positions;
-    bool IsClosed;
-    std::string Name;
-};
-
-class CPolyline : public CMesh
+class CPolyline : public CSweepPath
 {
     DEFINE_INPUT_ARRAY(CVertexInfo*, Points) { MarkDirty(); }
 
-    DEFINE_OUTPUT_WITH_UPDATE(CPolylineInfo*, Polyline) { UpdateEntity(); }
+    DEFINE_OUTPUT_WITH_UPDATE(CSweepPathInfo*, Polyline) { UpdateEntity(); }
 
 public:
-    DECLARE_META_CLASS(CPolyline, CMesh);
+    DECLARE_META_CLASS(CPolyline, CSweepPath);
 
     CPolyline() = default;
     explicit CPolyline(std::string name)
-        : CMesh(std::move(name))
+        : CSweepPath(std::move(name))
     {
     }
 
@@ -33,9 +27,7 @@ public:
 
 private:
     bool bClosed = false;
-    CPolylineInfo PI;
     std::vector<std::string> PointSource;
-
 };
 
 }

@@ -3,6 +3,7 @@
 #include "Point.h"
 #include "SweepPath.h"
 #include "Polyline.h"
+#include "BSpline.h"
 #include "SweepControlPoint.h"
 #include <Flow/FlowNode.h>
 #include <Flow/FlowNodeArray.h>
@@ -197,7 +198,7 @@ bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command,
     }
 
     if (ident->GetKind() != AST::EKind::Ident)
-        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident", command);
+        throw AST::CSemanticError("Command is not matched with a Ident", command);
 
     value = static_cast<const AST::AIdent*>(ident)->ToString();
 
@@ -266,7 +267,11 @@ bool TBindingTranslator<Flow::TInput<CSweepPathInfo*>>::FromASTToValue(
         CPolyline* polyline = dynamic_cast<CPolyline*>(path);
         value.Connect(polyline->Polyline);
     }
-    else
+    else if (typeid(e) == typeid(CBSpline))
+    {
+        CBSpline* bspline = dynamic_cast<CBSpline*>(path);
+        value.Connect(bspline->BSpline);
+    } else
     {
         throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a sweep path", identVal.c_str()),
                                   ident);

@@ -1,5 +1,6 @@
 #pragma once
 #include "BezierSpline.h"
+#include "SweepPath.h"
 
 namespace Nome::Scene
 {
@@ -14,7 +15,7 @@ public:
     std::vector<float> GetDefaultKnots() override;
 };
 
-class CBSpline : public CMesh
+class CBSpline : public CSweepPath
 {
     DEFINE_INPUT(float, Order) { MarkDirty(); }
     DEFINE_INPUT(float, Segments) { MarkDirty(); }
@@ -25,13 +26,14 @@ class CBSpline : public CMesh
         UpdateEntity();
         Spline.UpdateValue(&Math);
     }
+    DEFINE_OUTPUT_WITH_UPDATE(CSweepPathInfo*, BSpline) { UpdateEntity(); }
 
 public:
-    DECLARE_META_CLASS(CBSpline, CMesh);
+    DECLARE_META_CLASS(CBSpline, CSweepPath);
 
     CBSpline() = default;
     explicit CBSpline(const std::string& name)
-        : CMesh(name)
+        : CSweepPath(name)
     {
     }
 
@@ -39,6 +41,7 @@ public:
     void SetClosed(bool closed);
     std::vector<float> GetDefKnots();
     void UpdateEntity() override;
+    void MarkDirty() override;
     void Draw(IDebugDraw* draw) override;
     float NFactor(int i, int j, float t);
 

@@ -180,7 +180,6 @@ void CMainWindow::on_actionSubdivide_triggered()
     Scene->Update();
     tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge"); 
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        //std::cout << node->GetOwner()->GetName() << std::endl;
         if (node->GetOwner()->GetName() == "globalMergeNode")
         {
             auto* entity = node->GetInstanceEntity(); // this is non-null if the entity is
@@ -201,17 +200,17 @@ void CMainWindow::on_actionSubdivide_triggered()
     sn->SetEntity(merger.Get());  
     
 }
-
+/* Randy temporarily commenting out. Point and Instance don't work.
 void CMainWindow::on_actionPoint_triggered() { }
 
-void CMainWindow::on_actionInstance_triggered() { }
+void CMainWindow::on_actionInstance_triggered() { }*/
 
 void CMainWindow::on_actionAbout_triggered()
 {
     QMessageBox::about(this, tr("About Nome"),
-                       tr("<b>Nome 3.0</b>\n"
+                       tr("<b>Nome 3.5</b>\n"
                           "Author:\n"
-                          "Toby Chen"));
+                          "Randy Fan"));
 }
 
 void CMainWindow::on_actionAddFace_triggered()
@@ -238,13 +237,17 @@ void CMainWindow::on_actionAddPolyline_triggered()
     Nome3DView->ClearSelectedVertices(); // Randy added 9/27
 }
 
+// Randy temporarily commenting out because Reloading serves the same purpose as this.
+//void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->ResetTemporaryMesh(); }
 
-void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->ResetTemporaryMesh(); }
 
-void CMainWindow::on_actionCommitTempMesh_triggered()
+void CMainWindow::on_actionCommitChanges_triggered()
 {
-    TemporaryMeshManager->CommitTemporaryMesh(
-        SourceMgr->GetASTContext(), MeshName->text().toStdString(), InstName->text().toStdString());
+    TemporaryMeshManager->CommitChanges(
+        SourceMgr
+            ->GetASTContext()); // 10/1 Randy commented the following out because MeshName and
+                                // InstName are not used anymore MeshName->text().toStdString(),
+                                // InstName->text().toStdString());
     this->setWindowModified(true);
 }
 
@@ -276,13 +279,14 @@ void CMainWindow::SetupUI()
         Nome3DView->show();
     }
 
+    /* 10/1 Temporarily commenting out due to tempmeshmanager changes
     // Qt Designer won't let us put text boxes into a toolbar, so we do it here
     InstName = new QLineEdit();
     InstName->setText("newInstance");
     MeshName = new QLineEdit();
     MeshName->setText("newMesh");
-    ui->toolBar->insertWidget(ui->actionCommitTempMesh, MeshName);
-    ui->toolBar->insertWidget(ui->actionCommitTempMesh, InstName);
+    ui->toolBar->insertWidget(ui->actionCommitChanges, MeshName);
+    ui->toolBar->insertWidget(ui->actionCommitChanges, InstName);*/
 
     // Connect signals that are not otherwise auto-connected
     connect(ui->actionExit, &QAction::triggered, this, &CMainWindow::close);

@@ -143,7 +143,8 @@ private:
     std::set<std::string> FacesToDelete;
 
     std::map<std::string, std::pair<CMeshInstancePoint*, uint32_t>> PickingVerts;
-    std::set<std::string> CurrSelectedVerts;
+    std::set<std::string> CurrSelectedVerts; // unique verts
+    std::set<std::string> CurrSelectedVertNames;  // a unique vert can be used in different meshes and have different names
 };
 
 class CVertexSelector : public Flow::CFlowNode

@@ -178,8 +178,8 @@ void CInteractiveMesh::InitInteractions()
             auto dir = wi - origin;
 
             tc::Ray ray({ origin.x(), origin.y(), origin.z() }, { dir.x(), dir.y(), dir.z() });
-            bool additive = pick->modifiers() & Qt::ShiftModifier;
-            GFrtCtx->NomeView->PickVertexWorldRay(ray, additive);
+            //bool additive = pick->modifiers() & Qt::ShiftModifier;
+            GFrtCtx->NomeView->PickVertexWorldRay(ray); // additive);
         }
     });
     this->addComponent(picker);

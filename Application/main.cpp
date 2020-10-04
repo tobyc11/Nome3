@@ -10,9 +10,9 @@ int main(int argc, char** argv)
     // Setup Qt
     QApplication application(argc, argv);
     QCoreApplication::setApplicationName("Nome");
-    QGuiApplication::setApplicationDisplayName("Nome 3.0");
+    QGuiApplication::setApplicationDisplayName("Nome 3.5");
     QCoreApplication::setOrganizationName("UCBerkeley");
-    QCoreApplication::setApplicationVersion("3.0");
+    QCoreApplication::setApplicationVersion("3.5");
 
     QCommandLineParser parser;
     QCommandLineOption detached3dview { QStringList() << "d"

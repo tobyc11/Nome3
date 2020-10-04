@@ -188,10 +188,9 @@ void CNome3DView::ClearSelectedVertices()
     });
 }
 
-void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
+void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
 {
-    if (!additive)
-        SelectedVertices.clear();
+
 
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
@@ -204,31 +203,32 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
             const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
             auto localRay = ray.Transformed(l2w.Inverse());
             localRay.Direction =
-                localRay.Direction
-                    .Normalized(); // // Normalize to fix "scale" error caused by l2w.Inverse()
+                localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
             auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
             auto pickResults = meshInst->PickVertices(localRay);
             for (const auto& [dist, name] : pickResults)
                 hits.emplace_back(dist, meshInst, name);
-            if (!additive) // If shift was not pressed and we attempt to select entity
-                meshInst->DeselectAll();
         }
     });
 
     std::sort(hits.begin(), hits.end());
-    /*
-    if (!hits.empty()) // 9/30 change. tring to make vertex selection more user-friendly. Nvm, not
-    using for now because it is misleading, may want to specify a face's vertex
-    {
-        hits.resize(1);
-    }*/
 
-    if (hits.size() == 1)
+    if (hits.size() == 1) // RANDY BUG IS HERE, I ONLY IMPLEMENTED S LOGIC 
     {
         const auto& [dist, meshInst, vertName] = hits[0];
-        SelectedVertices.push_back(vertName);
-        GFrtCtx->MainWindow->statusBar()->showMessage(
-            QString::fromStdString("Selected " + vertName));
+        std::vector<std::string>::iterator position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName); 
+        if (position == SelectedVertices.end())
+        { // if this vertex has not been selected before
+            SelectedVertices.push_back(vertName); // add vertex to selected vertices
+            GFrtCtx->MainWindow->statusBar()->showMessage(
+                QString::fromStdString("Selected " + vertName));
+        }
+        else // else, this vertex has been selected previously
+        {
+            SelectedVertices.erase(position);
+            GFrtCtx->MainWindow->statusBar()->showMessage(
+                QString::fromStdString("De-selected " + vertName));
+        }
         meshInst->MarkAsSelected({ vertName }, true);
     }
     else if (!hits.empty())
@@ -253,7 +253,7 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
                 if (round(dist * 100) != round(prevDist * 100)) {
                     closenessRank += 1;
                 } 
-                // else, stay the same
+                // else, closenessRank stay the same as prev as the distance is the same (vertices in same location)
             } 
 
             auto* distWidget = new QTableWidgetItem(QString::number(closenessRank));
@@ -271,18 +271,28 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
             {
                 int row = sel[0]->row();
                 const auto& [dist, meshInst, vertName] = hits[row];
-                SelectedVertices.push_back(vertName);
-                GFrtCtx->MainWindow->statusBar()->showMessage(
-                    QString::fromStdString("Selected " + vertName));
-                meshInst->MarkAsSelected({ vertName }, true);
+                std::vector<std::string>::iterator position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName); 
+                if (position == SelectedVertices.end()) { // if this vertex has not been selected before
+                    SelectedVertices.push_back(vertName); // add vertex to selected vertices
+                    GFrtCtx->MainWindow->statusBar()->showMessage(
+                        QString::fromStdString("Selected " + vertName));
+                }
+                else // else, this vertex has been selected previously
+                {
+                    SelectedVertices.erase(position); 
+                    GFrtCtx->MainWindow->statusBar()->showMessage(
+                        QString::fromStdString("De-selected " + vertName));
+                }
+               
 
-                // Hacky way to highlight all vertices in the same location 
-                // Purpose is to make vert selection experience more user-friendly
                  float selected_dist = round(dist*100);
+
+                 // mark all those that share the same location
                  for (int i = 0; i < hits.size(); i++) {
-                     const auto& [dist, meshInst, vertName] = hits[i];
+                     const auto& [dist, meshInst, overlapvertName] = hits[i]; 
                      if (round(dist*100) == selected_dist) {
-                         meshInst->MarkAsSelected({ vertName }, true);
+                        meshInst->MarkAsSelected({ overlapvertName }, true);
+                         
                      }
                  }
             }
@@ -298,6 +308,7 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray, bool additive)
     }
     else
     {
+
         GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
     }
 }

@@ -48,14 +48,18 @@ private slots:
     */
     void on_actionMerge_triggered();
     void on_actionSubdivide_triggered();
+
+    /*  10/1 Commenting out because these are not fully implemented right now
     void on_actionPoint_triggered();
     void on_actionInstance_triggered();
+    */
     void on_actionAbout_triggered();
 
     void on_actionAddFace_triggered();
     void on_actionAddPolyline_triggered(); 
-    void on_actionResetTempMesh_triggered();
-    void on_actionCommitTempMesh_triggered();
+    /* Randy temporarily commenting out due to temporarymeshmanager changes
+    void on_actionResetTempMesh_triggered(); */
+    void on_actionCommitChanges_triggered();
 
 private:
     // Load nome files into the current window, only call one of them
@@ -71,8 +75,8 @@ private:
 
     Ui::MainWindow* ui;
     std::unique_ptr<CNome3DView> Nome3DView;
-    QLineEdit* InstName;
-    QLineEdit* MeshName;
+    //QLineEdit* InstName; // Randy decided not to use this for now. This was originally intended to allow users to name their added faces/polylines
+    //QLineEdit* MeshName; // Randy decided not to use this for now. This was originally intended to allow users to name their added faces/polylines
     bool bDetached3DView = false;
 
     // Info about the currently open file

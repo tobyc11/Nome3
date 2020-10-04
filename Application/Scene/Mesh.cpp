@@ -151,13 +151,13 @@ AST::ACommand* CMesh::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
     size_t numFaces = Faces.GetSize();
     for (size_t i = 0; i < numFaces; i++)
     {
+        this->GetName(); 
         auto* pFace = Faces.GetValue(i, nullptr);
         // Test whether the face is a sub-entity of mine
         //   For any sub-entity, we also serialize their AST
         //   Otherwise, this should have been an `object` command, which is unimplemented rn
         if (!tc::FStringUtils::StartsWith(pFace->GetName(), this->GetName()))
             throw std::runtime_error("Mesh's child faces corruption");
-
         node->AddSubCommand(pFace->MakeCommandNode(ctx, node));
     }
     return node;
@@ -293,8 +293,6 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc:
         auto dist = (pos - projected).Length();
         auto t = (localRay.Origin - projected).Length();
 
-        //std::cout << std::to_string(dist) + "dist" << std::endl;
-        //std::cout << t << std::endl;
         if (dist < std::min(0.01f * t, 0.25f))
         {
             result.emplace_back(t, instPrefix + pair.first);
@@ -318,14 +316,29 @@ void CMeshInstance::MarkAsSelected(const std::set<std::string>& vertNames, bool 
         auto iter = NameToVert.find(name.substr(prefixLen));
         if (iter == NameToVert.end())
             continue;
-        CurrSelectedVerts.insert(name.substr(prefixLen));
+
         auto handle = iter->second;
         const auto& original = Mesh.color(handle);
         printf("Before: %d %d %d\n", original[0], original[1], original[2]);
-        if (bSel)
-            Mesh.set_color(handle, { VERT_SEL_COLOR });
-        else
+        if (CurrSelectedVertNames.find(name) == CurrSelectedVertNames.end()) { //if hasn't been selected before
+            if (bSel)
+                Mesh.set_color(handle, { VERT_SEL_COLOR });
+            else
+                Mesh.set_color(handle, { VERT_COLOR });
+            CurrSelectedVerts.insert(name.substr(prefixLen));
+            CurrSelectedVertNames.insert(name);
+        }
+        else // it has already been selected, so deselect
+        {
             Mesh.set_color(handle, { VERT_COLOR });
+            if (CurrSelectedVerts.find(name.substr(prefixLen)) != CurrSelectedVerts.end()) { // erase once
+                CurrSelectedVerts.erase(name.substr(prefixLen)); 
+            }
+            
+            CurrSelectedVertNames.erase(name);
+        }
+        
+     
     }
     GetSceneTreeNode()->SetEntityUpdated(true);
 }

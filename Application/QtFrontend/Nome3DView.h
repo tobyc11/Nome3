@@ -28,7 +28,7 @@ public:
     void UnloadScene();
     void PostSceneUpdate();
 
-    void PickVertexWorldRay(const tc::Ray& ray, bool additive = true);
+    void PickVertexWorldRay(const tc::Ray& ray);
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
 

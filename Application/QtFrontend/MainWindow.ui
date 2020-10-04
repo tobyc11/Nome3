@@ -30,20 +30,21 @@
     <addaction name="actionSave"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuHelp">
+   <widget class="QMenu" name="menuAbout">
     <property name="title">
-     <string>&amp;Help</string>
+     <string>&amp;About</string>
     </property>
     <addaction name="actionAbout"/>
     <addaction name="actionAboutQt"/>
    </widget>
-   <widget class="QMenu" name="menuAdd">
+    
+   <!--<widget class="QMenu" name="menuAdd">
     <property name="title">
      <string>&amp;Add</string>
     </property>
     <addaction name="actionPoint"/>
     <addaction name="actionInstance"/>
-   </widget>
+   </widget>-->
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>&amp;Edit</string>
@@ -53,13 +54,13 @@
     <addaction name="separator"/>
     <addaction name="actionAddFace"/>
     <addaction name="actionAddPolyline"/>
-    <addaction name="actionResetTempMesh"/>
-    <addaction name="actionCommitTempMesh"/>
+    <!--<addaction name="actionResetTempMesh"/>-->
+     <addaction name="actionCommitChanges"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuAdd"/>
+   <!--<addaction name="menuAdd"/>-->
    <addaction name="menuEdit"/>
-   <addaction name="menuHelp"/>
+   <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -74,9 +75,9 @@
    </attribute>
    <addaction name="actionAddFace"/>
    <addaction name="actionAddPolyline"/>
-   <addaction name="actionResetTempMesh"/>
-   <addaction name="separator"/>
-   <addaction name="actionCommitTempMesh"/>
+    <!--<addaction name="actionResetTempMesh"/>
+   <addaction name="separator"/>-->
+   <addaction name="actionCommitChanges"/>
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -115,7 +116,7 @@
     <string>About</string>
    </property>
   </action>
-  <action name="actionPoint">
+<!--  <action name="actionPoint">
    <property name="text">
     <string>&amp;Point</string>
    </property>
@@ -124,7 +125,7 @@
    <property name="text">
     <string>&amp;Instance</string>
    </property>
-  </action>
+  </action>-->
   <action name="actionReload">
    <property name="text">
     <string>&amp;Reload</string>
@@ -155,14 +156,14 @@
       <string>Add Polyline</string>
     </property>
   </action>
-  <action name="actionResetTempMesh">
+<!--  <action name="actionResetTempMesh">
    <property name="text">
     <string>Reset Temp Mesh</string>
    </property>
-  </action>
-  <action name="actionCommitTempMesh">
+  </action>-->
+  <action name="actionCommitChanges">
    <property name="text">
-    <string>Commit Temp Mesh</string>
+    <string>Commit Changes</string>
    </property>
   </action>
  </widget>

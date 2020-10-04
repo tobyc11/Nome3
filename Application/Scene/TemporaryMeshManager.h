@@ -26,8 +26,10 @@ public:
     void ResetTemporaryMesh();
     void AddFace(const std::vector<std::string>& facePoints);
     void AddPolyline(const std::vector<std::string>& facePoints);
-    std::string CommitTemporaryMesh(AST::CASTContext& ctx, const std::string& entityName,
-                                    const std::string& nodeName);
+    std::string CommitChanges(
+        AST::CASTContext& ctx); // const std::string& entityName, const std::string& nodeName);
+    std::vector<CSceneNode *> addedSceneNodes;
+    std::vector<CMesh *> addedMeshes;
 
 private:
     TAutoPtr<CScene> Scene;
@@ -42,7 +44,6 @@ private:
     
     unsigned int FaceCounter = 0;
     unsigned int num_polylines = 0;
-    unsigned int polyline_prev_num_points = 0;
 };
 
 }

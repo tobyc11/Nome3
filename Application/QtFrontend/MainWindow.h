@@ -42,23 +42,25 @@ private slots:
     void on_actionReload_triggered();
     void on_actionSave_triggered();
 
-    /* 10/1 Commenting out to avoid annoying error message when opening executable
+    /* 10/1 Randy commenting out to avoid annoying error message when opening executable
     void on_actionSceneAsObj_triggered();
     void on_actionSceneAsStl_triggered();
     */
     void on_actionMerge_triggered();
     void on_actionSubdivide_triggered();
 
-    /*  10/1 Commenting out because these are not fully implemented right now
+    /*  10/1 Randy Commenting out because these are not fully implemented right now
     void on_actionPoint_triggered();
     void on_actionInstance_triggered();
     */
-    void on_actionAbout_triggered();
+    // void on_actionAbout_triggered(); commeting out with new developments
 
     void on_actionAddFace_triggered();
     void on_actionAddPolyline_triggered(); 
+
     /* Randy temporarily commenting out due to temporarymeshmanager changes
     void on_actionResetTempMesh_triggered(); */
+
     void on_actionCommitChanges_triggered();
 
 private:

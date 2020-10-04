@@ -352,7 +352,7 @@ void CMeshInstance::DeselectAll()
         GetSceneTreeNode()->SetEntityUpdated(true);
     }
     CurrSelectedVerts.clear();
-    CurrSelectedVertNames.clear(); // added 10/3 
+    CurrSelectedVertNames.clear(); // added 10/3
 }
 
 void CVertexSelector::PointUpdate()

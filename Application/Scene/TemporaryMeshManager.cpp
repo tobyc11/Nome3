@@ -63,13 +63,13 @@ void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
 
 void CTemporaryMeshManager::AddPolyline(const std::vector<std::string>& facePoints)
 {
-    const std::string polyName = "poly" + std::to_string(num_polylines);
+    const std::string polyName = "PlaceholderPoly" + std::to_string(num_polylines);
     //std::vector<std::string> currPoints =  std::vector<std::string>(facePoints.begin() + polyline_prev_num_points, facePoints.end());
     TAutoPtr<CPolyline> polyline = new CPolyline(polyName);
     polyline->SetClosed(false); // Hardcoding the closed bool to true. Change in the future.
     polyline->SetPointSourceNames(Scene, facePoints);
     Scene->AddEntity(tc::static_pointer_cast<CEntity>(polyline));
-    auto sceneNode = Scene->GetRootNode()->CreateChildNode("Added" + polyName);
+    auto sceneNode = Scene->GetRootNode()->CreateChildNode("inst" + polyName);
     auto entity = Scene->FindEntity(polyName);
     sceneNode->SetEntity(entity);
 
@@ -80,21 +80,19 @@ void CTemporaryMeshManager::AddPolyline(const std::vector<std::string>& facePoin
 
 std::string CTemporaryMeshManager::CommitChanges(AST::CASTContext& ctx)
 {
-    /*
-    if (!TempMesh || !TempMeshNode)
-        return "";
-
-    if (!Scene->RenameEntity("__tempMesh", entityName))
-        throw std::runtime_error("Cannot rename the temporary mesh, new name already exists");
-    if (!TempMeshNode->SetName(nodeName))
-        throw std::runtime_error("Cannot rename the scene node to the desired name");
-    
-    */
-
     for (auto addedMesh : addedMeshes)
     {
+
+        /* Randy in progress. save polyline to .nom file.
+        if (dynamic_cast<CPolyline*>(addedMesh)) // if it's actually a polyline
+        {
+            auto* meshCmd = addedMesh->SyncToAST(ctx, true);
+            SourceMgr->AppendCmdEndOfFile(meshCmd);
+        } else...*/
+ 
         auto* meshCmd = addedMesh->SyncToAST(ctx, true);
         SourceMgr->AppendCmdEndOfFile(meshCmd);
+        
     }
 
     for (auto addedNode : addedSceneNodes)

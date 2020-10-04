@@ -72,4 +72,24 @@ void CPolyline::SetClosed(bool closed)
     MarkDirty();
 }
 
+
+/* Randy in progress
+AST::ACommand* CPolyline::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
+{
+    if (!createNewNode)
+        throw "unimplemented";
+    auto* node = ctx.Make<AST::ACommand>(ctx.MakeToken("polyline"), ctx.MakeToken("endpolyline"));
+    node->PushPositionalArgument(ctx.MakeIdent(GetName()));
+
+    //size_t numFaces = Faces.GetSize();
+    for (auto & point : PointSource) {
+       
+        this->GetName();
+        auto* pFace = Faces.GetValue(i, nullptr);
+        
+        node->AddSubCommand(pFace->MakeCommandNode(ctx, node));
+    }
+    return node;
+}*/
+
 }

@@ -142,7 +142,6 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 mesh->Faces.Connect(face->Face);
 
         // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one face).
-        // Previously, faces' ParentEntity was not set to "mesh" command 
         if (insubMesh == false)
         {
             ParentEntity = entity;

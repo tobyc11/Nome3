@@ -203,15 +203,15 @@ void CMainWindow::on_actionSubdivide_triggered()
 /* Randy temporarily commenting out. Point and Instance don't work.
 void CMainWindow::on_actionPoint_triggered() { }
 
-void CMainWindow::on_actionInstance_triggered() { }*/
+void CMainWindow::on_actionInstance_triggered() { }
 
 void CMainWindow::on_actionAbout_triggered()
 {
     QMessageBox::about(this, tr("About Nome"),
                        tr("<b>Nome 3.5</b>\n"
                           "Author:\n"
-                          "Randy Fan"));
-}
+                          "insert author name for current version"));
+}*/
 
 void CMainWindow::on_actionAddFace_triggered()
 {
@@ -290,7 +290,7 @@ void CMainWindow::SetupUI()
 
     // Connect signals that are not otherwise auto-connected
     connect(ui->actionExit, &QAction::triggered, this, &CMainWindow::close);
-    connect(ui->actionAboutQt, &QAction::triggered, this, &QApplication::aboutQt);
+    //connect(ui->actionAboutQt, &QAction::triggered, this, &QApplication::aboutQt);
 }
 
 void CMainWindow::LoadEmptyNomeFile()

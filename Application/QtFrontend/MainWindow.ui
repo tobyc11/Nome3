@@ -12,6 +12,11 @@
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
+    <property name="font" >
+      <font>
+        <pointsize>13</pointsize>
+      </font>
+    </property>
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -21,6 +26,11 @@
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
+     <property name="font" >
+       <font>
+         <pointsize>13</pointsize>
+       </font>
+     </property>
     <property name="title">
      <string>&amp;File</string>
     </property>
@@ -30,13 +40,13 @@
     <addaction name="actionSave"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuAbout">
+<!--   <widget class="QMenu" name="menuAbout">
     <property name="title">
      <string>&amp;About</string>
     </property>
     <addaction name="actionAbout"/>
     <addaction name="actionAboutQt"/>
-   </widget>
+   </widget>-->
     
    <!--<widget class="QMenu" name="menuAdd">
     <property name="title">
@@ -46,6 +56,11 @@
     <addaction name="actionInstance"/>
    </widget>-->
    <widget class="QMenu" name="menuEdit">
+     <property name="font" >
+       <font>
+         <pointsize>13</pointsize>
+       </font>
+     </property>
     <property name="title">
      <string>&amp;Edit</string>
     </property>
@@ -64,6 +79,11 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
+    <property name="font" >
+      <font>
+        <pointsize>13</pointsize>
+      </font>
+    </property>
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -131,11 +151,11 @@
     <string>&amp;Reload</string>
    </property>
   </action>
-  <action name="actionAboutQt">
+<!--  <action name="actionAboutQt">
    <property name="text">
     <string>About Qt</string>
    </property>
-  </action>
+  </action>-->
   <action name="actionMerge">
    <property name="text">
     <string>&amp;Merge</string>

@@ -5,9 +5,18 @@ install:
   - cd %APPVEYOR_BUILD_FOLDER%
   - git submodule update --init --recursive
   # update msys2
+#  - C:\msys64\usr\bin\bash -lc "curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz"
+#  - C:\msys64\usr\bin\bash -lc "curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig"
+  - C:\msys64\usr\bin\bash -lc "pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig"
+  - C:\msys64\usr\bin\bash -lc "pacman -U --noconfirm msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz"
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Sy pacman"
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Su"
   - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Syu"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm --needed -S bison flex"
+
+
+# pacman -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
   # setup envionment
   - set PATH=C:\Qt\5.13\msvc2017_64\bin;%PATH%
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
@@ -23,8 +32,11 @@ install:
 build_script:
 - cmd: >-
     cd %APPVEYOR_BUILD_FOLDER%
+
     md build-appveyor
+
     cd build-appveyor
+
     cmake .. -G "NMake Makefiles"
     -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake
     -DFLEX_EXECUTABLE=C:/msys64/usr/bin/flex.exe
@@ -36,7 +48,9 @@ build_script:
     type CMakeCache.txt
 
     cmake --build . --target install
+
     cd ..
+
 after_build:
 - cmd: del /f install\opengl32sw.dll
 - cmd: 7z a Nome3-%APPVEYOR_BUILD_VERSION%-win64.zip install

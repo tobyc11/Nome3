@@ -4,10 +4,11 @@
 #include <QApplication>
 #include <QCommandLineParser>
 
+
 #undef main
 int main(int argc, char** argv)
 {
-    // Setup Qt
+    // Setup Qt and set up rendering API
     QApplication application(argc, argv);
     QCoreApplication::setApplicationName("Nome");
     QGuiApplication::setApplicationDisplayName("Nome 3.5");

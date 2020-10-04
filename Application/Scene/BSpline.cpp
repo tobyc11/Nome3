@@ -10,6 +10,16 @@ DEFINE_META_OBJECT(CBSpline)
     BindNamedArgument(&CBSpline::Order, "order", 0);
 }
 
+void CBSpline::MarkDirty()
+{
+    // Mark this entity dirty
+    Super::MarkDirty();
+
+    // And also mark the Face output dirty
+    BSpline.MarkDirty();
+}
+
+
 Matrix3 CBSplineMath::FrenetFrameAt(float t) {
     return Matrix3();
 }
@@ -82,10 +92,22 @@ void CBSpline::UpdateEntity() {
 
     std::vector<CMeshImpl::VertexHandle> handles;
     handles.reserve(n + 1);
+
+    std::vector<CVertexInfo *> positions;
     for (int i = 0; i < n + 1; i++)
     {
         handles.push_back(AddVertex("v" + std::to_string(i), SamplePositions[i]));
+        CVertexInfo *point = new CVertexInfo();
+        point->Position = SamplePositions[i];
+        positions.push_back(point);
     }
+
+    SI.Positions = positions;
+    SI.Name = GetName();
+    SI.IsClosed = bClosed;
+    BSpline.UpdateValue(&SI);
+    SetValid(true);
+
     AddLineStrip("curve", handles);
 }
 

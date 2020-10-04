@@ -1,6 +1,6 @@
 #pragma once
 #include "Mesh.h"
-#include "Polyline.h"
+#include "SweepPath.h"
 #include "Vector3.h"
 
 namespace Nome::Scene
@@ -8,8 +8,8 @@ namespace Nome::Scene
 
 class CSweep : public CMesh
 {
-    DEFINE_INPUT(CPolylineInfo *, Path) { MarkDirty(); }
-    DEFINE_INPUT(CPolylineInfo *, CrossSection) { MarkDirty(); }
+    DEFINE_INPUT(CSweepPathInfo *, Path) { MarkDirty(); }
+    DEFINE_INPUT(CSweepPathInfo *, CrossSection) { MarkDirty(); }
     DEFINE_INPUT(float, Azimuth) { MarkDirty(); }
     DEFINE_INPUT(float, Twist) { MarkDirty(); }
 
@@ -27,7 +27,7 @@ public:
 private:
     void drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
                           Vector3 T, Vector3 N, float angle, float scaleX,
-                          float scaleY, float scaleN, int index);
+                          float scaleY, int index);
 };
 
 }

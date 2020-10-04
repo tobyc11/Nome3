@@ -45,10 +45,10 @@ void CPolyline::UpdateEntity()
     }
     AddLineStrip("polyline", vertArray);
 
-    PI.Positions = positions;
-    PI.Name = GetName();
-    PI.IsClosed = bClosed;
-    Polyline.UpdateValue(&PI);
+    SI.Positions = positions;
+    SI.Name = GetName();
+    SI.IsClosed = bClosed;
+    Polyline.UpdateValue(&SI);
     SetValid(true);
 }
 

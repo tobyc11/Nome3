@@ -15,7 +15,6 @@ install:
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Syu"
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm --needed -S bison flex"
 
-
 # pacman -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
   # setup envionment
   - set PATH=C:\Qt\5.13\msvc2017_64\bin;%PATH%

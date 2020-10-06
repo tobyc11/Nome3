@@ -9,14 +9,24 @@ install:
   #- C:\msys64\usr\bin\bash -lc "curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig"
   #- C:\msys64\usr\bin\bash -lc "pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig"
   #- C:\msys64\usr\bin\bash -lc "pacman -U --noconfirm msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz"
-  - C:\msys64\usr\bin\bash -lc "curl -O http://mirror.yandex.ru/mirrors/msys2/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz"
-  - C:\msys64\usr\bin\bash -lc "curl -O http://mirror.yandex.ru/mirrors/msys2/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig"
-  - C:\msys64\usr\bin\bash -lc "pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig"
-  - C:\msys64\usr\bin\bash -lc "pacman -U --noconfirm msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz"
-  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Sy pacman"
-  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Su"
-  - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors"
-  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Syu"
+  - C:\msys64\usr\bin\bash -lc "curl -O http://mirror.yandex.ru/mirrors/msys2/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz" #10/6 fix - good
+  - C:\msys64\usr\bin\bash -lc "curl -O http://mirror.yandex.ru/mirrors/msys2/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig" # 10/6 fix - good
+  - C:\msys64\usr\bin\bash -lc "pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig" # 10/6 fix - good
+  - C:\msys64\usr\bin\bash -lc "pacman -U --noconfirm msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz" # 10/6 - good
+  - C:\msys64\usr\bin\bash -lc "sed -e '/repo\.msys2\.org/ s/^#*/#/' -i /etc/pacman.d/mirrorlist.*" # attempt to fix
+  - C:\msys64\usr\bin\bash -lc "cat /etc/pacman.d/mirrorlist.*" #aattempt to fix
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Sy pacman" # still failed due to repo.msys2.org
+  - C:\msys64\usr\bin\bash -lc "sed -e '/repo\.msys2\.org/ s/^#*/#/' -i /etc/pacman.d/mirrorlist.*" # attempt to fix
+  - C:\msys64\usr\bin\bash -lc "cat /etc/pacman.d/mirrorlist.*" #aattempt to fix
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Su" # still failed due to repo.msys2.org
+  - C:\msys64\usr\bin\bash -lc "sed -e '/repo\.msys2\.org/ s/^#*/#/' -i /etc/pacman.d/mirrorlist.*" # attempt to fix
+  - C:\msys64\usr\bin\bash -lc "cat /etc/pacman.d/mirrorlist.*" #aattempt to fix
+  - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors" # good
+  - C:\msys64\usr\bin\bash -lc "sed -e '/repo\.msys2\.org/ s/^#*/#/' -i /etc/pacman.d/mirrorlist.*" # attempt to fix
+  - C:\msys64\usr\bin\bash -lc "cat /etc/pacman.d/mirrorlist.*" #aattempt to fix
+  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Syu" # still failed due to repo.msys2.org
+  - C:\msys64\usr\bin\bash -lc "sed -e '/repo\.msys2\.org/ s/^#*/#/' -i /etc/pacman.d/mirrorlist.*" # attempt to fix
+  - C:\msys64\usr\bin\bash -lc "cat /etc/pacman.d/mirrorlist.*" #aattempt to fix 
   - C:\msys64\usr\bin\bash -lc "pacman --noconfirm --needed -S bison flex"
 
 # pacman -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz

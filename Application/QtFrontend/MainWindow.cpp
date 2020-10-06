@@ -238,6 +238,18 @@ void CMainWindow::on_actionAddPolyline_triggered()
     Nome3DView->ClearSelectedVertices(); // Randy added 9/27
 }
 
+void CMainWindow::on_actionDeleteFace_triggered()
+{
+    const auto& verts = Nome3DView->GetSelectedVertices();
+    if (verts.size() < 3)
+    {
+        statusBar()->showMessage("Selected vertices are less than 3");
+        return;
+    }
+    TemporaryMeshManager->AddFace(verts);
+    Nome3DView->ClearSelectedVertices(); // Randy added 9/27
+}
+
 // Randy temporarily commenting out because Reloading serves the same purpose as this.
 //void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->ResetTemporaryMesh(); }
 

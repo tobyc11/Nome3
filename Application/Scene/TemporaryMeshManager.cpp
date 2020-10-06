@@ -40,9 +40,15 @@ void CTemporaryMeshManager::ResetTemporaryMesh()
     TempPolylineNode->SetEntity(TempPolyline);
 }*/
 
+
+void CTemporaryMeshManager::DeleteFace(const std::vector<std::string>& facePoints)
+{
+   // work in progress
+}
+
+
 void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
 {
-    // 10/1: I am using a dummy mesh now instead of the TempMesh because disjoint faces can't be part of a single mesh!!!!
     const std::string meshName = "Placeholder" + std::to_string(FaceCounter);
     const std::string faceName = meshName + "nnew" + std::to_string(FaceCounter);
     TAutoPtr<CFace> face = new CFace(faceName);
@@ -52,9 +58,8 @@ void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
     dummyMesh->Faces.Connect(face->Face); 
     Scene->AddEntity(tc::static_pointer_cast<CEntity>(dummyMesh)); //needs to instanciated as a mesh face, not just a face
 
-    // added below two line to try to allow Add Face to work with temp mesh vertices
     auto sceneNode = Scene->GetRootNode()->CreateChildNode("inst" + meshName);
-    auto entity = Scene->FindEntity(meshName); // needs to be the dummyMesh, instead of the face
+    auto entity = Scene->FindEntity(meshName); // entity needs to be the dummyMesh, instead of the face as we can't instanciate a face rn
     sceneNode->SetEntity(entity); // this doesn't work right now because you can't create an instance of a single face
    
     

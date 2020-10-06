@@ -69,6 +69,7 @@
     <addaction name="separator"/>
     <addaction name="actionAddFace"/>
     <addaction name="actionAddPolyline"/>
+    <addaction name="actionDeleteFace"/>
     <!--<addaction name="actionResetTempMesh"/>-->
      <addaction name="actionCommitChanges"/>
    </widget>
@@ -95,7 +96,8 @@
    </attribute>
    <addaction name="actionAddFace"/>
    <addaction name="actionAddPolyline"/>
-    <!--<addaction name="actionResetTempMesh"/>
+   <addaction name="actionDeleteFace"/>
+   <!--<addaction name="actionResetTempMesh"/>
    <addaction name="separator"/>-->
    <addaction name="actionCommitChanges"/>
   </widget>
@@ -174,6 +176,11 @@
   <action name="actionAddPolyline">
     <property name="text">
       <string>Add Polyline</string>
+    </property>
+  </action>
+  <action name="actionDeleteFace">
+    <property name="text">
+      <string>Delete Face</string>
     </property>
   </action>
 <!--  <action name="actionResetTempMesh">

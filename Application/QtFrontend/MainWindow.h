@@ -55,8 +55,11 @@ private slots:
     */
     // void on_actionAbout_triggered(); commeting out with new developments
 
+
     void on_actionAddFace_triggered();
     void on_actionAddPolyline_triggered(); 
+
+    void on_actionDeleteFace_triggered();
 
     /* Randy temporarily commenting out due to temporarymeshmanager changes
     void on_actionResetTempMesh_triggered(); */

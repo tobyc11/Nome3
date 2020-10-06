@@ -8,6 +8,7 @@
 #include <Scene/MeshMerger.h>
 
 #include <QDockWidget>
+#include <QScrollArea> // Randy added
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QLabel>
@@ -372,28 +373,42 @@ void CMainWindow::UnloadNomeFile()
     Scene = nullptr;
 }
 
-void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
+void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name) // adding a single widget at a time
 {
     if (!SliderWidget)
     {
         auto* sliderDock = new QDockWidget("Scene Parameter Sliders", this);
+
         sliderDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
         SliderWidget = std::make_unique<QWidget>();
         SliderLayout = new QFormLayout(SliderWidget.get());
-        sliderDock->setWidget(SliderWidget.get());
+
         this->addDockWidget(Qt::LeftDockWidgetArea, sliderDock);
         ui->menubar->addAction(sliderDock->toggleViewAction());
+
+
+        // Create scroll area for the widget
+        QScrollArea* m_pMapInfoScrollArea = new QScrollArea();
+        m_pMapInfoScrollArea->setObjectName(QStringLiteral("MapInfoScrollArea"));
+        m_pMapInfoScrollArea->setWidgetResizable(true);
+        m_pMapInfoScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        m_pMapInfoScrollArea->setFrameStyle(QFrame::NoFrame);
+ 
+        m_pMapInfoScrollArea->setWidget(SliderWidget.get()); // SliderWidget.get()
+        sliderDock->setWidget(m_pMapInfoScrollArea );
+        SliderWidget.get()->setMinimumSize(280, 1200); //https://www.qtcentre.org/threads/55669-Scroll-Area-inside-Dock-Widget
     }
 
     auto* sliderName = new QLabel();
     sliderName->setText(QString::fromStdString(name));
-
+    QFont f("Arial", 13);
+    sliderName->setFont(f);
     auto* sliderLayout = new QHBoxLayout();
 
     auto* sliderBar = new QSlider();
     int numSteps = ceil((slider.GetMax() - slider.GetMin()) / slider.GetStep());
     int currTick = round((slider.GetValue() - slider.GetMin()) / slider.GetStep());
-    sliderBar->setMinimum(0);
+    sliderBar->setMinimum(0); 
     sliderBar->setMaximum(numSteps);
     sliderBar->setValue(currTick);
     sliderBar->setOrientation(Qt::Horizontal);
@@ -402,6 +417,7 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
 
     auto* sliderDisplay = new QLineEdit();
     sliderDisplay->setText(QString("%1").arg(slider.GetValue()));
+    sliderDisplay->setFont(f);
     sliderLayout->addWidget(sliderDisplay);
 
     sliderLayout->setStretchFactor(sliderBar, 4);

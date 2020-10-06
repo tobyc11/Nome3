@@ -23,7 +23,7 @@ public:
 
     ~CTemporaryMeshManager() = default;
 
-    void ResetTemporaryMesh();
+    //void ResetTemporaryMesh(); Randy note: after 10/1, not used anymore as it's equivalent to reloading a file
     void AddFace(const std::vector<std::string>& facePoints);
     void AddPolyline(const std::vector<std::string>& facePoints);
     std::string CommitChanges(

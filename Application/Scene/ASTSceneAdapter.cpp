@@ -136,7 +136,8 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     {
         TAutoPtr<CEntity> entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
         entity->GetMetaObject().DeserializeFromAST(*cmd, *entity); 
-        GEnv.Scene->AddEntity(entity); // All entities are added to the EntityLibrary dictionary
+         // All entities are added to the EntityLibrary dictionary
+        GEnv.Scene->AddEntity(entity); 
         if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
             if (auto* face = dynamic_cast<CFace*>(entity.Get()))
                 mesh->Faces.Connect(face->Face);

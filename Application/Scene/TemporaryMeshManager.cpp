@@ -8,6 +8,8 @@
 namespace Nome::Scene
 {
 
+// Randy note: after 10/1, this is not used anymore
+/*
 void CTemporaryMeshManager::ResetTemporaryMesh()
 {
     if (!TempMeshNode)
@@ -36,7 +38,7 @@ void CTemporaryMeshManager::ResetTemporaryMesh()
 
     TempMeshNode->SetEntity(TempMesh);
     TempPolylineNode->SetEntity(TempPolyline);
-}
+}*/
 
 void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
 {

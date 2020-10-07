@@ -26,7 +26,7 @@ Vector3 crossProduct(Vector3 vectorA, Vector3 vectorB)
 void CSweep::drawCrossSection(std::vector<Vector3> crossSection,
                               Vector3 center, Vector3 T, Vector3 N,
                               float angle, float scaleX, float scaleY,
-                              int index)
+                              float scaleN, int index)
 {
     Vector3 B = crossProduct(T, N);
 
@@ -39,7 +39,7 @@ void CSweep::drawCrossSection(std::vector<Vector3> crossSection,
         float x = crossSection[i].x * scaleX * cosf(angle) - crossSection[i].y * scaleY * sinf(angle);
         float y = crossSection[i].x * scaleX * sinf(angle) + crossSection[i].y * scaleY *cosf(angle);
         // do thransform
-        Vector3 transformVector = N * x + B * y ;
+        Vector3 transformVector = N * x * scaleN + B * y ;
         // add offset
         Vector3 curVertex = center + transformVector;
 
@@ -224,17 +224,18 @@ void CSweep::UpdateEntity()
 
         // generate points in a circle perpendicular to the curve at the current point
         drawCrossSection(crossSection, points[0], T, N, angles[0], scaleX[0],
-                         scaleY[0],  ++segmentCount);
+                         scaleY[0], 1, ++segmentCount);
     }
     else {
         Vector3 prevVector = (points[1] - points[0]).Normalized();
         Vector3 curVector = (points[0] - points[numPoints - 2]).Normalized();
+        float angle = getAngle(prevVector, curVector);
 
         T = prevVector + curVector;
         N = prevVector - curVector;
 
         drawCrossSection(crossSection, points[0], T, N, angles[0], scaleX[0],
-                         scaleY[0], ++segmentCount);
+                         scaleY[0], 1 / cosf(angle / 2), ++segmentCount);
     }
 
     for (size_t i = 1; i < numPoints; i++)
@@ -245,29 +246,32 @@ void CSweep::UpdateEntity()
             {
                 Vector3 prevVector = (points[1] - points[0]).Normalized();
                 Vector3 curVector = (points[0] - points[numPoints - 2]).Normalized();
+                float angle = getAngle(prevVector, curVector);
 
                 T = prevVector + curVector;
                 N = prevVector - curVector;
 
                 // 0 is perfect.
                 drawCrossSection(crossSection, points[i], T, N, angles[i] - twist,
-                                 scaleX[i], scaleY[i], ++segmentCount);
+                                 scaleX[i], scaleY[i], 1 / cosf(angle / 2), ++segmentCount);
             }
             else {
                 T = points[i] - points[i - 1];
                 // add twist
                 drawCrossSection(crossSection, points[i], T, Ns[i - 1], angles[i] - twist,
-                                 scaleX[i], scaleY[i], ++segmentCount);
+                                 scaleX[i], scaleY[i], 1, ++segmentCount);
             }
         }
         else {
             Vector3 prevVector = (points[i + 1] - points[i]).Normalized();
             Vector3 curVector = (points[i] - points[i - 1]).Normalized();
+            float angle = getAngle(prevVector, curVector);
 
             T = prevVector + curVector;
             N = prevVector - curVector;
+
             drawCrossSection(crossSection, points[i], T, N, angles[i], scaleX[i],
-                             scaleY[i], ++segmentCount);
+                             scaleY[i], 1 / cosf(angle / 2), ++segmentCount);
         }
     }
 

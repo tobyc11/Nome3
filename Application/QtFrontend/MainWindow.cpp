@@ -163,7 +163,7 @@ void CMainWindow::on_actionMerge_triggered()
         if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))  //set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
             merger->MergeIn(*mesh);
     });
-    // TODO: Next 3 lines are super buggy, but needed to perform Catmull. Need to figure out why can open another file (or reopen/reload the same file) after merging. Often crashes when used on larger scenes.
+    // TODO: Next 3 lines are super buggy, but needed to perform Catmull w/ replacement. Often crashes when used on larger scenes.
     //Scene = new Scene::CScene();
     //Scene::GEnv.Scene = Scene.Get();
     //PostloadSetup();
@@ -238,7 +238,7 @@ void CMainWindow::on_actionAddPolyline_triggered()
     Nome3DView->ClearSelectedVertices(); // Randy added 9/27
 }
 
-void CMainWindow::on_actionDeleteFace_triggered()
+void CMainWindow::on_actionRemoveFace_triggered()
 {
     const auto& verts = Nome3DView->GetSelectedVertices();
     if (verts.size() < 3)

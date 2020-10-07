@@ -25,7 +25,7 @@ public:
 
     //void ResetTemporaryMesh(); Randy note: after 10/1, not used anymore as it's equivalent to reloading a file
 
-    void DeleteFace(const std::vector<std::string>& facePoints); // Randy added this. Not sure if TemporaryMeshManager is best place for it, but putting it here for now.
+    void RemoveFace(const std::vector<std::string>& facePoints); // Randy added this. Not sure if TemporaryMeshManager is best place for it, but putting it here for now.
 
     void AddFace(const std::vector<std::string>& facePoints);
     void AddPolyline(const std::vector<std::string>& facePoints);

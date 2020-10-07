@@ -41,9 +41,64 @@ void CTemporaryMeshManager::ResetTemporaryMesh()
 }*/
 
 
-void CTemporaryMeshManager::DeleteFace(const std::vector<std::string>& facePoints)
+void CTemporaryMeshManager::RemoveFace(const std::vector<std::string>& facePoints)
 {
-   // work in progress
+    // create a set containing all the facepoint locations: CMeshImpl::Point(pos.x, pos.y, pos.z) aftrer finding the points 
+   // work in progress. Not sure if TempMeshManager is best location.
+    //Scene->Update();
+    //std::vector<std::vector<float>> allpoints; //vector of point coordinates
+    //for (auto name : facePoints)
+    //{
+    //    std::vector<float> coordinate; 
+    //    auto  point = dynamic_cast<Scene::CPoint*>(Scene->FindEntity(name).Get()); // get point entity. Reminder, points are entities too
+    //    coordinate.push_back(point->X.GetValue(99999));
+    //    coordinate.push_back(point->Y.GetValue(99999));
+    //    coordinate.push_back(point->Z.GetValue(99999));
+    //    allpoints.push_back(coordinate);
+    //}
+
+    //tc::TAutoPtr<Scene::CMesh> test = new Scene::CMesh("globalMerge"); 
+    //Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+    //    auto* entity = node->GetInstanceEntity(); // this is non-null if the entity is instantiable like a torus knot or polyline
+    //    if (!entity) // if it's not instantiable, like a face, then get the entity associated with it
+    //        entity = node->GetOwner()->GetEntity();
+    //    if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+    //    {
+    //        auto& openmesh = mesh->GetMeshImpl();
+    //        // https://mcoder.cc/2019/07/06/half_edge_data_structure/
+    //        
+    //        for (auto fi = openmesh.faces_begin(); fi != openmesh.faces_end(); ++fi) {
+    //            auto currfacehandle = fi.handle();
+    //            std::vector<CMeshImpl::VertexHandle> verts;
+    //            bool foundface = true;
+    //            for (auto verthandle : openmesh.fv_range(*fi))
+    //            { // iterate through all the vertices on this face
+    //                std::vector<float> tempcoordinate;
+    //                float X = openmesh.point(verthandle)[0];
+    //                float Y = openmesh.point(verthandle)[1];
+    //                float Z = openmesh.point(verthandle)[2];
+    //                tempcoordinate.push_back(X);
+    //                tempcoordinate.push_back(Y);
+    //                tempcoordinate.push_back(Z);
+    //                for (auto coordinate : allpoints) {
+    //                    if (coordinate == tempcoordinate) {
+    //                        openmesh.request_face_status(); //instead just create a new scene without this face
+    //                        openmesh.
+    //                    }
+    //                }
+    //                if (vert is not inide the set of vertex location)
+    //                    foundface = false
+    //            }
+    //            if !noit
+    //            {
+    //                remove face
+    //            }
+    //        }
+    //            ...; // do something with *f_it, f_it->, or *f_it
+
+    //    }    
+    //});
+
 }
 
 

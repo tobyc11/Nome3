@@ -59,7 +59,7 @@ private slots:
     void on_actionAddFace_triggered();
     void on_actionAddPolyline_triggered(); 
 
-    void on_actionDeleteFace_triggered();
+    void on_actionRemoveFace_triggered();
 
     /* Randy temporarily commenting out due to temporarymeshmanager changes
     void on_actionResetTempMesh_triggered(); */

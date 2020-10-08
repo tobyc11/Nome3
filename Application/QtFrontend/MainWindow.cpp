@@ -469,6 +469,7 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
         connect(stop, &QPushButton::clicked, this, [this]() {
             timer->stop();
         });
+
         connect(timer, &QTimer::timeout, this, [&slider, sliderDisplay]() {
             float val = slider.GetValue() + slider.GetStep();
             if (val <= slider.GetMax()) {

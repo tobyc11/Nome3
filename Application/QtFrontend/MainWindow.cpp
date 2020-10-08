@@ -457,19 +457,19 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
     if (hasEnding(sliderID, "time")) {
         timer = new QTimer(this);
         SliderTimers.emplace(sliderID, timer);
-        QPushButton *start = new QPushButton("Start", this);
-        start->setText("Start");
+        QPushButton *start = new QPushButton("Toggle", this);
+        start->setText("Start/Stop");
         sliderLayout->addWidget(start);
-        QPushButton *stop = new QPushButton("Stop", this);
-        stop->setText("Stop");
-        sliderLayout->addWidget(stop);
-        connect(start, &QPushButton::clicked, this, [this]() {
-            timer->start(50);
+        connect(start, &QPushButton::clicked, this, [this, &slider]() {
+            QTimer* currtimer = SliderTimers.find(slider.GetASTNode()->
+                GetPositionalIdentAsString(0))->second;
+            timer = currtimer;
+            if (!timer->isActive()) {
+                timer->start(50);
+            } else {
+                timer->stop();
+            }
         });
-        connect(stop, &QPushButton::clicked, this, [this]() {
-            timer->stop();
-        });
-
         connect(timer, &QTimer::timeout, this, [&slider, sliderDisplay]() {
             float val = slider.GetValue() + slider.GetStep();
             if (val <= slider.GetMax()) {

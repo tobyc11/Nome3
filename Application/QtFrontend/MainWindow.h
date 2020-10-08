@@ -7,6 +7,7 @@
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QTimer>
+#include <iostream>
 #include <string>
 #include <unordered_map>
 
@@ -73,7 +74,13 @@ private:
     void LoadNomeFile(const std::string& filePath);
     void PostloadSetup();
     void UnloadNomeFile();
-
+    bool hasEnding(std::string const &str, std::string const &end) {
+        if (str.length() >= end.length()) {
+            return (0 == str.compare(str.length() - end.length(), end.length(), end));
+        } else {
+            return false;
+        }
+    };
     // Slider panel management
     void OnSliderAdded(Scene::CSlider& slider, const std::string& name) override;
     void OnSliderRemoving(Scene::CSlider& slider, const std::string& name) override;
@@ -91,7 +98,9 @@ private:
     // Nome Context
     tc::TAutoPtr<Scene::CScene> Scene;
     QTimer* SceneUpdateClock = nullptr;
+    QTimer* timer = nullptr;
 
+    std::unordered_map<std::string, QTimer*> SliderTimers;
     std::unique_ptr<QWidget> SliderWidget;
     QFormLayout* SliderLayout = nullptr;
     std::unordered_map<std::string, QLayout*> SliderNameToWidget;

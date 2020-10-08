@@ -15,6 +15,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QSlider>
+#include <QPushButton>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <StringPrintf.h>
@@ -364,7 +365,7 @@ void CMainWindow::PostloadSetup()
     Nome3DView->TakeScene(Scene);
 
     SceneUpdateClock = new QTimer(this);
-    SceneUpdateClock->setInterval(100);
+    SceneUpdateClock->setInterval(50);
     SceneUpdateClock->setSingleShot(false);
     connect(SceneUpdateClock, &QTimer::timeout, [this]() {
         Scene->Update();
@@ -452,6 +453,35 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
         slider.GetASTNode()->SetPositionalArgument(1, expr);
         SourceMgr->InsertToken(insertLocation, token);
     });
+    std::string sliderID = slider.GetASTNode()->GetPositionalIdentAsString(0);
+    if (hasEnding(sliderID, "time")) {
+        timer = new QTimer(this);
+        SliderTimers.emplace(sliderID, timer);
+        QPushButton *start = new QPushButton("Start", this);
+        start->setText("Start");
+        sliderLayout->addWidget(start);
+        QPushButton *stop = new QPushButton("Stop", this);
+        stop->setText("Stop");
+        sliderLayout->addWidget(stop);
+        connect(start, &QPushButton::clicked, this, [this]() {
+            timer->start(50);
+        });
+        connect(stop, &QPushButton::clicked, this, [this]() {
+            timer->stop();
+        });
+        connect(timer, &QTimer::timeout, this, [&slider, sliderDisplay]() {
+            float val = slider.GetValue() + slider.GetStep();
+            if (val <= slider.GetMax()) {
+                slider.SetValue(val);
+            } else {
+                slider.SetValue(slider.GetMin());
+            }
+            sliderDisplay->setText(QString::fromStdString(tc::StringPrintf("%.2f", val)));
+        });
+        timer->start(50);
+
+    }
+
 
     SliderLayout->addRow(sliderName, sliderLayout);
     SliderNameToWidget.emplace(name, sliderLayout);

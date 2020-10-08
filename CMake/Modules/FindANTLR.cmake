@@ -2,7 +2,8 @@ find_package(Java QUIET COMPONENTS Runtime)
 
 if(NOT ANTLR_EXECUTABLE)
   find_program(ANTLR_EXECUTABLE
-               NAMES antlr.jar antlr4.jar antlr-4.jar antlr-4.8-complete.jar)
+               NAMES antlr.jar antlr4.jar antlr-4.jar antlr-4.8-complete.jar
+               PATHS ${PROJECT_SOURCE_DIR}/lib)
 endif()
 
 if(ANTLR_EXECUTABLE AND Java_JAVA_EXECUTABLE)

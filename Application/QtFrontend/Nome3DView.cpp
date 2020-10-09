@@ -12,7 +12,7 @@
 namespace Nome
 {
 
-CNome3DView::CNome3DView()
+CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false)
 {
     Root = new Qt3DCore::QEntity();
     this->setRootEntity(Root);
@@ -33,15 +33,38 @@ CNome3DView::CNome3DView()
 
     // Setup camera
     // TODO: aspect ratio
-    auto* camera = this->camera();
-    camera->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
-    camera->setPosition(QVector3D(0, 0, 40.0f));
-    camera->setViewCenter(QVector3D(0, 0, 0));
+    cameraset = this->camera();
+    // cameraset->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
+    cameraset->setPosition(QVector3D(0, 0, 0.0f));
+    cameraset->setViewCenter(QVector3D(0, 0, 0));
 
-    auto* camController = new Qt3DExtras::QOrbitCameraController(Root);
-    camController->setLinearSpeed(50.0f);
-    camController->setLookSpeed(180.0f);
-    camController->setCamera(camera);
+    // Xinyu add on Oct 8 for rotation
+    projection.setToIdentity();
+    projection.perspective(45.0f, 16.0f/9.0f, 0.1f, 1000.0f);
+    QMatrix4x4 matrix;
+    zPos = - 50.0;
+    matrix.translate(0.0, 0.0, zPos);
+    cameraset->setProjectionMatrix(projection * matrix);
+
+    // Xinyu add for animation
+    sphereTransform = new Qt3DCore::QTransform;
+    controller = new OrbitTransformController(sphereTransform);
+    controller->setTarget(sphereTransform);
+    controller->setRadius(0);
+    sphereRotateTransformAnimation = new QPropertyAnimation(sphereTransform);
+    sphereRotateTransformAnimation->setTargetObject(controller);
+    sphereRotateTransformAnimation->setPropertyName("angle");
+    sphereRotateTransformAnimation->setStartValue(QVariant::fromValue(0));
+    sphereRotateTransformAnimation->setEndValue(QVariant::fromValue(360));
+    sphereRotateTransformAnimation->setDuration(10000);
+    sphereRotateTransformAnimation->setLoopCount(-1);
+    sphereRotateTransformAnimation->start();
+    material = new Qt3DExtras::QPhongMaterial(Root);
+
+    //auto* camController = new Qt3DExtras::QOrbitCameraController(Root);
+    //camController->setLinearSpeed(50.0f);
+    //camController->setLookSpeed(180.0f);
+    //camController->setCamera(camera);
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -370,6 +393,77 @@ Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
     gridEntity->addComponent(material);
 
     return gridEntity;
+}
+
+// Xinyu add on Oct 8 for rotation
+void CNome3DView::mousePressEvent(QMouseEvent* e)
+{
+
+    // Save mouse press position
+    mousePressEnabled = true;
+    mousePressPosition = QVector2D(e->localPos());
+
+}
+
+
+void CNome3DView::mouseMoveEvent(QMouseEvent* e)
+{
+    if (mousePressEnabled) {
+        angularSpeed = 5;
+        QVector2D diff = QVector2D(e->QMouseEvent::pos()) - mousePressPosition;
+        QVector3D n = QVector3D(diff.y(), diff.x(), 0.0).normalized();
+        //qreal acc = diff.length() / 100.0;
+        rotationAxis = (rotationAxis * angularSpeed + n).normalized();
+        //angularSpeed += acc;
+        rotation = QQuaternion::fromAxisAndAngle(rotationAxis, angularSpeed) * rotation;
+        QMatrix4x4 matrix;
+        matrix.translate(0.0, 0.0, zPos);
+        matrix.rotate(rotation);
+        cameraset->setProjectionMatrix(projection * matrix);
+        //mousePressPosition = QVector2D(e->QMouseEvent::pos());
+    }
+}
+
+void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
+{
+    mousePressEnabled = false;
+}
+
+void CNome3DView::wheelEvent(QWheelEvent *ev)
+{
+    QPoint numPixels = ev->pixelDelta();
+    QPoint numDegrees = ev->angleDelta() / 8;
+
+    if (!numPixels.isNull()) {
+        zPos += numPixels.y() / 3;
+    } else if (!numDegrees.isNull()) {
+        QPoint numSteps = numDegrees / 15;
+        zPos += numSteps.y() / 3;
+    }
+    QMatrix4x4 matrix;
+    matrix.translate(0.0, 0.0, zPos);
+    matrix.rotate(rotation);
+    cameraset->setProjectionMatrix(projection * matrix);
+
+    ev->accept();
+}
+
+void CNome3DView::keyPressEvent(QKeyEvent *ev)
+{
+
+
+    if (ev->key() == Qt::Key_Space) {
+        if (animationEnabled) {
+            Root->addComponent(sphereTransform);
+            Root->addComponent(material);
+        }   else {
+            Root->removeComponent(sphereTransform);
+            Root->removeComponent(material);
+        }
+        animationEnabled = !animationEnabled;
+
+    }
+
 }
 
 }

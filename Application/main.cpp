@@ -8,6 +8,8 @@
 #undef main
 int main(int argc, char** argv)
 {
+    //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    //QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     // Setup Qt and set up rendering API
     QApplication application(argc, argv);
     QCoreApplication::setApplicationName("Nome");

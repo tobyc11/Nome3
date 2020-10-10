@@ -1,4 +1,4 @@
-#include "orbittransformcontroller.h"
+#include "OrbitTransformController.h"
 
 #include <Qt3DCore/qtransform.h>
 

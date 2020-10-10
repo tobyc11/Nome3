@@ -34,17 +34,17 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false)
     // Setup camera
     // TODO: aspect ratio
     cameraset = this->camera();
-    // cameraset->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
-    cameraset->setPosition(QVector3D(0, 0, 0.0f));
+    cameraset->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
+    cameraset->setPosition(QVector3D(0, 0, - 50.0f));
     cameraset->setViewCenter(QVector3D(0, 0, 0));
 
     // Xinyu add on Oct 8 for rotation
     projection.setToIdentity();
     projection.perspective(45.0f, 16.0f/9.0f, 0.1f, 1000.0f);
     QMatrix4x4 matrix;
-    zPos = - 50.0;
+    zPos = - 0;
     matrix.translate(0.0, 0.0, zPos);
-    cameraset->setProjectionMatrix(projection * matrix);
+    //cameraset->setProjectionMatrix(projection * matrix);
 
     // Xinyu add for animation
     sphereTransform = new Qt3DCore::QTransform;
@@ -59,12 +59,12 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false)
     sphereRotateTransformAnimation->setDuration(10000);
     sphereRotateTransformAnimation->setLoopCount(-1);
     sphereRotateTransformAnimation->start();
-    material = new Qt3DExtras::QPhongMaterial(Root);
+    //material = new Qt3DExtras::QPhongMaterial(Root);
 
-    //auto* camController = new Qt3DExtras::QOrbitCameraController(Root);
-    //camController->setLinearSpeed(50.0f);
-    //camController->setLookSpeed(180.0f);
-    //camController->setCamera(camera);
+    auto* camController = new Qt3DExtras::QOrbitCameraController(Root);
+    camController->setLinearSpeed(50.0f);
+    camController->setLookSpeed(180.0f);
+    camController->setCamera(cameraset);
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -419,7 +419,7 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
         QMatrix4x4 matrix;
         matrix.translate(0.0, 0.0, zPos);
         matrix.rotate(rotation);
-        cameraset->setProjectionMatrix(projection * matrix);
+        //cameraset->setProjectionMatrix(projection * matrix);
         //mousePressPosition = QVector2D(e->QMouseEvent::pos());
     }
 }
@@ -438,30 +438,25 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
         zPos += numPixels.y() / 3;
     } else if (!numDegrees.isNull()) {
         QPoint numSteps = numDegrees / 15;
-        zPos += numSteps.y() / 3;
+        zPos += numSteps.y() / 3.0;
     }
     QMatrix4x4 matrix;
     matrix.translate(0.0, 0.0, zPos);
     matrix.rotate(rotation);
-    cameraset->setProjectionMatrix(projection * matrix);
+    //cameraset->setProjectionMatrix(projection * matrix);
 
     ev->accept();
 }
 
 void CNome3DView::keyPressEvent(QKeyEvent *ev)
 {
-
-
     if (ev->key() == Qt::Key_Space) {
         if (animationEnabled) {
-            Root->addComponent(sphereTransform);
-            Root->addComponent(material);
-        }   else {
             Root->removeComponent(sphereTransform);
-            Root->removeComponent(material);
+        }   else {
+            Root->addComponent(sphereTransform);
         }
         animationEnabled = !animationEnabled;
-
     }
 
 }

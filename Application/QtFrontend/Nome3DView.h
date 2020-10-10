@@ -54,10 +54,9 @@ private:
     QVector3D rotationAxis;
     qreal angularSpeed;
     QQuaternion rotation;
-    Qt3DCore::QEntity *scene;
     Qt3DRender::QCamera *cameraset;
-    //Qt3DExtras::QOrbitCameraController *camController;
-    Qt3DRender::QMaterial *material;
+    Qt3DExtras::QOrbitCameraController *camController;
+    //Qt3DRender::QMaterial *material;
     bool mousePressEnabled;
     bool animationEnabled;
     float zPos;

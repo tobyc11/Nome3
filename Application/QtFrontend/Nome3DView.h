@@ -59,12 +59,18 @@ private:
     //Qt3DRender::QMaterial *material;
     bool mousePressEnabled;
     bool animationEnabled;
-    float zPos;
+    double zPos;
+    double xPos;
+    double yPos;
 
     // For the animation
     Qt3DCore::QTransform *sphereTransform;
     OrbitTransformController *controller;
     QPropertyAnimation *sphereRotateTransformAnimation;
+
+    Qt3DCore::QTransform *objectTransform;
+    QMatrix4x4 objectTransformMatrix;
+
 
 };
 

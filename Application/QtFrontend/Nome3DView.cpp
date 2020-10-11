@@ -15,6 +15,7 @@ namespace Nome
 CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false)
 {
     Root = new Qt3DCore::QEntity();
+
     this->setRootEntity(Root);
     // MakeGridEntity(Root); Removing grid entity per Professor Sequin's request
 
@@ -35,18 +36,15 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false)
     // TODO: aspect ratio
     cameraset = this->camera();
     cameraset->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
-    cameraset->setPosition(QVector3D(0, 0, - 50.0f));
+    cameraset->setPosition(QVector3D(0, 0, 40.0f));
     cameraset->setViewCenter(QVector3D(0, 0, 0));
 
     // Xinyu add on Oct 8 for rotation
     projection.setToIdentity();
     projection.perspective(45.0f, 16.0f/9.0f, 0.1f, 1000.0f);
-    QMatrix4x4 matrix;
-    zPos = - 0;
-    matrix.translate(0.0, 0.0, zPos);
-    //cameraset->setProjectionMatrix(projection * matrix);
-
+    zPos = yPos = xPos = 0;
     // Xinyu add for animation
+    objectTransform = new Qt3DCore::QTransform;
     sphereTransform = new Qt3DCore::QTransform;
     controller = new OrbitTransformController(sphereTransform);
     controller->setTarget(sphereTransform);
@@ -58,13 +56,14 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false)
     sphereRotateTransformAnimation->setEndValue(QVariant::fromValue(360));
     sphereRotateTransformAnimation->setDuration(10000);
     sphereRotateTransformAnimation->setLoopCount(-1);
-    sphereRotateTransformAnimation->start();
+
     //material = new Qt3DExtras::QPhongMaterial(Root);
 
     auto* camController = new Qt3DExtras::QOrbitCameraController(Root);
     camController->setLinearSpeed(50.0f);
     camController->setLookSpeed(180.0f);
-    camController->setCamera(cameraset);
+    //camController->setCamera(cameraset);
+    Root->addComponent(objectTransform);
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -409,18 +408,20 @@ void CNome3DView::mousePressEvent(QMouseEvent* e)
 void CNome3DView::mouseMoveEvent(QMouseEvent* e)
 {
     if (mousePressEnabled) {
-        angularSpeed = 5;
-        QVector2D diff = QVector2D(e->QMouseEvent::pos()) - mousePressPosition;
-        QVector3D n = QVector3D(diff.y(), diff.x(), 0.0).normalized();
-        //qreal acc = diff.length() / 100.0;
-        rotationAxis = (rotationAxis * angularSpeed + n).normalized();
-        //angularSpeed += acc;
-        rotation = QQuaternion::fromAxisAndAngle(rotationAxis, angularSpeed) * rotation;
-        QMatrix4x4 matrix;
-        matrix.translate(0.0, 0.0, zPos);
-        matrix.rotate(rotation);
-        //cameraset->setProjectionMatrix(projection * matrix);
-        //mousePressPosition = QVector2D(e->QMouseEvent::pos());
+        // Mouse release position - mouse press position
+        QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
+
+        // Rotation axis is perpendicular to the mouse position difference
+        // vector
+        QVector3D n = QVector3D(diff.y(), diff.x(), 0);
+        rotation = QQuaternion::fromAxisAndAngle(n, diff.length()) * rotation;
+        rotation.normalize();
+        objectTransformMatrix.rotate(rotation);
+
+
+        objectTransform->setRotation(rotation);
+        mousePressPosition = QVector2D(e->localPos());
+
     }
 }
 
@@ -434,30 +435,67 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
     QPoint numPixels = ev->pixelDelta();
     QPoint numDegrees = ev->angleDelta() / 8;
 
+
     if (!numPixels.isNull()) {
-        zPos += numPixels.y() / 3;
+        zPos += numPixels.y();
     } else if (!numDegrees.isNull()) {
         QPoint numSteps = numDegrees / 15;
-        zPos += numSteps.y() / 3.0;
+        zPos += numSteps.y();
     }
     QMatrix4x4 matrix;
-    matrix.translate(0.0, 0.0, zPos);
-    matrix.rotate(rotation);
-    //cameraset->setProjectionMatrix(projection * matrix);
+    matrix.translate(zPos * cameraset->position() / 40.0);
+    cameraset->setProjectionMatrix(projection * matrix);
 
     ev->accept();
 }
 
 void CNome3DView::keyPressEvent(QKeyEvent *ev)
 {
-    if (ev->key() == Qt::Key_Space) {
+    float step = 10;
+    switch (ev->key())
+    {
+    case Qt::Key_Space:
         if (animationEnabled) {
             Root->removeComponent(sphereTransform);
         }   else {
             Root->addComponent(sphereTransform);
+
         }
         animationEnabled = !animationEnabled;
+        break;
+    case Qt::Key_Up:
+        cameraset->translate(QVector3D(0, 1, 0));
+        break;
+    case Qt::Key_Down:
+        cameraset->translate(QVector3D(0, -1, 0));
+        break;
+    case Qt::Key_Left:
+        cameraset->translate(QVector3D(-1, 0, 0));
+        break;
+    case Qt::Key_Right:
+        cameraset->translate(QVector3D(1, 0, 0));
+        break;
+    case Qt::Key_1:
+        cameraset->panAboutViewCenter(step, QVector3D(1, 0, 0));
+        break;
+    case Qt::Key_2:
+        cameraset->panAboutViewCenter(-step, QVector3D(1, 0, 0));
+        break;
+    case Qt::Key_3:
+        cameraset->panAboutViewCenter(step, QVector3D(0, 1, 0));
+        break;
+    case Qt::Key_4:
+        cameraset->panAboutViewCenter(-step, QVector3D(0, 1, 0));
+        break;
+    case Qt::Key_5:
+        cameraset->panAboutViewCenter(step, QVector3D(0, 0, 1));
+        break;
+    case Qt::Key_6:
+        cameraset->panAboutViewCenter(-step, QVector3D(0, 0, 1));
+        break;
     }
+
+
 
 }
 

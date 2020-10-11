@@ -485,12 +485,11 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ra
 
 
         // Randy note: They all have the same position because the local ray is transformed differently
-        //auto testdist = localRay.HitDistance(*testplane);
-       
-       // auto othertest = localRay.InsideGeometry(&points, 4, 0, points.size()); 
+        auto testdist = localRay.HitDistance(*testplane);
+        std::cout << testdist << std::endl;
+        //auto othertest = localRay.InsideGeometry(&points,4, 0, points.size()); 
 
-        //std::cout << "other test: "
-        //        + std::to_string(othertest) << std::endl;
+       // std::cout << "other test: " + std::to_string(othertest) << std::endl;
 
         /// Return hit distance to a triangle, or infinity if no hit. Optionally return hit normal
         /// and hit barycentric coordinate at intersect point.
@@ -504,7 +503,7 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ra
        
         //auto t = (localRay.Origin - projected).Length();
       
-        //std::cout << testdist << std::endl;
+
        
         
         //if (testdist < 10)//std::min(0.01f * t, 0.25f))

@@ -124,8 +124,8 @@ public:
 
     void CopyFromGenerator();
 
-    void CMeshInstance::RemoveFace(const std::vector<std::string>& facePoints); // Randy added, not fully implemented yet
-    void CMeshInstance::PreserveFace(const std::vector<std::string>& facePoints); // Randy added, not fully implemented yet
+    void RemoveFace(const std::vector<std::string>& facePoints); // Randy added, not fully implemented yet
+    void PreserveFace(const std::vector<std::string>& facePoints); // Randy added, not fully implemented yet
 
     // I am really not sure whether this is a good interface or not
     const CMeshImpl& GetMeshImpl() const { return Mesh; }

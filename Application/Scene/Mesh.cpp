@@ -496,9 +496,9 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ra
         //float HitDistance(const Vector3& v0, const Vector3& v1, const Vector3& v2,
           //                Vector3* outNormal = nullptr, Vector3* outBary = nullptr) const;
 
-        //auto testdist1 = localRay.HitDistance(pos1, pos2, pos3);
+        auto testdist1 = localRay.HitDistance(pos1, pos2, pos3);
         
-        //std::cout << "other test #2: " + std::to_string(testdist1) << std::endl;
+        std::cout << "other test #2: " + std::to_string(testdist1) << std::endl;
         //auto dist = (pos - projected).Length();
        
         //auto t = (localRay.Origin - projected).Length();

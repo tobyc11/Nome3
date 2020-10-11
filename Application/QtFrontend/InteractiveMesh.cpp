@@ -180,7 +180,7 @@ void CInteractiveMesh::InitInteractions()
             tc::Ray ray({ origin.x(), origin.y(), origin.z() }, { dir.x(), dir.y(), dir.z() });
             //bool additive = pick->modifiers() & Qt::ShiftModifier;
             GFrtCtx->NomeView->PickVertexWorldRay(ray); // additive);
-            GFrtCtx->NomeView->PickFaceWorldRay(ray);  // Randy added on 10/10 for pick face
+            //GFrtCtx->NomeView->PickFaceWorldRay(ray);  // Randy added on 10/10 for pick face
         }
     });
     this->addComponent(picker);

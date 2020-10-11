@@ -12,7 +12,7 @@
 namespace Nome
 {
 
-CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false)
+CNome3DView::CNome3DView()
 {
     Root = new Qt3DCore::QEntity();
     this->setRootEntity(Root);
@@ -33,38 +33,15 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false)
 
     // Setup camera
     // TODO: aspect ratio
-    cameraset = this->camera();
-    cameraset->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
-    cameraset->setPosition(QVector3D(0, 0, - 50.0f));
-    cameraset->setViewCenter(QVector3D(0, 0, 0));
-
-    // Xinyu add on Oct 8 for rotation
-    projection.setToIdentity();
-    projection.perspective(45.0f, 16.0f/9.0f, 0.1f, 1000.0f);
-    QMatrix4x4 matrix;
-    zPos = - 0;
-    matrix.translate(0.0, 0.0, zPos);
-    //cameraset->setProjectionMatrix(projection * matrix);
-
-    // Xinyu add for animation
-    sphereTransform = new Qt3DCore::QTransform;
-    controller = new OrbitTransformController(sphereTransform);
-    controller->setTarget(sphereTransform);
-    controller->setRadius(0);
-    sphereRotateTransformAnimation = new QPropertyAnimation(sphereTransform);
-    sphereRotateTransformAnimation->setTargetObject(controller);
-    sphereRotateTransformAnimation->setPropertyName("angle");
-    sphereRotateTransformAnimation->setStartValue(QVariant::fromValue(0));
-    sphereRotateTransformAnimation->setEndValue(QVariant::fromValue(360));
-    sphereRotateTransformAnimation->setDuration(10000);
-    sphereRotateTransformAnimation->setLoopCount(-1);
-    sphereRotateTransformAnimation->start();
-    //material = new Qt3DExtras::QPhongMaterial(Root);
+    auto* camera = this->camera();
+    camera->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
+    camera->setPosition(QVector3D(0, 0, 40.0f));
+    camera->setViewCenter(QVector3D(0, 0, 0));
 
     auto* camController = new Qt3DExtras::QOrbitCameraController(Root);
     camController->setLinearSpeed(50.0f);
     camController->setLookSpeed(180.0f);
-    camController->setCamera(cameraset);
+    camController->setCamera(camera);
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -211,9 +188,87 @@ void CNome3DView::ClearSelectedVertices()
     });
 }
 
-void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
+void CNome3DView::PickFaceWorldRay(const tc::Ray& ray)
 {
 
+    // copied from old version of PickVertexWorldRay
+
+    std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+            auto localRay = ray.Transformed(l2w.Inverse());
+
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            auto pickResults = meshInst->PickFaces(localRay);
+            for (const auto& [dist, name] : pickResults)
+                hits.emplace_back(dist, meshInst, name);
+        }
+    });
+
+    std::sort(hits.begin(), hits.end());
+    if (hits.size() == 1)
+    {
+        const auto& [dist, meshInst, vertName] = hits[0];
+        SelectedVertices.push_back(vertName);
+        GFrtCtx->MainWindow->statusBar()->showMessage(
+            QString::fromStdString("Selected " + vertName));
+        meshInst->MarkAsSelected({ vertName }, true);
+    }
+    else if (!hits.empty())
+    {
+        // Show a dialog for the user to choose one vertex
+        auto* dialog = new QDialog(GFrtCtx->MainWindow);
+        dialog->setModal(true);
+        auto* layout1 = new QHBoxLayout(dialog);
+        auto* table = new QTableWidget();
+        table->setRowCount(hits.size());
+        table->setColumnCount(2);
+        for (size_t i = 0; i < hits.size(); i++)
+        {
+            const auto& [dist, meshInst, vertName] = hits[i];
+            auto* distWidget = new QTableWidgetItem(QString::number(dist));
+            auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
+            table->setItem(i, 0, distWidget);
+            table->setItem(i, 1, item);
+        }
+        layout1->addWidget(table);
+        auto* layout2 = new QVBoxLayout();
+        auto* btnOk = new QPushButton();
+        btnOk->setText("OK");
+        connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
+            auto sel = table->selectedItems();
+            if (!sel.empty())
+            {
+                int row = sel[0]->row();
+                const auto& [dist, meshInst, vertName] = hits[row];
+                SelectedVertices.push_back(vertName);
+                GFrtCtx->MainWindow->statusBar()->showMessage(
+                    QString::fromStdString("Selected " + vertName));
+                meshInst->MarkAsSelected({ vertName }, true);
+            }
+            dialog->close();
+        });
+        auto* btnCancel = new QPushButton();
+        btnCancel->setText("Cancel");
+        connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
+        layout2->addWidget(btnOk);
+        layout2->addWidget(btnCancel);
+        layout1->addLayout(layout2);
+        dialog->show();
+    }
+    else
+    {
+        GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
+    }
+}
+void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
+{
 
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
@@ -226,7 +281,8 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
             const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
             auto localRay = ray.Transformed(l2w.Inverse());
             localRay.Direction =
-                localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                localRay.Direction
+                    .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
             auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
             auto pickResults = meshInst->PickVertices(localRay);
             for (const auto& [dist, name] : pickResults)
@@ -236,10 +292,11 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
 
     std::sort(hits.begin(), hits.end());
 
-    if (hits.size() == 1) // RANDY BUG IS HERE, I ONLY IMPLEMENTED S LOGIC 
+    if (hits.size() == 1) // RANDY BUG IS HERE, I ONLY IMPLEMENTED S LOGIC
     {
         const auto& [dist, meshInst, vertName] = hits[0];
-        std::vector<std::string>::iterator position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName); 
+        std::vector<std::string>::iterator position =
+            std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
         if (position == SelectedVertices.end())
         { // if this vertex has not been selected before
             SelectedVertices.push_back(vertName); // add vertex to selected vertices
@@ -263,7 +320,7 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
         auto* table = new QTableWidget();
         table->setRowCount(hits.size());
         table->setColumnCount(2);
-        QStringList titles; 
+        QStringList titles;
         titles.append(QString::fromStdString("Closeness Rank"));
         titles.append(QString::fromStdString("Vertex Name"));
         table->setHorizontalHeaderLabels(titles);
@@ -271,13 +328,16 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
         for (size_t i = 0; i < hits.size(); i++)
         {
             const auto& [dist, meshInst, vertName] = hits[i];
-            if (i != 0) { 
+            if (i != 0)
+            {
                 const auto& [prevDist, prevMeshInst, prevVertName] = hits[i - 1];
-                if (round(dist * 100) != round(prevDist * 100)) {
+                if (round(dist * 100) != round(prevDist * 100))
+                {
                     closenessRank += 1;
-                } 
-                // else, closenessRank stay the same as prev as the distance is the same (vertices in same location)
-            } 
+                }
+                // else, closenessRank stay the same as prev as the distance is the same (vertices
+                // in same location)
+            }
 
             auto* distWidget = new QTableWidgetItem(QString::number(closenessRank));
             auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
@@ -294,30 +354,32 @@ void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
             {
                 int row = sel[0]->row();
                 const auto& [dist, meshInst, vertName] = hits[row];
-                std::vector<std::string>::iterator position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName); 
-                if (position == SelectedVertices.end()) { // if this vertex has not been selected before
+                std::vector<std::string>::iterator position =
+                    std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
+                if (position == SelectedVertices.end())
+                { // if this vertex has not been selected before
                     SelectedVertices.push_back(vertName); // add vertex to selected vertices
                     GFrtCtx->MainWindow->statusBar()->showMessage(
                         QString::fromStdString("Selected " + vertName));
                 }
                 else // else, this vertex has been selected previously
                 {
-                    SelectedVertices.erase(position); 
+                    SelectedVertices.erase(position);
                     GFrtCtx->MainWindow->statusBar()->showMessage(
                         QString::fromStdString("De-selected " + vertName));
                 }
-               
 
-                 float selected_dist = round(dist*100);
+                float selected_dist = round(dist * 100);
 
-                 // mark all those that share the same location
-                 for (int i = 0; i < hits.size(); i++) {
-                     const auto& [dist, meshInst, overlapvertName] = hits[i]; 
-                     if (round(dist*100) == selected_dist) {
+                // mark all those that share the same location
+                for (int i = 0; i < hits.size(); i++)
+                {
+                    const auto& [dist, meshInst, overlapvertName] = hits[i];
+                    if (round(dist * 100) == selected_dist)
+                    {
                         meshInst->MarkAsSelected({ overlapvertName }, true);
-                         
-                     }
-                 }
+                    }
+                }
             }
             dialog->close();
         });
@@ -393,72 +455,6 @@ Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
     gridEntity->addComponent(material);
 
     return gridEntity;
-}
-
-// Xinyu add on Oct 8 for rotation
-void CNome3DView::mousePressEvent(QMouseEvent* e)
-{
-
-    // Save mouse press position
-    mousePressEnabled = true;
-    mousePressPosition = QVector2D(e->localPos());
-
-}
-
-
-void CNome3DView::mouseMoveEvent(QMouseEvent* e)
-{
-    if (mousePressEnabled) {
-        angularSpeed = 5;
-        QVector2D diff = QVector2D(e->QMouseEvent::pos()) - mousePressPosition;
-        QVector3D n = QVector3D(diff.y(), diff.x(), 0.0).normalized();
-        //qreal acc = diff.length() / 100.0;
-        rotationAxis = (rotationAxis * angularSpeed + n).normalized();
-        //angularSpeed += acc;
-        rotation = QQuaternion::fromAxisAndAngle(rotationAxis, angularSpeed) * rotation;
-        QMatrix4x4 matrix;
-        matrix.translate(0.0, 0.0, zPos);
-        matrix.rotate(rotation);
-        //cameraset->setProjectionMatrix(projection * matrix);
-        //mousePressPosition = QVector2D(e->QMouseEvent::pos());
-    }
-}
-
-void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
-{
-    mousePressEnabled = false;
-}
-
-void CNome3DView::wheelEvent(QWheelEvent *ev)
-{
-    QPoint numPixels = ev->pixelDelta();
-    QPoint numDegrees = ev->angleDelta() / 8;
-
-    if (!numPixels.isNull()) {
-        zPos += numPixels.y() / 3;
-    } else if (!numDegrees.isNull()) {
-        QPoint numSteps = numDegrees / 15;
-        zPos += numSteps.y() / 3.0;
-    }
-    QMatrix4x4 matrix;
-    matrix.translate(0.0, 0.0, zPos);
-    matrix.rotate(rotation);
-    //cameraset->setProjectionMatrix(projection * matrix);
-
-    ev->accept();
-}
-
-void CNome3DView::keyPressEvent(QKeyEvent *ev)
-{
-    if (ev->key() == Qt::Key_Space) {
-        if (animationEnabled) {
-            Root->removeComponent(sphereTransform);
-        }   else {
-            Root->addComponent(sphereTransform);
-        }
-        animationEnabled = !animationEnabled;
-    }
-
 }
 
 }

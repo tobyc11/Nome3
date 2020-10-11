@@ -107,13 +107,15 @@ void CMesh::AddFace(const std::string& name, const std::vector<std::string>& fac
     AddFace(name, faceVHandles);
 }
 
-
 void CMesh::AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints)
 {
     auto faceHandle = Mesh.add_face(facePoints);
     if (!faceHandle.is_valid())
         printf("Could not add face %s into mesh %s\n", name.c_str(), GetName().c_str());
+    FaceVertsToFace.emplace(facePoints,
+                            faceHandle); // Key: vertex handle, Value: faceHandle. Randy Added
     NameToFace.emplace(name, faceHandle);
+    FaceToName.emplace(faceHandle, name); // Randy added
 }
 
 void CMesh::AddLineStrip(const std::string& name,
@@ -127,9 +129,12 @@ void CMesh::ClearMesh()
     Mesh.clear();
     NameToVert.clear();
     NameToFace.clear();
+    FaceToName.clear(); // Randy added
+    FaceVertsToFace.clear(); // Randy added
     LineStrip.clear();
 }
 
+// WARNING this function is not currently used and outdated. leaving here for future use
 void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexHandle> vnames,
                         std::map<std::string, CMeshImpl::FaceHandle> fnames)
 {
@@ -151,7 +156,7 @@ AST::ACommand* CMesh::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
     size_t numFaces = Faces.GetSize();
     for (size_t i = 0; i < numFaces; i++)
     {
-        this->GetName(); 
+        this->GetName();
         auto* pFace = Faces.GetValue(i, nullptr);
         // Test whether the face is a sub-entity of mine
         //   For any sub-entity, we also serialize their AST
@@ -169,7 +174,7 @@ std::string CMeshInstancePoint::GetPointPath() const
 }
 
 CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
-    : MeshGenerator(generator)
+    : MeshGenerator(generator) // MeshGenerator is the mesh the mesh instance refers to
     , SceneTreeNode(stn)
 {
     SetName(tc::StringPrintf("_%s_%s", MeshGenerator->GetName().c_str(), GetName().c_str()));
@@ -232,27 +237,29 @@ void CMeshInstance::UpdateEntity()
         // Update visual layer geometry
     }
 
-    // Construct interactive points
-    CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();
-    for (auto pair : PickingVerts)
-    {
-        scene->GetPickingMgr()->UnregisterObj(pair.second.second);
-        delete pair.second.first;
-    }
-    PickingVerts.clear();
 
-    for (const auto& pair : NameToVert)
-    {
-        // Create a picking proxy point for each vertex
-        CMeshInstancePoint* ip = new CMeshInstancePoint(this);
-        ip->SetName(pair.first);
-        const auto& p = Mesh.point(pair.second);
-        Vector3 pos = { p[0], p[1], p[2] };
-        ip->SetPosition(GetSceneTreeNode()->L2WTransform.GetValue(Matrix3x4::IDENTITY) * pos);
-        // Register this picking point with the scene picking mgr
-        uint32_t id = scene->GetPickingMgr()->RegisterObj(ip);
-        PickingVerts.emplace(pair.first, std::make_pair(ip, id));
-    }
+    // Randy commented the below section on 10/10. i don't think it does anything ??? 
+    // Construct interactive points
+    //CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();
+    //for (auto pair : PickingVerts)
+    //{
+    //    scene->GetPickingMgr()->UnregisterObj(pair.second.second);
+    //    delete pair.second.first;
+    //}
+    //PickingVerts.clear();
+
+    //for (const auto& pair : NameToVert)
+    //{
+    //    // Create a picking proxy point for each vertex
+    //    CMeshInstancePoint* ip = new CMeshInstancePoint(this);
+    //    ip->SetName(pair.first);
+    //    const auto& p = Mesh.point(pair.second);
+    //    Vector3 pos = { p[0], p[1], p[2] };
+    //    ip->SetPosition(GetSceneTreeNode()->L2WTransform.GetValue(Matrix3x4::IDENTITY) * pos);
+    //    // Register this picking point with the scene picking mgr
+    //    uint32_t id = scene->GetPickingMgr()->RegisterObj(ip);
+    //    PickingVerts.emplace(pair.first, std::make_pair(ip, id));
+    //}
 
     Super::UpdateEntity();
     SetValid(MeshGenerator->IsEntityValid());
@@ -273,15 +280,268 @@ void CMeshInstance::CopyFromGenerator()
     Mesh.clear();
     NameToVert.clear();
     NameToFace.clear();
+    FaceToName.clear(); // Randy added
+    FaceVertsToFace.clear();
 
     Mesh = MeshGenerator->Mesh;
     // Since the handle only contains an index, we can just copy
     NameToVert = MeshGenerator->NameToVert;
     NameToFace = MeshGenerator->NameToFace;
+    FaceToName = MeshGenerator->FaceToName; // Randy added
+    FaceVertsToFace = MeshGenerator->FaceVertsToFace; // Randy added
 }
+
+void CMeshInstance::RemoveFace(const std::vector<std::string>& facePoints) // Randy added
+{
+    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+    if (AllVertSelected)
+    {
+        std::vector<CMeshImpl::VertexHandle> faceverthandles;
+        for (const auto& myPair :
+             NameToVert) // mesh vert name to vert handle. The issue is they all have the exact same
+                         // mesh vert name and vert handle. Transformation is applied to each
+        {
+            auto test = myPair.first;
+            std::cout << test << std::endl;
+            std::cout << myPair.second.idx() << std::endl;
+        }
+        for (const auto& myPair : NameToFace) // mesh vert name to vert handle. The issue is they
+                                              // all have the same mesh vert name and vert handle.
+        {
+            auto test = myPair.first;
+            std::cout << test << std::endl;
+            std::cout << myPair.second.idx() << std::endl;
+        }
+        for (auto name : facePoints)
+        {
+
+            // The next few lines fixed the bug
+            std::cout << name << std::endl;
+            auto suffix = name.substr(name.find_last_of(".")
+                                      + 1); // get, for example, p5 from cube0.bottom.p5. THIS IS
+                                            // CAUSING A BUG WHEN ALL FACES SHARE THE SAME SUFFIX
+            auto prefix = name.substr(0, name.find_last_of(".") + 1);
+            // auto it = NameToVert.find(suffix);  WRONG THIS WILL ALWAYTS BE FOUND
+            if (prefix == instPrefix)
+            {
+                std::cout << "00" << std::endl;
+                auto verthandle = NameToVert.at(suffix);
+                faceverthandles.push_back(verthandle);
+            }
+        }
+        CMeshImpl::FaceHandle faceHandle;
+        std::string faceName = "none";
+        for (const auto& myPair :
+             FaceVertsToFace) // iterate  through all the faceverts and face pairs
+        {
+            auto currfaceverthandles = myPair.first;
+            if (faceverthandles.size()
+                != 0) // an empty vector is a permutation of any vector, so we need to ignore it
+            {
+                if (std::is_permutation(faceverthandles.begin(), faceverthandles.end(),
+                                        currfaceverthandles.begin()))
+                {
+                    auto fhiter =
+                        FaceVertsToFace.find(currfaceverthandles); // i think this is not finding
+                    if (fhiter != FaceVertsToFace.end())
+                    {
+                        faceHandle = FaceVertsToFace.at(currfaceverthandles);
+                    }
+                    auto fniter = FaceToName.find(faceHandle);
+                    if (fniter != FaceToName.end())
+                    {
+                        faceName = FaceToName.at(faceHandle);
+                        FacesToDelete.insert(faceName);
+                        this->MarkDirty(); // not sure if this is needed
+                    }
+                }
+            }
+        }
+    }
+    AllVertSelected = false; // done removing the face with all vert selected
+
+    // if no faces added into facestodelete, this function silently fails
+}
+
+void CMeshInstance::PreserveFace(const std::vector<std::string>& facePoints) // Randy added
+{
+    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+    if (AllVertSelected)
+    {
+        std::vector<CMeshImpl::VertexHandle> faceverthandles;
+        for (const auto& myPair : NameToVert)
+        {
+            auto test = myPair.first;
+            std::cout << myPair.second.idx() << std::endl;
+        }
+        for (const auto& myPair : NameToFace)
+        {
+            auto test = myPair.first;
+        }
+        for (auto name : facePoints)
+        {
+
+            // The next few lines fixed the bug
+            auto suffix = name.substr(name.find_last_of(".")
+                                      + 1); // get, for example, p5 from cube0.bottom.p5. THIS IS
+                                            // CAUSING A BUG WHEN ALL FACES SHARE THE SAME SUFFIX
+            auto prefix = name.substr(0, name.find_last_of(".") + 1);
+            //std::cout << prefix << std::endl;
+            //std::cout << instPrefix << std::endl;
+            // auto it = NameToVert.find(suffix);  WRONG THIS WILL ALWAYTS BE FOUND
+            if (prefix == instPrefix)
+            {
+                auto verthandle = NameToVert.at(suffix);
+                faceverthandles.push_back(verthandle);
+            }
+        }
+        //std::cout << faceverthandles.size() << std::endl;
+        //std::cout << "above is face vert handles size for preserved face" << std::endl;
+        CMeshImpl::FaceHandle faceHandle;
+        std::string faceName = "none";
+        //std::cout << FaceVertsToFace.size() << std::endl;
+        //std::cout << "above is total number of faces in mesh" << std::endl;
+        for (const auto& myPair :
+             FaceVertsToFace) // iterate  through all the faceverts and face pairs
+        {
+
+            auto currfaceverthandles = myPair.first;
+            //std::cout << FaceVertsToFace.size() << std::endl;
+            //std::cout << "above is total number of faces in mesh" << std::endl;
+            //std::cout << currfaceverthandles.size() << std::endl; // THIS IS THE BUG
+            //std::cout << "above is face vert handles size for preserved face" << std::endl;
+            if (faceverthandles.size()
+                != 0) // an empty vector is a permutation of any vector, so we need to ignore it
+            {
+                if (std::is_permutation(
+                        faceverthandles.begin(), faceverthandles.end(),
+                        currfaceverthandles
+                            .begin())) // if the selected vertices match the current face vertices
+                {
+
+                    std::cout << "Found a permutation"
+                              << std::endl;
+                    auto fhiter =
+                        FaceVertsToFace.find(currfaceverthandles); 
+                    if (fhiter != FaceVertsToFace.end())
+                    {
+                        faceHandle = FaceVertsToFace.at(currfaceverthandles);
+                    }
+                    auto fniter = FaceToName.find(faceHandle);
+                    if (fniter != FaceToName.end())
+                    {
+
+                        // This face is deleted here and was copied (with a new name) in
+                        // TempMeshManager
+
+                        faceName = FaceToName.at(faceHandle);
+                        FacesToDelete.insert(faceName);
+                        this->MarkDirty(); // not sure if this is needed
+                    }
+                }
+            }
+        }
+    }
+    AllVertSelected = false; // done removing the face with all vert selected
+
+    // if no faces added into facestodelete, this function silently fails
+}
+
+
+std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ray& localRay) {
+
+    // Randy look at this for delete face
+    std::vector<std::pair<float, std::string>> result;
+    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+    for (const auto& pair : FaceVertsToFace)
+    {
+        /// Construct from 3 vertices.
+        /*Plane(const Vector3& v0, const Vector3& v1, const Vector3& v2) noexcept
+        {
+            Define(v0, v1, v2);
+        }*/
+
+        auto points = pair.first;
+        auto firstpoint = points[0];
+        auto secondpoint = points[1];
+        auto thirdpoint = points[2];
+        const auto& posArr1 = Mesh.point(firstpoint);
+        tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
+        const auto& posArr2 = Mesh.point(secondpoint);
+        tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
+        const auto& posArr3 = Mesh.point(thirdpoint);
+        tc::Vector3 pos3 { posArr3[0], posArr3[1], posArr3[2] };
+        auto testplane = new tc::Plane(pos1, pos2, pos3);
+        auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+        std::cout << instPrefix << std::endl;
+        std::cout << FaceToName.at(pair.second) << std::endl;
+        std::cout << pos1.ToString() << std::endl;
+        std::cout << pos2.ToString() << std::endl;
+        std::cout << pos3.ToString() << std::endl;
+       // tc::Vector3 projected = localRay.Project(pos);
+
+       // bool Ray::InsideGeometry(const void* vertexData, unsigned vertexSize, unsigned vertexStart,
+        //                         unsigned vertexCount) const
+
+
+        // Randy note: They all have the same position because the local ray is transformed differently
+        //auto testdist = localRay.HitDistance(*testplane);
+       
+       // auto othertest = localRay.InsideGeometry(&points, 4, 0, points.size()); 
+
+        //std::cout << "other test: "
+        //        + std::to_string(othertest) << std::endl;
+
+        /// Return hit distance to a triangle, or infinity if no hit. Optionally return hit normal
+        /// and hit barycentric coordinate at intersect point.
+        //float HitDistance(const Vector3& v0, const Vector3& v1, const Vector3& v2,
+          //                Vector3* outNormal = nullptr, Vector3* outBary = nullptr) const;
+
+        //auto testdist1 = localRay.HitDistance(pos1, pos2, pos3);
+        
+        //std::cout << "other test #2: " + std::to_string(testdist1) << std::endl;
+        //auto dist = (pos - projected).Length();
+       
+        //auto t = (localRay.Origin - projected).Length();
+      
+        //std::cout << testdist << std::endl;
+       
+        
+        //if (testdist < 10)//std::min(0.01f * t, 0.25f))
+        //{
+        //    //result.emplace_back(t, instPrefix + pair.first);
+        //}
+
+
+
+
+        //auto pos = (pos1 + pos2 + pos3) / 3.f; // find average face position
+        //tc::Vector3 projected = localRay.Project(pos);
+        //auto dist = (pos - projected).Length();
+        //auto t = (localRay.Origin - projected).Length();
+        //std::cout << dist << std::endl;
+        //std::cout << "dist above" << std::endl;
+        //if (dist < std::min(0.01f * t, 0.25f))
+        //{
+        //    //result.emplace_back(t, instPrefix + pair.first);
+        //}
+    }
+    std::sort(result.begin(), result.end());
+
+    for (const auto& sel : result)
+    {
+        printf("t=%.3f v=%s\n", sel.first, sel.second.c_str());
+    }
+    return result;
+
+
+}
+
+
 
 std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc::Ray& localRay)
 {
+    // Randy look at this for delete face
     std::vector<std::pair<float, std::string>> result;
     auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
     for (const auto& pair : NameToVert)
@@ -320,25 +580,31 @@ void CMeshInstance::MarkAsSelected(const std::set<std::string>& vertNames, bool 
         auto handle = iter->second;
         const auto& original = Mesh.color(handle);
         printf("Before: %d %d %d\n", original[0], original[1], original[2]);
-        if (CurrSelectedVertNames.find(name) == CurrSelectedVertNames.end()) { //if hasn't been selected before
+        if (CurrSelectedVertNames.find(name) == CurrSelectedVertNames.end())
+        { // if hasn't been selected before
             if (bSel)
                 Mesh.set_color(handle, { VERT_SEL_COLOR });
             else
                 Mesh.set_color(handle, { VERT_COLOR });
             CurrSelectedVerts.insert(name.substr(prefixLen));
             CurrSelectedVertNames.insert(name);
+
+            if (CurrSelectedVertNames.size() == NameToVert.size())
+            { // RANDY REMOVE THIS LATER if we selected all the available vertices on a face.
+              // Reminder, a face is a mesh! A "mesh" command would be a collection of face meshes.
+                AllVertSelected = true;
+            }
         }
-        else // it has already been selected, so deselect
+        else // it has already been selected, then deselect
         {
             Mesh.set_color(handle, { VERT_COLOR });
-            if (CurrSelectedVerts.find(name.substr(prefixLen)) != CurrSelectedVerts.end()) { // erase once
-                CurrSelectedVerts.erase(name.substr(prefixLen)); 
+            if (CurrSelectedVerts.find(name.substr(prefixLen)) != CurrSelectedVerts.end())
+            { // erase once
+                CurrSelectedVerts.erase(name.substr(prefixLen));
             }
-            
+
             CurrSelectedVertNames.erase(name);
         }
-        
-     
     }
     GetSceneTreeNode()->SetEntityUpdated(true);
 }

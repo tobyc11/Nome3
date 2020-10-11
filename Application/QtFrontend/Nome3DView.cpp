@@ -190,83 +190,82 @@ void CNome3DView::ClearSelectedVertices()
 
 void CNome3DView::PickFaceWorldRay(const tc::Ray& ray)
 {
-    // WORK IN PROGRESS
 
-    //// copied from old version of PickVertexWorldRay
+    // copied from old version of PickVertexWorldRay
 
-    //std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
-    //Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-    //    // Obtain either an instance entity or a shared entity from the scene node
-    //    auto* entity = node->GetInstanceEntity();
-    //    if (!entity)
-    //        entity = node->GetOwner()->GetEntity();
-    //    if (entity)
-    //    {
-    //        const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-    //        auto localRay = ray.Transformed(l2w.Inverse());
+    std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+            auto localRay = ray.Transformed(l2w.Inverse());
 
-    //        auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-    //        auto pickResults = meshInst->PickFaces(localRay);
-    //        for (const auto& [dist, name] : pickResults)
-    //            hits.emplace_back(dist, meshInst, name);
-    //    }
-    //});
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            auto pickResults = meshInst->PickFaces(localRay);
+            for (const auto& [dist, name] : pickResults)
+                hits.emplace_back(dist, meshInst, name);
+        }
+    });
 
-    //std::sort(hits.begin(), hits.end());
-    //if (hits.size() == 1)
-    //{
-    //    const auto& [dist, meshInst, vertName] = hits[0];
-    //    SelectedVertices.push_back(vertName);
-    //    GFrtCtx->MainWindow->statusBar()->showMessage(
-    //        QString::fromStdString("Selected " + vertName));
-    //    meshInst->MarkAsSelected({ vertName }, true);
-    //}
-    //else if (!hits.empty())
-    //{
-    //    // Show a dialog for the user to choose one vertex
-    //    auto* dialog = new QDialog(GFrtCtx->MainWindow);
-    //    dialog->setModal(true);
-    //    auto* layout1 = new QHBoxLayout(dialog);
-    //    auto* table = new QTableWidget();
-    //    table->setRowCount(hits.size());
-    //    table->setColumnCount(2);
-    //    for (size_t i = 0; i < hits.size(); i++)
-    //    {
-    //        const auto& [dist, meshInst, vertName] = hits[i];
-    //        auto* distWidget = new QTableWidgetItem(QString::number(dist));
-    //        auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
-    //        table->setItem(i, 0, distWidget);
-    //        table->setItem(i, 1, item);
-    //    }
-    //    layout1->addWidget(table);
-    //    auto* layout2 = new QVBoxLayout();
-    //    auto* btnOk = new QPushButton();
-    //    btnOk->setText("OK");
-    //    connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
-    //        auto sel = table->selectedItems();
-    //        if (!sel.empty())
-    //        {
-    //            int row = sel[0]->row();
-    //            const auto& [dist, meshInst, vertName] = hits[row];
-    //            SelectedVertices.push_back(vertName);
-    //            GFrtCtx->MainWindow->statusBar()->showMessage(
-    //                QString::fromStdString("Selected " + vertName));
-    //            meshInst->MarkAsSelected({ vertName }, true);
-    //        }
-    //        dialog->close();
-    //    });
-    //    auto* btnCancel = new QPushButton();
-    //    btnCancel->setText("Cancel");
-    //    connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
-    //    layout2->addWidget(btnOk);
-    //    layout2->addWidget(btnCancel);
-    //    layout1->addLayout(layout2);
-    //    dialog->show();
-    //}
-    //else
-    //{
-    //    GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
-    //}
+    std::sort(hits.begin(), hits.end());
+    if (hits.size() == 1)
+    {
+        const auto& [dist, meshInst, vertName] = hits[0];
+        SelectedVertices.push_back(vertName);
+        GFrtCtx->MainWindow->statusBar()->showMessage(
+            QString::fromStdString("Selected " + vertName));
+        meshInst->MarkAsSelected({ vertName }, true);
+    }
+    else if (!hits.empty())
+    {
+        // Show a dialog for the user to choose one vertex
+        auto* dialog = new QDialog(GFrtCtx->MainWindow);
+        dialog->setModal(true);
+        auto* layout1 = new QHBoxLayout(dialog);
+        auto* table = new QTableWidget();
+        table->setRowCount(hits.size());
+        table->setColumnCount(2);
+        for (size_t i = 0; i < hits.size(); i++)
+        {
+            const auto& [dist, meshInst, vertName] = hits[i];
+            auto* distWidget = new QTableWidgetItem(QString::number(dist));
+            auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
+            table->setItem(i, 0, distWidget);
+            table->setItem(i, 1, item);
+        }
+        layout1->addWidget(table);
+        auto* layout2 = new QVBoxLayout();
+        auto* btnOk = new QPushButton();
+        btnOk->setText("OK");
+        connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
+            auto sel = table->selectedItems();
+            if (!sel.empty())
+            {
+                int row = sel[0]->row();
+                const auto& [dist, meshInst, vertName] = hits[row];
+                SelectedVertices.push_back(vertName);
+                GFrtCtx->MainWindow->statusBar()->showMessage(
+                    QString::fromStdString("Selected " + vertName));
+                meshInst->MarkAsSelected({ vertName }, true);
+            }
+            dialog->close();
+        });
+        auto* btnCancel = new QPushButton();
+        btnCancel->setText("Cancel");
+        connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
+        layout2->addWidget(btnOk);
+        layout2->addWidget(btnCancel);
+        layout1->addLayout(layout2);
+        dialog->show();
+    }
+    else
+    {
+        GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
+    }
 }
 void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
 {

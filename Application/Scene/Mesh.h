@@ -3,7 +3,7 @@
 #include "InteractivePoint.h"
 
 #include <Ray.h>
-
+#include <Plane.h> // Randy added on 10/10 for pick face
 // We use OpenMesh for now. Can easily replace with in-house library when needed.
 #define _USE_MATH_DEFINES
 #undef min
@@ -64,6 +64,9 @@ private:
     CMeshImpl Mesh;
     std::map<std::string, CMeshImpl::VertexHandle> NameToVert;
     std::map<std::string, CMeshImpl::FaceHandle> NameToFace;
+    std::map<CMeshImpl::FaceHandle, std::string> FaceToName; // Randy added
+    std::map<std::vector<CMeshImpl::VertexHandle>, CMeshImpl::FaceHandle>
+        FaceVertsToFace; // Randy added
     std::vector<CMeshImpl::VertexHandle> LineStrip;
 };
 
@@ -121,10 +124,14 @@ public:
 
     void CopyFromGenerator();
 
+    void CMeshInstance::RemoveFace(const std::vector<std::string>& facePoints); // Randy added, not fully implemented yet
+    void CMeshInstance::PreserveFace(const std::vector<std::string>& facePoints); // Randy added, not fully implemented yet
+
     // I am really not sure whether this is a good interface or not
     const CMeshImpl& GetMeshImpl() const { return Mesh; }
 
     std::vector<std::pair<float, std::string>> PickVertices(const tc::Ray& localRay);
+    std::vector<std::pair<float, std::string>> PickFaces(const tc::Ray& localRay); // Randy added on 10/10 to pick faces
     void MarkAsSelected(const std::set<std::string>& vertNames, bool bSel);
     void DeselectAll();
 
@@ -138,13 +145,17 @@ private:
     CMeshImpl Mesh;
     std::map<std::string, CMeshImpl::VertexHandle> NameToVert;
     std::map<std::string, CMeshImpl::FaceHandle> NameToFace;
-
+    std::map<CMeshImpl::FaceHandle, std::string> FaceToName; // Randy added
+    std::map<std::vector<CMeshImpl::VertexHandle>, CMeshImpl::FaceHandle>
+        FaceVertsToFace; // Randy added
+    bool AllVertSelected; // Randy added. Useful for knowing when the face has been selected
     // Instance specific data
     std::set<std::string> FacesToDelete;
 
-    std::map<std::string, std::pair<CMeshInstancePoint*, uint32_t>> PickingVerts;
+    // std::map<std::string, std::pair<CMeshInstancePoint*, uint32_t>> PickingVerts; Randy commented out on 10/10 . I dont think it does anything???
     std::set<std::string> CurrSelectedVerts; // unique verts
-    std::set<std::string> CurrSelectedVertNames;  // a unique vert can be used in different meshes and have different names
+    std::set<std::string> CurrSelectedVertNames; // a unique vert can be used in different meshes
+                                                 // and have different names
 };
 
 class CVertexSelector : public Flow::CFlowNode

@@ -3,6 +3,7 @@
 #include "NomParser.h"
 #include "SyntaxTreeBuilder.h"
 #include "antlr4-runtime.h"
+#include <sstream>
 #include <stack>
 #include <utility>
 
@@ -44,7 +45,8 @@ bool CSourceManager::ParseMainSource()
     MainSourceBuffer = CStringBuffer(content);
     PieceTable.emplace_back(OrigBuf, 0, content.length());
 
-    ANTLRInputStream input(content);
+    std::stringstream inputss(content);
+    ANTLRInputStream input(inputss);
     NomLexer lexer(&input);
     CommonTokenStream tokens(&lexer);
 

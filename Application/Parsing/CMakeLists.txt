@@ -10,7 +10,7 @@ find_package(ANTLR REQUIRED)
 antlr_target(NomGenerate Nom.g4 LEXER PARSER LISTENER VISITOR)
 
 # Export the generated parser as a library
-add_library(NomParsing OBJECT ${ANTLR_NomGenerate_CXX_OUTPUTS})
+add_library(NomParsing STATIC ${ANTLR_NomGenerate_CXX_OUTPUTS})
 target_include_directories(NomParsing PUBLIC ${ANTLR4_INCLUDE_DIRS})
 target_compile_definitions(NomParsing PUBLIC ANTLR4CPP_STATIC)
 target_link_libraries(NomParsing PUBLIC antlr4_static)

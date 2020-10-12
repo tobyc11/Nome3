@@ -54,7 +54,7 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false), 
     sphereRotateTransformAnimation->setPropertyName("angle");
     sphereRotateTransformAnimation->setStartValue(QVariant::fromValue(0));
     sphereRotateTransformAnimation->setEndValue(QVariant::fromValue(360));
-    sphereRotateTransformAnimation->setDuration(10000);
+    sphereRotateTransformAnimation->setDuration(100000);
     sphereRotateTransformAnimation->setLoopCount(-1);
 
     //material = new Qt3DExtras::QPhongMaterial(Root);
@@ -415,7 +415,7 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
         // Rotation axis is perpendicular to the mouse position difference
         // vector
         QVector3D n = QVector3D(diff.y(), diff.x(), 0);
-        rotation = QQuaternion::fromAxisAndAngle(n, diff.length()) * rotation;
+        rotation = QQuaternion::fromAxisAndAngle(n, diff.length()) * sphereTransform->rotation();
         rotation.normalize();
 
 

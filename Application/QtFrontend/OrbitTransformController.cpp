@@ -57,9 +57,10 @@ float OrbitTransformController::angle() const
 void OrbitTransformController::updateMatrix()
 {
     m_matrix.setToIdentity();
-    m_matrix.rotate(m_angle, QVector3D(0.0f, 1.0f, 0.0f));
+    m_matrix.rotate(1, QVector3D(0.0f, 1.0f, 0.0f));
     m_matrix.translate(m_radius, 0.0f, 0.0f);
-    m_target->setMatrix(m_matrix);
+
+    m_target->setMatrix(m_matrix * m_target->matrix());
 }
 
 QT_END_NAMESPACE

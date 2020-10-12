@@ -44,7 +44,7 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false), 
     projection.perspective(45.0f, 16.0f/9.0f, 0.1f, 1000.0f);
     zPos = yPos = xPos = 0;
     // Xinyu add for animation
-    objectTransform = new Qt3DCore::QTransform;
+
     sphereTransform = new Qt3DCore::QTransform;
     controller = new OrbitTransformController(sphereTransform);
     controller->setTarget(sphereTransform);
@@ -63,7 +63,7 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false), 
     camController->setLinearSpeed(50.0f);
     camController->setLookSpeed(180.0f);
     camController->setCamera(cameraset);
-    Root->addComponent(objectTransform);
+    Root->addComponent(sphereTransform);
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -417,10 +417,10 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
         QVector3D n = QVector3D(diff.y(), diff.x(), 0);
         rotation = QQuaternion::fromAxisAndAngle(n, diff.length()) * rotation;
         rotation.normalize();
-        objectTransformMatrix.rotate(rotation);
 
 
-        objectTransform->setRotation(rotation);
+
+        sphereTransform->setRotation(rotation);
         mousePressPosition = QVector2D(e->localPos());
 
     }
@@ -451,7 +451,7 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
 
         rotation = QQuaternion::fromAxisAndAngle(0, 0, 1, zPos / 20) * rotation;
 
-        objectTransform->setRotation(rotation);
+        sphereTransform->setRotation(rotation);
         ev->accept();
     }
 }
@@ -466,9 +466,9 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
         break;
     case Qt::Key_Space:
         if (animationEnabled) {
-            //Root->removeComponent(sphereTransform);
+            sphereRotateTransformAnimation->pause();
         }   else {
-            //Root->addComponent(sphereTransform);
+            sphereRotateTransformAnimation->start();
         }
         animationEnabled = !animationEnabled;
         break;

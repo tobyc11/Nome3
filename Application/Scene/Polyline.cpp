@@ -25,7 +25,7 @@ void CPolyline::UpdateEntity()
     Super::UpdateEntity();
 
     std::vector<CMeshImpl::VertexHandle> vertArray;
-    std::vector<CVertexInfo *> positions;
+    std::vector<CVertexInfo> positions;
 
     auto numPoints = Points.GetSize();
     CMeshImpl::VertexHandle firstVert;
@@ -36,7 +36,7 @@ void CPolyline::UpdateEntity()
         if (i == 0)
             firstVert = vertHandle;
         vertArray.push_back(vertHandle);
-        positions.push_back(point);
+        positions.push_back(*point);
     }
     if (bClosed)
     {
@@ -83,10 +83,10 @@ AST::ACommand* CPolyline::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
 
     //size_t numFaces = Faces.GetSize();
     for (auto & point : PointSource) {
-       
+
         this->GetName();
         auto* pFace = Faces.GetValue(i, nullptr);
-        
+
         node->AddSubCommand(pFace->MakeCommandNode(ctx, node));
     }
     return node;

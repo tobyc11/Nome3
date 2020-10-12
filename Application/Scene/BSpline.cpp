@@ -93,12 +93,12 @@ void CBSpline::UpdateEntity() {
     std::vector<CMeshImpl::VertexHandle> handles;
     handles.reserve(n + 1);
 
-    std::vector<CVertexInfo *> positions;
+    std::vector<CVertexInfo> positions;
     for (int i = 0; i < n + 1; i++)
     {
         handles.push_back(AddVertex("v" + std::to_string(i), SamplePositions[i]));
-        CVertexInfo *point = new CVertexInfo();
-        point->Position = SamplePositions[i];
+        CVertexInfo point;
+        point.Position = SamplePositions[i];
         positions.push_back(point);
     }
 

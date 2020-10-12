@@ -136,15 +136,15 @@ void CSweep::UpdateEntity()
 
     for (size_t i = 0; i < crossSectionInfo->Positions.size(); i++)
     {
-        CVertexInfo* point = crossSectionInfo->Positions[i];
-        crossSection.push_back(Vector3(point->Position.x, point->Position.y, point->Position.z));
+        CVertexInfo point = crossSectionInfo->Positions[i];
+        crossSection.push_back(Vector3(point.Position.x, point.Position.y, point.Position.z));
     }
 
     for (size_t i = 0; i < numPoints; i++)
     {
-        CVertexInfo* point = pathInfo->Positions[i];
+        CVertexInfo point = pathInfo->Positions[i];
 
-        points.push_back(Vector3(point->Position.x, point->Position.y, point->Position.z)); // current point
+        points.push_back(Vector3(point.Position.x, point.Position.y, point.Position.z)); // current point
 
         if (i > 1)
         {
@@ -193,22 +193,20 @@ void CSweep::UpdateEntity()
     // add rotation
     for (size_t i = 0; i < numPoints; i++)
     {
-        CVertexInfo* point = pathInfo->Positions[i];
+        CVertexInfo point = pathInfo->Positions[i];
 
         angles[i] += azimuth;
 
-        for (size_t j = 0; j < point->ControlPoints.size(); j++)
+        for (size_t j = 0; j < point.ControlPoints.size(); j++)
         {
-            CControlPointInfo* CI = point->ControlPoints[j];
-            std::cout << CI->OwnerName << std::endl;
-//            if (CI->OwnerName == name)
-//            {
+           CControlPointInfo* CI = point.ControlPoints[j];
+           if (CI->OwnerName == name)
+           {
                 CSweepControlPointInfo* SI = dynamic_cast<CSweepControlPointInfo*>(CI);
                 scaleX[i] *= SI->ScaleX;
                 scaleY[i] *= SI->ScaleY;
                 angles[i] += SI->Rotate * tc::M_PI / 180;
-                std::cout << SI->ScaleX;
-//            }
+           }
         }
     }
 

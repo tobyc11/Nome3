@@ -11,7 +11,6 @@ struct CVertexInfo
     Vector3 Position;
     std::string Name;
     std::vector<CControlPointInfo*> ControlPoints;
-
 };
 
 class CPoint : public CEntity

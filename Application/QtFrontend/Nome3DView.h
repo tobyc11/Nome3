@@ -29,7 +29,7 @@ public:
     void UnloadScene();
     void PostSceneUpdate();
 
-    void PickVertexWorldRay(const tc::Ray& ray);
+    void PickVertexWorldRay(tc::Ray& ray);
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
 
@@ -51,8 +51,7 @@ private:
     // Xinyu added on Oct 8 for rotation
     QMatrix4x4 projection;
     QVector2D mousePressPosition;
-    QVector3D rotationAxis;
-    qreal angularSpeed;
+
     QQuaternion rotation;
     Qt3DRender::QCamera *cameraset;
     Qt3DExtras::QOrbitCameraController *camController;
@@ -61,8 +60,7 @@ private:
     bool rotationEnabled;
     bool animationEnabled;
     double zPos;
-    double xPos;
-    double yPos;
+
 
     // For the animation
     Qt3DCore::QTransform *sphereTransform;

@@ -42,7 +42,7 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false), 
     // Xinyu add on Oct 8 for rotation
     projection.setToIdentity();
     projection.perspective(45.0f, 16.0f/9.0f, 0.1f, 1000.0f);
-    zPos = yPos = xPos = 0;
+    zPos = 0;
     // Xinyu add for animation
 
     sphereTransform = new Qt3DCore::QTransform;
@@ -64,6 +64,7 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false), 
     camController->setLookSpeed(180.0f);
     camController->setCamera(cameraset);
     Root->addComponent(sphereTransform);
+
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -210,10 +211,12 @@ void CNome3DView::ClearSelectedVertices()
     });
 }
 
-void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
+void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
 {
-
-
+    QVector3D origin = rotation.inverted().rotatedVector(QVector3D(ray.Origin.x, ray.Origin.y, ray.Origin.z));
+    QVector3D direction = rotation.inverted().rotatedVector(QVector3D(ray.Direction.x, ray.Direction.y, ray.Direction.z));
+    ray.Direction = tc::Vector3(direction.x(), direction.y(), direction.z());
+    ray.Origin = tc::Vector3(origin.x(), origin.y(), origin.z());
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
@@ -417,10 +420,8 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
         QVector3D n = QVector3D(diff.y(), diff.x(), 0);
         rotation = QQuaternion::fromAxisAndAngle(n, diff.length()) * sphereTransform->rotation();
         rotation.normalize();
-
-
-
         sphereTransform->setRotation(rotation);
+
         mousePressPosition = QVector2D(e->localPos());
 
     }

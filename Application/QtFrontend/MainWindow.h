@@ -19,7 +19,6 @@ namespace Nome
 {
 
 class CCodeWindow;
-class CNome3DView;
 
 class CMainWindow : public QMainWindow, public Scene::ISliderObserver
 {
@@ -66,10 +65,8 @@ private:
     void OnSliderRemoving(Scene::CSlider& slider, const std::string& name) override;
 
     Ui::MainWindow* ui;
-    std::unique_ptr<CNome3DView> Nome3DView;
     QLineEdit* InstName;
     QLineEdit* MeshName;
-    bool bDetached3DView = false;
 
     // Info about the currently open file
     std::shared_ptr<CSourceManager> SourceMgr;

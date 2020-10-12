@@ -33,8 +33,8 @@ macro(config_playground2 target)
     target_link_libraries(${target} PRIVATE Math)
     target_compile_options(${target} ${DEFAULT_COMPILE_OPTIONS})
 
-    find_package(Qt5 COMPONENTS Widgets 3DRender 3DExtras REQUIRED)
-    target_link_libraries(${target} PRIVATE Qt5::Widgets Qt5::3DRender Qt5::3DExtras)
+    find_package(Qt5 COMPONENTS Widgets REQUIRED)
+    target_link_libraries(${target} PRIVATE Qt5::Widgets)
 
     find_package(OpenMesh REQUIRED)
     target_include_directories(${target} PRIVATE ${OPENMESH_INCLUDE_DIRS})

@@ -1,7 +1,5 @@
 #include "MainWindow.h"
 #include "CodeWindow.h"
-#include "FrontendContext.h"
-#include "Nome3DView.h"
 #include "ui_MainWindow.h"
 
 #include <Scene/ASTSceneAdapter.h>
@@ -22,14 +20,10 @@
 namespace Nome
 {
 
-static CFrontendContext AnonFrontendContext;
-CFrontendContext* GFrtCtx = &AnonFrontendContext;
-
 CMainWindow::CMainWindow(QWidget* parent, bool bDetached3d)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , bIsBlankFile(true)
-    , bDetached3DView(bDetached3d)
 {
     ui->setupUi(this);
     SetupUI();
@@ -40,7 +34,6 @@ CMainWindow::CMainWindow(const QString& fileToOpen, QWidget* parent, bool bDetac
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , bIsBlankFile(false)
-    , bDetached3DView(bDetached3d)
 {
     ui->setupUi(this);
     SetupUI();
@@ -49,19 +42,11 @@ CMainWindow::CMainWindow(const QString& fileToOpen, QWidget* parent, bool bDetac
 
 CMainWindow::~CMainWindow()
 {
-    GFrtCtx->MainWindow = nullptr;
     UnloadNomeFile();
     delete ui;
 }
 
-void CMainWindow::closeEvent(QCloseEvent* event)
-{
-    if (bDetached3DView)
-    {
-        Nome3DView->close();
-    }
-    QWidget::closeEvent(event);
-}
+void CMainWindow::closeEvent(QCloseEvent* event) { QWidget::closeEvent(event); }
 
 void CMainWindow::on_actionNew_triggered()
 {
@@ -186,7 +171,8 @@ void CMainWindow::on_actionAbout_triggered()
 
 void CMainWindow::on_actionAddFace_triggered()
 {
-    const auto& verts = Nome3DView->GetSelectedVertices();
+    // const auto& verts = Nome3DView->GetSelectedVertices();
+    std::vector<std::string> verts;
     if (verts.size() < 3)
     {
         statusBar()->showMessage("Selected vertices are less than 3");
@@ -197,7 +183,8 @@ void CMainWindow::on_actionAddFace_triggered()
 
 void CMainWindow::on_actionAddPolyline_triggered()
 {
-    const auto& verts = Nome3DView->GetSelectedVertices();
+    // const auto& verts = Nome3DView->GetSelectedVertices();
+    std::vector<std::string> verts;
     if (verts.size() < 2)
     {
         statusBar()->showMessage("Selected vertices are less than 2");
@@ -206,7 +193,6 @@ void CMainWindow::on_actionAddPolyline_triggered()
     TemporaryMeshManager->AddPolyline(verts);
     std::cout << "finished adding polyline in MainWindow" << std::endl;
 }
-
 
 void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->ResetTemporaryMesh(); }
 
@@ -219,31 +205,12 @@ void CMainWindow::on_actionCommitTempMesh_triggered()
 
 void CMainWindow::SetupUI()
 {
-    GFrtCtx->MainWindow = this;
-
     // Add vertical layout for main window content
     //  Might not need to do this if layout is in the ui file
     auto* layout = new QVBoxLayout();
     ui->centralwidget->setLayout(layout);
 
     // Initialize 3D view
-    Nome3DView = std::make_unique<CNome3DView>();
-    GFrtCtx->NomeView = Nome3DView.get();
-
-    if (!bDetached3DView)
-    {
-        auto* viewContainer = QWidget::createWindowContainer(Nome3DView.get());
-        viewContainer->setObjectName("visualLayerContainer");
-        QSize screenSize = Nome3DView->screen()->size();
-        viewContainer->setMinimumSize(QSize(640, 480));
-        viewContainer->setMaximumSize(screenSize);
-        viewContainer->setFocusPolicy(Qt::TabFocus);
-        layout->addWidget(viewContainer);
-    }
-    else
-    {
-        Nome3DView->show();
-    }
 
     // Qt Designer won't let us put text boxes into a toolbar, so we do it here
     InstName = new QLineEdit();
@@ -313,15 +280,11 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
 void CMainWindow::PostloadSetup()
 {
     Scene->GetBankAndSet().AddObserver(this);
-    Nome3DView->TakeScene(Scene);
 
     SceneUpdateClock = new QTimer(this);
     SceneUpdateClock->setInterval(100);
     SceneUpdateClock->setSingleShot(false);
-    connect(SceneUpdateClock, &QTimer::timeout, [this]() {
-        Scene->Update();
-        Nome3DView->PostSceneUpdate();
-    });
+    connect(SceneUpdateClock, &QTimer::timeout, [this]() { Scene->Update(); });
     SceneUpdateClock->start();
 
     TemporaryMeshManager = std::make_unique<Scene::CTemporaryMeshManager>(Scene, SourceMgr);
@@ -332,7 +295,6 @@ void CMainWindow::UnloadNomeFile()
     TemporaryMeshManager.reset(nullptr);
     SceneUpdateClock->stop();
     delete SceneUpdateClock;
-    Nome3DView->UnloadScene();
     assert(Scene->GetRefCount() == 1);
     Scene = nullptr;
 }

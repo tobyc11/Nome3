@@ -12,7 +12,7 @@
 namespace Nome
 {
 
-CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false)
+CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false), rotationEnabled(false)
 {
     Root = new Qt3DCore::QEntity();
 
@@ -59,10 +59,10 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false)
 
     //material = new Qt3DExtras::QPhongMaterial(Root);
 
-    auto* camController = new Qt3DExtras::QOrbitCameraController(Root);
+    camController = new Qt3DExtras::QOrbitCameraController(Root);
     camController->setLinearSpeed(50.0f);
     camController->setLookSpeed(180.0f);
-    //camController->setCamera(cameraset);
+    camController->setCamera(cameraset);
     Root->addComponent(objectTransform);
 }
 
@@ -397,17 +397,18 @@ Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
 // Xinyu add on Oct 8 for rotation
 void CNome3DView::mousePressEvent(QMouseEvent* e)
 {
-
-    // Save mouse press position
-    mousePressEnabled = true;
-    mousePressPosition = QVector2D(e->localPos());
-
+    if (rotationEnabled)
+    {
+        // Save mouse press position
+        mousePressEnabled = true;
+        mousePressPosition = QVector2D(e->localPos());
+    }
 }
 
 
 void CNome3DView::mouseMoveEvent(QMouseEvent* e)
 {
-    if (mousePressEnabled) {
+    if (mousePressEnabled && rotationEnabled) {
         // Mouse release position - mouse press position
         QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
 
@@ -432,71 +433,46 @@ void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
 
 void CNome3DView::wheelEvent(QWheelEvent *ev)
 {
-    QPoint numPixels = ev->pixelDelta();
-    QPoint numDegrees = ev->angleDelta() / 8;
+    if (rotationEnabled)
+    {
+        QPoint numPixels = ev->pixelDelta();
+        QPoint numDegrees = ev->angleDelta() / 8;
 
 
-    if (!numPixels.isNull()) {
-        zPos += numPixels.y();
-    } else if (!numDegrees.isNull()) {
-        QPoint numSteps = numDegrees / 15;
-        zPos += numSteps.y();
+        if (!numPixels.isNull())
+        {
+            zPos = numPixels.y();
+        }
+        else if (!numDegrees.isNull())
+        {
+            QPoint numSteps = numDegrees / 15;
+            zPos = numSteps.y();
+        }
+
+        rotation = QQuaternion::fromAxisAndAngle(0, 0, 1, zPos / 20) * rotation;
+
+        objectTransform->setRotation(rotation);
+        ev->accept();
     }
-    QMatrix4x4 matrix;
-    matrix.translate(zPos * cameraset->position() / 40.0);
-    cameraset->setProjectionMatrix(projection * matrix);
-
-    ev->accept();
 }
 
 void CNome3DView::keyPressEvent(QKeyEvent *ev)
 {
-    float step = 10;
     switch (ev->key())
     {
+    case Qt::Key_Tab:
+        rotationEnabled = !rotationEnabled;
+        camController->setEnabled(!rotationEnabled);
+        break;
     case Qt::Key_Space:
         if (animationEnabled) {
             Root->removeComponent(sphereTransform);
         }   else {
             Root->addComponent(sphereTransform);
-
         }
         animationEnabled = !animationEnabled;
         break;
-    case Qt::Key_Up:
-        cameraset->translate(QVector3D(0, 1, 0));
-        break;
-    case Qt::Key_Down:
-        cameraset->translate(QVector3D(0, -1, 0));
-        break;
-    case Qt::Key_Left:
-        cameraset->translate(QVector3D(-1, 0, 0));
-        break;
-    case Qt::Key_Right:
-        cameraset->translate(QVector3D(1, 0, 0));
-        break;
-    case Qt::Key_1:
-        cameraset->panAboutViewCenter(step, QVector3D(1, 0, 0));
-        break;
-    case Qt::Key_2:
-        cameraset->panAboutViewCenter(-step, QVector3D(1, 0, 0));
-        break;
-    case Qt::Key_3:
-        cameraset->panAboutViewCenter(step, QVector3D(0, 1, 0));
-        break;
-    case Qt::Key_4:
-        cameraset->panAboutViewCenter(-step, QVector3D(0, 1, 0));
-        break;
-    case Qt::Key_5:
-        cameraset->panAboutViewCenter(step, QVector3D(0, 0, 1));
-        break;
-    case Qt::Key_6:
-        cameraset->panAboutViewCenter(-step, QVector3D(0, 0, 1));
-        break;
     }
-
-
-
 }
 
 }

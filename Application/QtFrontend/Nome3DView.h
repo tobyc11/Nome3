@@ -58,6 +58,7 @@ private:
     Qt3DExtras::QOrbitCameraController *camController;
     //Qt3DRender::QMaterial *material;
     bool mousePressEnabled;
+    bool rotationEnabled;
     bool animationEnabled;
     double zPos;
     double xPos;

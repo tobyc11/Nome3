@@ -466,9 +466,9 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
         break;
     case Qt::Key_Space:
         if (animationEnabled) {
-            Root->removeComponent(sphereTransform);
+            //Root->removeComponent(sphereTransform);
         }   else {
-            Root->addComponent(sphereTransform);
+            //Root->addComponent(sphereTransform);
         }
         animationEnabled = !animationEnabled;
         break;

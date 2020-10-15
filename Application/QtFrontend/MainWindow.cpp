@@ -53,6 +53,7 @@ CMainWindow::~CMainWindow()
     GFrtCtx->MainWindow = nullptr;
     UnloadNomeFile();
     delete ui;
+    timer = nullptr;
 }
 
 void CMainWindow::closeEvent(QCloseEvent* event)
@@ -287,6 +288,18 @@ void CMainWindow::SetupUI()
         viewContainer->setMaximumSize(screenSize);
         viewContainer->setFocusPolicy(Qt::TabFocus);
         layout->addWidget(viewContainer);
+        timer = new QTimer(this);
+        timer->setInterval(TimeSpeed);
+//        QPushButton* start = new QPushButton("Toggle", this);
+//        start->setText("Start/Stop");
+//        layout->addWidget(start);
+//        connect(start, &QPushButton::clicked, [&]() {
+//            if (!timer->isActive()) {
+//                timer->start();
+//            } else {
+//                timer->stop();
+//            }
+//        });
     }
     else
     {
@@ -435,7 +448,35 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
 
     sliderLayout->setStretchFactor(sliderBar, 4);
     sliderLayout->setStretchFactor(sliderDisplay, 1);
+    std::string sliderID = slider.GetASTNode()->GetPositionalIdentAsString(0);
 
+    if (hasEnding(sliderID, "speed")) {
+        connect(sliderBar, &QAbstractSlider::valueChanged, [&, sliderDisplay](int value) {
+            float fval = (float)value * slider.GetStep() + slider.GetMin();
+            auto valueStr = tc::StringPrintf("%.2f", fval);
+            sliderDisplay->setText(QString::fromStdString(valueStr));
+            slider.SetValue(fval);
+            TimeSpeed = 1000.0 / fval;
+            timer->setInterval(TimeSpeed);
+            timer->start();
+            std::cout << "val" << fval << "interval" << TimeSpeed << std::endl;
+        });
+    } else if (hasEnding(sliderID, "time")) {
+        SliderTimers.emplace(sliderID, timer);
+        connect(timer, &QTimer::timeout, this, [this, &slider, sliderDisplay]() {
+            float val = slider.GetValue() + slider.GetStep();
+            float max = slider.GetMax();
+            if (val <= max) {
+                slider.SetValue(val);
+            } else {
+                slider.SetValue(slider.GetMin());
+            }
+
+
+            //sliderDisplay->setText(QString::fromStdString(tc::StringPrintf("%.2f", val)));
+        });
+
+    }
     connect(sliderBar, &QAbstractSlider::valueChanged, [&, sliderDisplay](int value) {
         // Every "1" in value represents a step, since the slider only allows integers
         float fval = (float)value * slider.GetStep() + slider.GetMin();
@@ -453,36 +494,6 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
         slider.GetASTNode()->SetPositionalArgument(1, expr);
         SourceMgr->InsertToken(insertLocation, token);
     });
-    std::string sliderID = slider.GetASTNode()->GetPositionalIdentAsString(0);
-    if (hasEnding(sliderID, "time")) {
-        timer = new QTimer(this);
-        SliderTimers.emplace(sliderID, timer);
-        QPushButton *start = new QPushButton("Toggle", this);
-        start->setText("Start/Stop");
-        sliderLayout->addWidget(start);
-        connect(start, &QPushButton::clicked, this, [this, &slider]() {
-            QTimer* currtimer = SliderTimers.find(slider.GetASTNode()->
-                GetPositionalIdentAsString(0))->second;
-            timer = currtimer;
-            if (!timer->isActive()) {
-                timer->start(50);
-            } else {
-                timer->stop();
-            }
-        });
-        connect(timer, &QTimer::timeout, this, [&slider, sliderDisplay]() {
-            float val = slider.GetValue() + slider.GetStep();
-            if (val <= slider.GetMax()) {
-                slider.SetValue(val);
-            } else {
-                slider.SetValue(slider.GetMin());
-            }
-            sliderDisplay->setText(QString::fromStdString(tc::StringPrintf("%.2f", val)));
-        });
-        timer->start(50);
-
-    }
-
 
     SliderLayout->addRow(sliderName, sliderLayout);
     SliderNameToWidget.emplace(name, sliderLayout);

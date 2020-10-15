@@ -98,9 +98,12 @@ private:
     // Nome Context
     tc::TAutoPtr<Scene::CScene> Scene;
     QTimer* SceneUpdateClock = nullptr;
-    QTimer* timer = nullptr;
+    QTimer* timer;
+    bool reachedMax;
+    bool reachedMin;
 
     std::unordered_map<std::string, QTimer*> SliderTimers;
+    float TimeSpeed = 50.0;
     std::unique_ptr<QWidget> SliderWidget;
     QFormLayout* SliderLayout = nullptr;
     std::unordered_map<std::string, QLayout*> SliderNameToWidget;

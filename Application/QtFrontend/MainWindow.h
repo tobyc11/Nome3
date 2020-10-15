@@ -99,8 +99,8 @@ private:
     tc::TAutoPtr<Scene::CScene> Scene;
     QTimer* SceneUpdateClock = nullptr;
     QTimer* timer;
-    bool reachedMax;
-    bool reachedMin;
+    float max;
+    float min;
 
     std::unordered_map<std::string, QTimer*> SliderTimers;
     float TimeSpeed = 50.0;

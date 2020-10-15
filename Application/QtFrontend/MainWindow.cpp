@@ -463,17 +463,26 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
         });
     } else if (hasEnding(sliderID, "time")) {
         SliderTimers.emplace(sliderID, timer);
+        max = slider.GetMax();
+        min = slider.GetMin();
         connect(timer, &QTimer::timeout, this, [this, &slider, sliderDisplay]() {
             float val = slider.GetValue() + slider.GetStep();
-            float max = slider.GetMax();
             if (val <= max) {
                 slider.SetValue(val);
             } else {
-                slider.SetValue(slider.GetMin());
+                if (max - slider.GetStep() >= min) {
+                    max -= slider.GetStep();
+                    val = slider.GetValue() - slider.GetStep();
+                    slider.SetValue(val);
+                } else {
+                    max = slider.GetMax();
+                    min = slider.GetMin();
+                }
+
             }
 
 
-            //sliderDisplay->setText(QString::fromStdString(tc::StringPrintf("%.2f", val)));
+            sliderDisplay->setText(QString::fromStdString(tc::StringPrintf("%.2f", val)));
         });
 
     }

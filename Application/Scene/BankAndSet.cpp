@@ -17,6 +17,14 @@ void CSlider::SetValue(float value)
     SetNumber(value);
 }
 
+void CSlider::SetAnimMax(float x) {
+    AnimMax = x;
+}
+
+void CSlider::SetAnimMin(float x) {
+    AnimMin = x;
+}
+
 CBankAndSet::~CBankAndSet()
 {
     for (const auto& nameSlider : Sliders)

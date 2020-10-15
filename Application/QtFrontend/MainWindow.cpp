@@ -463,20 +463,19 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
         });
     } else if (hasEnding(sliderID, "time")) {
         SliderTimers.emplace(sliderID, timer);
-        max = slider.GetMax();
-        min = slider.GetMin();
+        slider.SetAnimMax(slider.GetMax());
+        slider.SetAnimMin(slider.GetMin());
         connect(timer, &QTimer::timeout, this, [this, &slider, sliderDisplay]() {
             float val = slider.GetValue() + slider.GetStep();
-            if (val <= max) {
+            if (val <= slider.GetAnimMax()) {
                 slider.SetValue(val);
             } else {
-                if (max - slider.GetStep() >= min) {
-                    max -= slider.GetStep();
+                if (slider.GetAnimMax() - slider.GetStep() >= slider.GetAnimMin()) {
+                    slider.SetAnimMax(slider.GetValue() - slider.GetStep());
                     val = slider.GetValue() - slider.GetStep();
                     slider.SetValue(val);
                 } else {
-                    max = slider.GetMax();
-                    min = slider.GetMin();
+                    slider.SetAnimMax(slider.GetMax());
                 }
 
             }

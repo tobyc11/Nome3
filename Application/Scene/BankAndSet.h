@@ -20,6 +20,10 @@ public:
     float GetMax() const { return Max; }
     float GetStep() const { return Step; }
     float GetValue() const { return GetNumber(); }
+    void SetAnimMax(float x);
+    void SetAnimMin(float x);
+    float GetAnimMax() { return AnimMax; }
+    float GetAnimMin() { return AnimMin; }
     AST::ACommand* GetASTNode() const { return Cmd; }
 
 private:
@@ -27,6 +31,8 @@ private:
     float Min;
     float Max;
     float Step;
+    float AnimMax;
+    float AnimMin;
 };
 
 class ISliderObserver : public tc::FNonCopyable

@@ -12,7 +12,7 @@ namespace Nome::Scene
 class CSlider : public Flow::CFloatNumber
 {
 public:
-    CSlider(AST::ACommand* cmd, float value, float min, float max, float step);
+    CSlider(AST::ACommand* cmd, float value, float min, float max, float step, std::string animfunc);
 
     void SetValue(float value);
 
@@ -24,6 +24,7 @@ public:
     void SetAnimMin(float x);
     float GetAnimMax() { return AnimMax; }
     float GetAnimMin() { return AnimMin; }
+    std::string GetAnimFunc() { return AnimFunc; }
     AST::ACommand* GetASTNode() const { return Cmd; }
 
 private:
@@ -33,6 +34,7 @@ private:
     float Step;
     float AnimMax;
     float AnimMin;
+    std::string AnimFunc;
 };
 
 class ISliderObserver : public tc::FNonCopyable
@@ -51,7 +53,7 @@ class CBankAndSet : public tc::FNonCopyable
 public:
     ~CBankAndSet();
     void AddSlider(const std::string& name, AST::ACommand* cmd, float value, float min, float max,
-                   float step);
+                   float step, std::string animfunc);
     CSlider* GetSlider(const std::string& name);
 
     // An observer is typically the GUI that is responsible for displaying the sliders

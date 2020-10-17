@@ -99,10 +99,7 @@ private:
     tc::TAutoPtr<Scene::CScene> Scene;
     QTimer* SceneUpdateClock = nullptr;
     QTimer* timer;
-    float max;
-    float min;
 
-    std::unordered_map<std::string, QTimer*> SliderTimers;
     float TimeSpeed = 50.0;
     std::unique_ptr<QWidget> SliderWidget;
     QFormLayout* SliderLayout = nullptr;

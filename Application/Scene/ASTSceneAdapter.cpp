@@ -116,7 +116,14 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
         };
 
         auto name = bank + "." + cmd->GetName();
-        scene.GetBankAndSet().AddSlider(name, cmd, evalArg(1), evalArg(2), evalArg(3), evalArg(4));
+        auto anim = cmd->GetNamedArgument("time");
+        if (anim) {
+            std::string animtype = static_cast<AST::AIdent*>(&anim->GetArgument(0)[0])->ToString();
+            scene.GetBankAndSet().AddSlider(name, cmd, evalArg(1), evalArg(2), evalArg(3), evalArg(4), animtype);
+        } else {
+            scene.GetBankAndSet().AddSlider(name, cmd, evalArg(1), evalArg(2), evalArg(3), evalArg(4), "");
+        }
+
     }
     for (auto* sub : cmd->GetSubCommands())
         VisitCommandBankSet(sub, scene);

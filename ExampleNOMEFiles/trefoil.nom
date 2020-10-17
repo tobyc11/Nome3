@@ -2,10 +2,10 @@ bank trefoil_slider
   set num_vert 20 3 80 1
   set tube_radius 0.2 0.01 0.5 0.01
   set num_seg 72 18 240 3
-  set rotate_time 90 0 360 5
-  set speed 0 0 100 5
+  set rotator 90 0 360 5 time linear
+  set speed 0 0 100 5 time speed
 endbank
 
 torusknot trefoil (3 2 {expr $trefoil_slider.num_vert} {expr $trefoil_slider.tube_radius} {expr $trefoil_slider.num_seg}) endtorusknot
 
-instance t1 trefoil rotate (0 1 0) ({expr $trefoil_slider.rotate_time}) endinstance
+instance t1 trefoil rotate (0 1 0) ({expr $trefoil_slider.rotator}) endinstance

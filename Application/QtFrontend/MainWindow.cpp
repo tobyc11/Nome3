@@ -450,7 +450,7 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
     sliderLayout->setStretchFactor(sliderDisplay, 1);
     std::string sliderID = slider.GetASTNode()->GetPositionalIdentAsString(0);
 
-    if (hasEnding(sliderID, "speed")) {
+    if (slider.GetAnimFunc() == "speed") {
         connect(sliderBar, &QAbstractSlider::valueChanged, [&, sliderDisplay](int value) {
             float fval = (float)value * slider.GetStep() + slider.GetMin();
             auto valueStr = tc::StringPrintf("%.2f", fval);
@@ -461,8 +461,7 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
             timer->start();
             std::cout << "val" << fval << "interval" << TimeSpeed << std::endl;
         });
-    } else if (hasEnding(sliderID, "time")) {
-        SliderTimers.emplace(sliderID, timer);
+    } else if (slider.GetAnimFunc() == "linear") {
         slider.SetAnimMax(slider.GetMax());
         slider.SetAnimMin(slider.GetMin());
         connect(timer, &QTimer::timeout, this, [this, &slider, sliderDisplay]() {

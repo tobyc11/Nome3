@@ -31,6 +31,8 @@ void CSphere::UpdateEntity()
 
     float startPhi = minPhi / 180.f * (float)tc::M_PI;
 
+    float width = 0;
+
     for (int j = 0; j < numCrossSections; j++) {
       float rotationTheta = (float)j / numCrossSections * (maxTheta / 360.f) * 2.f * (float)tc::M_PI;
       for (int i = 0; i < n; i++) {
@@ -44,8 +46,10 @@ void CSphere::UpdateEntity()
           AddVertex("v" + std::to_string(j) + "-" + std::to_string(i),
                                     { rotatedX, rotatedY, rotatedZ });
           if (j == 0 && i == 0) {
+            width += rotatedX;
             AddVertex("top", { rotatedX, 0, 0 });
           } else if (j == 0 && i == n - 1) {
+            width += rotatedX;
             AddVertex("bottom", { rotatedX, 0, 0 });
           }
       }
@@ -100,7 +104,7 @@ void CSphere::UpdateEntity()
       }
     }
 
-    AddVertex("center", { 0, 0, 0 });
+    AddVertex("center", { width / 2, 0, 0 });
 
     // add slice faces
     if (maxTheta != 360) {

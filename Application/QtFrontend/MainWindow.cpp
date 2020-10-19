@@ -288,8 +288,6 @@ void CMainWindow::SetupUI()
         viewContainer->setMaximumSize(screenSize);
         viewContainer->setFocusPolicy(Qt::TabFocus);
         layout->addWidget(viewContainer);
-        timer = new QTimer(this);
-        timer->setInterval(TimeSpeed);
 //        QPushButton* start = new QPushButton("Toggle", this);
 //        start->setText("Start/Stop");
 //        layout->addWidget(start);
@@ -374,6 +372,8 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
 
 void CMainWindow::PostloadSetup()
 {
+    timer = new QTimer(this);
+    timer->setInterval(TimeSpeed);
     Scene->GetBankAndSet().AddObserver(this);
     Nome3DView->TakeScene(Scene);
 
@@ -394,6 +394,8 @@ void CMainWindow::UnloadNomeFile()
     TemporaryMeshManager.reset(nullptr);
     SceneUpdateClock->stop();
     delete SceneUpdateClock;
+    timer->stop();
+    delete timer;
     Nome3DView->UnloadScene();
     assert(Scene->GetRefCount() == 1);
     Scene = nullptr;

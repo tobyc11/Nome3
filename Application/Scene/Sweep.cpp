@@ -203,9 +203,19 @@ void CSweep::UpdateEntity()
            if (CI->OwnerName == name)
            {
                 CSweepControlPointInfo* SI = dynamic_cast<CSweepControlPointInfo*>(CI);
-                scaleX[i] *= SI->ScaleX;
-                scaleY[i] *= SI->ScaleY;
-                angles[i] += SI->Rotate * tc::M_PI / 180;
+                int range = std::max((int)SI->Range, 0);
+                int index = i;
+                int start = std::max(0, index - range);
+                int end = std::min((int)scaleX.size(), index + range + 1);
+                std::cout << range << ' ' << index << ' ' << start << ' ' << end << std::endl;
+
+                for (int k = start; k < end; k++) {
+                    float theta = (range + 1 - std::abs(k - index)) /
+                    (float)(range + 1);
+                    scaleX[k] *= (SI->ScaleX - 1) * theta + 1;
+                    scaleY[k] *= (SI->ScaleY - 1) * theta + 1;
+                    angles[k] += SI->Rotate * tc::M_PI / 180 * theta;
+                }
            }
         }
     }

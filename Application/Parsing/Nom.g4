@@ -32,6 +32,7 @@ idList : LPAREN (identList+=ident)* RPAREN ;
 argClosed : 'closed' ;
 argHidden : 'hidden' ;
 argSurface : 'surface' ident ;
+argCross : 'cross' ident ;
 argSlices : 'slices' expression ;
 argOrder : 'order' expression ;
 argTransform
@@ -45,7 +46,7 @@ command
    : open='point' name=ident LPAREN expression expression expression RPAREN idList* end='endpoint' # CmdExprListOne
    | open='polyline' name=ident idList argClosed* end='endpolyline' # CmdIdListOne
    | open='sweep' name=ident LPAREN expression expression expression expression RPAREN end='endsweep' # CmdExprListOne
-   | open='sweepcontrol' name=ident LPAREN expression expression expression expression expression RPAREN end='endsweepcontrol' # CmdExprListOne
+   | open='sweepcontrol' name=ident LPAREN expression expression expression expression expression RPAREN argCross* end='endsweepcontrol' # CmdExprListOne
    | open='face' name=ident idList argSurface* end='endface' # CmdIdListOne
    | open='object' name=ident idList end='endobject' # CmdIdListOne
    | open='mesh' name=ident command* end='endmesh' # CmdSubCmds

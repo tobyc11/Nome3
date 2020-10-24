@@ -1,5 +1,6 @@
 #pragma once
 #include "ControlPoint.h"
+#include "SweepPath.h"
 
 namespace Nome::Scene
 {
@@ -10,6 +11,7 @@ struct CSweepControlPointInfo : public CControlPointInfo
     float ScaleY;
     float Rotate;
     float Range;
+    CSweepPathInfo *CrossSection;
 };
 
 class CSweepControlPoint : public CControlPoint {
@@ -17,6 +19,7 @@ class CSweepControlPoint : public CControlPoint {
     DEFINE_INPUT(float, ScaleY) { MarkDirty(); }
     DEFINE_INPUT(float, Rotate) { MarkDirty(); }
     DEFINE_INPUT(float, Range) { MarkDirty(); }
+    DEFINE_INPUT(CSweepPathInfo *, CrossSection) { MarkDirty(); }
 
     DEFINE_OUTPUT_WITH_UPDATE(CControlPointInfo*, SweepControlPoint) { UpdateEntity(); }
 

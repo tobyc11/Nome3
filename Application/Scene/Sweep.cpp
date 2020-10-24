@@ -124,6 +124,7 @@ void CSweep::UpdateEntity()
     std::vector<float> angles;
     // Cross sections
     std::vector<Vector3> crossSection;
+    std::vector<std::vector<Vector3>> crossSections;
     // Scales
     std::vector<float> scaleX;
     std::vector<float> scaleY;
@@ -145,6 +146,7 @@ void CSweep::UpdateEntity()
         CVertexInfo point = pathInfo->Positions[i];
 
         points.push_back(Vector3(point.Position.x, point.Position.y, point.Position.z)); // current point
+        crossSections.push_back(crossSection);
 
         if (i > 1)
         {
@@ -207,7 +209,6 @@ void CSweep::UpdateEntity()
                 int index = i;
                 int start = std::max(0, index - range);
                 int end = std::min((int)scaleX.size(), index + range + 1);
-                std::cout << range << ' ' << index << ' ' << start << ' ' << end << std::endl;
 
                 for (int k = start; k < end; k++) {
                     float theta = (range + 1 - std::abs(k - index)) /
@@ -215,6 +216,19 @@ void CSweep::UpdateEntity()
                     scaleX[k] *= (SI->ScaleX - 1) * theta + 1;
                     scaleY[k] *= (SI->ScaleY - 1) * theta + 1;
                     angles[k] += SI->Rotate * tc::M_PI / 180 * theta;
+                }
+
+                if (SI->CrossSection != NULL)
+                {
+                    CSweepPathInfo *sectionInfo = SI->CrossSection;
+                    std::vector<Vector3> section;
+                    for (size_t k = 0; k < sectionInfo->Positions.size(); k++)
+                    {
+                        CVertexInfo point = sectionInfo->Positions[k];
+                        section.push_back(Vector3(point.Position.x,
+                                    point.Position.y, point.Position.z));
+                    }
+                    crossSections[i] = section;
                 }
            }
         }
@@ -231,7 +245,7 @@ void CSweep::UpdateEntity()
         N = Ns[0];
 
         // generate points in a circle perpendicular to the curve at the current point
-        drawCrossSection(crossSection, points[0], T, N, angles[0], scaleX[0],
+        drawCrossSection(crossSections[0], points[0], T, N, angles[0], scaleX[0],
                          scaleY[0], 1, ++segmentCount);
     }
     else {
@@ -242,7 +256,7 @@ void CSweep::UpdateEntity()
         T = prevVector + curVector;
         N = prevVector - curVector;
 
-        drawCrossSection(crossSection, points[0], T, N, angles[0], scaleX[0],
+        drawCrossSection(crossSections[0], points[0], T, N, angles[0], scaleX[0],
                          scaleY[0], 1 / cosf(angle / 2), ++segmentCount);
     }
 
@@ -260,13 +274,13 @@ void CSweep::UpdateEntity()
                 N = prevVector - curVector;
 
                 // 0 is perfect.
-                drawCrossSection(crossSection, points[i], T, N, angles[i] - twist,
+                drawCrossSection(crossSections[i], points[i], T, N, angles[i] - twist,
                                  scaleX[i], scaleY[i], 1 / cosf(angle / 2), ++segmentCount);
             }
             else {
                 T = points[i] - points[i - 1];
                 // add twist
-                drawCrossSection(crossSection, points[i], T, Ns[i - 1], angles[i] - twist,
+                drawCrossSection(crossSections[i], points[i], T, Ns[i - 1], angles[i] - twist,
                                  scaleX[i], scaleY[i], 1, ++segmentCount);
             }
         }
@@ -278,7 +292,7 @@ void CSweep::UpdateEntity()
             T = prevVector + curVector;
             N = prevVector - curVector;
 
-            drawCrossSection(crossSection, points[i], T, N, angles[i], scaleX[i],
+            drawCrossSection(crossSections[i], points[i], T, N, angles[i], scaleX[i],
                              scaleY[i], 1 / cosf(angle / 2), ++segmentCount);
         }
     }

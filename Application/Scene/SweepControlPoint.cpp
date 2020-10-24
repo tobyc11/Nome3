@@ -11,6 +11,7 @@ DEFINE_META_OBJECT(CSweepControlPoint)
     BindPositionalArgument(&CSweepControlPoint::ScaleY, 1, 2);
     BindPositionalArgument(&CSweepControlPoint::Rotate, 1, 3);
     BindPositionalArgument(&CSweepControlPoint::Range, 1, 4);
+    BindNamedArgument(&CSweepControlPoint::CrossSection, "cross", 0);
 }
 
 void CSweepControlPoint::MarkDirty()
@@ -26,6 +27,7 @@ void CSweepControlPoint::UpdateEntity()
     SI.ScaleY = ScaleY.GetValue(1.0f);
     SI.Rotate = Rotate.GetValue(0.0f);
     SI.Range = Range.GetValue(0.0f);
+    SI.CrossSection = CrossSection.GetValue(nullptr);
     SI.OwnerName = OwnerName;
     SI.Name = GetName();
     SweepControlPoint.UpdateValue(dynamic_cast<CControlPointInfo*>(&SI));

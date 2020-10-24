@@ -30,6 +30,13 @@ antlrcpp::Any CFileBuilder::visitArgSurface(NomParser::ArgSurfaceContext* contex
     return arg;
 }
 
+antlrcpp::Any CFileBuilder::visitArgCross(NomParser::ArgCrossContext* context)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    arg->AddChild(visit(context->ident()).as<AST::AExpr*>());
+    return arg;
+}
+
 antlrcpp::Any CFileBuilder::visitArgSlices(NomParser::ArgSlicesContext* context)
 {
     auto* result = new AST::ANamedArgument(ConvertToken(context->getStart()));
@@ -102,8 +109,8 @@ antlrcpp::Any CFileBuilder::visitCmdExprListOne(NomParser::CmdExprListOneContext
     // Handle arguments other than name
     for (auto* arg : context->idList())
         cmd->PushPositionalArgument(visit(arg));
-    // for (auto* arg : context->argCross())
-    //     cmd->AddNamedArgument(visit(arg));
+    for (auto* arg : context->argCross())
+        cmd->AddNamedArgument(visit(arg));
     return cmd;
 }
 

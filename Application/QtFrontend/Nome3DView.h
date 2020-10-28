@@ -42,6 +42,9 @@ protected:
     void keyPressEvent(QKeyEvent *ev) override;
 
 private:
+    QVector2D GetProjectionPoint(QVector2D originalPosition);
+    QVector3D GetCrystalPoint(QVector2D originalPoint);
+private:
     Qt3DCore::QEntity* Root;
     tc::TAutoPtr<Scene::CScene> Scene;
     std::unordered_set<CInteractiveMesh*> InteractiveMeshes;
@@ -50,27 +53,28 @@ private:
 
     // Xinyu added on Oct 8 for rotation
     QMatrix4x4 projection;
-    QVector2D mousePressPosition;
+    QVector2D firstPosition;
+    QVector2D secondPosition;
 
     QQuaternion rotation;
     Qt3DRender::QCamera *cameraset;
     Qt3DExtras::QOrbitCameraController *camController;
-    //Qt3DRender::QMaterial *material;
+    // Qt3DRender::QMaterial *material;
     bool mousePressEnabled;
+    bool crystalballEnabled;
     bool rotationEnabled;
+
     bool animationEnabled;
     double zPos;
+
+    float objectX;
+    float objectY;
 
 
     // For the animation
     Qt3DCore::QTransform *sphereTransform;
     OrbitTransformController *controller;
     QPropertyAnimation *sphereRotateTransformAnimation;
-
-    Qt3DCore::QTransform *objectTransform;
-    QMatrix4x4 objectTransformMatrix;
-
-
 };
 
 }

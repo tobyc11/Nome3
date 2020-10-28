@@ -12,7 +12,11 @@
 namespace Nome
 {
 
-CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false), rotationEnabled(false)
+CNome3DView::CNome3DView()
+    : mousePressEnabled(false)
+    , animationEnabled(false)
+    , rotationEnabled(true)
+    , crystalballEnabled(true)
 {
     Root = new Qt3DCore::QEntity();
 
@@ -32,21 +36,21 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false), 
     // Tweak render settings
     this->defaultFrameGraph()->setClearColor(QColor(QRgb(0x4d4d4f)));
 
+    objectX = objectY = 0;
     // Setup camera
-    // TODO: aspect ratio
+    zPos = 3.0;
     cameraset = this->camera();
     cameraset->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
-    cameraset->setPosition(QVector3D(0, 0, 40.0f));
+    cameraset->setPosition(QVector3D(0, 0, zPos));
     cameraset->setViewCenter(QVector3D(0, 0, 0));
 
     // Xinyu add on Oct 8 for rotation
     projection.setToIdentity();
-    projection.perspective(45.0f, 16.0f/9.0f, 0.1f, 1000.0f);
-    zPos = 0;
+
     // Xinyu add for animation
 
     sphereTransform = new Qt3DCore::QTransform;
-    controller = new OrbitTransformController(sphereTransform);
+    controller = new OrbitTransformController(rotation, sphereTransform);
     controller->setTarget(sphereTransform);
     controller->setRadius(0);
     sphereRotateTransformAnimation = new QPropertyAnimation(sphereTransform);
@@ -63,6 +67,7 @@ CNome3DView::CNome3DView() : mousePressEnabled(false), animationEnabled(false), 
     camController->setLinearSpeed(50.0f);
     camController->setLookSpeed(180.0f);
     camController->setCamera(cameraset);
+    camController->setEnabled(!rotationEnabled);
     Root->addComponent(sphereTransform);
 
 }
@@ -241,7 +246,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
     if (hits.size() == 1) // RANDY BUG IS HERE, I ONLY IMPLEMENTED S LOGIC 
     {
         const auto& [dist, meshInst, vertName] = hits[0];
-        std::vector<std::string>::iterator position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName); 
+        auto position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
         if (position == SelectedVertices.end())
         { // if this vertex has not been selected before
             SelectedVertices.push_back(vertName); // add vertex to selected vertices
@@ -296,7 +301,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
             {
                 int row = sel[0]->row();
                 const auto& [dist, meshInst, vertName] = hits[row];
-                std::vector<std::string>::iterator position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName); 
+                auto position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
                 if (position == SelectedVertices.end()) { // if this vertex has not been selected before
                     SelectedVertices.push_back(vertName); // add vertex to selected vertices
                     GFrtCtx->MainWindow->statusBar()->showMessage(
@@ -313,8 +318,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
                  float selected_dist = round(dist*100);
 
                  // mark all those that share the same location
-                 for (int i = 0; i < hits.size(); i++) {
-                     const auto& [dist, meshInst, overlapvertName] = hits[i]; 
+                 for (const auto & [dist, meshInst, overlapvertName] : hits) {
                      if (round(dist*100) == selected_dist) {
                         meshInst->MarkAsSelected({ overlapvertName }, true);
                          
@@ -404,25 +408,61 @@ void CNome3DView::mousePressEvent(QMouseEvent* e)
     {
         // Save mouse press position
         mousePressEnabled = true;
-        mousePressPosition = QVector2D(e->localPos());
+        firstPosition = QVector2D(e->localPos());
     }
 }
 
 
 void CNome3DView::mouseMoveEvent(QMouseEvent* e)
 {
-    if (mousePressEnabled && rotationEnabled) {
+    if (mousePressEnabled) {
         // Mouse release position - mouse press position
-        QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
+        secondPosition = QVector2D(e->localPos());
+        QVector2D diff = secondPosition - firstPosition;
+        if (e->button() == Qt::RightButton)
+        {
+            objectX = diff.x() + objectX;
+            objectY = diff.y() + objectY;
+            sphereTransform->setTranslation(QVector3D(objectX, objectY, 0));
 
-        // Rotation axis is perpendicular to the mouse position difference
-        // vector
-        QVector3D n = QVector3D(diff.y(), diff.x(), 0);
-        rotation = QQuaternion::fromAxisAndAngle(n, diff.length()) * sphereTransform->rotation();
-        rotation.normalize();
+        } else if (crystalballEnabled){
+            QVector2D firstPoint = GetProjectionPoint(firstPosition);
+            QVector2D secondPoint = GetProjectionPoint(secondPosition);
+            double projectedRadius = sqrt(qPow(zPos, 2) - 1) / zPos;
+
+            if (firstPoint.length() > projectedRadius || secondPoint.length() > projectedRadius)
+            {
+                int i =
+                    QVector3D::crossProduct(QVector3D(firstPoint, 0), QVector3D(secondPoint, 0)).z()
+                    > 0
+                    ? 1
+                    : -1;
+                rotation = QQuaternion::fromAxisAndAngle(
+                    0, 0, 1, i * 90 * firstPoint.distanceToPoint(secondPoint))
+                           * rotation;
+            }
+            else
+            {
+                QVector3D firstCrystalPoint = GetCrystalPoint(firstPoint);
+                QVector3D secondCrystalPoint = GetCrystalPoint(secondPoint);
+                QVector3D axis =
+                    QVector3D::crossProduct(firstCrystalPoint, secondCrystalPoint).normalized();
+                float distance = firstCrystalPoint.distanceToPoint(secondCrystalPoint);
+                rotation =
+                    QQuaternion::fromAxisAndAngle(axis, qRadiansToDegrees(2 * asin(distance / 2)))
+                    * rotation;
+            }
+
+
+
+        } else {
+            QVector3D n = QVector3D(diff.y(), diff.x(), 0);
+            rotation = QQuaternion::fromAxisAndAngle(n, diff.length() / 3) * rotation;
+            rotation.normalize();
+
+        }
         sphereTransform->setRotation(rotation);
-
-        mousePressPosition = QVector2D(e->localPos());
+        firstPosition = secondPosition;
 
     }
 }
@@ -434,27 +474,23 @@ void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
 
 void CNome3DView::wheelEvent(QWheelEvent *ev)
 {
-    if (rotationEnabled)
+    QPoint numPixels = ev->pixelDelta();
+    QPoint numDegrees = ev->angleDelta() / 8;
+
+
+    if (!numPixels.isNull())
     {
-        QPoint numPixels = ev->pixelDelta();
-        QPoint numDegrees = ev->angleDelta() / 8;
 
-
-        if (!numPixels.isNull())
-        {
-            zPos = numPixels.y();
-        }
-        else if (!numDegrees.isNull())
-        {
-            QPoint numSteps = numDegrees / 15;
-            zPos = numSteps.y();
-        }
-
-        rotation = QQuaternion::fromAxisAndAngle(0, 0, 1, zPos / 20) * rotation;
-
-        sphereTransform->setRotation(rotation);
-        ev->accept();
+        zPos += numPixels.y() / 10;
     }
+    else if (!numDegrees.isNull())
+    {
+        QPoint numSteps = numDegrees / 15;
+        zPos += numSteps.y() / 10;
+    }
+    if (zPos < 0) zPos = 0;
+    cameraset->setPosition(QVector3D(0, 0, zPos));
+    ev->accept();
 }
 
 void CNome3DView::keyPressEvent(QKeyEvent *ev)
@@ -465,6 +501,9 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
         rotationEnabled = !rotationEnabled;
         camController->setEnabled(!rotationEnabled);
         break;
+    case Qt::Key_Shift:
+        crystalballEnabled = !crystalballEnabled;
+        break;
     case Qt::Key_Space:
         if (animationEnabled) {
             sphereRotateTransformAnimation->pause();
@@ -474,6 +513,19 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
         animationEnabled = !animationEnabled;
         break;
     }
+}
+
+QVector2D CNome3DView::GetProjectionPoint(QVector2D originalPosition) {
+    double xRatio = (originalPosition.x() - this->width() / 2.0) / (this->width() / 2.0) * 0.7495510322;
+    double yRatio = (this->height() / 2.0 - originalPosition.y()) / (this->height() / 2.0) * 0.7505463791;
+    double projectedHeight = (zPos - 1 / zPos) * qTan(cameraset->lens()->fieldOfView() / 2);
+    double projectedWidth = projectedHeight * this->width() / this->height();
+
+    return QVector2D(xRatio * projectedWidth, yRatio * projectedHeight);
+}
+QVector3D CNome3DView::GetCrystalPoint(QVector2D originalPoint) {
+    double z = sqrt(1 - qPow(originalPoint.x(), 2) - qPow(originalPoint.y(), 2));
+    return QVector3D(originalPoint.x(), originalPoint.y(), z);
 }
 
 }

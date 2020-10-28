@@ -20,6 +20,7 @@ public:
     antlrcpp::Any visitArgHidden(NomParser::ArgHiddenContext* context) override;
     antlrcpp::Any visitArgSurface(NomParser::ArgSurfaceContext* context) override;
     antlrcpp::Any visitArgTime(NomParser::ArgTimeContext* context) override;
+    antlrcpp::Any visitArgFrame(NomParser::ArgFrameContext* context) override;
     antlrcpp::Any visitArgSlices(NomParser::ArgSlicesContext* context) override;
     antlrcpp::Any visitArgOrder(NomParser::ArgOrderContext* context) override;
     antlrcpp::Any visitArgTransformTwo(NomParser::ArgTransformTwoContext* context) override;

@@ -31,7 +31,6 @@ idList : LPAREN (identList+=ident)* RPAREN ;
 
 argClosed : 'closed' ;
 argHidden : 'hidden' ;
-argTime : 'time' ident ;
 argSurface : 'surface' ident ;
 argSlices : 'slices' expression ;
 argOrder : 'order' expression ;
@@ -74,7 +73,9 @@ command
    | open='offset' name=ident k1='type' v1=ident k2='min' v2=expression k3='max' v3=expression k4='step' v4=expression end='endoffset' # CmdOffset
    ;
 
-set : open='set' ident expression expression expression expression (argTime)* ;
+set : open='set' ident expression expression expression expression (argTime | argFrame)*;
+argTime : 'time' ;
+argFrame : 'frame' ;
 
 deleteFace : open='face' ident end='endface' ;
 

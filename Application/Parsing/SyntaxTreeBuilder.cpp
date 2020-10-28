@@ -26,7 +26,12 @@ antlrcpp::Any CFileBuilder::visitArgHidden(NomParser::ArgHiddenContext* context)
 antlrcpp::Any CFileBuilder::visitArgTime(NomParser::ArgTimeContext* context)
 {
     AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
-    arg->AddChild(visit(context->ident()).as<AST::AExpr*>());
+    return arg;
+}
+
+antlrcpp::Any CFileBuilder::visitArgFrame(NomParser::ArgFrameContext* context)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
     return arg;
 }
 
@@ -226,8 +231,10 @@ antlrcpp::Any CFileBuilder::visitSet(NomParser::SetContext* context)
     cmd->PushPositionalArgument(visit(context->ident()));
     for (auto* expr : context->expression())
         cmd->PushPositionalArgument(visit(expr));
-    for (auto* timer : context->argTime())
-        cmd->AddNamedArgument(visit(timer));
+    for (auto* time : context->argTime())
+        cmd->AddNamedArgument(visit(time));
+    for (auto* frame : context->argFrame())
+        cmd->AddNamedArgument(visit(frame));
     return cmd;
 }
 

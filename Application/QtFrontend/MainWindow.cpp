@@ -452,7 +452,7 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
     sliderLayout->setStretchFactor(sliderDisplay, 1);
     std::string sliderID = slider.GetASTNode()->GetPositionalIdentAsString(0);
 
-    if (slider.GetAnimFunc() == "speed") {
+    if (slider.GetAnimFunc() == "frame") {
         connect(sliderBar, &QAbstractSlider::valueChanged, [&, sliderDisplay](int value) {
             float fval = (float)value * slider.GetStep() + slider.GetMin();
             auto valueStr = tc::StringPrintf("%.2f", fval);
@@ -461,9 +461,8 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
             TimeSpeed = 1000.0 / fval;
             timer->setInterval(TimeSpeed);
             timer->start();
-            std::cout << "val" << fval << "interval" << TimeSpeed << std::endl;
         });
-    } else if (slider.GetAnimFunc() == "linear") {
+    } else if (slider.GetAnimFunc() == "time") {
         slider.SetAnimMax(slider.GetMax());
         slider.SetAnimMin(slider.GetMin());
         connect(timer, &QTimer::timeout, this, [this, &slider, sliderDisplay]() {
@@ -471,37 +470,27 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
             if (val <= slider.GetAnimMax()) {
                 slider.SetValue(val);
             } else {
-                if (slider.GetAnimMax() - slider.GetStep() >= slider.GetAnimMin()) {
-                    slider.SetAnimMax(slider.GetValue() - slider.GetStep());
-                    val = slider.GetValue() - slider.GetStep();
-                    slider.SetValue(val);
-                } else {
-                    slider.SetAnimMax(slider.GetMax());
-                }
-
+                slider.SetValue(slider.GetMin());
             }
-
-
             sliderDisplay->setText(QString::fromStdString(tc::StringPrintf("%.2f", val)));
         });
-
     }
     connect(sliderBar, &QAbstractSlider::valueChanged, [&, sliderDisplay](int value) {
-        // Every "1" in value represents a step, since the slider only allows integers
-        float fval = (float)value * slider.GetStep() + slider.GetMin();
-        auto valueStr = tc::StringPrintf("%.2f", fval);
-        sliderDisplay->setText(QString::fromStdString(valueStr));
-        slider.SetValue(fval);
-        // Update AST for the new value
-        auto* argExpr = slider.GetASTNode()->GetPositionalArgument(1);
-        std::vector<AST::CToken*> tokenList;
-        argExpr->CollectTokens(tokenList);
-        size_t insertLocation = SourceMgr->RemoveTokens(tokenList).value();
+    // Every "1" in value represents a step, since the slider only allows integers
+    float fval = (float)value * slider.GetStep() + slider.GetMin();
+    auto valueStr = tc::StringPrintf("%.2f", fval);
+    sliderDisplay->setText(QString::fromStdString(valueStr));
+    slider.SetValue(fval);
+    // Update AST for the new value
+    auto* argExpr = slider.GetASTNode()->GetPositionalArgument(1);
+    std::vector<AST::CToken*> tokenList;
+    argExpr->CollectTokens(tokenList);
+    size_t insertLocation = SourceMgr->RemoveTokens(tokenList).value();
 
-        auto* token = SourceMgr->GetASTContext().MakeToken(valueStr);
-        auto* expr = SourceMgr->GetASTContext().Make<AST::ANumber>(token);
-        slider.GetASTNode()->SetPositionalArgument(1, expr);
-        SourceMgr->InsertToken(insertLocation, token);
+    auto* token = SourceMgr->GetASTContext().MakeToken(valueStr);
+    auto* expr = SourceMgr->GetASTContext().Make<AST::ANumber>(token);
+    slider.GetASTNode()->SetPositionalArgument(1, expr);
+    SourceMgr->InsertToken(insertLocation, token);
     });
 
     SliderLayout->addRow(sliderName, sliderLayout);

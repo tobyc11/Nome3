@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMatrix4x4>
+#include <QtMath>
 
 QT_BEGIN_NAMESPACE
 

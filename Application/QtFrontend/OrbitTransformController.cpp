@@ -58,7 +58,7 @@ float OrbitTransformController::angle() const
 void OrbitTransformController::updateMatrix()
 {
     m_count += 0.05;
-    m_rotation = QQuaternion::fromAxisAndAngle(QVector3D(0.0f, 1.0f, 0.0f), 2 * cos(m_count)) * m_rotation;
+    m_rotation = QQuaternion::fromAxisAndAngle(QVector3D(0.0f, 1.0f, 0.0f), 2 * qCos(m_count)) * m_rotation;
     m_target->setRotation(m_rotation);
 }
 

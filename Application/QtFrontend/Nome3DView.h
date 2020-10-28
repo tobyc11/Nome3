@@ -1,6 +1,7 @@
 #pragma once
 #include "DebugDraw.h"
 #include "InteractiveMesh.h"
+#include "OrbitTransformController.h"
 #include <Ray.h>
 #include <Scene/Scene.h>
 
@@ -27,18 +28,56 @@ public:
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
-
     void PickVertexWorldRay(const tc::Ray& ray);
     void PickFaceWorldRay(const tc::Ray& ray); // Randy added on 10/10
 
+
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
 
+protected:
+    // Xinyu added on Oct 8 for rotation
+    void mouseMoveEvent(QMouseEvent* e) override;
+    void mousePressEvent(QMouseEvent* e) override;
+    void mouseReleaseEvent(QMouseEvent* e) override;
+    void wheelEvent(QWheelEvent *ev) override;
+    void keyPressEvent(QKeyEvent *ev) override;
+
+private:
+    QVector2D GetProjectionPoint(QVector2D originalPosition);
+    QVector3D GetCrystalPoint(QVector2D originalPoint);
 private:
     Qt3DCore::QEntity* Root;
     tc::TAutoPtr<Scene::CScene> Scene;
     std::unordered_set<CInteractiveMesh*> InteractiveMeshes;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> EntityDrawData;
     std::vector<std::string> SelectedVertices;
+
+
+    // Xinyu added on Oct 8 for rotation
+    QMatrix4x4 projection;
+    QVector2D firstPosition;
+    QVector2D secondPosition;
+
+    QQuaternion rotation;
+    Qt3DRender::QCamera *cameraset;
+    Qt3DExtras::QOrbitCameraController *camController;
+    // Qt3DRender::QMaterial *material;
+    bool mousePressEnabled;
+    bool crystalballEnabled;
+    bool rotationEnabled;
+
+    bool animationEnabled;
+    float zPos;
+
+    float objectX;
+    float objectY;
+
+
+    // For the animation
+    Qt3DCore::QTransform *sphereTransform;
+    OrbitTransformController *controller;
+    QPropertyAnimation *sphereRotateTransformAnimation;
+
 };
 
 }

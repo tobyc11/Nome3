@@ -48,14 +48,14 @@ endmacro()
 
 add_executable(Nome3 ${PG2_SOURCES})
 # Xinyu add on Oct 8 for mac users
-#if (APPLE)
-    #set_target_properties(Nome3
-            #PROPERTIES
-            #MACOSX_BUNDLE TRUE
-            #if you want to use with a high resolution but no vertex selection setting
-            #MACOSX_BUNDLE_INFO_PLIST "${PROJECT_SOURCE_DIR}/CMake/MacOS_Config/Info.plist"
-            #)
-#endif ()
+if (APPLE)
+    set_target_properties(Nome3
+            PROPERTIES
+            MACOSX_BUNDLE TRUE
+            # if you want to use with a high resolution but no vertex selection setting
+            # MACOSX_BUNDLE_INFO_PLIST "${PROJECT_SOURCE_DIR}/CMake/MacOS_Config/Info.plist"
+            )
+endif ()
 
 config_playground2(Nome3)
 if(NOME_BUILD_TESTS)

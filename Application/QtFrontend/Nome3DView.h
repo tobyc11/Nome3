@@ -44,7 +44,7 @@ protected:
 
 private:
     QVector2D GetProjectionPoint(QVector2D originalPosition);
-    QVector3D GetCrystalPoint(QVector2D originalPoint);
+    static QVector3D GetCrystalPoint(QVector2D originalPoint);
 private:
     Qt3DCore::QEntity* Root;
     tc::TAutoPtr<Scene::CScene> Scene;

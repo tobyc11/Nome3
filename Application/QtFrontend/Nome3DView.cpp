@@ -497,6 +497,7 @@ void CNome3DView::mousePressEvent(QMouseEvent* e)
 {
     if (rotationEnabled)
     {
+        zPos = cameraset->position().z();
         // Save mouse press position
         mousePressEnabled = true;
         firstPosition = QVector2D(e->localPos());
@@ -565,23 +566,27 @@ void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
 
 void CNome3DView::wheelEvent(QWheelEvent *ev)
 {
-    QPoint numPixels = ev->pixelDelta();
-    QPoint numDegrees = ev->angleDelta() / 8;
-
-
-    if (!numPixels.isNull())
+    if (rotationEnabled)
     {
+        QVector3D cameraPosition = cameraset->position();
+        zPos = cameraPosition.z();
+        QPoint numPixels = ev->pixelDelta();
+        QPoint numDegrees = ev->angleDelta() / 8;
 
-        zPos += numPixels.y() / 10;
+        if (!numPixels.isNull())
+        {
+            zPos += numPixels.y() * 0.3;
+        }
+        else if (!numDegrees.isNull())
+        {
+            QPoint numSteps = numDegrees / 15;
+            zPos += numSteps.y() * 0.3;
+        }
+        if (zPos < 0)
+            zPos = 0;
+        cameraset->setPosition(QVector3D(cameraPosition.x(), cameraPosition.y(), zPos));
+        ev->accept();
     }
-    else if (!numDegrees.isNull())
-    {
-        QPoint numSteps = numDegrees / 15;
-        zPos += numSteps.y() / 10;
-    }
-    if (zPos < 0) zPos = 0;
-    cameraset->setPosition(QVector3D(0, 0, zPos));
-    ev->accept();
 }
 
 void CNome3DView::keyPressEvent(QKeyEvent *ev)
@@ -607,16 +612,28 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
 }
 
 QVector2D CNome3DView::GetProjectionPoint(QVector2D originalPosition) {
-    double xRatio = (originalPosition.x() - this->width() / 2.0) / (this->width() / 2.0) * 0.7495510322;
-    double yRatio = (this->height() / 2.0 - originalPosition.y()) / (this->height() / 2.0) * 0.7505463791;
-    double projectedHeight = (zPos - 1 / zPos) * qTan(cameraset->lens()->fieldOfView() / 2);
+    double xRatio = (originalPosition.x() - this->width() / 2.0) / (this->width() / 2.0);
+    double yRatio = (this->height() / 2.0 - originalPosition.y()) / (this->height() / 2.0);
+    // Calculate the x ratio according to the screen ratio
+    double tempX = xRatio * this->width() / this->height();
+    // Calculate the equivalent y by the radius
+    double tempY = sqrt(qPow(tempX, 2) + qPow(yRatio, 2));
+    //Calculate the camera view angle according to the picked point
+    double theta = qAtan(tempY * qTan(qDegreesToRadians(cameraset->lens()->fieldOfView() / 2)));
+
+    double temp = 1 + qPow(qTan(theta), 2);
+    double judge = (1 - qPow(zPos, 2)) / temp + qPow(zPos / temp, 2);
+
+    double projectedHeight = (judge > 0 ? (zPos / temp - qSqrt(judge)) : (zPos - 1 / zPos))
+        * qTan(qDegreesToRadians(cameraset->lens()->fieldOfView() / 2));
+
     double projectedWidth = projectedHeight * this->width() / this->height();
 
     return QVector2D(xRatio * projectedWidth, yRatio * projectedHeight);
 }
 QVector3D CNome3DView::GetCrystalPoint(QVector2D originalPoint) {
     double z = sqrt(1 - qPow(originalPoint.x(), 2) - qPow(originalPoint.y(), 2));
-    return QVector3D(originalPoint.x(), originalPoint.y(), z);
+    return QVector3D(originalPoint, z);
 }
 
 }

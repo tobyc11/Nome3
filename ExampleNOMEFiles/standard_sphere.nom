@@ -1,0 +1,5 @@
+
+
+sphere s (30 1 100 360 0 180) endsphere
+
+instance sphere1 s endinstance

@@ -221,10 +221,11 @@ void CNome3DView::ClearSelectedVertices()
 }
 
 
-void CNome3DView::PickFaceWorldRay(const tc::Ray& ray)
+void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
 {
 
     // copied from old version of PickVertexWorldRay
+    rotateRay(ray);
 
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
@@ -300,8 +301,9 @@ void CNome3DView::PickFaceWorldRay(const tc::Ray& ray)
         GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
     }
 }
-void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
+void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
 {
+    rotateRay(ray);
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
@@ -631,9 +633,17 @@ QVector2D CNome3DView::GetProjectionPoint(QVector2D originalPosition) {
 
     return QVector2D(xRatio * projectedWidth, yRatio * projectedHeight);
 }
+
 QVector3D CNome3DView::GetCrystalPoint(QVector2D originalPoint) {
     double z = sqrt(1 - qPow(originalPoint.x(), 2) - qPow(originalPoint.y(), 2));
     return QVector3D(originalPoint, z);
+}
+
+void CNome3DView::rotateRay(tc::Ray& ray) {
+    QVector3D origin = rotation.inverted().rotatedVector(QVector3D(ray.Origin.x, ray.Origin.y, ray.Origin.z));
+    QVector3D direction = rotation.inverted().rotatedVector(QVector3D(ray.Direction.x, ray.Direction.y, ray.Direction.z));
+    ray.Direction = tc::Vector3(direction.x(), direction.y(), direction.z());
+    ray.Origin = tc::Vector3(origin.x(), origin.y(), origin.z());
 }
 
 }

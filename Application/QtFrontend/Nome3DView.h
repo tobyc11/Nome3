@@ -28,8 +28,8 @@ public:
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
-    void PickVertexWorldRay(const tc::Ray& ray);
-    void PickFaceWorldRay(const tc::Ray& ray); // Randy added on 10/10
+    void PickVertexWorldRay(tc::Ray& ray);
+    void PickFaceWorldRay(tc::Ray& ray); // Randy added on 10/10
 
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
@@ -45,6 +45,7 @@ protected:
 private:
     QVector2D GetProjectionPoint(QVector2D originalPosition);
     static QVector3D GetCrystalPoint(QVector2D originalPoint);
+    void rotateRay(tc::Ray& ray);
 private:
     Qt3DCore::QEntity* Root;
     tc::TAutoPtr<Scene::CScene> Scene;

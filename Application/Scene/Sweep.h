@@ -27,7 +27,11 @@ public:
 private:
     void drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
                           Vector3 T, Vector3 N, float angle, float scaleX,
-                          float scaleY, float scaleN, int index);
+                          float scaleY, float scaleN, int index, bool shouldReverse);
+    void drawCap(std::vector<Vector3> crossSection, int crossIndex,
+                 int faceIndex, bool shouldFlip);
+    bool bStartCap = false;
+    bool bEndCap = false;
 };
 
 }

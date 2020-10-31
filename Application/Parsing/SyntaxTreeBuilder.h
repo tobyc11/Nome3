@@ -17,6 +17,8 @@ public:
     antlrcpp::Any visitFile(NomParser::FileContext* context) override;
 
     antlrcpp::Any visitArgClosed(NomParser::ArgClosedContext* context) override;
+    antlrcpp::Any visitArgStartCap(NomParser::ArgStartCapContext* context) override;
+    antlrcpp::Any visitArgEndCap(NomParser::ArgEndCapContext* context) override;
     antlrcpp::Any visitArgHidden(NomParser::ArgHiddenContext* context) override;
     antlrcpp::Any visitArgSurface(NomParser::ArgSurfaceContext* context) override;
     antlrcpp::Any visitArgCross(NomParser::ArgCrossContext* context) override;

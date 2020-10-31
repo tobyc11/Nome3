@@ -17,6 +17,18 @@ antlrcpp::Any CFileBuilder::visitArgClosed(NomParser::ArgClosedContext* context)
     return arg;
 }
 
+antlrcpp::Any CFileBuilder::visitArgStartCap(NomParser::ArgStartCapContext* context)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    return arg;
+}
+
+antlrcpp::Any CFileBuilder::visitArgEndCap(NomParser::ArgEndCapContext* context)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    return arg;
+}
+
 antlrcpp::Any CFileBuilder::visitArgHidden(NomParser::ArgHiddenContext* context)
 {
     AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
@@ -110,6 +122,10 @@ antlrcpp::Any CFileBuilder::visitCmdExprListOne(NomParser::CmdExprListOneContext
     for (auto* arg : context->idList())
         cmd->PushPositionalArgument(visit(arg));
     for (auto* arg : context->argCross())
+        cmd->AddNamedArgument(visit(arg));
+    for (auto* arg : context->argStartCap())
+        cmd->AddNamedArgument(visit(arg));
+    for (auto* arg : context->argEndCap())
         cmd->AddNamedArgument(visit(arg));
     return cmd;
 }

@@ -532,7 +532,7 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
                     ? 1
                     : -1;
                 rotation = QQuaternion::fromAxisAndAngle(
-                    0, 0, 1, i * 90 * firstPoint.distanceToPoint(secondPoint))
+                    0, 0, 1, i * qRadiansToDegrees(qAcos(QVector2D::dotProduct(secondPoint.normalized(), firstPoint.normalized()))))
                            * rotation;
             }
             else

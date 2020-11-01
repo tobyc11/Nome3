@@ -78,6 +78,8 @@ private:
     Qt3DCore::QTransform *sphereTransform;
     OrbitTransformController *controller;
     QPropertyAnimation *sphereRotateTransformAnimation;
+    Qt3DCore::QEntity *crystalBall;
+    Qt3DExtras::QPhongAlphaMaterial *material;
 
 };
 

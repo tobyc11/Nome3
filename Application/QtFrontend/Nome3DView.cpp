@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QStatusBar>
 #include <QTableWidget>
+#include <QBuffer>
 
 namespace Nome
 {
@@ -20,6 +21,15 @@ CNome3DView::CNome3DView()
 
 {
     Root = new Qt3DCore::QEntity();
+    crystalBall = new Qt3DCore::QEntity(Root);
+    auto *sphereMesh = new Qt3DExtras::QSphereMesh;
+
+    material = new Qt3DExtras::QPhongAlphaMaterial(Root);
+    material->setAlpha(0.1);
+    material->setShininess(1);
+    sphereMesh->setRadius(1);
+    crystalBall->addComponent(sphereMesh);
+    crystalBall->addComponent(material);
 
     this->setRootEntity(Root);
     // MakeGridEntity(Root); Removing grid entity per Professor Sequin's request
@@ -40,7 +50,7 @@ CNome3DView::CNome3DView()
     objectX = objectY = 0;
     // Setup camera
 
-    zPos = 3.0;
+    zPos = 5.0;
     cameraset = this->camera();
     cameraset->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
     cameraset->setPosition(QVector3D(0, 0, zPos));
@@ -62,9 +72,6 @@ CNome3DView::CNome3DView()
     sphereRotateTransformAnimation->setEndValue(QVariant::fromValue(360));
     sphereRotateTransformAnimation->setDuration(100000);
     sphereRotateTransformAnimation->setLoopCount(-1);
-
-    //material = new Qt3DExtras::QPhongMaterial(Root);
-
 
     camController = new Qt3DExtras::QOrbitCameraController(Root);
     camController->setLinearSpeed(50.0f);
@@ -468,7 +475,7 @@ Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
         xStart += increment;
     }
 
-    auto* buf = new Qt3DRender::QBuffer(Qt3DRender::QBuffer::VertexBuffer, geometry);
+    auto* buf = new QBuffer((QByteArray*)Qt3DRender::QBuffer::VertexBuffer, geometry);
     buf->setData(bufferBytes);
 
     auto* positionAttr = new Qt3DRender::QAttribute(geometry);
@@ -476,7 +483,7 @@ Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
     positionAttr->setVertexBaseType(Qt3DRender::QAttribute::Float);
     positionAttr->setVertexSize(3);
     positionAttr->setAttributeType(Qt3DRender::QAttribute::VertexAttribute);
-    positionAttr->setBuffer(buf);
+    positionAttr->setBuffer(reinterpret_cast<Qt3DRender::QBuffer*>(buf));
     positionAttr->setByteStride(3 * sizeof(float));
     positionAttr->setCount(4 * (divisions + 1));
     geometry->addAttribute(positionAttr);
@@ -526,14 +533,11 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
 
             if (firstPoint.length() > projectedRadius || secondPoint.length() > projectedRadius)
             {
-                int i =
-                    QVector3D::crossProduct(QVector3D(firstPoint, 0), QVector3D(secondPoint, 0)).z()
-                    > 0
-                    ? 1
-                    : -1;
-                rotation = QQuaternion::fromAxisAndAngle(
-                    0, 0, 1, i * qRadiansToDegrees(qAcos(QVector2D::dotProduct(secondPoint.normalized(), firstPoint.normalized()))))
-                           * rotation;
+                float angle =
+                    qRadiansToDegrees(qAsin(
+                        QVector3D::crossProduct(QVector3D(firstPoint, 0).normalized()
+                                                    , QVector3D(secondPoint, 0).normalized()).z()));
+                rotation = QQuaternion::fromAxisAndAngle(0, 0, 1, angle) * rotation;
             }
             else
             {
@@ -577,12 +581,12 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
 
         if (!numPixels.isNull())
         {
-            zPos += numPixels.y() * 0.3;
+            zPos += numPixels.y() * 0.2;
         }
         else if (!numDegrees.isNull())
         {
             QPoint numSteps = numDegrees / 15;
-            zPos += numSteps.y() * 0.3;
+            zPos += numSteps.y() * 0.2;
         }
         if (zPos < 0)
             zPos = 0;
@@ -598,6 +602,9 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
     case Qt::Key_Tab:
         rotationEnabled = !rotationEnabled;
         camController->setEnabled(!rotationEnabled);
+        material->setAlpha(rotationEnabled * 0.1);
+
+
         break;
     case Qt::Key_Shift:
         crystalballEnabled = !crystalballEnabled;

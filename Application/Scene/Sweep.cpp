@@ -70,19 +70,21 @@ void CSweep::drawCap(std::vector<Vector3> crossSection, int crossIndex,
 {
     size_t size = crossSection.size();
     std::vector<std::string> capFace;
+    // not a closed cross-section
+    if (crossSection[0] != crossSection[size - 1]) { size++; }
 
-    for (size_t i = 0; i <= size; i++) {
+    for (size_t i = 0; i < size; i++) {
         if (shouldFlip)
         {
             capFace.push_back(
                 "v" + std::to_string(crossIndex) + "_" +
-                std::to_string((size - i - 1) % size)
+                std::to_string((crossSection.size() - i - 1) % crossSection.size())
             );
         }
         else
         {
             capFace.push_back(
-                "v" + std::to_string(crossIndex) + "_" + std::to_string(i % size)
+                "v" + std::to_string(crossIndex) + "_" + std::to_string(i % crossSection.size())
             );
         }
     }

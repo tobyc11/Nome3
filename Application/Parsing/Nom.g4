@@ -52,6 +52,7 @@ command
    | open='group' name=ident command* end='endgroup' # CmdSubCmds
    | open='circle' name=ident LPAREN expression expression RPAREN end='endcircle' # CmdExprListOne
    | open='sphere' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endsphere' # CmdExprListOne
+   | open='cylinder' name=ident LPAREN expression expression expression expression RPAREN end='endcylinder' # CmdExprListOne
    | open='mobiusstrip' name=ident LPAREN expression expression expression expression RPAREN end='endmobiusstrip' # CmdExprListOne
    | open='funnel' name=ident LPAREN expression expression expression expression RPAREN end='endfunnel' # CmdExprListOne
    | open='tunnel' name=ident LPAREN expression expression expression expression RPAREN end='endtunnel' # CmdExprListOne

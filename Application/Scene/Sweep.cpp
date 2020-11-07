@@ -461,6 +461,8 @@ void CSweep::UpdateEntity()
     }
 
     // Create caps
+    // Cannot create caps when the path is closed
+    if (isClosed) { return; }
     if (bStartCap) { drawCap(crossSections[0], 1, segmentCount++ - 1, true); }
     if (bEndCap)
     {

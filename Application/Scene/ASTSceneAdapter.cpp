@@ -3,6 +3,7 @@
 #include "BezierSpline.h"
 #include "Circle.h"
 #include "Sphere.h"
+#include "MobiusStrip.h"
 #include "Environment.h"
 #include "Face.h"
 #include "Funnel.h"
@@ -48,7 +49,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "backfaces", ECommandKind::Dummy },    { "rimfaces", ECommandKind::Dummy },
     { "bank", ECommandKind::BankSet },       { "set", ECommandKind::BankSet },
     { "delete", ECommandKind::Instance },    { "subdivision", ECommandKind::Dummy },
-    { "offset", ECommandKind::Dummy }
+    { "offset", ECommandKind::Dummy },       {"mobiusstrip", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -88,6 +89,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CTorusKnot(name);
     else if (cmd == "torus")
         return new CTorus(name);
+    else if (cmd == "mobiusstrip")
+        return new CMobiusStrip(name);
 
     return nullptr;
 }

@@ -9,10 +9,10 @@ namespace Nome::Scene
 
 DEFINE_META_OBJECT(CMobiusStrip)
 {
-    BindPositionalArgument(&CMobiusStrip::N, 1, 0);
-    BindPositionalArgument(&CMobiusStrip::Radius, 1, 1);
-    BindPositionalArgument(&CMobiusStrip::NumTwists, 1, 2);
-    BindPositionalArgument(&CMobiusStrip::NumCuts, 1, 3);
+    BindPositionalArgument(&CMobiusStrip::Radius, 1, 0);
+    BindPositionalArgument(&CMobiusStrip::NumTwists, 1, 1);
+    BindPositionalArgument(&CMobiusStrip::NumCuts, 1, 2);
+    BindPositionalArgument(&CMobiusStrip::N, 1, 3);
 }
 
 void CMobiusStrip::UpdateEntity()

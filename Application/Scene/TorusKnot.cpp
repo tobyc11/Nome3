@@ -15,12 +15,14 @@ typedef struct
 
 
 DEFINE_META_OBJECT(CTorusKnot)
-{
-    BindPositionalArgument(&CTorusKnot::P_Val, 1, 0);
-    BindPositionalArgument(&CTorusKnot::Q_Val, 1, 1);
-    BindPositionalArgument(&CTorusKnot::VerticesPerRing, 1, 2);
-    BindPositionalArgument(&CTorusKnot::TubeRadius, 1, 3);
-    BindPositionalArgument(&CTorusKnot::Segments, 1, 4);
+{ 
+    BindPositionalArgument(&CTorusKnot::P_Val, 1, 0); // equivalent to "symm" in the language reference
+    BindPositionalArgument(&CTorusKnot::Q_Val, 1, 1); // equivalent to "turns" in the language reference
+    BindPositionalArgument(&CTorusKnot::MajorRadius, 1, 2);
+    BindPositionalArgument(&CTorusKnot::MinorRadius, 1, 3);
+    BindPositionalArgument(&CTorusKnot::TubeRadius, 1, 4); // equivalent to "minor radius"
+    BindPositionalArgument(&CTorusKnot::VerticesPerRing, 1, 5); // "circle_segs" 
+    BindPositionalArgument(&CTorusKnot::Segments, 1, 6);// "sweep_segs"
 }
 void CTorusKnot::UpdateEntity()
 {
@@ -34,6 +36,7 @@ void CTorusKnot::UpdateEntity()
     int _p = P_Val.GetValue(1.0f);
     int _q = Q_Val.GetValue(1.0f);
     int numPhi = static_cast<int>(VerticesPerRing.GetValue(16.0f));
+    float majorRadius = MajorRadius.GetValue(1.0f);
     float tubeRadius = TubeRadius.GetValue(1.0f);
     int numSegments = Segments.GetValue(0.0f); // number of circles basically
 
@@ -44,7 +47,7 @@ void CTorusKnot::UpdateEntity()
     for (int i = 0; i < numSegments; i++) // Create torus knot, creating one cross section at each iteration
     {
         float t0 = i * dt;
-        float r0 = (2 + cosf(_q * t0)) * 0.5;
+        float r0 = majorRadius*(2 + cosf(_q * t0)) * 0.5;
         
         Point p0 = { r0 * cosf(_p * t0), r0 * sinf(_p * t0), -sinf(_q * t0) }; 
         // Point p0 = { sinf(t0), cos(t0), 0}; // uncomment this to do torus instead    
@@ -52,7 +55,7 @@ void CTorusKnot::UpdateEntity()
         // Below, we'll work on approximating the Frenet frame { T, N, B } for the curve at the current point
 
         float t1 = t0 + epsilon;
-        float r1 = (2 + cosf(_q * t1)) * 0.5;
+        float r1 = majorRadius*(2 + cosf(_q * t1)) * 0.5;
 
         // p1 is p0 advanced infinitesimally along the curve
         Point p1 = { r1 * cosf(_p * t1), r1 * sinf(_p * t1), -sinf(_q * t1) };

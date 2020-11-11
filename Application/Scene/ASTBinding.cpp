@@ -4,6 +4,7 @@
 #include "SweepPath.h"
 #include "Polyline.h"
 #include "BSpline.h"
+#include "TorusKnot.h" // Check with Zachary
 #include "SweepControlPoint.h"
 #include <Flow/FlowNode.h>
 #include <Flow/FlowNodeArray.h>
@@ -271,7 +272,13 @@ bool TBindingTranslator<Flow::TInput<CSweepPathInfo*>>::FromASTToValue(
     {
         CBSpline* bspline = dynamic_cast<CBSpline*>(path);
         value.Connect(bspline->BSpline);
-    } else
+    } 
+    else if (typeid(e) == typeid(CTorusKnot))
+    {
+        CTorusKnot* torusknot = dynamic_cast<CTorusKnot*>(path);
+        value.Connect(torusknot->TorusKnot);
+    } 
+    else
     {
         throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a sweep path", identVal.c_str()),
                                   ident);

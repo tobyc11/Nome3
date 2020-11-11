@@ -53,7 +53,6 @@ CMainWindow::~CMainWindow()
     GFrtCtx->MainWindow = nullptr;
     UnloadNomeFile();
     delete ui;
-    timer = nullptr;
 }
 
 void CMainWindow::closeEvent(QCloseEvent* event)
@@ -372,17 +371,21 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
 
 void CMainWindow::PostloadSetup()
 {
-    timer = new QTimer(this);
-    timer->setInterval(TimeSpeed);
     Scene->GetBankAndSet().AddObserver(this);
     Nome3DView->TakeScene(Scene);
 
+    elapsedRender = new QElapsedTimer();
     SceneUpdateClock = new QTimer(this);
-    SceneUpdateClock->setInterval(50);
+    SceneUpdateClock->setInterval(100);
     SceneUpdateClock->setSingleShot(false);
+    elapsedRender->start();
     connect(SceneUpdateClock, &QTimer::timeout, [this]() {
         Scene->Update();
         Nome3DView->PostSceneUpdate();
+        Scene->SetTime((float) elapsedRender->elapsed() / 1000);
+        Scene->SetFrame(1);
+        std::cout << "time" << (float) elapsedRender->elapsed() / 1000 << std::endl;
+        std::cout << "frame" << Scene->GetFrame()->GetNumber() << std::endl;
     });
     SceneUpdateClock->start();
 
@@ -394,8 +397,8 @@ void CMainWindow::UnloadNomeFile()
     TemporaryMeshManager.reset(nullptr);
     SceneUpdateClock->stop();
     delete SceneUpdateClock;
-    timer->stop();
-    delete timer;
+    elapsedRender->invalidate();
+    delete elapsedRender;
     Nome3DView->UnloadScene();
     assert(Scene->GetRefCount() == 1);
     Scene = nullptr;
@@ -452,45 +455,22 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
     sliderLayout->setStretchFactor(sliderDisplay, 1);
     std::string sliderID = slider.GetASTNode()->GetPositionalIdentAsString(0);
 
-    if (slider.GetAnimFunc() == "frame") {
-        connect(sliderBar, &QAbstractSlider::valueChanged, [&, sliderDisplay](int value) {
-            float fval = (float)value * slider.GetStep() + slider.GetMin();
-            auto valueStr = tc::StringPrintf("%.2f", fval);
-            sliderDisplay->setText(QString::fromStdString(valueStr));
-            slider.SetValue(fval);
-            TimeSpeed = 1000.0 / fval;
-            timer->setInterval(TimeSpeed);
-            timer->start();
-        });
-    } else if (slider.GetAnimFunc() == "time") {
-        slider.SetAnimMax(slider.GetMax());
-        slider.SetAnimMin(slider.GetMin());
-        connect(timer, &QTimer::timeout, this, [this, &slider, sliderDisplay]() {
-            float val = slider.GetValue() + slider.GetStep();
-            if (val <= slider.GetAnimMax()) {
-                slider.SetValue(val);
-            } else {
-                slider.SetValue(slider.GetMin());
-            }
-            sliderDisplay->setText(QString::fromStdString(tc::StringPrintf("%.2f", val)));
-        });
-    }
     connect(sliderBar, &QAbstractSlider::valueChanged, [&, sliderDisplay](int value) {
-    // Every "1" in value represents a step, since the slider only allows integers
-    float fval = (float)value * slider.GetStep() + slider.GetMin();
-    auto valueStr = tc::StringPrintf("%.2f", fval);
-    sliderDisplay->setText(QString::fromStdString(valueStr));
-    slider.SetValue(fval);
-    // Update AST for the new value
-    auto* argExpr = slider.GetASTNode()->GetPositionalArgument(1);
-    std::vector<AST::CToken*> tokenList;
-    argExpr->CollectTokens(tokenList);
-    size_t insertLocation = SourceMgr->RemoveTokens(tokenList).value();
+        // Every "1" in value represents a step, since the slider only allows integers
+        float fval = (float)value * slider.GetStep() + slider.GetMin();
+        auto valueStr = tc::StringPrintf("%.2f", fval);
+        sliderDisplay->setText(QString::fromStdString(valueStr));
+        slider.SetValue(fval);
+        // Update AST for the new value
+        auto* argExpr = slider.GetASTNode()->GetPositionalArgument(1);
+        std::vector<AST::CToken*> tokenList;
+        argExpr->CollectTokens(tokenList);
+        size_t insertLocation = SourceMgr->RemoveTokens(tokenList).value();
 
-    auto* token = SourceMgr->GetASTContext().MakeToken(valueStr);
-    auto* expr = SourceMgr->GetASTContext().Make<AST::ANumber>(token);
-    slider.GetASTNode()->SetPositionalArgument(1, expr);
-    SourceMgr->InsertToken(insertLocation, token);
+        auto* token = SourceMgr->GetASTContext().MakeToken(valueStr);
+        auto* expr = SourceMgr->GetASTContext().Make<AST::ANumber>(token);
+        slider.GetASTNode()->SetPositionalArgument(1, expr);
+        SourceMgr->InsertToken(insertLocation, token);
     });
 
     SliderLayout->addRow(sliderName, sliderLayout);

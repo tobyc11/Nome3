@@ -2,8 +2,8 @@ bank trefoil_slider
   set num_vert 20 3 80 1
   set tube_radius 0.1 0.01 0.5 0.01
   set num_seg 87 18 240 3
-  set degree 320 0 360 1 time
-  set speed 0 0 100 1 frame
+  set degree 320 0 360 1
+  set speed 0 0 100 1
   set amp 3 0 15 1
   set phaseshift 1 -5 5 1
   set frequency 0.3 0 1 0.1
@@ -12,5 +12,5 @@ endbank
 torusknot $trefoil (3 2 {expr $trefoil_slider.num_vert} {expr $trefoil_slider.tube_radius} {expr $trefoil_slider.num_seg}) endtorusknot
 
 
-instance t1 trefoil rotate (0 1 0) ({expr $trefoil_slider.amp} * sin({expr $trefoil_slider.frequency}*{expr $trefoil_slider.degree} +
+instance t1 trefoil rotate (0 1 0) ({expr $trefoil_slider.amp} * sin({expr time} + {expr $trefoil_slider.degree} +
 {expr $trefoil_slider.phaseshift})) endinstance

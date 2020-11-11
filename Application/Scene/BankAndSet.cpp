@@ -3,12 +3,11 @@
 namespace Nome::Scene
 {
 
-CSlider::CSlider(AST::ACommand* cmd, float value, float min, float max, float step, std::string animfunc)
+CSlider::CSlider(AST::ACommand* cmd, float value, float min, float max, float step)
     : Cmd(cmd)
     , Min(min)
     , Max(max)
     , Step(step)
-    , AnimFunc(animfunc)
 {
     this->SetNumber(value);
 }
@@ -16,14 +15,6 @@ CSlider::CSlider(AST::ACommand* cmd, float value, float min, float max, float st
 void CSlider::SetValue(float value)
 {
     SetNumber(value);
-}
-
-void CSlider::SetAnimMax(float x) {
-    AnimMax = x;
-}
-
-void CSlider::SetAnimMin(float x) {
-    AnimMin = x;
 }
 
 CBankAndSet::~CBankAndSet()
@@ -34,13 +25,13 @@ CBankAndSet::~CBankAndSet()
 }
 
 void CBankAndSet::AddSlider(const std::string& name, AST::ACommand* cmd, float value, float min,
-                            float max, float step, std::string animfunc)
+                            float max, float step)
 {
     if (GetSlider(name))
     {
         throw std::runtime_error("Slider already exists");
     }
-    auto* slider = new CSlider(cmd, value, min, max, step, animfunc);
+    auto* slider = new CSlider(cmd, value, min, max, step);
     Sliders.insert({ name, slider });
 
     for (auto* observer : Observers)

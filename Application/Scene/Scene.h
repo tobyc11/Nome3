@@ -65,6 +65,16 @@ public:
 
     CPickingManager* GetPickingMgr() const;
 
+    Flow::CFloatNumber* GetTime() {return time;}
+    Flow::CFloatNumber* GetFrame() {return frame;}
+    void SetTime(float x) {
+        time->SetNumber(time->GetNumber() + x);
+    }
+    void SetFrame(float x) {
+        frame->SetNumber(frame->GetNumber() + x);
+    }
+
+
 private:
     CBankAndSet BankAndSet;
 
@@ -73,6 +83,8 @@ private:
 
     TAutoPtr<CPickingManager> PickingMgr;
 
+    Flow::CFloatNumber* time = new Flow::CFloatNumber(0.0f);
+    Flow::CFloatNumber* frame = new Flow::CFloatNumber(0.0f);
     // Every generator or group in the nom file is declared with a name
     // The following two maps enable looking up objects by their names
     std::map<std::string, TAutoPtr<CEntity>> EntityLibrary;

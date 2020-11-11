@@ -1,0 +1,9 @@
+bank slider
+	set t 0 0 6.283 0.02
+	set speed 0 0 100 1
+endbank
+
+torus tor (12 4 4  360 360 12) endtorus
+
+instance tor1 tor translate ((50 * sin({expr slider.t} * {expr time}) * sin(0.785398)) (20 * sin(0.785398) * cos({expr slider.t}
+* {expr time})) (0)) endinstance

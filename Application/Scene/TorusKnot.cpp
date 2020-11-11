@@ -36,6 +36,7 @@ void CTorusKnot::UpdateEntity()
     int _p = P_Val.GetValue(1.0f);
     int _q = Q_Val.GetValue(1.0f);
     int numPhi = static_cast<int>(VerticesPerRing.GetValue(16.0f));
+    float minorRadius = MinorRadius.GetValue(1.0f);
     float majorRadius = MajorRadius.GetValue(1.0f);
     float tubeRadius = TubeRadius.GetValue(1.0f);
     int numSegments = Segments.GetValue(0.0f); // number of circles basically
@@ -43,22 +44,23 @@ void CTorusKnot::UpdateEntity()
     const float epsilon = 1e-4;
     const float dt = (2.0f * (float)tc::M_PI) / (numSegments);
     const float du = (2.0f * (float)tc::M_PI) / numPhi;
-
+    
+    // https://mathworld.wolfram.com/Torus.html and http://makerhome.blogspot.com/2014/01/day-150-trefoil-torus-knots.html
     for (int i = 0; i < numSegments; i++) // Create torus knot, creating one cross section at each iteration
     {
         float t0 = i * dt;
-        float r0 = majorRadius*(2 + cosf(_q * t0)) * 0.5;
+        float r0 = (majorRadius + minorRadius * cosf(_q * t0)); // * 0.5;
         
-        Point p0 = { r0 * cosf(_p * t0), r0 * sinf(_p * t0), -sinf(_q * t0) }; 
-        // Point p0 = { sinf(t0), cos(t0), 0}; // uncomment this to do torus instead    
+        Point p0 = { r0 * cosf(_p * t0), r0 * sinf(_p * t0), minorRadius * sinf(_q * t0) }; 
+        // Point p0 = { sinf(t0), cos(t0), 0}; // uncomment this to do torus instead    . naive circle method
         
         // Below, we'll work on approximating the Frenet frame { T, N, B } for the curve at the current point
 
         float t1 = t0 + epsilon;
-        float r1 = majorRadius*(2 + cosf(_q * t1)) * 0.5;
+        float r1 = (majorRadius + minorRadius * cosf(_q * t1)); //* 0.5;
 
         // p1 is p0 advanced infinitesimally along the curve
-        Point p1 = { r1 * cosf(_p * t1), r1 * sinf(_p * t1), -sinf(_q * t1) };
+        Point p1 = { r1 * cosf(_p * t1), r1 * sinf(_p * t1), minorRadius * sinf(_q * t1) };
         //Point p1 = { sinf(t1), cos(t1), 0 }; //uncomment this to do torus instead 
 
         // compute approximate tangent as vector connecting p0 to p1

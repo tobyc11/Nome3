@@ -376,7 +376,7 @@ void CMainWindow::PostloadSetup()
 
     elapsedRender = new QElapsedTimer();
     SceneUpdateClock = new QTimer(this);
-    SceneUpdateClock->setInterval(100);
+    SceneUpdateClock->setInterval(50);
     SceneUpdateClock->setSingleShot(false);
     elapsedRender->start();
     connect(SceneUpdateClock, &QTimer::timeout, [this]() {

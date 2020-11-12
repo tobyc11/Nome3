@@ -68,7 +68,7 @@ public:
     Flow::CFloatNumber* GetTime() {return time;}
     Flow::CFloatNumber* GetFrame() {return frame;}
     void SetTime(float x) {
-        time->SetNumber(time->GetNumber() + x);
+        time->SetNumber(x);
     }
     void SetFrame(float x) {
         frame->SetNumber(frame->GetNumber() + x);

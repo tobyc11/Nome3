@@ -18,7 +18,7 @@ CNome3DView::CNome3DView()
     : mousePressEnabled(false)
     , animationEnabled(false)
     , rotationEnabled(true)
-    , crystalballEnabled(true)
+//  , vertexSelectionEnabled(true)
 
 {
     // Create a Base entity to host all entities
@@ -75,12 +75,6 @@ CNome3DView::CNome3DView()
     sphereRotateTransformAnimation->setDuration(100000);
     sphereRotateTransformAnimation->setLoopCount(-1);
 
-    // Set up the camera controller activate with tab key
-    //camController = new Qt3DExtras::QOrbitCameraController(Root);
-    //camController->setLinearSpeed(50.0f);
-    //camController->setLookSpeed(180.0f);
-    //camController->setCamera(cameraset);
-    //camController->setEnabled(!rotationEnabled);
     Root->addComponent(sphereTransform);
 }
 
@@ -525,7 +519,7 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
             objectY = - diff.y() / 100 + objectY;
             sphereTransform->setTranslation(QVector3D(objectX, objectY, objectZ));
 
-        } else if (crystalballEnabled){
+        } else {
             QVector2D firstPoint = GetProjectionPoint(firstPosition);
             QVector2D secondPoint = GetProjectionPoint(secondPosition);
             double projectedRadius = sqrt(qPow(zPos, 2) - 1) / zPos;
@@ -549,18 +543,9 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
                     QQuaternion::fromAxisAndAngle(axis, qRadiansToDegrees(2 * asin(distance / 2)))
                     * rotation;
             }
-
-
-
-        } else {
-            QVector3D n = QVector3D(diff.y(), diff.x(), 0);
-            rotation = QQuaternion::fromAxisAndAngle(n, diff.length() / 3) * rotation;
-            rotation.normalize();
-
         }
         sphereTransform->setRotation(rotation);
         firstPosition = secondPosition;
-
     }
 }
 
@@ -576,7 +561,7 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
         QVector3D cameraPosition = cameraset->position();
         zPos = cameraPosition.z();
         QPoint numPixels = ev->pixelDelta();
-        QPoint numDegrees = ev->angleDelta() / 8;
+        QPoint numDegrees = ev->angleDelta() / 20.0;
 
         if (!numPixels.isNull())
         {
@@ -587,8 +572,8 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
             QPoint numSteps = numDegrees / 15;
             objectZ += numSteps.y() * 0.2;
         }
-        if (zPos < 0)
-            zPos = 0;
+        if (objectZ > 2)
+            objectZ = 2;
         sphereTransform->setTranslation(QVector3D(objectX, objectY, objectZ));
         ev->accept();
     }
@@ -599,14 +584,11 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
     switch (ev->key())
     {
     case Qt::Key_Tab:
-        rotationEnabled = !rotationEnabled;
-        camController->setEnabled(!rotationEnabled);
         material->setAlpha(rotationEnabled * 0.1);
-
 
         break;
     case Qt::Key_Shift:
-        crystalballEnabled = !crystalballEnabled;
+        // vertexSelectionEnabled = !vertexSelectionEnabled;
         break;
     case Qt::Key_Space:
         if (animationEnabled) {

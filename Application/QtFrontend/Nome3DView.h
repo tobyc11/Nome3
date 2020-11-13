@@ -53,7 +53,7 @@ private:
     std::unordered_set<CInteractiveMesh*> InteractiveMeshes;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> EntityDrawData;
     std::vector<std::string> SelectedVertices;
-
+    // bool vertexSelectionEnabled;
 
     // Xinyu added on Oct 8 for rotation
     QMatrix4x4 projection;
@@ -62,10 +62,9 @@ private:
 
     QQuaternion rotation;
     Qt3DRender::QCamera *cameraset;
-    Qt3DExtras::QOrbitCameraController *camController;
     // Qt3DRender::QMaterial *material;
     bool mousePressEnabled;
-    bool crystalballEnabled;
+
     bool rotationEnabled;
 
     bool animationEnabled;

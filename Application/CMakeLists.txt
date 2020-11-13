@@ -53,7 +53,7 @@ if (APPLE)
             PROPERTIES
             MACOSX_BUNDLE TRUE
             # if you want to use with a high resolution but no vertex selection setting
-            MACOSX_BUNDLE_INFO_PLIST "${PROJECT_SOURCE_DIR}/CMake/MacOS_Config/Info.plist"
+            # MACOSX_BUNDLE_INFO_PLIST "${PROJECT_SOURCE_DIR}/CMake/MacOS_Config/Info.plist"
             )
 endif ()
 

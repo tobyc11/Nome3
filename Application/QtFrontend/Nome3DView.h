@@ -48,6 +48,7 @@ private:
     void rotateRay(tc::Ray& ray);
 private:
     Qt3DCore::QEntity* Root;
+    Qt3DCore::QEntity* Base;
     tc::TAutoPtr<Scene::CScene> Scene;
     std::unordered_set<CInteractiveMesh*> InteractiveMeshes;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> EntityDrawData;
@@ -72,6 +73,7 @@ private:
 
     float objectX;
     float objectY;
+    float objectZ;
 
 
     // For the animation

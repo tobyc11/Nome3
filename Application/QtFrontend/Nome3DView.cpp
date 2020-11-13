@@ -10,6 +10,7 @@
 #include <QTableWidget>
 #include <QBuffer>
 
+
 namespace Nome
 {
 
@@ -20,10 +21,14 @@ CNome3DView::CNome3DView()
     , crystalballEnabled(true)
 
 {
-    Root = new Qt3DCore::QEntity();
-    crystalBall = new Qt3DCore::QEntity(Root);
-    auto *sphereMesh = new Qt3DExtras::QSphereMesh;
+    // Create a Base entity to host all entities
+    Base = new Qt3DCore::QEntity;
+    crystalBall = new Qt3DCore::QEntity(Base);
+    Root = new Qt3DCore::QEntity(Base);
+    this->setRootEntity(Base);
 
+    // Initialize the crystal ball
+    auto *sphereMesh = new Qt3DExtras::QSphereMesh;
     material = new Qt3DExtras::QPhongAlphaMaterial(Root);
     material->setAlpha(0.1);
     material->setShininess(1);
@@ -31,11 +36,11 @@ CNome3DView::CNome3DView()
     crystalBall->addComponent(sphereMesh);
     crystalBall->addComponent(material);
 
-    this->setRootEntity(Root);
+
     // MakeGridEntity(Root); Removing grid entity per Professor Sequin's request
 
     // Make a point light
-    auto* lightEntity = new Qt3DCore::QEntity(Root);
+    auto* lightEntity = new Qt3DCore::QEntity(Base);
     auto* light = new Qt3DRender::QPointLight(lightEntity);
     light->setColor("white");
     light->setIntensity(1);
@@ -47,10 +52,8 @@ CNome3DView::CNome3DView()
     // Tweak render settings
     this->defaultFrameGraph()->setClearColor(QColor(QRgb(0x4d4d4f)));
 
-    objectX = objectY = 0;
     // Setup camera
-
-    zPos = 5.0;
+    zPos = 2.73;
     cameraset = this->camera();
     cameraset->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
     cameraset->setPosition(QVector3D(0, 0, zPos));
@@ -58,9 +61,8 @@ CNome3DView::CNome3DView()
 
     // Xinyu add on Oct 8 for rotation
     projection.setToIdentity();
-
-    // Xinyu add for animation
-
+    objectX = objectY = objectZ = 0;
+    // Set up the animated rotation and activate by space key
     sphereTransform = new Qt3DCore::QTransform;
     controller = new OrbitTransformController(rotation, sphereTransform);
     controller->setTarget(sphereTransform);
@@ -73,14 +75,13 @@ CNome3DView::CNome3DView()
     sphereRotateTransformAnimation->setDuration(100000);
     sphereRotateTransformAnimation->setLoopCount(-1);
 
-    camController = new Qt3DExtras::QOrbitCameraController(Root);
-    camController->setLinearSpeed(50.0f);
-    camController->setLookSpeed(180.0f);
-
-    camController->setCamera(cameraset);
-    camController->setEnabled(!rotationEnabled);
+    // Set up the camera controller activate with tab key
+    //camController = new Qt3DExtras::QOrbitCameraController(Root);
+    //camController->setLinearSpeed(50.0f);
+    //camController->setLookSpeed(180.0f);
+    //camController->setCamera(cameraset);
+    //camController->setEnabled(!rotationEnabled);
     Root->addComponent(sphereTransform);
-
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -504,13 +505,11 @@ Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
 // Xinyu add on Oct 8 for rotation
 void CNome3DView::mousePressEvent(QMouseEvent* e)
 {
-    if (rotationEnabled)
-    {
-        zPos = cameraset->position().z();
-        // Save mouse press position
-        mousePressEnabled = true;
-        firstPosition = QVector2D(e->localPos());
-    }
+    rotationEnabled = e->button() == Qt::RightButton ? false : true;
+    zPos = cameraset->position().z();
+    // Save mouse press position
+    firstPosition = QVector2D(e->localPos());
+    mousePressEnabled = true;
 }
 
 
@@ -520,11 +519,11 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
         // Mouse release position - mouse press position
         secondPosition = QVector2D(e->localPos());
         QVector2D diff = secondPosition - firstPosition;
-        if (e->button() == Qt::RightButton)
+        if (!rotationEnabled)
         {
-            objectX = diff.x() + objectX;
-            objectY = diff.y() + objectY;
-            sphereTransform->setTranslation(QVector3D(objectX, objectY, 0));
+            objectX = diff.x() / 100 + objectX;
+            objectY = - diff.y() / 100 + objectY;
+            sphereTransform->setTranslation(QVector3D(objectX, objectY, objectZ));
 
         } else if (crystalballEnabled){
             QVector2D firstPoint = GetProjectionPoint(firstPosition);
@@ -581,16 +580,16 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
 
         if (!numPixels.isNull())
         {
-            zPos += numPixels.y() * 0.2;
+            objectZ += numPixels.y() * 0.2;
         }
         else if (!numDegrees.isNull())
         {
             QPoint numSteps = numDegrees / 15;
-            zPos += numSteps.y() * 0.2;
+            objectZ += numSteps.y() * 0.2;
         }
         if (zPos < 0)
             zPos = 0;
-        cameraset->setPosition(QVector3D(cameraPosition.x(), cameraPosition.y(), zPos));
+        sphereTransform->setTranslation(QVector3D(objectX, objectY, objectZ));
         ev->accept();
     }
 }

@@ -17,7 +17,7 @@ public:
     antlrcpp::Any visitFile(NomParser::FileContext* context) override;
 
     antlrcpp::Any visitArgClosed(NomParser::ArgClosedContext* context) override;
-    antlrcpp::Any visitArgStartCap(NomParser::ArgStartCapContext* context) override;
+    antlrcpp::Any visitArgBeginCap(NomParser::ArgBeginCapContext* context) override;
     antlrcpp::Any visitArgEndCap(NomParser::ArgEndCapContext* context) override;
     antlrcpp::Any visitArgHidden(NomParser::ArgHiddenContext* context) override;
     antlrcpp::Any visitArgSurface(NomParser::ArgSurfaceContext* context) override;
@@ -30,6 +30,8 @@ public:
     antlrcpp::Any visitArgControlRotate(NomParser::ArgControlRotateContext* context) override;
     antlrcpp::Any visitArgControlScale(NomParser::ArgControlScaleContext* context) override;
     antlrcpp::Any visitArgPoint(NomParser::ArgPointContext* context) override;
+    antlrcpp::Any visitArgAzimuth(NomParser::ArgAzimuthContext* context) override;
+    antlrcpp::Any visitArgTwist(NomParser::ArgTwistContext* context) override;
 
     antlrcpp::Any visitCmdExprListOne(NomParser::CmdExprListOneContext* context) override;
     antlrcpp::Any visitCmdIdListOne(NomParser::CmdIdListOneContext* context) override;
@@ -42,6 +44,7 @@ public:
     antlrcpp::Any visitCmdDelete(NomParser::CmdDeleteContext* context) override;
     antlrcpp::Any visitCmdSubdivision(NomParser::CmdSubdivisionContext* context) override;
     antlrcpp::Any visitCmdOffset(NomParser::CmdOffsetContext* context) override;
+    antlrcpp::Any visitCmdSweep(NomParser::CmdSweepContext* context) override;
     antlrcpp::Any visitSet(NomParser::SetContext* context) override;
     antlrcpp::Any visitDeleteFace(NomParser::DeleteFaceContext* context) override;
 

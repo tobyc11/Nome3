@@ -32,7 +32,7 @@ vector3 : LPAREN expression expression expression RPAREN ;
 
 argClosed : 'closed' ;
 argHidden : 'hidden' ;
-argStartCap : 'startcap' ;
+argBeginCap : 'begincap' ;
 argEndCap : 'endcap' ;
 argSurface : 'surface' ident ;
 argCross : 'cross' ident ;
@@ -48,11 +48,14 @@ argColor : 'color' LPAREN expression expression expression RPAREN ;
 argControlRotate : 'rotate' vector3 ;
 argControlScale : 'scale' vector3 ;
 argPoint : 'point' ident ;
+argAzimuth : 'azimuth' expression ;
+argTwist : 'twist' expression ;
 
 command
    : open='point' name=ident LPAREN expression expression expression RPAREN end='endpoint' # CmdExprListOne
    | open='polyline' name=ident idList argClosed* end='endpolyline' # CmdIdListOne
-   | open='sweep' name=ident LPAREN expression expression expression expression RPAREN (argStartCap | argEndCap)* end='endsweep' # CmdExprListOne
+   | open='sweep' name=ident 'crosssection' crossId=ident (argBeginCap | argEndCap)* 'endcrosssection'
+   'path' pathId=ident (argAzimuth | argTwist)* 'endpath'  end='endsweep' # CmdSweep
    | open='controlpoint' name=ident argPoint argControlScale argControlRotate argCross* end='endcontrolpoint' # CmdNamedArgs
    | open='face' name=ident idList argSurface* end='endface' # CmdIdListOne
    | open='object' name=ident idList end='endobject' # CmdIdListOne

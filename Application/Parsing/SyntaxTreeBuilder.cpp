@@ -38,7 +38,21 @@ antlrcpp::Any CFileBuilder::visitArgPoint(NomParser::ArgPointContext* context)
     return arg;
 }
 
-antlrcpp::Any CFileBuilder::visitArgStartCap(NomParser::ArgStartCapContext* context)
+antlrcpp::Any CFileBuilder::visitArgAzimuth(NomParser::ArgAzimuthContext* context)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    arg->AddChild(visit(context->expression()).as<AST::AExpr*>());
+    return arg;
+}
+
+antlrcpp::Any CFileBuilder::visitArgTwist(NomParser::ArgTwistContext* context)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    arg->AddChild(visit(context->expression()).as<AST::AExpr*>());
+    return arg;
+}
+
+antlrcpp::Any CFileBuilder::visitArgBeginCap(NomParser::ArgBeginCapContext* context)
 {
     AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
     return arg;
@@ -147,11 +161,6 @@ antlrcpp::Any CFileBuilder::visitCmdExprListOne(NomParser::CmdExprListOneContext
     for (auto* expr : context->expression())
         list->AddChild(visit(expr).as<AST::AExpr*>());
     cmd->PushPositionalArgument(list);
-    // Handle arguments other than name
-    for (auto* arg : context->argStartCap())
-        cmd->AddNamedArgument(visit(arg));
-    for (auto* arg : context->argEndCap())
-        cmd->AddNamedArgument(visit(arg));
     return cmd;
 }
 
@@ -274,6 +283,26 @@ antlrcpp::Any CFileBuilder::visitCmdOffset(NomParser::CmdOffsetContext* context)
     namedArg = new AST::ANamedArgument(ConvertToken(context->k4));
     namedArg->AddChild(visit(context->v4).as<AST::AExpr*>());
     cmd->AddNamedArgument(namedArg);
+    return cmd;
+}
+
+antlrcpp::Any CFileBuilder::visitCmdSweep(NomParser::CmdSweepContext* context)
+{
+    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
+    cmd->PushPositionalArgument(visit(context->name));
+    cmd->PushPositionalArgument(visit(context->crossId));
+
+    for (auto* arg : context->argBeginCap())
+        cmd->AddNamedArgument(visit(arg));
+    for (auto* arg : context->argEndCap())
+        cmd->AddNamedArgument(visit(arg));
+
+    cmd->PushPositionalArgument(visit(context->pathId));
+    for (auto* arg : context->argAzimuth())
+        cmd->AddNamedArgument(visit(arg));
+    for (auto* arg : context->argTwist())
+        cmd->AddNamedArgument(visit(arg));
+
     return cmd;
 }
 

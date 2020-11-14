@@ -9,10 +9,10 @@ namespace Nome::Scene
 
 DEFINE_META_OBJECT(CSweep)
 {
-    BindPositionalArgument(&CSweep::Path, 1, 0);
-    BindPositionalArgument(&CSweep::CrossSection, 1, 1);
-    BindPositionalArgument(&CSweep::Azimuth, 1, 2);
-    BindPositionalArgument(&CSweep::Twist, 1, 3);
+    BindPositionalArgument(&CSweep::CrossSection, 1, 0);
+    BindPositionalArgument(&CSweep::Path, 2, 0);
+    BindNamedArgument(&CSweep::Azimuth, "azimuth", 0);
+    BindNamedArgument(&CSweep::Twist, "twist", 0);
     BindNamedArgument(&CSweep::bStartCap, "startcap", 0);
     BindNamedArgument(&CSweep::bEndCap, "endcap", 0);
 }

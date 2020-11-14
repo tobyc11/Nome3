@@ -4,7 +4,6 @@
 #include "SweepPath.h"
 #include "Polyline.h"
 #include "BSpline.h"
-#include "SweepControlPoint.h"
 #include <Flow/FlowNode.h>
 #include <Flow/FlowNodeArray.h>
 #include <Parsing/SyntaxTree.h>
@@ -204,6 +203,30 @@ bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command,
 
     return true;
 }
+
+template <>
+bool TBindingTranslator<Flow::TInput<CVertexInfo*>>::FromASTToValue(
+    AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CVertexInfo*>& value)
+{
+    auto* ident = subpart.GetExpr(command);
+    if (ident == NULL)
+        return false;
+
+    if (ident->GetKind() != AST::EKind::Ident)
+        throw AST::CSemanticError("Identifier required", ident);
+
+    std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
+    Flow::TOutput<CVertexInfo*>* pointOutput = GEnv.Scene->FindPointOutput(identVal);
+    if (!pointOutput)
+    {
+        throw AST::CSemanticError(tc::StringPrintf("Cannot find point %s", identVal.c_str()),
+                                    ident);
+    }
+    value.Connect(*pointOutput);
+
+    return true;
+}
+
 template <>
 bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
     AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CVertexInfo*>& value)
@@ -271,47 +294,11 @@ bool TBindingTranslator<Flow::TInput<CSweepPathInfo*>>::FromASTToValue(
     {
         CBSpline* bspline = dynamic_cast<CBSpline*>(path);
         value.Connect(bspline->BSpline);
-    } else
+    }
+    else
     {
         throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a sweep path", identVal.c_str()),
                                   ident);
-    }
-    return true;
-}
-
-template <>
-bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
-    AST::ACommand* command, const CCommandSubpart& subpart,
-    Flow::TInputArray<CControlPointInfo*>& value)
-{
-    auto* vec = subpart.GetExpr(command);
-    if (vec == NULL)
-    {
-        return false;
-    }
-
-    if (vec->GetKind() != AST::EKind::Vector)
-        throw AST::CSemanticError("TInputArray<CControlPointInfo*> is not matched with a vector",
-                                  command);
-    for (const auto* ident : static_cast<AST::AVector*>(vec)->GetItems())
-    {
-        if (ident->GetKind() != AST::EKind::Ident)
-            throw AST::CSemanticError("Identifier required", ident);
-
-        std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
-        TAutoPtr<CEntity> entity = GEnv.Scene->FindEntity(identVal);
-        if (!entity)
-        {
-            throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()),
-                                      ident);
-        }
-
-        auto& e = *entity.Get();
-        if (typeid(e) == typeid(CSweepControlPoint))
-        {
-            CSweepControlPoint* sweepControlPoint = dynamic_cast<CSweepControlPoint*>(entity.Get());
-            value.Connect(sweepControlPoint->SweepControlPoint);
-        }
     }
     return true;
 }

@@ -25,23 +25,25 @@ Vector3 crossProduct(Vector3 vectorA, Vector3 vectorB)
                    vectorA.x * vectorB.y - vectorA.y * vectorB.x);
 }
 
-void CSweep::drawCrossSection(std::vector<Vector3> crossSection,
-                              Vector3 center, Vector3 T, Vector3 N,
-                              float angle, float scaleX, float scaleY,
-                              float scaleN, int index, bool shouldReverse)
-{
+void CSweep::drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
+                        Vector3 T, Vector3 N, float rotateAngle, float angle,
+                        Vector3 controlScale, Vector3 controlAngle,
+                        int index, bool shouldReverse) {
     Vector3 B = crossProduct(T, N);
 
     N.Normalize();
     B.Normalize();
 
+    rotateAngle += controlAngle.x;
+    float scaleN = 1 / cosf(angle / 2);
+
     for (size_t i = 0; i < crossSection.size(); i++)
     {
         // make rotations
-        float x = crossSection[i].x * scaleX * cosf(angle) -
-            crossSection[i].y * scaleY * sinf(angle);
-        float y = crossSection[i].x * scaleX * sinf(angle) +
-            crossSection[i].y * scaleY *cosf(angle);
+        float x = crossSection[i].x * controlScale.x * cosf(rotateAngle) -
+            crossSection[i].y * controlScale.y * sinf(rotateAngle);
+        float y = crossSection[i].x * controlScale.x * sinf(rotateAngle) +
+            crossSection[i].y * controlScale.y *cosf(rotateAngle);
         // do thransform
         Vector3 transformVector = N * x * scaleN + B * y ;
         // add offset
@@ -195,9 +197,10 @@ void CSweep::UpdateEntity()
     // Cross sections
     std::vector<Vector3> crossSection;
     std::vector<std::vector<Vector3>> crossSections;
-    // Scales
-    std::vector<float> scaleX;
-    std::vector<float> scaleY;
+    // Scales from control points
+    std::vector<Vector3> controlScales;
+    // Angles from control points
+    std::vector<Vector3> controlAngles;
 
     std::string name = GetName();
 
@@ -207,15 +210,15 @@ void CSweep::UpdateEntity()
 
     for (size_t i = 0; i < crossSectionInfo->Positions.size(); i++)
     {
-        CVertexInfo point = crossSectionInfo->Positions[i];
-        crossSection.push_back(Vector3(point.Position.x, point.Position.y, point.Position.z));
+        CVertexInfo *point = crossSectionInfo->Positions[i];
+        crossSection.push_back(Vector3(point->Position.x, point->Position.y, point->Position.z));
     }
 
     for (size_t i = 0; i < numPoints; i++)
     {
-        CVertexInfo point = pathInfo->Positions[i];
+        CVertexInfo *point = pathInfo->Positions[i];
 
-        points.push_back(Vector3(point.Position.x, point.Position.y, point.Position.z)); // current point
+        points.push_back(Vector3(point->Position.x, point->Position.y, point->Position.z)); // current point
         crossSections.push_back(crossSection);
 
         if (i > 1)
@@ -256,9 +259,8 @@ void CSweep::UpdateEntity()
             }
         }
 
-        scaleX.push_back(1.0f);
-        scaleY.push_back(1.0f);
-
+        controlScales.push_back(Vector3(1.0f, 1.0f, 1.0f));
+        controlAngles.push_back(Vector3(0.0f, 0.0f, 0.0f));
     }
 
     if (numPoints == 2) { Ns.push_back(getDefaultN(points[1] - points[0])); }
@@ -296,42 +298,41 @@ void CSweep::UpdateEntity()
     // add rotation
     for (size_t i = 0; i < numPoints; i++)
     {
-        CVertexInfo point = pathInfo->Positions[i];
+        CVertexInfo *point = pathInfo->Positions[i];
 
         angles[i] += azimuth;
 
-        for (size_t j = 0; j < point.ControlPoints.size(); j++)
-        {
-           CControlPointInfo* CI = point.ControlPoints[j];
-           if (CI->OwnerName == name)
-           {
-                CSweepControlPointInfo* SI = dynamic_cast<CSweepControlPointInfo*>(CI);
-                int range = std::max((int)SI->Range, 0);
-                int index = i;
-                int start = std::max(0, index - range);
-                int end = std::min((int)scaleX.size(), index + range + 1);
+        auto& e = *point;
+        if (typeid(e) == typeid(CSweepControlPointInfo)) {
+            CSweepControlPointInfo* SI = dynamic_cast<CSweepControlPointInfo*>(point);
+            int range = std::max((int)SI->Range, 0);
+            int index = i;
+            int start = std::max(0, index - range);
+            int end = std::min((int)numPoints, index + range + 1);
 
-                for (int k = start; k < end; k++) {
-                    float theta = (range + 1 - std::abs(k - index)) /
-                    (float)(range + 1);
-                    scaleX[k] *= (SI->ScaleX - 1) * theta + 1;
-                    scaleY[k] *= (SI->ScaleY - 1) * theta + 1;
-                    angles[k] += SI->Rotate * tc::M_PI / 180 * theta;
-                }
+            for (int k = start; k < end; k++) {
+                float theta = (range + 1 - std::abs(k - index)) /
+                (float)(range + 1);
+                controlScales[k].x *= (SI->Scale.x - 1) * theta + 1;
+                controlScales[k].y *= (SI->Scale.y - 1) * theta + 1;
+                controlScales[k].z *= (SI->Scale.z - 1) * theta + 1;
+                controlAngles[k].x += SI->Rotate.x * tc::M_PI / 180 * theta;
+                controlAngles[k].y += SI->Rotate.y * tc::M_PI / 180 * theta;
+                controlAngles[k].z += SI->Rotate.z * tc::M_PI / 180 * theta;
+            }
 
-                if (SI->CrossSection != NULL)
+            if (SI->CrossSection != NULL)
+            {
+                CSweepPathInfo *sectionInfo = SI->CrossSection;
+                std::vector<Vector3> section;
+                for (size_t k = 0; k < sectionInfo->Positions.size(); k++)
                 {
-                    CSweepPathInfo *sectionInfo = SI->CrossSection;
-                    std::vector<Vector3> section;
-                    for (size_t k = 0; k < sectionInfo->Positions.size(); k++)
-                    {
-                        CVertexInfo point = sectionInfo->Positions[k];
-                        section.push_back(Vector3(point.Position.x,
-                                    point.Position.y, point.Position.z));
-                    }
-                    crossSections[i] = section;
+                    CVertexInfo *point = sectionInfo->Positions[k];
+                    section.push_back(Vector3(point->Position.x,
+                                point->Position.y, point->Position.z));
                 }
-           }
+                crossSections[i] = section;
+            }
         }
     }
 
@@ -347,14 +348,16 @@ void CSweep::UpdateEntity()
         N = Ns[0];
 
         // generate points in a circle perpendicular to the curve at the current point
-        drawCrossSection(crossSections[0], points[0], T, N, angles[0], scaleX[0],
-                         scaleY[0], 1, ++segmentCount, shouldFlip);
+        drawCrossSection(crossSections[0], points[0], T, N, angles[0], 0,
+                         controlScales[0], controlAngles[0], ++segmentCount,
+                         shouldFlip);
     }
     else
     {
         Vector3 prevVector = (points[1] - points[0]).Normalized();
         Vector3 curVector = (points[0] - points[numPoints - 2]).Normalized();
-        float angle = (isAtSameLine(prevVector, curVector)) ? 0 : getAngle(prevVector, curVector);
+        float angle = (isAtSameLine(prevVector, curVector)) ?
+            0 : getAngle(prevVector, curVector);
 
         if (isAtSameLine(prevVector, curVector))
         {
@@ -367,15 +370,18 @@ void CSweep::UpdateEntity()
             T = prevVector + curVector;
         }
 
-        if (isAtSameLine(prevVector, curVector) && !isAtSameDirection(prevVector, curVector))
+        if (isAtSameLine(prevVector, curVector) &&
+            !isAtSameDirection(prevVector, curVector))
         {
-            drawCrossSection(crossSections[0], points[0], T, N, angles[0], scaleX[0], scaleY[0],
-                             1 / cosf(angle / 2), ++segmentCount, true);
+            drawCrossSection(crossSections[0], points[0], T, N, angles[0], angle,
+                             controlScales[0], controlAngles[0], ++segmentCount,
+                             true);
         }
         else
         {
-            drawCrossSection(crossSections[0], points[0], T, N, angles[0], scaleX[0],
-                             scaleY[0], 1 / cosf(angle / 2), ++segmentCount, false);
+            drawCrossSection(crossSections[0], points[0], T, N, angles[0], angle,
+                             controlScales[0], controlAngles[0], ++segmentCount,
+                             false);
         }
     }
 
@@ -404,23 +410,25 @@ void CSweep::UpdateEntity()
                 }
 
                 // 0 is perfect.
-                drawCrossSection(crossSections[i], points[i], T, N, angles[i] - twist,
-                                 scaleX[i], scaleY[i], 1 / cosf(angle / 2), ++segmentCount,
-                                 tempFlip);
+                drawCrossSection(crossSections[i], points[i], T, N,
+                                 angles[i] - twist, angle, controlScales[i],
+                                 controlAngles[i], ++segmentCount, tempFlip);
             }
             else
             {
                 T = points[i] - points[i - 1];
                 // add twist
-                drawCrossSection(crossSections[i], points[i], T, Ns[i - 1], angles[i] - twist,
-                                 scaleX[i], scaleY[i], 1, ++segmentCount, tempFlip);
+                drawCrossSection(crossSections[i], points[i], T, Ns[i - 1],
+                                 angles[i] - twist, 0, controlScales[i],
+                                 controlAngles[i], ++segmentCount, tempFlip);
             }
         }
         else
         {
             Vector3 prevVector = (points[i + 1] - points[i]).Normalized();
             Vector3 curVector = (points[i] - points[i - 1]).Normalized();
-            float angle = (isAtSameLine(prevVector, curVector)) ? 0 : getAngle(prevVector, curVector);
+            float angle = (isAtSameLine(prevVector, curVector)) ?
+                0 : getAngle(prevVector, curVector);
 
             if (isAtSameLine(prevVector, curVector))
             {
@@ -435,8 +443,9 @@ void CSweep::UpdateEntity()
                 T = prevVector + curVector;
             }
 
-            drawCrossSection(crossSections[i], points[i], T, N, angles[i], scaleX[i], scaleY[i],
-                             1 / cosf(angle / 2), ++segmentCount, tempFlip);
+            drawCrossSection(crossSections[i], points[i], T, N, angles[i], angle,
+                             controlScales[i], controlAngles[i], ++segmentCount,
+                             tempFlip);
         }
     }
 

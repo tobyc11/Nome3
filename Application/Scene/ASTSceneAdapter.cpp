@@ -33,7 +33,7 @@ namespace Nome::Scene
 
 static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "point", ECommandKind::Entity },       { "polyline", ECommandKind::Entity },
-    { "sweep", ECommandKind::Entity },       { "sweepcontrol", ECommandKind::Entity },
+    { "sweep", ECommandKind::Entity },       { "controlpoint", ECommandKind::Entity },
     { "face", ECommandKind::Entity },        { "object", ECommandKind::Entity },
     { "mesh", ECommandKind::Entity },        { "group", ECommandKind::Instance },
     { "circle", ECommandKind::Entity },      { "funnel", ECommandKind::Entity },
@@ -74,7 +74,7 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CPolyline(name);
     else if (cmd == "sweep")
         return new CSweep(name);
-    else if (cmd == "sweepcontrol")
+    else if (cmd == "controlpoint")
         return new CSweepControlPoint(name);
     else if (cmd == "surface")
         return new CSurface(name);
@@ -84,7 +84,7 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CTorusKnot(name);
     else if (cmd == "torus")
         return new CTorus(name);
-    
+
     return nullptr;
 }
 
@@ -135,9 +135,9 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     else if (kind == ECommandKind::Entity)
     {
         TAutoPtr<CEntity> entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
-        entity->GetMetaObject().DeserializeFromAST(*cmd, *entity); 
+        entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
          // All entities are added to the EntityLibrary dictionary
-        GEnv.Scene->AddEntity(entity); 
+        GEnv.Scene->AddEntity(entity);
         if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
             if (auto* face = dynamic_cast<CFace*>(entity.Get()))
                 mesh->Faces.Connect(face->Face);
@@ -161,7 +161,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (cmd->GetCommand() == "instance")
     {
-        // Instance transformations/surfaces are not handled in here, 
+        // Instance transformations/surfaces are not handled in here,
         auto* sceneNode = InstanciateUnder->CreateChildNode(cmd->GetName());
         sceneNode->SyncFromAST(cmd, scene);
         // TODO: move the following logic into SyncFromAST
@@ -177,7 +177,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
             auto surfaceEntity = GEnv.Scene->FindEntity(surfaceIdentifier);
             if (surfaceEntity)
                 sceneNode->SetSurface(dynamic_cast<CSurface*>(surfaceEntity.Get()));
-            
+
         }
 
         auto entityName = cmd->GetPositionalIdentAsString(1);

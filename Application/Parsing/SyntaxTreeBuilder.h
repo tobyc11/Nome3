@@ -27,9 +27,13 @@ public:
     antlrcpp::Any visitArgTransformTwo(NomParser::ArgTransformTwoContext* context) override;
     antlrcpp::Any visitArgTransformOne(NomParser::ArgTransformOneContext* context) override;
     antlrcpp::Any visitArgColor(NomParser::ArgColorContext* context) override;
+    antlrcpp::Any visitArgControlRotate(NomParser::ArgControlRotateContext* context) override;
+    antlrcpp::Any visitArgControlScale(NomParser::ArgControlScaleContext* context) override;
+    antlrcpp::Any visitArgPoint(NomParser::ArgPointContext* context) override;
 
     antlrcpp::Any visitCmdExprListOne(NomParser::CmdExprListOneContext* context) override;
     antlrcpp::Any visitCmdIdListOne(NomParser::CmdIdListOneContext* context) override;
+    antlrcpp::Any visitCmdNamedArgs(NomParser::CmdNamedArgsContext* context) override;
     antlrcpp::Any visitCmdSubCmds(NomParser::CmdSubCmdsContext* context) override;
     antlrcpp::Any visitCmdInstance(NomParser::CmdInstanceContext* context) override;
     antlrcpp::Any visitCmdSurface(NomParser::CmdSurfaceContext* context) override;
@@ -54,6 +58,7 @@ public:
     antlrcpp::Any visitIdent(NomParser::IdentContext* context) override;
     antlrcpp::Any visitAtomExpr(NomParser::AtomExprContext* context) override;
     antlrcpp::Any visitIdList(NomParser::IdListContext *context) override;
+    antlrcpp::Any visitVector3(NomParser::Vector3Context *context) override;
 
 private:
     AST::CToken* ConvertToken(antlr4::Token* token);

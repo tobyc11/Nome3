@@ -17,6 +17,27 @@ antlrcpp::Any CFileBuilder::visitArgClosed(NomParser::ArgClosedContext* context)
     return arg;
 }
 
+antlrcpp::Any CFileBuilder::visitArgControlRotate(NomParser::ArgControlRotateContext* context)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    arg->AddChild(visit(context->vector3()).as<AST::AExpr*>());
+    return arg;
+}
+
+antlrcpp::Any CFileBuilder::visitArgControlScale(NomParser::ArgControlScaleContext* context)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    arg->AddChild(visit(context->vector3()).as<AST::AExpr*>());
+    return arg;
+}
+
+antlrcpp::Any CFileBuilder::visitArgPoint(NomParser::ArgPointContext* context)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    arg->AddChild(visit(context->ident()).as<AST::AExpr*>());
+    return arg;
+}
+
 antlrcpp::Any CFileBuilder::visitArgStartCap(NomParser::ArgStartCapContext* context)
 {
     AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
@@ -110,6 +131,14 @@ antlrcpp::Any CFileBuilder::visitIdList(NomParser::IdListContext *context)
     return static_cast<AST::AExpr*>(list);
 }
 
+antlrcpp::Any CFileBuilder::visitVector3(NomParser::Vector3Context *context)
+{
+    auto* list = new AST::AVector(ConvertToken(context->LPAREN()), ConvertToken(context->RPAREN()));
+    for (auto* expr : context->expression())
+        list->AddChild(visit(expr).as<AST::AExpr*>());
+    return static_cast<AST::AExpr*>(list);
+}
+
 antlrcpp::Any CFileBuilder::visitCmdExprListOne(NomParser::CmdExprListOneContext* context)
 {
     auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
@@ -119,10 +148,6 @@ antlrcpp::Any CFileBuilder::visitCmdExprListOne(NomParser::CmdExprListOneContext
         list->AddChild(visit(expr).as<AST::AExpr*>());
     cmd->PushPositionalArgument(list);
     // Handle arguments other than name
-    for (auto* arg : context->idList())
-        cmd->PushPositionalArgument(visit(arg));
-    for (auto* arg : context->argCross())
-        cmd->AddNamedArgument(visit(arg));
     for (auto* arg : context->argStartCap())
         cmd->AddNamedArgument(visit(arg));
     for (auto* arg : context->argEndCap())
@@ -144,6 +169,20 @@ antlrcpp::Any CFileBuilder::visitCmdIdListOne(NomParser::CmdIdListOneContext* co
         cmd->AddNamedArgument(visit(arg));
     for (auto* arg : context->argSurface())
         cmd->AddNamedArgument(visit(arg));
+    return cmd;
+}
+
+antlrcpp::Any CFileBuilder::visitCmdNamedArgs(NomParser::CmdNamedArgsContext* context)
+{
+    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
+    cmd->PushPositionalArgument(visit(context->name));
+    cmd->AddNamedArgument(visit(context->argPoint()));
+    cmd->AddNamedArgument(visit(context->argControlScale()));
+    cmd->AddNamedArgument(visit(context->argControlRotate()));
+
+    for (auto* arg : context->argCross())
+        cmd->AddNamedArgument(visit(arg));
+
     return cmd;
 }
 

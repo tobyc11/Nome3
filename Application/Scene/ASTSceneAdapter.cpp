@@ -8,6 +8,7 @@
 #include "Environment.h"
 #include "Face.h"
 #include "Funnel.h"
+#include "Helix.h"
 #include "Point.h"
 #include "Polyline.h"
 #include "Surface.h"
@@ -51,7 +52,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
     { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
     { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy },
-    { "mobiusstrip", ECommandKind::Entity }
+    { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -79,6 +80,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CPoint(name);
     else if (cmd == "polyline")
         return new CPolyline(name);
+    else if (cmd == "helix")
+        return new CHelix(name);
     else if (cmd == "sphere")
         return new CSphere(name);
     else if (cmd == "sweep")

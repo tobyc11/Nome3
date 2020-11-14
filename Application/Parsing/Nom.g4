@@ -54,6 +54,7 @@ command
    | open='sphere' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endsphere' # CmdExprListOne
    | open='cylinder' name=ident LPAREN expression expression expression expression RPAREN end='endcylinder' # CmdExprListOne
    | open='mobiusstrip' name=ident LPAREN expression expression expression expression RPAREN end='endmobiusstrip' # CmdExprListOne
+   | open='helix' name=ident LPAREN expression expression expression expression RPAREN end='endhelix' # CmdExprListOne
    | open='funnel' name=ident LPAREN expression expression expression expression RPAREN end='endfunnel' # CmdExprListOne
    | open='tunnel' name=ident LPAREN expression expression expression expression RPAREN end='endtunnel' # CmdExprListOne
    | open='torusknot' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorusknot' # CmdExprListOne

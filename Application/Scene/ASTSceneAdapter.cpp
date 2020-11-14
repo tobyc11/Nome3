@@ -3,6 +3,7 @@
 #include "BezierSpline.h"
 #include "Circle.h"
 #include "Sphere.h"
+#include "Cylinder.h"
 #include "MobiusStrip.h"
 #include "Environment.h"
 #include "Face.h"
@@ -39,17 +40,18 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "face", ECommandKind::Entity },        { "object", ECommandKind::Entity },
     { "mesh", ECommandKind::Entity },        { "group", ECommandKind::Instance },
     { "circle", ECommandKind::Entity },      { "sphere", ECommandKind::Entity },
-    { "funnel", ECommandKind::Entity },      { "tunnel", ECommandKind::Entity },
-    { "beziercurve", ECommandKind::Entity }, { "torusknot", ECommandKind::Entity },
-    { "torus", ECommandKind::Entity },       { "bspline", ECommandKind::Entity },
-    { "instance", ECommandKind::Instance },  { "surface", ECommandKind::Entity },
-    { "background", ECommandKind::Dummy },   { "foreground", ECommandKind::Dummy },
-    { "insidefaces", ECommandKind::Dummy },  { "outsidefaces", ECommandKind::Dummy },
-    { "offsetfaces", ECommandKind::Dummy },  { "frontfaces", ECommandKind::Dummy },
-    { "backfaces", ECommandKind::Dummy },    { "rimfaces", ECommandKind::Dummy },
-    { "bank", ECommandKind::BankSet },       { "set", ECommandKind::BankSet },
-    { "delete", ECommandKind::Instance },    { "subdivision", ECommandKind::Dummy },
-    { "offset", ECommandKind::Dummy },       {"mobiusstrip", ECommandKind::Entity }
+    { "cylinder", ECommandKind::Entity },    { "funnel", ECommandKind::Entity },
+    { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
+    { "torusknot", ECommandKind::Entity },   { "torus", ECommandKind::Entity },
+    { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
+    { "surface", ECommandKind::Entity },     { "background", ECommandKind::Dummy },
+    { "foreground", ECommandKind::Dummy },   { "insidefaces", ECommandKind::Dummy },
+    { "outsidefaces", ECommandKind::Dummy }, { "offsetfaces", ECommandKind::Dummy },
+    { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
+    { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
+    { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
+    { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy },
+    { "mobiusstrip", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -65,6 +67,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CBSpline(name);
     else if (cmd == "circle")
         return new CCircle(name);
+    else if (cmd == "cylinder")
+        return new CCylinder(name);
     else if (cmd == "face")
         return new CFace(name);
     else if (cmd == "funnel")

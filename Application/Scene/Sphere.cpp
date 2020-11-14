@@ -26,8 +26,8 @@ void CSphere::UpdateEntity()
     float radius = Radius.GetValue(1.0f);
     int numCrossSections = (int)ThetaSegs.GetValue(6.0f);
     int maxTheta = (int)ThetaMax.GetValue(6.0f);
-    int minPhi = (int)PhiMin.GetValue(6.0f);
-    int maxPhi = (int)PhiMax.GetValue(6.0f);
+    int minPhi = (int)PhiMin.GetValue(6.0f) + 90;
+    int maxPhi = (int)PhiMax.GetValue(6.0f) + 90;
 
     float startPhi = minPhi / 180.f * (float)tc::M_PI;
 

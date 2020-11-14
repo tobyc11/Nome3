@@ -17,7 +17,6 @@ void CCircle::UpdateEntity()
         return;
 
     Super::UpdateEntity();
-
     int n = (int)Segments.GetValue(6.0f);
     float radius = Radius.GetValue(1.0f);
 

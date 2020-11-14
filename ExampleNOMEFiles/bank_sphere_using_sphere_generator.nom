@@ -1,0 +1,12 @@
+bank slider
+  set num_sides 50 5 100 1
+  set radius 3 1 100 1
+  set num_rotation 40 1 100 1
+  set max_theta 360 1 360 1
+  set min_phi 0 0 180 1
+  set max_phi 180 1 180 1
+endbank
+
+sphere s ({expr $slider.num_sides} {expr $slider.radius} {expr $slider.num_rotation} {expr $slider.max_theta} {expr $slider.min_phi} {expr $slider.max_phi}) endsphere
+
+instance sphere1 s endinstance

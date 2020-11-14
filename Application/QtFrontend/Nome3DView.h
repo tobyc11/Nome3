@@ -1,6 +1,7 @@
 #pragma once
 #include "DebugDraw.h"
 #include "InteractiveMesh.h"
+#include "OrbitTransformController.h"
 #include <Ray.h>
 #include <Scene/Scene.h>
 
@@ -27,18 +28,60 @@ public:
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
+    void PickVertexWorldRay(tc::Ray& ray);
+    void PickFaceWorldRay(tc::Ray& ray); // Randy added on 10/10
 
-    void PickVertexWorldRay(const tc::Ray& ray);
-    void PickFaceWorldRay(const tc::Ray& ray); // Randy added on 10/10
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
 
+protected:
+    // Xinyu added on Oct 8 for rotation
+    void mouseMoveEvent(QMouseEvent* e) override;
+    void mousePressEvent(QMouseEvent* e) override;
+    void mouseReleaseEvent(QMouseEvent* e) override;
+    void wheelEvent(QWheelEvent *ev) override;
+    void keyPressEvent(QKeyEvent *ev) override;
+
+private:
+    QVector2D GetProjectionPoint(QVector2D originalPosition);
+    static QVector3D GetCrystalPoint(QVector2D originalPoint);
+    void rotateRay(tc::Ray& ray);
 private:
     Qt3DCore::QEntity* Root;
+    Qt3DCore::QEntity* Base;
     tc::TAutoPtr<Scene::CScene> Scene;
     std::unordered_set<CInteractiveMesh*> InteractiveMeshes;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> EntityDrawData;
     std::vector<std::string> SelectedVertices;
+    // bool vertexSelectionEnabled;
+
+    // Xinyu added on Oct 8 for rotation
+    QMatrix4x4 projection;
+    QVector2D firstPosition;
+    QVector2D secondPosition;
+
+    QQuaternion rotation;
+    Qt3DRender::QCamera *cameraset;
+    // Qt3DRender::QMaterial *material;
+    bool mousePressEnabled;
+
+    bool rotationEnabled;
+
+    bool animationEnabled;
+    float zPos;
+
+    float objectX;
+    float objectY;
+    float objectZ;
+
+
+    // For the animation
+    Qt3DCore::QTransform *sphereTransform;
+    OrbitTransformController *controller;
+    QPropertyAnimation *sphereRotateTransformAnimation;
+    Qt3DCore::QEntity *crystalBall;
+    Qt3DExtras::QPhongAlphaMaterial *material;
+
 };
 
 }

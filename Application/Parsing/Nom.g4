@@ -52,10 +52,12 @@ command
    | open='mesh' name=ident command* end='endmesh' # CmdSubCmds
    | open='group' name=ident command* end='endgroup' # CmdSubCmds
    | open='circle' name=ident LPAREN expression expression RPAREN end='endcircle' # CmdExprListOne
+   | open='sphere' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endsphere' # CmdExprListOne
+   | open='mobiusstrip' name=ident LPAREN expression expression expression expression RPAREN end='endmobiusstrip' # CmdExprListOne
    | open='funnel' name=ident LPAREN expression expression expression expression RPAREN end='endfunnel' # CmdExprListOne
    | open='tunnel' name=ident LPAREN expression expression expression expression RPAREN end='endtunnel' # CmdExprListOne
-   | open='torusknot' name=ident LPAREN expression expression expression expression expression RPAREN end='endtorusknot' # CmdExprListOne
-   | open='torus' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
+   | open='torusknot' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorusknot' # CmdExprListOne
+   | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
    | open='beziercurve' name=ident idList argSlices* end='endbeziercurve' # CmdIdListOne
    | open='bspline' name=ident idList (argClosed | argSlices | argOrder)* end='endbspline' # CmdIdListOne
    | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance

@@ -15,12 +15,14 @@ typedef struct
 
 DEFINE_META_OBJECT(CTorus)
 {
-    BindPositionalArgument(&CTorus::VerticesPerRing, 1, 0);
-    BindPositionalArgument(&CTorus::MajorRadius, 1, 1);
-    BindPositionalArgument(&CTorus::MinorRadius, 1, 2);
-    BindPositionalArgument(&CTorus::ThetaMax, 1, 3);
-    BindPositionalArgument(&CTorus::PhiMax, 1, 4);
-    BindPositionalArgument(&CTorus::Segments, 1, 5);
+    BindPositionalArgument(&CTorus::maj_rad, 1, 0);
+    BindPositionalArgument(&CTorus::min_rad, 1, 1);
+    BindPositionalArgument(&CTorus::theta_max, 1, 2);
+    BindPositionalArgument(&CTorus::phi_min, 1, 3); // Randy added recently
+    BindPositionalArgument(&CTorus::phi_max, 1, 4);
+    BindPositionalArgument(&CTorus::theta_segs, 1, 5);
+    BindPositionalArgument(&CTorus::phi_segs, 1, 6);
+    //BindPositionalArgument(&CTorus::phi_segs, 1, 6);
 }
 void CTorus::UpdateEntity()
 {
@@ -32,22 +34,22 @@ void CTorus::UpdateEntity()
     Super::UpdateEntity();
 
     // Initialize torus parameters from document 
-    int numPhi = static_cast<int>(VerticesPerRing.GetValue(16.0f));
-    float majorRadius = MajorRadius.GetValue(1.0f);
-    float minorRadius = MinorRadius.GetValue(1.0f);
-    float thetaMax = ThetaMax.GetValue(1.0f);
-    // float phiMin = PhiMin.GetValue(1.0f);
-    float phiMax= PhiMax.GetValue(1.0f);
-
+    float majorRadius = maj_rad.GetValue(1.0f);
+    float minorRadius = min_rad.GetValue(1.0f);
+    float thetaMax = theta_max.GetValue(1.0f);
+    float phiMin = phi_min.GetValue(1.0f);
+    float phiMax= phi_max.GetValue(1.0f);
     // number of circles or cross sections
-    int numSegments = Segments.GetValue(1.0f); 
+    int thetaSegs = static_cast<int>(theta_segs.GetValue(1.0f)); 
+    int phiSegs = static_cast<int>(phi_segs.GetValue(5.0f));
 
     const float epsilon = 1e-4;
-    const float dt = (thetaMax*(float)tc::M_PI/180.0f) / (numSegments);
-    const float du = (phiMax * (float)tc::M_PI / 180.0f) / numPhi;
+    const float dt = (thetaMax * (float)tc::M_PI/180.0f) / (thetaSegs);
+    const float du = ((phiMax-phiMin) * (float)tc::M_PI / 180.0f) / phiSegs; // convert phiMax to radians then divide by # of segs on circle
+    const float du_offset = (phiMin * (float)tc::M_PI / 180.0f); // convert phiMin to radians. This will be used to offset so it starts at phiMin instead of 0 . DOESNT WORK
 
     // Create torus, creating one cross section at each iteration
-    for (int i = 0; i < numSegments + 1; i++) // numSegments + 1; for some reason numSegments was outputting an off by one torus...
+    for (int i = 0; i < thetaSegs + 1; i++) // thetaSegs + 1; for some reason thetaSegs was outputting an off by one torus...
     {
         float t0 = i * dt;
 
@@ -89,12 +91,12 @@ void CTorus::UpdateEntity()
         N = { N.x / N_length, N.y / N_length, N.z / N_length };
 
         // generate points in a circle perpendicular to the curve at the current point
-        for (int j = 0; j < numPhi; ++j)
+        for (int j = 0; j < phiSegs; ++j)
         {
-            float u = j * du;
+            float u = j * (du) + du_offset; // du_offset is needed for the phiMin adjustment
 
             // compute position of circle point
-            float x = minorRadius * cosf(u);
+            float x = minorRadius * cosf(u); // u is the angle 
             float y = minorRadius * sinf(u);
 
             Point p2 = { x * N.x + y * B.x, x * N.y + y * B.y, x * N.z + y * B.z };
@@ -111,13 +113,13 @@ void CTorus::UpdateEntity()
     // Create faces
     if (thetaMax == 360)
     {
-        for (int k = 0; k < numSegments + 1; k++)
+        for (int k = 0; k < thetaSegs + 1; k++)
         {
-            for (int i = 0; i < numPhi; i++)
+            for (int i = 0; i < phiSegs; i++)
             {
                 // CCW winding
-                int next = (i + 1) % numPhi;
-                int next_k = (k + 1) % numSegments;
+                int next = (i + 1) % phiSegs;
+                int next_k = (k + 1) % thetaSegs;
                 std::vector<std::string> upperFace = {
                     /* Old method was incorrectly CW (back face was showing in the front)
                     "v" + std::to_string(k + 1) + "_" + std::to_string(next),
@@ -137,13 +139,13 @@ void CTorus::UpdateEntity()
     }
     else
     {
-        for (int k = 0; k < numSegments; k++) // numSegments instead of numsegments + 1 because we don't to connect the last segment with the first segment
+        for (int k = 0; k < thetaSegs; k++) // thetaSegs instead of thetaSegs + 1 because we don't to connect the last segment with the first segment
         {
-            for (int i = 0; i < numPhi; i++)
+            for (int i = 0; i < phiSegs; i++)
             {
                 // CCW winding
-                int next = (i + 1) % numPhi;
-                int next_k = (k + 1) % (numSegments + 1);
+                int next = (i + 1) % phiSegs;
+                int next_k = (k + 1) % (thetaSegs + 1);
                 std::vector<std::string> upperFace = {
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(next),
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(i),

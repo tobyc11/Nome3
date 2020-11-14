@@ -13,15 +13,26 @@ typedef struct
     float z;
 } Point;
 
-
 DEFINE_META_OBJECT(CTorusKnot)
-{
-    BindPositionalArgument(&CTorusKnot::P_Val, 1, 0);
-    BindPositionalArgument(&CTorusKnot::Q_Val, 1, 1);
-    BindPositionalArgument(&CTorusKnot::VerticesPerRing, 1, 2);
-    BindPositionalArgument(&CTorusKnot::TubeRadius, 1, 3);
-    BindPositionalArgument(&CTorusKnot::Segments, 1, 4);
+{ 
+    BindPositionalArgument(&CTorusKnot::P_Val, 1, 0); // equivalent to "symm" in the language reference
+    BindPositionalArgument(&CTorusKnot::Q_Val, 1, 1); // equivalent to "turns" in the language reference
+    BindPositionalArgument(&CTorusKnot::MajorRadius, 1, 2);
+    BindPositionalArgument(&CTorusKnot::MinorRadius, 1, 3);
+    BindPositionalArgument(&CTorusKnot::TubeRadius, 1, 4); // equivalent to "minor radius"
+    BindPositionalArgument(&CTorusKnot::VerticesPerRing, 1, 5); // "circle_segs" 
+    BindPositionalArgument(&CTorusKnot::Segments, 1, 6);// "sweep_segs"
 }
+
+void CTorusKnot::MarkDirty()
+{
+    // Mark this entity dirty
+    Super::MarkDirty();
+
+    // And also mark the Face output dirty
+    TorusKnot.MarkDirty();
+}
+
 void CTorusKnot::UpdateEntity()
 {
     if (!IsDirty())
@@ -34,28 +45,35 @@ void CTorusKnot::UpdateEntity()
     int _p = P_Val.GetValue(1.0f);
     int _q = Q_Val.GetValue(1.0f);
     int numPhi = static_cast<int>(VerticesPerRing.GetValue(16.0f));
+    float minorRadius = MinorRadius.GetValue(1.0f);
+    float majorRadius = MajorRadius.GetValue(1.0f);
     float tubeRadius = TubeRadius.GetValue(1.0f);
     int numSegments = Segments.GetValue(0.0f); // number of circles basically
 
     const float epsilon = 1e-4;
     const float dt = (2.0f * (float)tc::M_PI) / (numSegments);
     const float du = (2.0f * (float)tc::M_PI) / numPhi;
+    
+    // Special case where tubeRadius == 0, create a polyline that can be used for Sweeps
+    std::vector<CMeshImpl::VertexHandle> vertArray;
+    std::vector<CVertexInfo> positions;
 
+    // https://mathworld.wolfram.com/Torus.html and http://makerhome.blogspot.com/2014/01/day-150-trefoil-torus-knots.html
     for (int i = 0; i < numSegments; i++) // Create torus knot, creating one cross section at each iteration
     {
         float t0 = i * dt;
-        float r0 = (2 + cosf(_q * t0)) * 0.5;
+        float r0 = (majorRadius + minorRadius * cosf(_q * t0)); // * 0.5;
         
-        Point p0 = { r0 * cosf(_p * t0), r0 * sinf(_p * t0), -sinf(_q * t0) }; 
-        // Point p0 = { sinf(t0), cos(t0), 0}; // uncomment this to do torus instead    
+        Point p0 = { r0 * cosf(_p * t0), r0 * sinf(_p * t0), minorRadius * sinf(_q * t0) }; 
+        // Point p0 = { sinf(t0), cos(t0), 0}; // uncomment this to do torus instead    . naive circle method
         
         // Below, we'll work on approximating the Frenet frame { T, N, B } for the curve at the current point
 
         float t1 = t0 + epsilon;
-        float r1 = (2 + cosf(_q * t1)) * 0.5;
+        float r1 = (majorRadius + minorRadius * cosf(_q * t1)); //* 0.5;
 
         // p1 is p0 advanced infinitesimally along the curve
-        Point p1 = { r1 * cosf(_p * t1), r1 * sinf(_p * t1), -sinf(_q * t1) };
+        Point p1 = { r1 * cosf(_p * t1), r1 * sinf(_p * t1), minorRadius * sinf(_q * t1) };
         //Point p1 = { sinf(t1), cos(t1), 0 }; //uncomment this to do torus instead 
 
         // compute approximate tangent as vector connecting p0 to p1
@@ -85,42 +103,68 @@ void CTorusKnot::UpdateEntity()
         float N_length = sqrt(N_squaredlength);
         N = { N.x / N_length, N.y / N_length, N.z / N_length };
 
-        // generate points in a circle perpendicular to the curve at the current point
-        for (int j = 0; j <= numPhi; ++j)
+        if (tubeRadius != 0)
         {
-            float u = j * du;
+            // generate points in a circle perpendicular to the curve at the current point
+            for (int j = 0; j <= numPhi; ++j)
+            {
+                float u = j * du;
 
-            // compute position of circle point
-            float x = tubeRadius * cosf(u);
-            float y = tubeRadius * sinf(u);
+                // compute position of circle point
+                float x = tubeRadius * cosf(u);
+                float y = tubeRadius * sinf(u);
 
-            Point p2 = { x * N.x + y * B.x, x * N.y + y * B.y, x * N.z + y * B.z };
-            Point curr_vertex;
-            curr_vertex.x = p0.x + p2.x;
-            curr_vertex.y = p0.y + p2.y;
-            curr_vertex.z = p0.z + p2.z;
+                Point p2 = { x * N.x + y * B.x, x * N.y + y * B.y, x * N.z + y * B.z };
+                Point curr_vertex;
+                curr_vertex.x = p0.x + p2.x;
+                curr_vertex.y = p0.y + p2.y;
+                curr_vertex.z = p0.z + p2.z;
 
-            AddVertex("v" + std::to_string(i + 1) + "_" + std::to_string(j),
-                      { curr_vertex.x, curr_vertex.y, curr_vertex.z });
+                AddVertex("v" + std::to_string(i + 1) + "_" + std::to_string(j),
+                          { curr_vertex.x, curr_vertex.y, curr_vertex.z });
+            }
+        }
+        else
+        {
+            auto p0vec3 = Vector3(p0.x, p0.y, p0.z);
+            auto vertHandle = AddVertex("knotpoint" + std::to_string(i), p0vec3);
+            vertArray.push_back(vertHandle);
+            CVertexInfo point;
+            point.Position =p0vec3;
+            positions.push_back(point);
         }
     }
-    // Create faces
-    for (int k = 0; k < numSegments; k++)
-    {
-        for (int i = 0; i < numPhi; i++)
-        {
-            // CCW winding
-            int next = (i + 1) % numPhi;
-            int next_k = (k + 1) % numSegments;
-            std::vector<std::string> upperFace = {
-                "v" + std::to_string(next_k + 1) + "_" + std::to_string(next), 
-                "v" + std::to_string(next_k + 1) + "_" + std::to_string(i),
-                "v" + std::to_string(k + 1) + "_" + std::to_string(i),
-                "v" + std::to_string(k + 1) + "_" + std::to_string(next)
 
-            };
-            AddFace("f1_" + std::to_string(i), upperFace);
+    if (tubeRadius != 0)
+    {
+        // Create faces
+        for (int k = 0; k < numSegments; k++)
+        {
+            for (int i = 0; i < numPhi; i++)
+            {
+                // CCW winding
+                int next = (i + 1) % numPhi;
+                int next_k = (k + 1) % numSegments;
+                std::vector<std::string> upperFace = {
+                    "v" + std::to_string(next_k + 1) + "_" + std::to_string(next),
+                    "v" + std::to_string(next_k + 1) + "_" + std::to_string(i),
+                    "v" + std::to_string(k + 1) + "_" + std::to_string(i),
+                    "v" + std::to_string(k + 1) + "_" + std::to_string(next)
+
+                };
+                AddFace("f1_" + std::to_string(i), upperFace);
+            }
         }
+    }
+    else
+    {
+        AddLineStrip("torusknotline", vertArray);
+
+        SI.Positions = positions;
+        SI.Name = GetName();
+        SI.IsClosed = false; // bClosed;
+        TorusKnot.UpdateValue(&SI);
+        SetValid(true);
     }
 
 }

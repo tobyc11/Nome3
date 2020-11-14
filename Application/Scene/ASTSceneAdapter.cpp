@@ -2,6 +2,8 @@
 #include "BSpline.h"
 #include "BezierSpline.h"
 #include "Circle.h"
+#include "Sphere.h"
+#include "MobiusStrip.h"
 #include "Environment.h"
 #include "Face.h"
 #include "Funnel.h"
@@ -36,17 +38,18 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "sweep", ECommandKind::Entity },       { "sweepcontrol", ECommandKind::Entity },
     { "face", ECommandKind::Entity },        { "object", ECommandKind::Entity },
     { "mesh", ECommandKind::Entity },        { "group", ECommandKind::Instance },
-    { "circle", ECommandKind::Entity },      { "funnel", ECommandKind::Entity },
-    { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
-    { "torusknot", ECommandKind::Entity },   { "torus", ECommandKind::Entity },
-    { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
-    { "surface", ECommandKind::Entity },     { "background", ECommandKind::Dummy },
-    { "foreground", ECommandKind::Dummy },   { "insidefaces", ECommandKind::Dummy },
-    { "outsidefaces", ECommandKind::Dummy }, { "offsetfaces", ECommandKind::Dummy },
-    { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
-    { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
-    { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
-    { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy }
+    { "circle", ECommandKind::Entity },      { "sphere", ECommandKind::Entity },
+    { "funnel", ECommandKind::Entity },      { "tunnel", ECommandKind::Entity },
+    { "beziercurve", ECommandKind::Entity }, { "torusknot", ECommandKind::Entity },
+    { "torus", ECommandKind::Entity },       { "bspline", ECommandKind::Entity },
+    { "instance", ECommandKind::Instance },  { "surface", ECommandKind::Entity },
+    { "background", ECommandKind::Dummy },   { "foreground", ECommandKind::Dummy },
+    { "insidefaces", ECommandKind::Dummy },  { "outsidefaces", ECommandKind::Dummy },
+    { "offsetfaces", ECommandKind::Dummy },  { "frontfaces", ECommandKind::Dummy },
+    { "backfaces", ECommandKind::Dummy },    { "rimfaces", ECommandKind::Dummy },
+    { "bank", ECommandKind::BankSet },       { "set", ECommandKind::BankSet },
+    { "delete", ECommandKind::Instance },    { "subdivision", ECommandKind::Dummy },
+    { "offset", ECommandKind::Dummy },       {"mobiusstrip", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -72,6 +75,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CPoint(name);
     else if (cmd == "polyline")
         return new CPolyline(name);
+    else if (cmd == "sphere")
+        return new CSphere(name);
     else if (cmd == "sweep")
         return new CSweep(name);
     else if (cmd == "sweepcontrol")
@@ -84,7 +89,9 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CTorusKnot(name);
     else if (cmd == "torus")
         return new CTorus(name);
-    
+    else if (cmd == "mobiusstrip")
+        return new CMobiusStrip(name);
+
     return nullptr;
 }
 
@@ -142,9 +149,9 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     else if (kind == ECommandKind::Entity)
     {
         TAutoPtr<CEntity> entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
-        entity->GetMetaObject().DeserializeFromAST(*cmd, *entity); 
+        entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
          // All entities are added to the EntityLibrary dictionary
-        GEnv.Scene->AddEntity(entity); 
+        GEnv.Scene->AddEntity(entity);
         if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
             if (auto* face = dynamic_cast<CFace*>(entity.Get()))
                 mesh->Faces.Connect(face->Face);
@@ -168,7 +175,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (cmd->GetCommand() == "instance")
     {
-        // Instance transformations/surfaces are not handled in here, 
+        // Instance transformations/surfaces are not handled in here,
         auto* sceneNode = InstanciateUnder->CreateChildNode(cmd->GetName());
         sceneNode->SyncFromAST(cmd, scene);
         // TODO: move the following logic into SyncFromAST
@@ -184,7 +191,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
             auto surfaceEntity = GEnv.Scene->FindEntity(surfaceIdentifier);
             if (surfaceEntity)
                 sceneNode->SetSurface(dynamic_cast<CSurface*>(surfaceEntity.Get()));
-            
+
         }
 
         auto entityName = cmd->GetPositionalIdentAsString(1);

@@ -1,0 +1,10 @@
+bank mob_slider
+  set radius 1 0.1 10 0.1
+  set numTwists 1 0 10 1
+  set numCuts 0 0 20 1
+  set N 100 5 500 5
+endbank
+
+mobiusstrip testmobiusstrip ({expr $mob_slider.radius} {expr $mob_slider.numTwists} {expr $mob_slider.numCuts} {expr $mob_slider.N}) endmobiusstrip
+
+instance strip1 testmobiusstrip endinstance

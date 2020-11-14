@@ -4,13 +4,14 @@
 
 QT_BEGIN_NAMESPACE
 
-OrbitTransformController::OrbitTransformController(QObject *parent)
+OrbitTransformController::OrbitTransformController(QQuaternion &rotation, QObject *parent)
     : QObject(parent)
     , m_target(nullptr)
-    , m_matrix()
     , m_radius(1.0f)
     , m_angle(0.0f)
+    , m_rotation(rotation)
 {
+
 }
 
 void OrbitTransformController::setTarget(Qt3DCore::QTransform *target)
@@ -56,10 +57,9 @@ float OrbitTransformController::angle() const
 
 void OrbitTransformController::updateMatrix()
 {
-    m_matrix.setToIdentity();
-    m_matrix.rotate(m_angle, QVector3D(0.0f, 1.0f, 0.0f));
-    m_matrix.translate(m_radius, 0.0f, 0.0f);
-    m_target->setMatrix(m_matrix);
+    m_count += 0.05;
+    m_rotation = QQuaternion::fromAxisAndAngle(QVector3D(0.0f, 1.0f, 0.0f), 2 * qCos(m_count)) * m_rotation;
+    m_target->setRotation(m_rotation);
 }
 
 QT_END_NAMESPACE

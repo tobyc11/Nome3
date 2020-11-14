@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMatrix4x4>
+#include <QtMath>
 
 QT_BEGIN_NAMESPACE
 
@@ -18,7 +19,7 @@ Q_OBJECT
     Q_PROPERTY(float angle READ angle WRITE setAngle NOTIFY angleChanged)
 
 public:
-    OrbitTransformController(QObject *parent = 0);
+    OrbitTransformController(QQuaternion &rotation, QObject *parent = 0);
 
     void setTarget(Qt3DCore::QTransform *target);
     Qt3DCore::QTransform *target() const;
@@ -39,9 +40,11 @@ protected:
 
 private:
     Qt3DCore::QTransform *m_target;
-    QMatrix4x4 m_matrix;
+    float m_count;
     float m_radius;
     float m_angle;
+    QQuaternion &m_rotation;
+
 };
 
 QT_END_NAMESPACE

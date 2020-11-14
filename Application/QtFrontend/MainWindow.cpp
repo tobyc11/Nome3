@@ -35,6 +35,7 @@ CMainWindow::CMainWindow(QWidget* parent, bool bDetached3d)
     ui->setupUi(this);
     SetupUI();
     LoadEmptyNomeFile();
+    this->installEventFilter(Nome3DView.get());
 }
 
 CMainWindow::CMainWindow(const QString& fileToOpen, QWidget* parent, bool bDetached3d)
@@ -488,6 +489,21 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
     SliderNameToWidget.emplace(name, sliderLayout);
 }
 
+bool CMainWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    if (event->type() == QEvent::KeyRelease) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+
+        if (keyEvent->key() == Qt::Key_Shift) {
+            Nome3DView->FreeVertexSelection();
+            return true;
+        }
+        else
+            return false;
+    }
+    return false;
+}
+
 void CMainWindow::OnSliderRemoving(Scene::CSlider& slider, const std::string& name)
 {
     auto iter = SliderNameToWidget.find(name);
@@ -498,5 +514,6 @@ void CMainWindow::OnSliderRemoving(Scene::CSlider& slider, const std::string& na
     SliderNameToWidget.erase(iter);
     SliderLayout->removeRow(widget);
 }
+
 
 }

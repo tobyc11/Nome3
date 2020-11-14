@@ -7,12 +7,12 @@ namespace Nome::Scene
 
 DEFINE_META_OBJECT(CSphere)
 {
-    BindPositionalArgument(&CSphere::Segments, 1, 0);
-    BindPositionalArgument(&CSphere::Radius, 1, 1);
-    BindPositionalArgument(&CSphere::CrossSections, 1, 2);
-    BindPositionalArgument(&CSphere::MaxTheta, 1, 3);
-    BindPositionalArgument(&CSphere::MinPhi, 1, 4);
-    BindPositionalArgument(&CSphere::MaxPhi, 1, 5);
+    BindPositionalArgument(&CSphere::Radius, 1, 0);
+    BindPositionalArgument(&CSphere::ThetaMax, 1, 1);
+    BindPositionalArgument(&CSphere::PhiMin, 1, 2);
+    BindPositionalArgument(&CSphere::PhiMax, 1, 3);
+    BindPositionalArgument(&CSphere::ThetaSegs, 1, 4);
+    BindPositionalArgument(&CSphere::PhiSegs, 1, 5);
 }
 
 void CSphere::UpdateEntity()
@@ -22,12 +22,12 @@ void CSphere::UpdateEntity()
 
     Super::UpdateEntity();
 
-    int n = (int)Segments.GetValue(6.0f);
+    int n = (int)PhiSegs.GetValue(6.0f);
     float radius = Radius.GetValue(1.0f);
-    int numCrossSections = (int)CrossSections.GetValue(6.0f);
-    int maxTheta = (int)MaxTheta.GetValue(6.0f);
-    int minPhi = (int)MinPhi.GetValue(6.0f);
-    int maxPhi = (int)MaxPhi.GetValue(6.0f);
+    int numCrossSections = (int)ThetaSegs.GetValue(6.0f);
+    int maxTheta = (int)ThetaMax.GetValue(6.0f);
+    int minPhi = (int)PhiMin.GetValue(6.0f) + 90;
+    int maxPhi = (int)PhiMax.GetValue(6.0f) + 90;
 
     float startPhi = minPhi / 180.f * (float)tc::M_PI;
 

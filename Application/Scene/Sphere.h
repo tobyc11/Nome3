@@ -6,12 +6,12 @@ namespace Nome::Scene
 
 class CSphere : public CMesh
 {
-    DEFINE_INPUT(float, Segments) { MarkDirty(); }
     DEFINE_INPUT(float, Radius) { MarkDirty(); }
-    DEFINE_INPUT(float, CrossSections) { MarkDirty(); }
-    DEFINE_INPUT(float, MaxTheta) { MarkDirty(); }
-    DEFINE_INPUT(float, MinPhi) { MarkDirty(); }
-    DEFINE_INPUT(float, MaxPhi) { MarkDirty(); }
+    DEFINE_INPUT(float, ThetaMax) { MarkDirty(); }
+    DEFINE_INPUT(float, PhiMin) { MarkDirty(); }
+    DEFINE_INPUT(float, PhiMax) { MarkDirty(); }
+    DEFINE_INPUT(float, ThetaSegs) { MarkDirty(); }
+    DEFINE_INPUT(float, PhiSegs) { MarkDirty(); }
 
 public:
     DECLARE_META_CLASS(CSphere, CMesh);

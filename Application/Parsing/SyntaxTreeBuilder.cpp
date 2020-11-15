@@ -113,7 +113,7 @@ antlrcpp::Any CFileBuilder::visitCmdIdListOne(NomParser::CmdIdListOneContext* co
     cmd->PushPositionalArgument(visit(context->name));
     cmd->PushPositionalArgument(visit(context->idList()));
     // Handle arguments other than name
-    for (auto* arg : context->argOrder())
+    for (auto arg : context->argOrder())
         cmd->AddNamedArgument(visit(arg));
     for (auto* arg : context->argClosed())
         cmd->AddNamedArgument(visit(arg));

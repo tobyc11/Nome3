@@ -128,10 +128,10 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
             auto result = expr->Accept(&eval);
             return std::any_cast<float>(result);
         };
-
         auto name = bank + "." + cmd->GetName();
         scene.GetBankAndSet().AddSlider(name, cmd, evalArg(1), evalArg(2), evalArg(3), evalArg(4));
     }
+    
     for (auto* sub : cmd->GetSubCommands())
         VisitCommandBankSet(sub, scene);
     CmdTraverseStack.pop_back();

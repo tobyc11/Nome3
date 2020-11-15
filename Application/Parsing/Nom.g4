@@ -77,7 +77,7 @@ command
    | open='offset' name=ident k1='type' v1=ident k2='min' v2=expression k3='max' v3=expression k4='step' v4=expression end='endoffset' # CmdOffset
    ;
 
-set : open='set' ident expression expression expression expression ;
+set : open='set' ident expression expression expression expression;
 
 deleteFace : open='face' ident end='endface' ;
 

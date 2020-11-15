@@ -25,11 +25,20 @@ CExprToNodeGraph::CExprToNodeGraph(AST::AExpr* expr, CBankAndSet& bankAndSet,
 
 std::any CExprToNodeGraph::VisitIdent(AST::AIdent* ident)
 {
-    auto* node = BankAndSet.GetSlider(ident->ToString());
-    if (!node)
-        throw AST::CSemanticError(
-            tc::StringPrintf("Could not find slider %s", ident->ToString().c_str()), ident);
-    node->Value.Connect(*InputStack.top());
+    Flow::CFloatNumber* node;
+    if (ident->ToString() == "time") {
+        node = GEnv.Scene->GetTime();
+        node->Value.Connect(*InputStack.top());
+    } else if (ident->ToString() == "frame") {
+        node = GEnv.Scene->GetFrame();
+        node->Value.Connect(*InputStack.top());
+    } else {
+        CSlider* sum = BankAndSet.GetSlider(ident->ToString());
+        if (!sum)
+            throw AST::CSemanticError(
+                tc::StringPrintf("Could not find slider %s", ident->ToString().c_str()), ident);
+        sum->Value.Connect(*InputStack.top());
+    }
     return {};
 }
 

@@ -288,6 +288,16 @@ void CMainWindow::SetupUI()
         viewContainer->setMaximumSize(screenSize);
         viewContainer->setFocusPolicy(Qt::TabFocus);
         layout->addWidget(viewContainer);
+//        QPushButton* start = new QPushButton("Toggle", this);
+//        start->setText("Start/Stop");
+//        layout->addWidget(start);
+//        connect(start, &QPushButton::clicked, [&]() {
+//            if (!timer->isActive()) {
+//                timer->start();
+//            } else {
+//                timer->stop();
+//            }
+//        });
     }
     else
     {
@@ -365,12 +375,18 @@ void CMainWindow::PostloadSetup()
     Scene->GetBankAndSet().AddObserver(this);
     Nome3DView->TakeScene(Scene);
 
+    elapsedRender = new QElapsedTimer();
     SceneUpdateClock = new QTimer(this);
     SceneUpdateClock->setInterval(50);
     SceneUpdateClock->setSingleShot(false);
+    elapsedRender->start();
     connect(SceneUpdateClock, &QTimer::timeout, [this]() {
         Scene->Update();
         Nome3DView->PostSceneUpdate();
+        Scene->SetTime((float) elapsedRender->elapsed() / 1000);
+        Scene->SetFrame(1);
+        std::cout << "time" << Scene->GetTime()->GetNumber() << std::endl;
+        std::cout << "frame" << Scene->GetFrame()->GetNumber() << std::endl;
     });
     SceneUpdateClock->start();
 
@@ -382,6 +398,8 @@ void CMainWindow::UnloadNomeFile()
     TemporaryMeshManager.reset(nullptr);
     SceneUpdateClock->stop();
     delete SceneUpdateClock;
+    elapsedRender->invalidate();
+    delete elapsedRender;
     Nome3DView->UnloadScene();
     assert(Scene->GetRefCount() == 1);
     Scene = nullptr;
@@ -436,6 +454,7 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
 
     sliderLayout->setStretchFactor(sliderBar, 4);
     sliderLayout->setStretchFactor(sliderDisplay, 1);
+    std::string sliderID = slider.GetASTNode()->GetPositionalIdentAsString(0);
 
     connect(sliderBar, &QAbstractSlider::valueChanged, [&, sliderDisplay](int value) {
         // Every "1" in value represents a step, since the slider only allows integers
@@ -454,36 +473,6 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
         slider.GetASTNode()->SetPositionalArgument(1, expr);
         SourceMgr->InsertToken(insertLocation, token);
     });
-    std::string sliderID = slider.GetASTNode()->GetPositionalIdentAsString(0);
-    if (hasEnding(sliderID, "time")) {
-        timer = new QTimer(this);
-        SliderTimers.emplace(sliderID, timer);
-        QPushButton *start = new QPushButton("Toggle", this);
-        start->setText("Start/Stop");
-        sliderLayout->addWidget(start);
-        connect(start, &QPushButton::clicked, this, [this, &slider]() {
-            QTimer* currtimer = SliderTimers.find(slider.GetASTNode()->
-                GetPositionalIdentAsString(0))->second;
-            timer = currtimer;
-            if (!timer->isActive()) {
-                timer->start(50);
-            } else {
-                timer->stop();
-            }
-        });
-        connect(timer, &QTimer::timeout, this, [&slider, sliderDisplay]() {
-            float val = slider.GetValue() + slider.GetStep();
-            if (val <= slider.GetMax()) {
-                slider.SetValue(val);
-            } else {
-                slider.SetValue(slider.GetMin());
-            }
-            sliderDisplay->setText(QString::fromStdString(tc::StringPrintf("%.2f", val)));
-        });
-        timer->start(50);
-
-    }
-
 
     SliderLayout->addRow(sliderName, sliderLayout);
     SliderNameToWidget.emplace(name, sliderLayout);

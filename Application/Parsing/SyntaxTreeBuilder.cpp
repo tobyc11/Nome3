@@ -23,6 +23,8 @@ antlrcpp::Any CFileBuilder::visitArgHidden(NomParser::ArgHiddenContext* context)
     return arg;
 }
 
+
+
 antlrcpp::Any CFileBuilder::visitArgSurface(NomParser::ArgSurfaceContext* context)
 {
     AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));

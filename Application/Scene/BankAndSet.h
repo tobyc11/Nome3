@@ -44,6 +44,7 @@ class CBankAndSet : public tc::FNonCopyable
 {
 public:
     ~CBankAndSet();
+
     void AddSlider(const std::string& name, AST::ACommand* cmd, float value, float min, float max,
                    float step);
     CSlider* GetSlider(const std::string& name);

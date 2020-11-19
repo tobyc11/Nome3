@@ -37,13 +37,20 @@ CNome3DView::CNome3DView()
     torusMesh->setSlices(100);
 
     materialX = new Qt3DExtras::QPhongAlphaMaterial(Root);
-    materialX->setAlpha(0.1);
-    materialX->setShininess(1);
-    materialY = new Qt3DExtras::QPhongAlphaMaterial(materialX);
-    materialZ = new Qt3DExtras::QPhongAlphaMaterial(materialX);
+    materialX->setAlpha(0.2f);
     materialX->setDiffuse(QColor(0, 255, 0));
-    materialY->setDiffuse(QColor(0, 0, 255));
-    materialZ->setDiffuse(QColor(255, 0, 0));
+    materialX->setAmbient(QColor(0, 255, 0));
+    materialX->setShininess(5);
+    materialY = new Qt3DExtras::QPhongAlphaMaterial(materialX);
+    materialY->setAlpha(0.2f);
+    materialY->setDiffuse(QColor(255, 0, 0));
+    materialY->setAmbient(QColor(255, 0, 0));
+    materialY->setShininess(5);
+    materialZ = new Qt3DExtras::QPhongAlphaMaterial(materialX);
+    materialZ->setAlpha(0.2f);
+    materialZ->setDiffuse(QColor(0, 0, 255));
+    materialZ->setAmbient(QColor(0, 0, 255));
+    materialZ->setShininess(5);
 
     torusX->addComponent(torusMesh);
     torusY->addComponent(torusMesh);
@@ -536,6 +543,9 @@ void CNome3DView::mousePressEvent(QMouseEvent* e)
 {
     if (!vertexSelectionEnabled)
     {
+        materialX->setAlpha(0.7f);
+        materialY->setAlpha(0.7f);
+        materialZ->setAlpha(0.7f);
         rotationEnabled = e->button() == Qt::RightButton ? false : true;
         zPos = cameraset->position().z();
         // Save mouse press position
@@ -592,6 +602,9 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
 
 void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
 {
+    materialX->setAlpha(0.2f);
+    materialY->setAlpha(0.2f);
+    materialZ->setAlpha(0.2f);
     mousePressEnabled = false;
 }
 

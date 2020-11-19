@@ -23,18 +23,46 @@ CNome3DView::CNome3DView()
 {
     // Create a Base entity to host all entities
     Base = new Qt3DCore::QEntity;
-    crystalBall = new Qt3DCore::QEntity(Base);
+    torusX = new Qt3DCore::QEntity(Base);
+    torusY = new Qt3DCore::QEntity(Base);
+    torusZ = new Qt3DCore::QEntity(Base);
     Root = new Qt3DCore::QEntity(Base);
     this->setRootEntity(Base);
 
     // Initialize the crystal ball
-    auto *sphereMesh = new Qt3DExtras::QSphereMesh;
-    material = new Qt3DExtras::QPhongAlphaMaterial(Root);
-    material->setAlpha(0.1);
-    material->setShininess(1);
-    sphereMesh->setRadius(1);
-    crystalBall->addComponent(sphereMesh);
-    crystalBall->addComponent(material);
+    auto *torusMesh = new Qt3DExtras::QTorusMesh;
+    torusMesh->setRadius(1.0f);
+    torusMesh->setMinorRadius(0.001f);
+    torusMesh->setRings(100);
+    torusMesh->setSlices(100);
+
+    materialX = new Qt3DExtras::QPhongAlphaMaterial(Root);
+    materialX->setAlpha(0.1);
+    materialX->setShininess(1);
+    materialY = new Qt3DExtras::QPhongAlphaMaterial(materialX);
+    materialZ = new Qt3DExtras::QPhongAlphaMaterial(materialX);
+    materialX->setDiffuse(QColor(0, 255, 0));
+    materialY->setDiffuse(QColor(0, 0, 255));
+    materialZ->setDiffuse(QColor(255, 0, 0));
+
+    torusX->addComponent(torusMesh);
+    torusY->addComponent(torusMesh);
+    torusZ->addComponent(torusMesh);
+    torusX->addComponent(materialX);
+    torusY->addComponent(materialY);
+    torusZ->addComponent(materialZ);
+
+    torusTransformX = new Qt3DCore::QTransform();
+    quaternionX =  QQuaternion::fromAxisAndAngle(QVector3D(0.0f, 1.0f, 0.0f), 90.0f);
+    torusTransformX->setRotation(quaternionX);
+    torusTransformY = new Qt3DCore::QTransform();
+    quaternionY = QQuaternion::fromAxisAndAngle(QVector3D(1.0f, 0.0f, 0.0f), 90.0f);
+    torusTransformY->setRotation(quaternionY);
+    torusTransformZ = new Qt3DCore::QTransform();
+    torusX->addComponent(torusTransformX);
+    torusY->addComponent(torusTransformY);
+    torusZ->addComponent(torusTransformZ);
+
 
 
     // MakeGridEntity(Root); Removing grid entity per Professor Sequin's request
@@ -76,6 +104,7 @@ CNome3DView::CNome3DView()
     sphereRotateTransformAnimation->setLoopCount(-1);
 
     Root->addComponent(sphereTransform);
+
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -554,6 +583,9 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
             }
         }
         sphereTransform->setRotation(rotation);
+        torusTransformX->setRotation(rotation * quaternionX);
+        torusTransformY->setRotation(rotation * quaternionY);
+        torusTransformZ->setRotation(rotation);
         firstPosition = secondPosition;
     }
 }
@@ -593,7 +625,7 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
     switch (ev->key())
     {
     case Qt::Key_Tab:
-        material->setAlpha(rotationEnabled * 0.1);
+        materialX->setAlpha(rotationEnabled * 0.1);
 
         break;
     case Qt::Key_Shift:

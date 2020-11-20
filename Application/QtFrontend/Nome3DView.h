@@ -79,10 +79,19 @@ private:
 
     // For the animation
     Qt3DCore::QTransform *sphereTransform;
+    Qt3DCore::QTransform *torusTransformX;
+    Qt3DCore::QTransform *torusTransformY;
+    Qt3DCore::QTransform *torusTransformZ;
+    QQuaternion quaternionX;
+    QQuaternion quaternionY;
     OrbitTransformController *controller;
     QPropertyAnimation *sphereRotateTransformAnimation;
-    Qt3DCore::QEntity *crystalBall;
-    Qt3DExtras::QPhongAlphaMaterial *material;
+    Qt3DCore::QEntity *torusX;
+    Qt3DCore::QEntity *torusY;
+    Qt3DCore::QEntity *torusZ;
+    Qt3DExtras::QPhongAlphaMaterial *materialX;
+    Qt3DExtras::QPhongAlphaMaterial *materialY;
+    Qt3DExtras::QPhongAlphaMaterial *materialZ;
 
 };
 

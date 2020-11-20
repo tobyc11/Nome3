@@ -696,8 +696,10 @@ QVector3D CNome3DView::GetCrystalPoint(QVector2D originalPoint) {
 }
 
 void CNome3DView::rotateRay(tc::Ray& ray) {
-    QVector3D origin = rotation.inverted().rotatedVector(QVector3D(ray.Origin.x, ray.Origin.y, ray.Origin.z));
+    QVector3D origin = QVector3D(ray.Origin.x, ray.Origin.y, ray.Origin.z) - QVector3D(objectX, objectY, objectZ);;
+    origin = rotation.inverted().rotatedVector(origin);
     QVector3D direction = rotation.inverted().rotatedVector(QVector3D(ray.Direction.x, ray.Direction.y, ray.Direction.z));
+
     ray.Direction = tc::Vector3(direction.x(), direction.y(), direction.z());
     ray.Origin = tc::Vector3(origin.x(), origin.y(), origin.z());
 }

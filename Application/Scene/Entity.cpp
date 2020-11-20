@@ -26,7 +26,7 @@ std::string CEntity::GetNameWithoutPrefix() const
 
 AST::ACommand* CEntity::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
 {
-    ctx;
+    //ctx;
     createNewNode;
     throw "unimplemented";
     return nullptr;

@@ -1,7 +1,6 @@
 #pragma once
 #include "Mesh.h"
 #include <LangUtils.h>
-#include <OpenMesh/Tools/Subdivider/Uniform/CatmullClarkT.hh>
 namespace Nome::Scene
 {
 
@@ -47,7 +46,7 @@ private:
     OpenMesh::VPropHandleT< CMeshImpl::Point > vp_pos_; // next vertex pos
     OpenMesh::EPropHandleT< CMeshImpl::Point > ep_pos_; // new edge pts
     OpenMesh::FPropHandleT< CMeshImpl::Point > fp_pos_; // new face pts
-    OpenMesh::EPropHandleT<double> creaseWeights_;// crease weights
+    OpenMesh::EPropHandleT<double> creaseWeights_; // crease weights
 };
 
 }

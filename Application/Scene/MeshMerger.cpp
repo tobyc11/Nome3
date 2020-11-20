@@ -26,7 +26,7 @@ void CMeshMerger::Catmull(const CMeshInstance& meshInstance)
     CMeshImpl otherMesh = meshInstance.GetMeshImpl();
     //catmull.attach(otherMesh);
     prepare(otherMesh);
-    subdivide(otherMesh, 4, true);
+    subdivide(otherMesh, 3, true);
     std::cout << "Apply catmullclark subdivision, may take a few minutes or so" << std::endl;
     //catmull(4);
     cleanup(otherMesh);
@@ -385,7 +385,7 @@ void CMeshMerger::update_vertex( CMeshImpl& _m, const CMeshImpl::VertexHandle& _
     */
 
     double valence(0.0);
-    OpenMesh::PolyConnectivity::VOHIter voh_it = _m.voh_iter( _vh );
+    CMeshImpl::VOHIter voh_it = _m.voh_iter( _vh );
     for( ; voh_it.is_valid(); ++voh_it )
     {
       pos += _m.point( _m.to_vertex_handle( *voh_it ) );

@@ -385,8 +385,6 @@ void CMainWindow::PostloadSetup()
         Nome3DView->PostSceneUpdate();
         Scene->SetTime((float) elapsedRender->elapsed() / 1000);
         Scene->SetFrame(1);
-        std::cout << "time" << Scene->GetTime()->GetNumber() << std::endl;
-        std::cout << "frame" << Scene->GetFrame()->GetNumber() << std::endl;
     });
     SceneUpdateClock->start();
 

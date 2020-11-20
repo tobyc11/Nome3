@@ -21,13 +21,16 @@ void CMeshMerger::UpdateEntity()
 void CMeshMerger::Catmull(const CMeshInstance& meshInstance)
 {
 
-    OpenMesh::Subdivider::Uniform::CatmullClarkT<CMeshImpl> catmull; // https://www.graphics.rwth-aachen.de/media/openmesh_static/Documentations/OpenMesh-4.0-Documentation/a00020.html
+    //OpenMesh::Subdivider::Uniform::CatmullClarkT<CMeshImpl> catmull; // https://www.graphics.rwth-aachen.de/media/openmesh_static/Documentations/OpenMesh-4.0-Documentation/a00020.html
     // Execute 2 subdivision steps
     CMeshImpl otherMesh = meshInstance.GetMeshImpl();
-    catmull.attach(otherMesh);
+    //catmull.attach(otherMesh);
+    prepare(otherMesh);
+    subdivide(otherMesh, 4, true);
     std::cout << "Apply catmullclark subdivision, may take a few minutes or so" << std::endl;
-    catmull(2);
-    catmull.detach();
+    //catmull(4);
+    cleanup(otherMesh);
+    //catmull.detach();
     auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
     // Copy over all the vertices and check for overlapping
     std::unordered_map<CMeshImpl::VertexHandle, CMeshImpl::VertexHandle> vertMap;
@@ -147,4 +150,293 @@ std::pair<CMeshImpl::VertexHandle, float> CMeshMerger::FindClosestVertex(const t
     return { result, minDist };
 }
 
+bool CMeshMerger::subdivide(CMeshImpl& _m, int n, const bool _update_points=true) 
+{
+    for (int i = 0; i < n; i++) {
+            // Compute face centroid
+        for ( auto fh : _m.faces())
+        {
+            CMeshImpl::Point centroid;
+            _m.calc_face_centroid( fh, centroid);
+            _m.property( fp_pos_, fh ) = centroid;
+        }
+
+        // Compute position for new (edge-) vertices and store them in the edge property
+        for ( auto eh : _m.edges())
+            compute_midpoint( _m, eh, _update_points );
+
+        // position updates activated?
+        if(_update_points)
+        {
+            // compute new positions for old vertices
+            for ( auto vh : _m.vertices())
+            update_vertex( _m, vh );
+
+            // Commit changes in geometry
+            for ( auto vh : _m.vertices())
+            _m.set_point(vh, _m.property( vp_pos_, vh ) );
+        }
+
+        // Split each edge at midpoint stored in edge property ep_pos_;
+        // Attention! Creating new edges, hence make sure the loop ends correctly.
+        for ( auto eh : _m.edges())
+            split_edge( _m, eh );
+
+        // Commit changes in topology and reconsitute consistency
+        // Attention! Creating new faces, hence make sure the loop ends correctly.
+        for ( auto fh : _m.faces())
+            split_face( _m, fh);
+
+
+        #if defined(_DEBUG) || defined(DEBUG)
+        // Now we have an consistent mesh!
+        assert( OpenMesh::Utils::MeshCheckerT<MeshType>(_m).check() );
+        #endif
+        }
+
+        _m.update_normals();
+
+    return true;
 }
+
+void CMeshMerger::split_face(CMeshImpl& _m, const CMeshImpl::FaceHandle& _fh) 
+{
+    // Since edges already refined (valence*2)
+    size_t valence = _m.valence(_fh)/2;
+
+    // new mesh vertex from face centroid
+    auto vh = _m.add_vertex(_m.property( fp_pos_, _fh ));
+
+    auto hend = _m.halfedge_handle(_fh);
+    auto hh = _m.next_halfedge_handle(hend);
+
+    auto hold = _m.new_edge(_m.to_vertex_handle(hend), vh);
+
+    _m.set_next_halfedge_handle(hend, hold);
+    _m.set_face_handle(hold, _fh);
+
+    hold = _m.opposite_halfedge_handle(hold);
+
+    for(size_t i = 1; i < valence; i++)
+    {
+        CMeshImpl::HalfedgeHandle hnext = _m.next_halfedge_handle(hh);
+
+        CMeshImpl::FaceHandle fnew = _m.new_face();
+
+        _m.set_halfedge_handle(fnew, hh);
+
+        CMeshImpl::HalfedgeHandle hnew = _m.new_edge(_m.to_vertex_handle(hnext), vh);
+
+        _m.set_face_handle(hnew,  fnew);
+        _m.set_face_handle(hold,  fnew);
+        _m.set_face_handle(hh,    fnew);
+        _m.set_face_handle(hnext, fnew);
+
+        _m.set_next_halfedge_handle(hnew, hold);
+        _m.set_next_halfedge_handle(hold, hh);
+        _m.set_next_halfedge_handle(hh, hnext);
+        hh = _m.next_halfedge_handle(hnext);
+        _m.set_next_halfedge_handle(hnext, hnew);
+
+        hold = _m.opposite_halfedge_handle(hnew);
+    }
+
+    _m.set_next_halfedge_handle(hold, hh);
+    _m.set_next_halfedge_handle(hh, hend);
+    hh = _m.next_halfedge_handle(hend);
+    _m.set_next_halfedge_handle(hend, hh);
+    _m.set_next_halfedge_handle(hh, hold);
+
+    _m.set_face_handle(hold, _fh);
+
+    _m.set_halfedge_handle(vh, hold);
+}
+
+void CMeshMerger::split_edge(CMeshImpl& _m, const CMeshImpl::EdgeHandle& _eh)
+{
+  auto heh     = _m.halfedge_handle(_eh, 0);
+  auto opp_heh = _m.halfedge_handle(_eh, 1);
+
+  CMeshImpl::HalfedgeHandle new_heh, opp_new_heh, t_heh;
+  CMeshImpl::VertexHandle   vh;
+  CMeshImpl::VertexHandle   vh1( _m.to_vertex_handle(heh));
+  CMeshImpl::Point          zero(0,0,0);
+
+  // new vertex
+  vh = _m.new_vertex( zero );
+  _m.set_point( vh, _m.property( ep_pos_, _eh ) );
+
+  // Re-link mesh entities
+  if (_m.is_boundary(_eh))
+  {
+    for (t_heh = heh;
+        _m.next_halfedge_handle(t_heh) != opp_heh;
+        t_heh = _m.opposite_halfedge_handle(_m.next_halfedge_handle(t_heh)))
+    {}
+  }
+  else
+  {
+    for (t_heh = _m.next_halfedge_handle(opp_heh);
+        _m.next_halfedge_handle(t_heh) != opp_heh;
+        t_heh = _m.next_halfedge_handle(t_heh) )
+    {}
+  }
+
+  new_heh     = _m.new_edge(vh, vh1);
+  opp_new_heh = _m.opposite_halfedge_handle(new_heh);
+  _m.set_vertex_handle( heh, vh );
+
+  _m.set_next_halfedge_handle(t_heh, opp_new_heh);
+  _m.set_next_halfedge_handle(new_heh, _m.next_halfedge_handle(heh));
+  _m.set_next_halfedge_handle(heh, new_heh);
+  _m.set_next_halfedge_handle(opp_new_heh, opp_heh);
+
+  if (_m.face_handle(opp_heh).is_valid())
+  {
+    _m.set_face_handle(opp_new_heh, _m.face_handle(opp_heh));
+    _m.set_halfedge_handle(_m.face_handle(opp_new_heh), opp_new_heh);
+  }
+
+  if( _m.face_handle(heh).is_valid())
+  {
+    _m.set_face_handle( new_heh, _m.face_handle(heh) );
+    _m.set_halfedge_handle( _m.face_handle(heh), heh );
+  }
+
+  _m.set_halfedge_handle( vh, new_heh);
+  _m.set_halfedge_handle( vh1, opp_new_heh );
+
+  // Never forget this, when playing with the topology
+  _m.adjust_outgoing_halfedge( vh );
+  _m.adjust_outgoing_halfedge( vh1 );
+}
+
+void CMeshMerger::compute_midpoint(CMeshImpl& _m, const CMeshImpl::EdgeHandle& _eh, const bool _update_points)
+{
+  CMeshImpl::HalfedgeHandle heh, opp_heh;
+
+  heh      = _m.halfedge_handle( _eh, 0);
+  opp_heh  = _m.halfedge_handle( _eh, 1);
+
+  CMeshImpl::Point pos( _m.point( _m.to_vertex_handle( heh)));
+
+  pos +=  _m.point( _m.to_vertex_handle( opp_heh));
+
+  // boundary edge: just average vertex positions
+  // this yields the [1/2 1/2] mask
+  if (_m.is_boundary(_eh) || !_update_points)
+  {
+    pos *= static_cast<float>(0.5);
+  }
+//  else if (_m.status(_eh).selected() )
+//  {
+//    pos *= 0.5; // change this
+//  }
+
+  else // inner edge: add neighbouring Vertices to sum
+    // this yields the [1/16 1/16; 3/8 3/8; 1/16 1/16] mask
+  {
+    pos += _m.property(fp_pos_, _m.face_handle(heh));
+    pos += _m.property(fp_pos_, _m.face_handle(opp_heh));
+    pos *= static_cast<float>(0.25);
+  }
+  _m.property( ep_pos_, _eh ) = pos;
+}
+
+void CMeshMerger::update_vertex( CMeshImpl& _m, const CMeshImpl::VertexHandle& _vh)
+{
+  CMeshImpl::Point pos(0.0,0.0,0.0);
+
+  // TODO boundary, Extraordinary Vertex and  Creased Surfaces
+  // see "A Factored Approach to Subdivision Surfaces"
+  // http://faculty.cs.tamu.edu/schaefer/research/tutorial.pdf
+  // and http://www.cs.utah.edu/~lacewell/subdeval
+  if ( _m.is_boundary( _vh))
+  {
+    pos = _m.point(_vh);
+    CMeshImpl::VertexEdgeIter   ve_itr;
+    for ( ve_itr = _m.ve_iter( _vh); ve_itr.is_valid(); ++ve_itr)
+      if ( _m.is_boundary( *ve_itr))
+        pos += _m.property( ep_pos_, *ve_itr);
+    pos /= static_cast<typename OpenMesh::vector_traits<typename CMeshImpl::Point>::value_type>(3.0);
+  }
+  else // inner vertex
+  {
+    /* For each (non boundary) vertex V, introduce a new vertex whose
+       position is F/n + 2E/n + (n-3)V/n where F is the average of
+       the new face vertices of all faces adjacent to the old vertex
+       V, E is the average of the midpoints of all edges incident
+       on the old vertex V, and n is the number of edges incident on
+       the vertex.
+       */
+
+    /*
+    Normal           Vec;
+    VertexEdgeIter   ve_itr;
+    double           valence(0.0);
+
+    // R = Calculate Valence and sum of edge midpoints
+    for ( ve_itr = _m.ve_iter( _vh); ve_itr; ++ve_itr)
+    {
+      valence+=1.0;
+      pos += _m.property(ep_pos_, *ve_itr);
+    }
+    pos /= valence*valence;
+    */
+
+    double valence(0.0);
+    OpenMesh::PolyConnectivity::VOHIter voh_it = _m.voh_iter( _vh );
+    for( ; voh_it.is_valid(); ++voh_it )
+    {
+      pos += _m.point( _m.to_vertex_handle( *voh_it ) );
+      valence+=1.0;
+    }
+    pos /= valence*valence;
+
+    CMeshImpl::VertexFaceIter vf_itr;
+    CMeshImpl::Point          Q(0, 0, 0);
+
+    for ( vf_itr = _m.vf_iter( _vh); vf_itr.is_valid(); ++vf_itr) //, neigboring_faces += 1.0 )
+    {
+      Q += _m.property(fp_pos_, *vf_itr);
+    }
+
+    Q /= valence*valence;//neigboring_faces;
+
+    pos += _m.point(_vh) * (valence - 2.0 )/valence + Q;
+    //      pos = vector_cast<Vec>(_m.point(_vh));
+  }
+
+  _m.property( vp_pos_, _vh ) = pos;
+}
+
+bool CMeshMerger::prepare(CMeshImpl& _m)
+{
+  _m.add_property( vp_pos_ );
+  _m.add_property( ep_pos_ );
+  _m.add_property( fp_pos_ );
+  _m.add_property( creaseWeights_ );
+
+  // initialize all weights to 0 (= smooth edge)
+  for( CMeshImpl::EdgeIter e_it = _m.edges_begin(); e_it != _m.edges_end(); ++e_it)
+     _m.property(creaseWeights_, *e_it ) = 0.0;
+
+  return true;
+}
+
+bool CMeshMerger::cleanup( CMeshImpl& _m  )
+{
+  _m.remove_property( vp_pos_ );
+  _m.remove_property( ep_pos_ );
+  _m.remove_property( fp_pos_ );
+  _m.remove_property( creaseWeights_ );
+  return true;
+}
+
+
+
+
+
+
+}
+

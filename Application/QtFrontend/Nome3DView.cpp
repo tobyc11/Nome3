@@ -610,27 +610,24 @@ void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
 
 void CNome3DView::wheelEvent(QWheelEvent *ev)
 {
-    if (rotationEnabled)
-    {
-        QVector3D cameraPosition = cameraset->position();
-        zPos = cameraPosition.z();
-        QPoint numPixels = ev->pixelDelta();
-        QPoint numDegrees = ev->angleDelta() / 20.0;
+    QVector3D cameraPosition = cameraset->position();
+    zPos = cameraPosition.z();
+    QPoint numPixels = ev->pixelDelta();
+    QPoint numDegrees = ev->angleDelta() / 20.0;
 
-        if (!numPixels.isNull())
-        {
-            objectZ += numPixels.y() * 0.2;
-        }
-        else if (!numDegrees.isNull())
-        {
-            QPoint numSteps = numDegrees / 15;
-            objectZ += numSteps.y() * 0.2;
-        }
-        if (objectZ > 2)
-            objectZ = 2;
-        sphereTransform->setTranslation(QVector3D(objectX, objectY, objectZ));
-        ev->accept();
+    if (!numPixels.isNull())
+    {
+        objectZ += numPixels.y() * 0.2;
     }
+    else if (!numDegrees.isNull())
+    {
+        QPoint numSteps = numDegrees / 15;
+        objectZ += numSteps.y() * 0.2;
+    }
+    if (objectZ > 2)
+        objectZ = 2;
+    sphereTransform->setTranslation(QVector3D(objectX, objectY, objectZ));
+    ev->accept();
 }
 
 void CNome3DView::keyPressEvent(QKeyEvent *ev)

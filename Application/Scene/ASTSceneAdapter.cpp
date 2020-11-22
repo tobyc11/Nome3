@@ -17,6 +17,8 @@
 #include "Torus.h"
 #include "SweepControlPoint.h"
 #include "Tunnel.h"
+#include "Hyperboloid.h"
+#include "Dupin.h"
 #include <StringPrintf.h>
 #include <unordered_map>
 
@@ -42,6 +44,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "mesh", ECommandKind::Entity },        { "group", ECommandKind::Instance },
     { "circle", ECommandKind::Entity },      { "sphere", ECommandKind::Entity },
     { "cylinder", ECommandKind::Entity },    { "funnel", ECommandKind::Entity },
+    { "hyperboloid", ECommandKind::Entity }, {"dupin", ECommandKind::Entity },
     { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
     { "torusknot", ECommandKind::Entity },   { "torus", ECommandKind::Entity },
     { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
@@ -98,7 +101,10 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CTorus(name);
     else if (cmd == "mobiusstrip")
         return new CMobiusStrip(name);
-
+    else if (cmd == "hyperboloid")
+        return new CHyperboloid(name);
+    else if (cmd == "dupin")
+        return new CDupin(name);
     return nullptr;
 }
 

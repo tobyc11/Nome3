@@ -4,19 +4,17 @@
 namespace Nome::Scene
 {
 
-class CSphere : public CMesh
+class CCylinder : public CMesh
 {
     DEFINE_INPUT(float, Radius) { MarkDirty(); }
+    DEFINE_INPUT(float, Height) { MarkDirty(); }
     DEFINE_INPUT(float, ThetaMax) { MarkDirty(); }
-    DEFINE_INPUT(float, PhiMin) { MarkDirty(); }
-    DEFINE_INPUT(float, PhiMax) { MarkDirty(); }
     DEFINE_INPUT(float, ThetaSegs) { MarkDirty(); }
-    DEFINE_INPUT(float, PhiSegs) { MarkDirty(); }
 
 public:
-    DECLARE_META_CLASS(CSphere, CMesh);
-    CSphere() = default;
-    CSphere(const std::string& name)
+    DECLARE_META_CLASS(CCylinder, CMesh);
+    CCylinder() = default;
+    CCylinder(const std::string& name)
         : CMesh(std::move(name))
     {
     }

@@ -3,10 +3,12 @@
 #include "BezierSpline.h"
 #include "Circle.h"
 #include "Sphere.h"
+#include "Cylinder.h"
 #include "MobiusStrip.h"
 #include "Environment.h"
 #include "Face.h"
 #include "Funnel.h"
+#include "Helix.h"
 #include "Point.h"
 #include "Polyline.h"
 #include "Surface.h"
@@ -15,6 +17,8 @@
 #include "Torus.h"
 #include "SweepControlPoint.h"
 #include "Tunnel.h"
+#include "Hyperboloid.h"
+#include "Dupin.h"
 #include <StringPrintf.h>
 #include <unordered_map>
 
@@ -39,17 +43,19 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "face", ECommandKind::Entity },        { "object", ECommandKind::Entity },
     { "mesh", ECommandKind::Entity },        { "group", ECommandKind::Instance },
     { "circle", ECommandKind::Entity },      { "sphere", ECommandKind::Entity },
-    { "funnel", ECommandKind::Entity },      { "tunnel", ECommandKind::Entity },
-    { "beziercurve", ECommandKind::Entity }, { "torusknot", ECommandKind::Entity },
-    { "torus", ECommandKind::Entity },       { "bspline", ECommandKind::Entity },
-    { "instance", ECommandKind::Instance },  { "surface", ECommandKind::Entity },
-    { "background", ECommandKind::Dummy },   { "foreground", ECommandKind::Dummy },
-    { "insidefaces", ECommandKind::Dummy },  { "outsidefaces", ECommandKind::Dummy },
-    { "offsetfaces", ECommandKind::Dummy },  { "frontfaces", ECommandKind::Dummy },
-    { "backfaces", ECommandKind::Dummy },    { "rimfaces", ECommandKind::Dummy },
-    { "bank", ECommandKind::BankSet },       { "set", ECommandKind::BankSet },
-    { "delete", ECommandKind::Instance },    { "subdivision", ECommandKind::Dummy },
-    { "offset", ECommandKind::Dummy },       {"mobiusstrip", ECommandKind::Entity }
+    { "cylinder", ECommandKind::Entity },    { "funnel", ECommandKind::Entity },
+    { "hyperboloid", ECommandKind::Entity }, {"dupin", ECommandKind::Entity },
+    { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
+    { "torusknot", ECommandKind::Entity },   { "torus", ECommandKind::Entity },
+    { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
+    { "surface", ECommandKind::Entity },     { "background", ECommandKind::Dummy },
+    { "foreground", ECommandKind::Dummy },   { "insidefaces", ECommandKind::Dummy },
+    { "outsidefaces", ECommandKind::Dummy }, { "offsetfaces", ECommandKind::Dummy },
+    { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
+    { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
+    { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
+    { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy },
+    { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -65,6 +71,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CBSpline(name);
     else if (cmd == "circle")
         return new CCircle(name);
+    else if (cmd == "cylinder")
+        return new CCylinder(name);
     else if (cmd == "face")
         return new CFace(name);
     else if (cmd == "funnel")
@@ -75,6 +83,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CPoint(name);
     else if (cmd == "polyline")
         return new CPolyline(name);
+    else if (cmd == "helix")
+        return new CHelix(name);
     else if (cmd == "sphere")
         return new CSphere(name);
     else if (cmd == "sweep")
@@ -91,7 +101,10 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CTorus(name);
     else if (cmd == "mobiusstrip")
         return new CMobiusStrip(name);
-
+    else if (cmd == "hyperboloid")
+        return new CHyperboloid(name);
+    else if (cmd == "dupin")
+        return new CDupin(name);
     return nullptr;
 }
 
@@ -121,17 +134,10 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
             auto result = expr->Accept(&eval);
             return std::any_cast<float>(result);
         };
-
         auto name = bank + "." + cmd->GetName();
-        auto anim = cmd->GetNamedArgument("time");
-        if (anim) {
-            std::string animtype = static_cast<AST::AIdent*>(&anim->GetArgument(0)[0])->ToString();
-            scene.GetBankAndSet().AddSlider(name, cmd, evalArg(1), evalArg(2), evalArg(3), evalArg(4), animtype);
-        } else {
-            scene.GetBankAndSet().AddSlider(name, cmd, evalArg(1), evalArg(2), evalArg(3), evalArg(4), "");
-        }
-
+        scene.GetBankAndSet().AddSlider(name, cmd, evalArg(1), evalArg(2), evalArg(3), evalArg(4));
     }
+    
     for (auto* sub : cmd->GetSubCommands())
         VisitCommandBankSet(sub, scene);
     CmdTraverseStack.pop_back();

@@ -30,6 +30,7 @@ public:
     void PostSceneUpdate();
     void PickVertexWorldRay(tc::Ray& ray);
     void PickFaceWorldRay(tc::Ray& ray); // Randy added on 10/10
+    void FreeVertexSelection();
 
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
@@ -41,6 +42,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent* e) override;
     void wheelEvent(QWheelEvent *ev) override;
     void keyPressEvent(QKeyEvent *ev) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     QVector2D GetProjectionPoint(QVector2D originalPosition);
@@ -53,7 +55,7 @@ private:
     std::unordered_set<CInteractiveMesh*> InteractiveMeshes;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> EntityDrawData;
     std::vector<std::string> SelectedVertices;
-    // bool vertexSelectionEnabled;
+    bool vertexSelectionEnabled;
 
     // Xinyu added on Oct 8 for rotation
     QMatrix4x4 projection;
@@ -77,10 +79,19 @@ private:
 
     // For the animation
     Qt3DCore::QTransform *sphereTransform;
+    Qt3DCore::QTransform *torusTransformX;
+    Qt3DCore::QTransform *torusTransformY;
+    Qt3DCore::QTransform *torusTransformZ;
+    QQuaternion quaternionX;
+    QQuaternion quaternionY;
     OrbitTransformController *controller;
     QPropertyAnimation *sphereRotateTransformAnimation;
-    Qt3DCore::QEntity *crystalBall;
-    Qt3DExtras::QPhongAlphaMaterial *material;
+    Qt3DCore::QEntity *torusX;
+    Qt3DCore::QEntity *torusY;
+    Qt3DCore::QEntity *torusZ;
+    Qt3DExtras::QPhongAlphaMaterial *materialX;
+    Qt3DExtras::QPhongAlphaMaterial *materialY;
+    Qt3DExtras::QPhongAlphaMaterial *materialZ;
 
 };
 

@@ -18,23 +18,58 @@ CNome3DView::CNome3DView()
     : mousePressEnabled(false)
     , animationEnabled(false)
     , rotationEnabled(true)
-//  , vertexSelectionEnabled(true)
+    , vertexSelectionEnabled(false)
 
 {
     // Create a Base entity to host all entities
     Base = new Qt3DCore::QEntity;
-    crystalBall = new Qt3DCore::QEntity(Base);
+    torusX = new Qt3DCore::QEntity(Base);
+    torusY = new Qt3DCore::QEntity(Base);
+    torusZ = new Qt3DCore::QEntity(Base);
     Root = new Qt3DCore::QEntity(Base);
     this->setRootEntity(Base);
 
     // Initialize the crystal ball
-    auto *sphereMesh = new Qt3DExtras::QSphereMesh;
-    material = new Qt3DExtras::QPhongAlphaMaterial(Root);
-    material->setAlpha(0.1);
-    material->setShininess(1);
-    sphereMesh->setRadius(1);
-    crystalBall->addComponent(sphereMesh);
-    crystalBall->addComponent(material);
+    auto *torusMesh = new Qt3DExtras::QTorusMesh;
+    torusMesh->setRadius(1.0f);
+    torusMesh->setMinorRadius(0.001f);
+    torusMesh->setRings(100);
+    torusMesh->setSlices(100);
+
+    materialX = new Qt3DExtras::QPhongAlphaMaterial(Root);
+    materialX->setAlpha(0.2f);
+    materialX->setDiffuse(QColor(0, 255, 0));
+    materialX->setAmbient(QColor(0, 255, 0));
+    materialX->setShininess(5);
+    materialY = new Qt3DExtras::QPhongAlphaMaterial(materialX);
+    materialY->setAlpha(0.2f);
+    materialY->setDiffuse(QColor(255, 0, 0));
+    materialY->setAmbient(QColor(255, 0, 0));
+    materialY->setShininess(5);
+    materialZ = new Qt3DExtras::QPhongAlphaMaterial(materialX);
+    materialZ->setAlpha(0.2f);
+    materialZ->setDiffuse(QColor(0, 0, 255));
+    materialZ->setAmbient(QColor(0, 0, 255));
+    materialZ->setShininess(5);
+
+    torusX->addComponent(torusMesh);
+    torusY->addComponent(torusMesh);
+    torusZ->addComponent(torusMesh);
+    torusX->addComponent(materialX);
+    torusY->addComponent(materialY);
+    torusZ->addComponent(materialZ);
+
+    torusTransformX = new Qt3DCore::QTransform();
+    quaternionX =  QQuaternion::fromAxisAndAngle(QVector3D(0.0f, 1.0f, 0.0f), 90.0f);
+    torusTransformX->setRotation(quaternionX);
+    torusTransformY = new Qt3DCore::QTransform();
+    quaternionY = QQuaternion::fromAxisAndAngle(QVector3D(1.0f, 0.0f, 0.0f), 90.0f);
+    torusTransformY->setRotation(quaternionY);
+    torusTransformZ = new Qt3DCore::QTransform();
+    torusX->addComponent(torusTransformX);
+    torusY->addComponent(torusTransformY);
+    torusZ->addComponent(torusTransformZ);
+
 
 
     // MakeGridEntity(Root); Removing grid entity per Professor Sequin's request
@@ -76,6 +111,7 @@ CNome3DView::CNome3DView()
     sphereRotateTransformAnimation->setLoopCount(-1);
 
     Root->addComponent(sphereTransform);
+
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -208,231 +244,237 @@ void CNome3DView::PostSceneUpdate()
 // Randy added 9/27
 void CNome3DView::ClearSelectedVertices()
 {
-    SelectedVertices.clear();
-    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        // Obtain either an instance entity or a shared entity from the scene node
-        auto* entity = node->GetInstanceEntity();
-        if (!entity)
-            entity = node->GetOwner()->GetEntity();
-        if (entity)
-        {
-            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-            meshInst->DeselectAll();
-        }
-    });
+    if (vertexSelectionEnabled)
+    {
+        SelectedVertices.clear();
+        Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+            // Obtain either an instance entity or a shared entity from the scene node
+            auto* entity = node->GetInstanceEntity();
+            if (!entity)
+                entity = node->GetOwner()->GetEntity();
+            if (entity)
+            {
+                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+                meshInst->DeselectAll();
+            }
+        });
+    }
 }
 
 
 void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
 {
-
-    // copied from old version of PickVertexWorldRay
-    rotateRay(ray);
-
-    std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
-    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        // Obtain either an instance entity or a shared entity from the scene node
-        auto* entity = node->GetInstanceEntity();
-        if (!entity)
-            entity = node->GetOwner()->GetEntity();
-        if (entity)
-        {
-            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-            auto localRay = ray.Transformed(l2w.Inverse());
-
-            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-            auto pickResults = meshInst->PickFaces(localRay);
-            for (const auto& [dist, name] : pickResults)
-                hits.emplace_back(dist, meshInst, name);
-        }
-    });
-
-    std::sort(hits.begin(), hits.end());
-    if (hits.size() == 1)
+    if (vertexSelectionEnabled)
     {
-        const auto& [dist, meshInst, vertName] = hits[0];
-        SelectedVertices.push_back(vertName);
-        GFrtCtx->MainWindow->statusBar()->showMessage(
-            QString::fromStdString("Selected " + vertName));
-        meshInst->MarkAsSelected({ vertName }, true);
-    }
-    else if (!hits.empty())
-    {
-        // Show a dialog for the user to choose one vertex
-        auto* dialog = new QDialog(GFrtCtx->MainWindow);
-        dialog->setModal(true);
-        auto* layout1 = new QHBoxLayout(dialog);
-        auto* table = new QTableWidget();
-        table->setRowCount(hits.size());
-        table->setColumnCount(2);
-        for (size_t i = 0; i < hits.size(); i++)
-        {
-            const auto& [dist, meshInst, vertName] = hits[i];
-            auto* distWidget = new QTableWidgetItem(QString::number(dist));
-            auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
-            table->setItem(i, 0, distWidget);
-            table->setItem(i, 1, item);
-        }
-        layout1->addWidget(table);
-        auto* layout2 = new QVBoxLayout();
-        auto* btnOk = new QPushButton();
-        btnOk->setText("OK");
-        connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
-            auto sel = table->selectedItems();
-            if (!sel.empty())
+
+        // copied from old version of PickVertexWorldRay
+        rotateRay(ray);
+
+        std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
+        Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+            // Obtain either an instance entity or a shared entity from the scene node
+            auto* entity = node->GetInstanceEntity();
+            if (!entity)
+                entity = node->GetOwner()->GetEntity();
+            if (entity)
             {
-                int row = sel[0]->row();
-                const auto& [dist, meshInst, vertName] = hits[row];
-                SelectedVertices.push_back(vertName);
-                GFrtCtx->MainWindow->statusBar()->showMessage(
-                    QString::fromStdString("Selected " + vertName));
-                meshInst->MarkAsSelected({ vertName }, true);
+                const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+                auto localRay = ray.Transformed(l2w.Inverse());
+
+                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+                auto pickResults = meshInst->PickFaces(localRay);
+                for (const auto& [dist, name] : pickResults)
+                    hits.emplace_back(dist, meshInst, name);
             }
-            dialog->close();
         });
-        auto* btnCancel = new QPushButton();
-        btnCancel->setText("Cancel");
-        connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
-        layout2->addWidget(btnOk);
-        layout2->addWidget(btnCancel);
-        layout1->addLayout(layout2);
-        dialog->show();
-    }
-    else
-    {
-        GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
+
+        std::sort(hits.begin(), hits.end());
+        if (hits.size() == 1)
+        {
+            const auto& [dist, meshInst, vertName] = hits[0];
+            SelectedVertices.push_back(vertName);
+            GFrtCtx->MainWindow->statusBar()->showMessage(
+                QString::fromStdString("Selected " + vertName));
+            meshInst->MarkAsSelected({ vertName }, true);
+        }
+        else if (!hits.empty())
+        {
+            // Show a dialog for the user to choose one vertex
+            auto* dialog = new QDialog(GFrtCtx->MainWindow);
+            dialog->setModal(true);
+            auto* layout1 = new QHBoxLayout(dialog);
+            auto* table = new QTableWidget();
+            table->setRowCount(hits.size());
+            table->setColumnCount(2);
+            for (size_t i = 0; i < hits.size(); i++)
+            {
+                const auto& [dist, meshInst, vertName] = hits[i];
+                auto* distWidget = new QTableWidgetItem(QString::number(dist));
+                auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
+                table->setItem(i, 0, distWidget);
+                table->setItem(i, 1, item);
+            }
+            layout1->addWidget(table);
+            auto* layout2 = new QVBoxLayout();
+            auto* btnOk = new QPushButton();
+            btnOk->setText("OK");
+            connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
+                auto sel = table->selectedItems();
+                if (!sel.empty())
+                {
+                    int row = sel[0]->row();
+                    const auto& [dist, meshInst, vertName] = hits[row];
+                    SelectedVertices.push_back(vertName);
+                    GFrtCtx->MainWindow->statusBar()->showMessage(
+                        QString::fromStdString("Selected " + vertName));
+                    meshInst->MarkAsSelected({ vertName }, true);
+                }
+                dialog->close();
+            });
+            auto* btnCancel = new QPushButton();
+            btnCancel->setText("Cancel");
+            connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
+            layout2->addWidget(btnOk);
+            layout2->addWidget(btnCancel);
+            layout1->addLayout(layout2);
+            dialog->show();
+        }
+        else
+        {
+            GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
+        }
     }
 }
 void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
 {
-    rotateRay(ray);
-    std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
-    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        // Obtain either an instance entity or a shared entity from the scene node
-        auto* entity = node->GetInstanceEntity();
-        if (!entity)
-            entity = node->GetOwner()->GetEntity();
-        if (entity)
-        {
-            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-            auto localRay = ray.Transformed(l2w.Inverse());
-            localRay.Direction =
-                localRay.Direction
-                    .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
-            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-            auto pickResults = meshInst->PickVertices(localRay);
-            for (const auto& [dist, name] : pickResults)
-                hits.emplace_back(dist, meshInst, name);
-        }
-    });
-
-    std::sort(hits.begin(), hits.end());
-
-    if (hits.size() == 1) // RANDY BUG IS HERE, I ONLY IMPLEMENTED S LOGIC
+    if (vertexSelectionEnabled)
     {
-        const auto& [dist, meshInst, vertName] = hits[0];
-
-        auto position =
-            std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
-        if (position == SelectedVertices.end())
-        { // if this vertex has not been selected before
-            SelectedVertices.push_back(vertName); // add vertex to selected vertices
-            GFrtCtx->MainWindow->statusBar()->showMessage(
-                QString::fromStdString("Selected " + vertName));
-        }
-        else // else, this vertex has been selected previously
-        {
-            SelectedVertices.erase(position);
-            GFrtCtx->MainWindow->statusBar()->showMessage(
-                QString::fromStdString("De-selected " + vertName));
-        }
-        meshInst->MarkAsSelected({ vertName }, true);
-    }
-    else if (!hits.empty())
-    {
-        // Show a dialog for the user to choose one vertex
-        auto* dialog = new QDialog(GFrtCtx->MainWindow);
-        dialog->setModal(true);
-        auto* layout1 = new QHBoxLayout(dialog);
-        auto* table = new QTableWidget();
-        table->setRowCount(hits.size());
-        table->setColumnCount(2);
-        QStringList titles;
-        titles.append(QString::fromStdString("Closeness Rank"));
-        titles.append(QString::fromStdString("Vertex Name"));
-        table->setHorizontalHeaderLabels(titles);
-        int closenessRank = 1;
-        for (size_t i = 0; i < hits.size(); i++)
-        {
-            const auto& [dist, meshInst, vertName] = hits[i];
-            if (i != 0)
+        rotateRay(ray);
+        std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
+        Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+            // Obtain either an instance entity or a shared entity from the scene node
+            auto* entity = node->GetInstanceEntity();
+            if (!entity)
+                entity = node->GetOwner()->GetEntity();
+            if (entity)
             {
-                const auto& [prevDist, prevMeshInst, prevVertName] = hits[i - 1];
-                if (round(dist * 100) != round(prevDist * 100))
-                {
-                    closenessRank += 1;
-                }
-                // else, closenessRank stay the same as prev as the distance is the same (vertices
-                // in same location)
+                const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+                auto localRay = ray.Transformed(l2w.Inverse());
+                localRay.Direction =
+                    localRay.Direction
+                        .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+                auto pickResults = meshInst->PickVertices(localRay);
+                for (const auto& [dist, name] : pickResults)
+                    hits.emplace_back(dist, meshInst, name);
             }
+        });
 
-            auto* distWidget = new QTableWidgetItem(QString::number(closenessRank));
-            auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
-            table->setItem(i, 0, distWidget); // i is row num, and 0 is col num
-            table->setItem(i, 1, item);
-        }
-        layout1->addWidget(table);
-        auto* layout2 = new QVBoxLayout();
-        auto* btnOk = new QPushButton();
-        btnOk->setText("OK");
-        connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
-            auto sel = table->selectedItems();
-            if (!sel.empty())
+        std::sort(hits.begin(), hits.end());
+
+        if (hits.size() == 1) // RANDY BUG IS HERE, I ONLY IMPLEMENTED S LOGIC
+        {
+            const auto& [dist, meshInst, vertName] = hits[0];
+
+            auto position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
+            if (position == SelectedVertices.end())
+            { // if this vertex has not been selected before
+                SelectedVertices.push_back(vertName); // add vertex to selected vertices
+                GFrtCtx->MainWindow->statusBar()->showMessage(
+                    QString::fromStdString("Selected " + vertName));
+            }
+            else // else, this vertex has been selected previously
             {
-                int row = sel[0]->row();
-                const auto& [dist, meshInst, vertName] = hits[row];
-                auto position =
-                    std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
-                if (position == SelectedVertices.end())
-                { // if this vertex has not been selected before
-
-                    SelectedVertices.push_back(vertName); // add vertex to selected vertices
-                    GFrtCtx->MainWindow->statusBar()->showMessage(
-                        QString::fromStdString("Selected " + vertName));
-                }
-                else // else, this vertex has been selected previously
+                SelectedVertices.erase(position);
+                GFrtCtx->MainWindow->statusBar()->showMessage(
+                    QString::fromStdString("De-selected " + vertName));
+            }
+            meshInst->MarkAsSelected({ vertName }, true);
+        }
+        else if (!hits.empty())
+        {
+            // Show a dialog for the user to choose one vertex
+            auto* dialog = new QDialog(GFrtCtx->MainWindow);
+            dialog->setModal(true);
+            auto* layout1 = new QHBoxLayout(dialog);
+            auto* table = new QTableWidget();
+            table->setRowCount(hits.size());
+            table->setColumnCount(2);
+            QStringList titles;
+            titles.append(QString::fromStdString("Closeness Rank"));
+            titles.append(QString::fromStdString("Vertex Name"));
+            table->setHorizontalHeaderLabels(titles);
+            int closenessRank = 1;
+            for (size_t i = 0; i < hits.size(); i++)
+            {
+                const auto& [dist, meshInst, vertName] = hits[i];
+                if (i != 0)
                 {
-                    SelectedVertices.erase(position);
-                    GFrtCtx->MainWindow->statusBar()->showMessage(
-                        QString::fromStdString("De-selected " + vertName));
-                }
-
-                float selected_dist = round(dist * 100);
-
-
-                // mark all those that share the same location
-                for (const auto& [dist, meshInst, overlapvertName] : hits)
-                {
-                    if (round(dist * 100) == selected_dist)
+                    const auto& [prevDist, prevMeshInst, prevVertName] = hits[i - 1];
+                    if (round(dist * 100) != round(prevDist * 100))
                     {
-                        meshInst->MarkAsSelected({ overlapvertName }, true);
+                        closenessRank += 1;
+                    }
+                    // else, closenessRank stay the same as prev as the distance is the same (vertices in same location)
+                }
+
+                auto* distWidget = new QTableWidgetItem(QString::number(closenessRank));
+                auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
+                table->setItem(i, 0, distWidget); // i is row num, and 0 is col num
+                table->setItem(i, 1, item);
+            }
+            layout1->addWidget(table);
+            auto* layout2 = new QVBoxLayout();
+            auto* btnOk = new QPushButton();
+            btnOk->setText("OK");
+            connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
+                auto sel = table->selectedItems();
+                if (!sel.empty())
+                {
+                    int row = sel[0]->row();
+                    const auto& [dist, meshInst, vertName] = hits[row];
+                    auto position =
+                        std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
+                    if (position == SelectedVertices.end())
+                    { // if this vertex has not been selected before
+
+                        SelectedVertices.push_back(vertName); // add vertex to selected vertices
+                        GFrtCtx->MainWindow->statusBar()->showMessage(
+                            QString::fromStdString("Selected " + vertName));
+                    }
+                    else // else, this vertex has been selected previously
+                    {
+                        SelectedVertices.erase(position);
+                        GFrtCtx->MainWindow->statusBar()->showMessage(
+                            QString::fromStdString("De-selected " + vertName));
+                    }
+
+                    float selected_dist = round(dist * 100);
+
+                    // mark all those that share the same location
+                    for (const auto& [dist, meshInst, overlapvertName] : hits)
+                    {
+                        if (round(dist * 100) == selected_dist)
+                        {
+                            meshInst->MarkAsSelected({ overlapvertName }, true);
+                        }
                     }
                 }
-            }
-            dialog->close();
-        });
-        auto* btnCancel = new QPushButton();
-        btnCancel->setText("Cancel");
-        connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
-        layout2->addWidget(btnOk);
-        layout2->addWidget(btnCancel);
-        layout1->addLayout(layout2);
-        dialog->show();
-    }
-    else
-    {
+                dialog->close();
+            });
+            auto* btnCancel = new QPushButton();
+            btnCancel->setText("Cancel");
+            connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
+            layout2->addWidget(btnOk);
+            layout2->addWidget(btnCancel);
+            layout1->addLayout(layout2);
+            dialog->show();
+        }
+        else
+        {
 
-        GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
+            GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
+        }
     }
 }
 
@@ -499,11 +541,17 @@ Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
 // Xinyu add on Oct 8 for rotation
 void CNome3DView::mousePressEvent(QMouseEvent* e)
 {
-    rotationEnabled = e->button() == Qt::RightButton ? false : true;
-    zPos = cameraset->position().z();
-    // Save mouse press position
-    firstPosition = QVector2D(e->localPos());
-    mousePressEnabled = true;
+    if (!vertexSelectionEnabled)
+    {
+        materialX->setAlpha(0.7f);
+        materialY->setAlpha(0.7f);
+        materialZ->setAlpha(0.7f);
+        rotationEnabled = e->button() == Qt::RightButton ? false : true;
+        zPos = cameraset->position().z();
+        // Save mouse press position
+        firstPosition = QVector2D(e->localPos());
+        mousePressEnabled = true;
+    }
 }
 
 
@@ -545,12 +593,18 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
             }
         }
         sphereTransform->setRotation(rotation);
+        torusTransformX->setRotation(rotation * quaternionX);
+        torusTransformY->setRotation(rotation * quaternionY);
+        torusTransformZ->setRotation(rotation);
         firstPosition = secondPosition;
     }
 }
 
 void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
 {
+    materialX->setAlpha(0.2f);
+    materialY->setAlpha(0.2f);
+    materialZ->setAlpha(0.2f);
     mousePressEnabled = false;
 }
 
@@ -584,11 +638,11 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
     switch (ev->key())
     {
     case Qt::Key_Tab:
-        material->setAlpha(rotationEnabled * 0.1);
+        materialX->setAlpha(rotationEnabled * 0.1);
 
         break;
     case Qt::Key_Shift:
-        // vertexSelectionEnabled = !vertexSelectionEnabled;
+        vertexSelectionEnabled = true;
         break;
     case Qt::Key_Space:
         if (animationEnabled) {
@@ -599,6 +653,20 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
         animationEnabled = !animationEnabled;
         break;
     }
+}
+
+
+bool CNome3DView::eventFilter(QObject* obj, QEvent* event)
+{
+    if (event->type() == QEvent::KeyRelease) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() == Qt::Key_Shift) {
+            return true;
+        }
+        else
+            return false;
+    }
+    return false;
 }
 
 QVector2D CNome3DView::GetProjectionPoint(QVector2D originalPosition) {
@@ -628,10 +696,15 @@ QVector3D CNome3DView::GetCrystalPoint(QVector2D originalPoint) {
 }
 
 void CNome3DView::rotateRay(tc::Ray& ray) {
-    QVector3D origin = rotation.inverted().rotatedVector(QVector3D(ray.Origin.x, ray.Origin.y, ray.Origin.z));
+    QVector3D origin = QVector3D(ray.Origin.x, ray.Origin.y, ray.Origin.z) - QVector3D(objectX, objectY, objectZ);;
+    origin = rotation.inverted().rotatedVector(origin);
     QVector3D direction = rotation.inverted().rotatedVector(QVector3D(ray.Direction.x, ray.Direction.y, ray.Direction.z));
+
     ray.Direction = tc::Vector3(direction.x(), direction.y(), direction.z());
     ray.Origin = tc::Vector3(origin.x(), origin.y(), origin.z());
+}
+void CNome3DView::FreeVertexSelection() {
+    vertexSelectionEnabled = false;
 }
 
 }

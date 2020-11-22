@@ -5,7 +5,6 @@ namespace Nome::Scene {
 DEFINE_META_OBJECT(CBSpline)
 {
     BindPositionalArgument(&CBSpline::ControlPoints, 1);
-    BindNamedArgument(&CBSpline::bClosed, "closed", 0);
     BindNamedArgument(&CBSpline::Segments, "slices", 0);
     BindNamedArgument(&CBSpline::Order, "order", 0);
 }

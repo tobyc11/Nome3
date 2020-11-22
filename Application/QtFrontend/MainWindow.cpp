@@ -35,6 +35,7 @@ CMainWindow::CMainWindow(QWidget* parent, bool bDetached3d)
     ui->setupUi(this);
     SetupUI();
     LoadEmptyNomeFile();
+    this->installEventFilter(Nome3DView.get());
 }
 
 CMainWindow::CMainWindow(const QString& fileToOpen, QWidget* parent, bool bDetached3d)
@@ -53,7 +54,6 @@ CMainWindow::~CMainWindow()
     GFrtCtx->MainWindow = nullptr;
     UnloadNomeFile();
     delete ui;
-    timer = nullptr;
 }
 
 void CMainWindow::closeEvent(QCloseEvent* event)
@@ -288,8 +288,6 @@ void CMainWindow::SetupUI()
         viewContainer->setMaximumSize(screenSize);
         viewContainer->setFocusPolicy(Qt::TabFocus);
         layout->addWidget(viewContainer);
-        timer = new QTimer(this);
-        timer->setInterval(TimeSpeed);
 //        QPushButton* start = new QPushButton("Toggle", this);
 //        start->setText("Start/Stop");
 //        layout->addWidget(start);
@@ -377,12 +375,18 @@ void CMainWindow::PostloadSetup()
     Scene->GetBankAndSet().AddObserver(this);
     Nome3DView->TakeScene(Scene);
 
+    elapsedRender = new QElapsedTimer();
     SceneUpdateClock = new QTimer(this);
     SceneUpdateClock->setInterval(50);
     SceneUpdateClock->setSingleShot(false);
+    elapsedRender->start();
     connect(SceneUpdateClock, &QTimer::timeout, [this]() {
         Scene->Update();
         Nome3DView->PostSceneUpdate();
+        Scene->SetTime((float) elapsedRender->elapsed() / 1000);
+        Scene->SetFrame(1);
+        std::cout << "time" << Scene->GetTime()->GetNumber() << std::endl;
+        std::cout << "frame" << Scene->GetFrame()->GetNumber() << std::endl;
     });
     SceneUpdateClock->start();
 
@@ -394,6 +398,8 @@ void CMainWindow::UnloadNomeFile()
     TemporaryMeshManager.reset(nullptr);
     SceneUpdateClock->stop();
     delete SceneUpdateClock;
+    elapsedRender->invalidate();
+    delete elapsedRender;
     Nome3DView->UnloadScene();
     assert(Scene->GetRefCount() == 1);
     Scene = nullptr;
@@ -450,40 +456,6 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
     sliderLayout->setStretchFactor(sliderDisplay, 1);
     std::string sliderID = slider.GetASTNode()->GetPositionalIdentAsString(0);
 
-    if (slider.GetAnimFunc() == "speed") {
-        connect(sliderBar, &QAbstractSlider::valueChanged, [&, sliderDisplay](int value) {
-            float fval = (float)value * slider.GetStep() + slider.GetMin();
-            auto valueStr = tc::StringPrintf("%.2f", fval);
-            sliderDisplay->setText(QString::fromStdString(valueStr));
-            slider.SetValue(fval);
-            TimeSpeed = 1000.0 / fval;
-            timer->setInterval(TimeSpeed);
-            timer->start();
-            std::cout << "val" << fval << "interval" << TimeSpeed << std::endl;
-        });
-    } else if (slider.GetAnimFunc() == "linear") {
-        slider.SetAnimMax(slider.GetMax());
-        slider.SetAnimMin(slider.GetMin());
-        connect(timer, &QTimer::timeout, this, [this, &slider, sliderDisplay]() {
-            float val = slider.GetValue() + slider.GetStep();
-            if (val <= slider.GetAnimMax()) {
-                slider.SetValue(val);
-            } else {
-                if (slider.GetAnimMax() - slider.GetStep() >= slider.GetAnimMin()) {
-                    slider.SetAnimMax(slider.GetValue() - slider.GetStep());
-                    val = slider.GetValue() - slider.GetStep();
-                    slider.SetValue(val);
-                } else {
-                    slider.SetAnimMax(slider.GetMax());
-                }
-
-            }
-
-
-            sliderDisplay->setText(QString::fromStdString(tc::StringPrintf("%.2f", val)));
-        });
-
-    }
     connect(sliderBar, &QAbstractSlider::valueChanged, [&, sliderDisplay](int value) {
         // Every "1" in value represents a step, since the slider only allows integers
         float fval = (float)value * slider.GetStep() + slider.GetMin();
@@ -506,6 +478,21 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
     SliderNameToWidget.emplace(name, sliderLayout);
 }
 
+bool CMainWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    if (event->type() == QEvent::KeyRelease) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+
+        if (keyEvent->key() == Qt::Key_Shift) {
+            Nome3DView->FreeVertexSelection();
+            return true;
+        }
+        else
+            return false;
+    }
+    return false;
+}
+
 void CMainWindow::OnSliderRemoving(Scene::CSlider& slider, const std::string& name)
 {
     auto iter = SliderNameToWidget.find(name);
@@ -516,5 +503,6 @@ void CMainWindow::OnSliderRemoving(Scene::CSlider& slider, const std::string& na
     SliderNameToWidget.erase(iter);
     SliderLayout->removeRow(widget);
 }
+
 
 }

@@ -41,7 +41,9 @@ int main(int argc, char** argv)
 
     if (!mainWindow)
         mainWindow = new Nome::CMainWindow(nullptr, detach3DView);
+
     mainWindow->show();
+    application.installEventFilter(mainWindow);
 
     return application.exec();
 }

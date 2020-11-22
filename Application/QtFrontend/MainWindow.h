@@ -7,6 +7,7 @@
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QTimer>
+#include <QElapsedTimer>
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -36,6 +37,7 @@ public:
 
 protected:
     void closeEvent(QCloseEvent* event) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private slots:
     void on_actionNew_triggered();
@@ -98,9 +100,8 @@ private:
     // Nome Context
     tc::TAutoPtr<Scene::CScene> Scene;
     QTimer* SceneUpdateClock = nullptr;
-    QTimer* timer;
+    QElapsedTimer* elapsedRender;
 
-    float TimeSpeed = 50.0;
     std::unique_ptr<QWidget> SliderWidget;
     QFormLayout* SliderLayout = nullptr;
     std::unordered_map<std::string, QLayout*> SliderNameToWidget;

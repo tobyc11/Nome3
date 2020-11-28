@@ -79,6 +79,16 @@ TAutoPtr<CSceneNode> CScene::CreateGroup(const std::string& name)
     return node;
 }
 
+TAutoPtr<CSceneNode> CScene::CreateMerge(const std::string& name)
+{
+    if (Merges.find(name) != Merges.end())
+        return {};
+
+    auto* node = new CSceneNode(this, name, false, true);
+    Merges[name] = node;
+    return node;
+}
+
 TAutoPtr<CSceneNode> CScene::FindGroup(const std::string& name) const
 {
     auto iter = Groups.find(name);

@@ -4,21 +4,28 @@
 
 namespace Nome::Scene
 {
+/**
+DEFINE_META_OBJECT(CMeshMerger)
+{
+    BindPositionalArgument(&CMeshMerger::Level, 0);
+}
+ */
 
 inline static const float Epsilon = 0.01f;
 
 void CMeshMerger::UpdateEntity()
 {
+    CMesh::UpdateEntity();
     if (!IsDirty())
         return;
-
+    //SubLevel = Level.GetValue(3.0);
     // Update is manual, so this entity has a dummy update method
+    //SubLevel = Level.GetValue(3);
 
-    CEntity::UpdateEntity();
     SetValid(true);
 }
 
-void CMeshMerger::Catmull(const CMeshInstance& meshInstance)
+void CMeshMerger::Catmull(const CMeshInstance& meshInstance, int level)
 {
 
     //OpenMesh::Subdivider::Uniform::CatmullClarkT<CMeshImpl> catmull; // https://www.graphics.rwth-aachen.de/media/openmesh_static/Documentations/OpenMesh-4.0-Documentation/a00020.html
@@ -26,7 +33,7 @@ void CMeshMerger::Catmull(const CMeshInstance& meshInstance)
     CMeshImpl otherMesh = meshInstance.GetMeshImpl();
     //catmull.attach(otherMesh);
     prepare(otherMesh);
-    subdivide(otherMesh, 3, true);
+    subdivide(otherMesh, level, true);
     std::cout << "Apply catmullclark subdivision, may take a few minutes or so" << std::endl;
     //catmull(4);
     cleanup(otherMesh);
@@ -432,11 +439,9 @@ bool CMeshMerger::cleanup( CMeshImpl& _m  )
   _m.remove_property( creaseWeights_ );
   return true;
 }
-
-
-
-
-
+void CMeshMerger::MarkDirty() {
+    Super::MarkDirty();
+}
 
 }
 

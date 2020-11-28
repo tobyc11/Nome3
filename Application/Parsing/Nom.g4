@@ -13,6 +13,10 @@ expression
    |  atom # AtomExpr
    ;
 
+u_integer
+   :  UNSIGNED_INTEGER
+   ;
+
 atom
    : scientific
    | ident
@@ -73,7 +77,7 @@ command
    | open='rimfaces' argSurface end='endrimfaces' # CmdArgSurface
    | open='bank' name=ident set* end='endbank' # CmdBank
    | open='delete' deleteFace* end='enddelete' # CmdDelete
-   | open='subdivision' name=ident k1='type' v1=ident k2='subdivisions' v2=expression end='endsubdivision' # CmdSubdivision
+   | open='subdivision' name=ident level=expression command* end='endsubdivision' # CmdSubdivision
    | open='offset' name=ident k1='type' v1=ident k2='min' v2=expression k3='max' v3=expression k4='step' v4=expression end='endoffset' # CmdOffset
    ;
 
@@ -89,9 +93,10 @@ fragment VALID_ID_CHAR : VALID_ID_START | ('0' .. '9') ;
 //The NUMBER part gets its potential sign from "(PLUS | MINUS)* atom" in the expression rule
 SCIENTIFIC_NUMBER : NUMBER (E SIGN? UNSIGNED_INTEGER)? ;
 fragment NUMBER : ('0' .. '9') + ('.' ('0' .. '9') +)? ;
-fragment UNSIGNED_INTEGER : ('0' .. '9')+ ;
 fragment E : 'E' | 'e' ;
 fragment SIGN : ('+' | '-') ;
+
+UNSIGNED_INTEGER : ('0' .. '9')+ ;
 
 LPAREN : '(' ;
 RPAREN : ')' ;

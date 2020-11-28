@@ -165,6 +165,7 @@ void CMainWindow::on_actionMerge_triggered()
         if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))  //set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
             merger->MergeIn(*mesh);
     });
+
     // TODO: Next 3 lines are super buggy, but needed to perform Catmull w/ replacement. Often crashes when used on larger scenes.
     //Scene = new Scene::CScene();
     //Scene::GEnv.Scene = Scene.Get();
@@ -192,7 +193,7 @@ void CMainWindow::on_actionSubdivide_triggered()
                 entity = node->GetOwner()->GetEntity();
             if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
             {
-                merger->Catmull(*mesh);
+                merger->Catmull(*mesh, 3);
             }
         }
         

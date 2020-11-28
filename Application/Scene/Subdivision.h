@@ -4,31 +4,25 @@
 namespace Nome::Scene
 {
 
-class CMeshMerger : public CMesh
+class CSubdivision : public CMesh
 {
-    //DEFINE_INPUT(float, Level) { MarkDirty(); }
-
-    //DEFINE_OUTPUT_WITH_UPDATE(CVertexInfo*, Point) { UpdateEntity(); }
-    void MarkDirty() override;
-    void UpdateEntity() override;
-
-
 public:
-    // DECLARE_META_CLASS(CMeshMerger, CEntity);
     using Super = CMesh;
-    CMeshMerger() = default;
-    CMeshMerger(const std::string& name)
-        : CMesh(std::move(name))
+    CSubdivision() = default;
+    CSubdivision(const std::string& name, const int& level)
+        : CMesh(std::move(name)), Level(level)
     {
     }
+
+    void UpdateEntity() override;
 
     // No update yet, please just use one time
     void MergeIn(const CMeshInstance& meshInstance);
 
     // Buggy, preset to 3 subdivision steps
-    void Catmull(const CMeshInstance& meshInstance, int i);
+    void Catmull(const CMeshInstance& meshInstance);
 
-    bool subdivide(CMeshImpl& _m, int n, const bool _update_points); 
+    bool subdivide(CMeshImpl& _m, int n, const bool _update_points);
 
     void split_face(CMeshImpl& _m, const CMeshImpl::FaceHandle& _fh);
 
@@ -46,10 +40,9 @@ public:
 private:
     std::pair<CMeshImpl::VertexHandle, float> FindClosestVertex(const tc::Vector3& pos);
 
+    unsigned int Level;
     unsigned int VertCount = 0;
     unsigned int FaceCount = 0;
-
-    unsigned int SubLevel = 3;
 
     OpenMesh::VPropHandleT< CMeshImpl::Point > vp_pos_; // next vertex pos
     OpenMesh::EPropHandleT< CMeshImpl::Point > ep_pos_; // new edge pts

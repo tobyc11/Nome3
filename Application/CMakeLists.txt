@@ -44,16 +44,21 @@ macro(config_playground2 target)
     target_link_libraries(${target} PRIVATE pugixml)
 
     target_link_libraries(${target} PRIVATE NomParsing)
+
+    find_package(OpenSubdiv REQUIRED)
+    target_include_directories(${target} PRIVATE ${OPENSUBDIV_INCLUDE_DIR})
+    target_link_libraries(${target} PRIVATE ${OPENSUBDIV_LIBRARIES})
 endmacro()
 
 add_executable(Nome3 ${PG2_SOURCES})
 # Xinyu add on Oct 8 for mac users
+
 if (APPLE)
     set_target_properties(Nome3
             PROPERTIES
             MACOSX_BUNDLE TRUE
             # if you want to use with a high resolution but no vertex selection setting
-            # MACOSX_BUNDLE_INFO_PLIST "${PROJECT_SOURCE_DIR}/CMake/MacOS_Config/Info.plist"
+            MACOSX_BUNDLE_INFO_PLIST "${PROJECT_SOURCE_DIR}/CMake/MacOS_Config/Info.plist"
             )
 endif ()
 

@@ -2,20 +2,22 @@
 #include "BSpline.h"
 #include "BezierSpline.h"
 #include "Circle.h"
-#include "Sphere.h"
 #include "Cylinder.h"
-#include "MobiusStrip.h"
 #include "Environment.h"
 #include "Face.h"
 #include "Funnel.h"
 #include "Helix.h"
+#include "MeshMerger.h"
+#include "MobiusStrip.h"
 #include "Point.h"
 #include "Polyline.h"
+#include "Sphere.h"
+#include "Subdivision.h"
 #include "Surface.h"
 #include "Sweep.h"
-#include "TorusKnot.h"
-#include "Torus.h"
 #include "SweepControlPoint.h"
+#include "Torus.h"
+#include "TorusKnot.h"
 #include "Tunnel.h"
 #include <StringPrintf.h>
 #include <unordered_map>
@@ -51,7 +53,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
     { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
     { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
-    { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy },
+    { "subdivision", ECommandKind::Instance },  { "offset", ECommandKind::Dummy },
     { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity }
 };
 
@@ -177,6 +179,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     {
         // Instance transformations/surfaces are not handled in here,
         auto* sceneNode = InstanciateUnder->CreateChildNode(cmd->GetName());
+        // To perform rotation
         sceneNode->SyncFromAST(cmd, scene);
         // TODO: move the following logic into SyncFromAST
 
@@ -212,6 +215,61 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         for (auto* sub : cmd->GetSubCommands())
             VisitCommandSyncScene(sub, scene, false);
         InstanciateUnder = GEnv.Scene->GetRootNode();
+    }
+    else if (cmd->GetCommand() == "subdivision") {
+        // TODO:1.read all instances to a merged mesh
+        InstanciateUnder = GEnv.Scene->CreateMerge(cmd->GetName());
+        InstanciateUnder->SyncFromAST(cmd, scene);
+        cmd->GetLevel();
+
+        for (auto* sub : cmd->GetSubCommands())
+            VisitCommandSyncScene(sub, scene, false);
+        auto node = InstanciateUnder;
+        InstanciateUnder->AddParent(GEnv.Scene->GetRootNode());
+        InstanciateUnder = GEnv.Scene->GetRootNode();
+        // 2. merge all instances
+        scene.Update();
+        tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger(cmd->GetName());
+        node->ForEachTreeNode([&](Scene::CSceneTreeNode* node) {
+            auto* entity = node->GetInstanceEntity(); // Else, get the instance
+            if (!entity) // Check to see if the an entity is instantiable (e.g., polyline, funnel, mesh, etc.), and not just an instance identifier.
+                entity = node->GetOwner()->GetEntity(); // If it's not instantiable, get entity instead of instance entity
+
+            if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))  //set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
+                merger->MergeIn(*mesh);
+        });
+        scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
+        auto* sn = scene.GetRootNode()->FindOrCreateChildNode(cmd->GetName()); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices.
+        sn->SetEntity(merger.Get()); // Set sn, which is the scene node, to point to entity merger
+
+        scene.Update();
+        tc::TAutoPtr<Scene::CMeshMerger> subdivision = new Scene::CMeshMerger(cmd->GetName()); //CmeshMerger is basically a CMesh, but with a MergeIn method. Merger will contain ALL the merged vertices (from various meshes)
+
+        node->ForEachTreeNode([&](Scene::CSceneTreeNode* node) {
+            if (node->GetOwner()->GetName() == cmd->GetName())
+            {
+                auto* entity = node->GetInstanceEntity(); // this is non-null if the entity is
+                // instantiable like a torus knot or polyline
+                if (!entity) // if it's not instantiable, like a face, then get the entity associated
+                    // with it
+                    entity = node->GetOwner()->GetEntity();
+                if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+                {
+                    subdivision->Catmull(*mesh, cmd->GetLevel());
+                }
+            }
+        });
+
+        scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
+        sn = scene.GetRootNode()->FindOrCreateChildNode(cmd->GetName()); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices.
+        sn->SetEntity(subdivision.Get());
+
+
+        // TODO:Instantiate the subdivision node
+        //auto subdivision = new Scene::CSubdivision(cmd->GetCommand(), cmd->GetLevel());
+        //treeNode->InstanceEntity = Entity->Instantiate(treeNode);
+
+
     }
     CmdTraverseStack.pop_back();
 }

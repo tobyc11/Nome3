@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <queue>
 
 namespace Nome::Scene
 {
@@ -83,6 +84,24 @@ public:
     CSceneNode* CreateChildNode(const std::string& name);
     CSceneNode* FindChildNode(const std::string& name);
     CSceneNode* FindOrCreateChildNode(const std::string& name);
+    // For subdivision merge
+    template <typename TFunc>
+    void ForEachTreeNode(const TFunc& func) const
+    {
+        for (auto treeNode : TreeNodes)
+        {
+            std::queue<CSceneTreeNode*> q;
+            q.push(treeNode);
+            while (!q.empty())
+            {
+                func(q.front());
+                const auto& childNodes = q.front()->GetChildren();
+                for (CSceneTreeNode* child : childNodes)
+                    q.push(child);
+                q.pop();
+            }
+        }
+    }
 
     // Returns the number of associated tree nodes, i.e. the number of ways from the root to this
     // graph node

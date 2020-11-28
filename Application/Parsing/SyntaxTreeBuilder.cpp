@@ -5,6 +5,7 @@ namespace Nome
 
 antlrcpp::Any CFileBuilder::visitFile(NomParser::FileContext* context)
 {
+    // TODO: add the warning signal instead of shutting down the window
     AST::AFile* file = new AST::AFile();
     for (auto* command : context->command())
         file->AddChild(this->visit(command).as<AST::ACommand*>());
@@ -16,6 +17,8 @@ antlrcpp::Any CFileBuilder::visitArgClosed(NomParser::ArgClosedContext* context)
     AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
     return arg;
 }
+
+
 
 antlrcpp::Any CFileBuilder::visitArgHidden(NomParser::ArgHiddenContext* context)
 {
@@ -183,14 +186,11 @@ antlrcpp::Any CFileBuilder::visitCmdSubdivision(NomParser::CmdSubdivisionContext
 {
     auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
     cmd->PushPositionalArgument(visit(context->name));
-    auto* namedArg = new AST::ANamedArgument(ConvertToken(context->k1));
-    namedArg->AddChild(visit(context->v1).as<AST::AExpr*>());
-    cmd->AddNamedArgument(namedArg);
-
-    namedArg = new AST::ANamedArgument(ConvertToken(context->k2));
-    namedArg->AddChild(visit(context->v2).as<AST::AExpr*>());
-    cmd->AddNamedArgument(namedArg);
+    cmd->PushPositionalArgument(visit(context->level));
+    for (auto* subCmd : context->command())
+        cmd->AddSubCommand(visit(subCmd));
     return cmd;
+
 }
 
 antlrcpp::Any CFileBuilder::visitCmdOffset(NomParser::CmdOffsetContext* context)
@@ -298,5 +298,6 @@ AST::CToken* CFileBuilder::ConvertToken(antlr4::tree::TerminalNode* token)
     auto len = token->getSymbol()->getStopIndex() - start + 1;
     return new AST::CToken(token->getText(), 0, start);
 }
+
 
 }

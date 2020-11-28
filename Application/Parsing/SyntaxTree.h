@@ -353,7 +353,9 @@ public:
 
     std::string GetCommand() const { return Token->ToString(); }
     std::string GetName() const { return GetPositionalIdentAsString(0); }
+    int GetLevel() const { return GetPositionalNumber(1); }
     std::string GetPositionalIdentAsString(size_t index) const;
+    int GetPositionalNumber(size_t index) const;
     AExpr* GetPositionalArgument(size_t index) const;
     ANamedArgument* GetNamedArgument(const std::string& name) const;
     const std::vector<ANamedArgument*>& GetTransforms() const { return Transforms; }

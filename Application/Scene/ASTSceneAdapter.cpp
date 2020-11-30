@@ -227,11 +227,10 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         auto node = InstanciateUnder;
         InstanciateUnder->AddParent(GEnv.Scene->GetRootNode());
         InstanciateUnder = GEnv.Scene->GetRootNode();
+        GEnv.Scene->Update();
         // 2. merge all instances
-
         tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger(cmd->GetName());
         merger->GetMetaObject().DeserializeFromAST(*cmd, *merger);
-
 
         node->ForEachTreeNode([&](Scene::CSceneTreeNode* node) {
             auto* entity = node->GetInstanceEntity(); // Else, get the instance

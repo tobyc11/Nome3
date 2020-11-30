@@ -1,34 +1,40 @@
 #pragma once
 #include "Mesh.h"
 #include <LangUtils.h>
+#include <opensubdiv/far/topologyRefinerFactory.h>
+#include <opensubdiv/far/primvarRefiner.h>
+
+#include <cstdio>
+
 namespace Nome::Scene
 {
 
 class CMeshMerger : public CMesh
 {
-    //DEFINE_INPUT(float, Level) { MarkDirty(); }
+    DEFINE_INPUT(float, Level) { MarkDirty(); }
 
-    //DEFINE_OUTPUT_WITH_UPDATE(CVertexInfo*, Point) { UpdateEntity(); }
-    void MarkDirty() override;
     void UpdateEntity() override;
-
+    //void MarkDirty() override;
 
 public:
-    // DECLARE_META_CLASS(CMeshMerger, CEntity);
-    using Super = CMesh;
+    DECLARE_META_CLASS(CMeshMerger, CEntity);
+
     CMeshMerger() = default;
     CMeshMerger(const std::string& name)
         : CMesh(std::move(name))
     {
     }
 
+
     // No update yet, please just use one time
-    void MergeIn(const CMeshInstance& meshInstance);
+    void MergeIn(CMeshInstance& meshInstance);
+
+    void MergeClear();
 
     // Buggy, preset to 3 subdivision steps
-    void Catmull(const CMeshInstance& meshInstance, int i);
+    void Catmull(unsigned int level);
 
-    bool subdivide(CMeshImpl& _m, int n, const bool _update_points); 
+    bool subdivide(CMeshImpl& _m, int n, const bool _update_points);
 
     void split_face(CMeshImpl& _m, const CMeshImpl::FaceHandle& _fh);
 
@@ -49,12 +55,14 @@ private:
     unsigned int VertCount = 0;
     unsigned int FaceCount = 0;
 
-    unsigned int SubLevel = 3;
-
     OpenMesh::VPropHandleT< CMeshImpl::Point > vp_pos_; // next vertex pos
     OpenMesh::EPropHandleT< CMeshImpl::Point > ep_pos_; // new edge pts
     OpenMesh::FPropHandleT< CMeshImpl::Point > fp_pos_; // new face pts
     OpenMesh::EPropHandleT<double> creaseWeights_; // crease weights
+
+    CMeshImpl MergedMesh;
+
+
 };
 
 }

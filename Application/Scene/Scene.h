@@ -7,6 +7,7 @@
 #include <queue>
 #include <utility>
 
+
 namespace Nome
 {
 class CPickingManager;
@@ -17,6 +18,7 @@ namespace Nome::Scene
 
 class CScene : public tc::FRefCounted
 {
+
 public:
     CScene();
 
@@ -79,6 +81,10 @@ public:
 
 
 private:
+    void DFSTreeNodeUpdate(CSceneTreeNode* treeNode);
+
+private:
+    bool markedDirty = false;
     CBankAndSet BankAndSet;
 
     // This is the root node of the scene tree
@@ -93,6 +99,8 @@ private:
     std::map<std::string, TAutoPtr<CEntity>> EntityLibrary;
     std::map<std::string, TAutoPtr<CSceneNode>> Groups;
     std::map<std::string, TAutoPtr<CSceneNode>> Merges;
+
+
 };
 
 }

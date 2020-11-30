@@ -6,13 +6,12 @@
 
 namespace Nome::Scene
 {
-/**
+
 DEFINE_META_OBJECT(CMesh)
 {
     // `mesh` command has no properties
     // `object` is currently unhandled
 }
- */
 
 #define VERT_COLOR 255, 255, 255
 #define VERT_SEL_COLOR 0, 255, 0

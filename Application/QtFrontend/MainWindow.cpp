@@ -5,7 +5,7 @@
 #include "ui_MainWindow.h"
 #include <Scene/ASTSceneAdapter.h>
 #include <Scene/Environment.h>
-#include <Scene/MeshMerger.h>
+
 
 #include <QDockWidget>
 #include <QScrollArea> // Randy added
@@ -154,7 +154,7 @@ void CMainWindow::on_actionMerge_triggered()
 {
     // One shot merging, and add a new entity and its corresponding node
     Scene->Update();
-    tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge"); //CmeshMerger is basically a CMesh, but with a MergeIn method. Merger will contain ALL the merged vertices (from various meshes)
+    merger = new Scene::CMeshMerger("globalMerge"); //CmeshMerger is basically a CMesh, but with a MergeIn method. Merger will contain ALL the merged vertices (from various meshes)
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         if (node->GetOwner()->GetName() == "globalMergeNode") // If the node owner is a globalMergeNode, skip as that was a previously merger mesh (from a previous Merge process). We only want to merge vertices from our actual (non-merged) meshes.
             return;
@@ -171,9 +171,9 @@ void CMainWindow::on_actionMerge_triggered()
     //Scene::GEnv.Scene = Scene.Get();
     //PostloadSetup();
 
-    Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
-    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices. 
-    sn->SetEntity(merger.Get()); // Set sn, which is the scene node, to point to entity merger 
+    //Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
+    //auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices.
+    //sn->SetEntity(merger.Get()); // Set sn, which is the scene node, to point to entity merger
 
 }
 
@@ -182,26 +182,12 @@ void CMainWindow::on_actionSubdivide_triggered()
 {
     // One shot merging, and add a new entity and its corresponding node
     Scene->Update();
-    tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge"); 
-    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        if (node->GetOwner()->GetName() == "globalMergeNode")
-        {
-            auto* entity = node->GetInstanceEntity(); // this is non-null if the entity is
-                                                      // instantiable like a torus knot or polyline
-            if (!entity) // if it's not instantiable, like a face, then get the entity associated
-                         // with it
-                entity = node->GetOwner()->GetEntity();
-            if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
-            {
-                merger->Catmull(*mesh, 3);
-            }
-        }
-        
-    });
+    //tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge");
+    merger->Catmull(3);
     Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(
-        merger)); 
+        merger));
     auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); 
-    sn->SetEntity(merger.Get());  
+    sn->SetEntity(merger.Get());
     
 }
 /* Randy temporarily commenting out. Point and Instance don't work.

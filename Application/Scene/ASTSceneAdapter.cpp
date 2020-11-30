@@ -217,10 +217,10 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         InstanciateUnder = GEnv.Scene->GetRootNode();
     }
     else if (cmd->GetCommand() == "subdivision") {
-        // TODO:1.read all instances to a merged mesh
+        // 1.read all instances to a merged mesh
         InstanciateUnder = GEnv.Scene->CreateMerge(cmd->GetName());
         InstanciateUnder->SyncFromAST(cmd, scene);
-        cmd->GetLevel();
+        //cmd->GetLevel();
 
         for (auto* sub : cmd->GetSubCommands())
             VisitCommandSyncScene(sub, scene, false);
@@ -228,8 +228,11 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         InstanciateUnder->AddParent(GEnv.Scene->GetRootNode());
         InstanciateUnder = GEnv.Scene->GetRootNode();
         // 2. merge all instances
-        scene.Update();
+
         tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger(cmd->GetName());
+        merger->GetMetaObject().DeserializeFromAST(*cmd, *merger);
+
+
         node->ForEachTreeNode([&](Scene::CSceneTreeNode* node) {
             auto* entity = node->GetInstanceEntity(); // Else, get the instance
             if (!entity) // Check to see if the an entity is instantiable (e.g., polyline, funnel, mesh, etc.), and not just an instance identifier.
@@ -238,13 +241,18 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
             if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))  //set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
                 merger->MergeIn(*mesh);
         });
+
+
         scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
         auto* sn = scene.GetRootNode()->FindOrCreateChildNode(cmd->GetName()); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices.
         sn->SetEntity(merger.Get()); // Set sn, which is the scene node, to point to entity merger
 
-        scene.Update();
-        tc::TAutoPtr<Scene::CMeshMerger> subdivision = new Scene::CMeshMerger(cmd->GetName()); //CmeshMerger is basically a CMesh, but with a MergeIn method. Merger will contain ALL the merged vertices (from various meshes)
 
+        //tc::TAutoPtr<Scene::CMeshMerger> subdivision = new Scene::CMeshMerger(cmd->GetName()); //CmeshMerger is basically a CMesh, but with a MergeIn method. Merger will contain ALL the merged vertices (from various meshes)
+
+
+        //scene.Update();
+        /*
         node->ForEachTreeNode([&](Scene::CSceneTreeNode* node) {
             if (node->GetOwner()->GetName() == cmd->GetName())
             {
@@ -255,20 +263,20 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                     entity = node->GetOwner()->GetEntity();
                 if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
                 {
-                    subdivision->Catmull(*mesh, cmd->GetLevel());
+                    subdivision->Catmull(*mesh);
                 }
             }
         });
 
-        scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
-        sn = scene.GetRootNode()->FindOrCreateChildNode(cmd->GetName()); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices.
-        sn->SetEntity(subdivision.Get());
+        scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(subdivision)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
+        //sn = scene.GetRootNode()->FindOrCreateChildNode(cmd->GetName()); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices.
+        //sn->SetEntity(subdivision.Get());
 
 
         // TODO:Instantiate the subdivision node
         //auto subdivision = new Scene::CSubdivision(cmd->GetCommand(), cmd->GetLevel());
         //treeNode->InstanceEntity = Entity->Instantiate(treeNode);
-
+        */
 
     }
     CmdTraverseStack.pop_back();

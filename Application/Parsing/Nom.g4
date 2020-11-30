@@ -77,7 +77,7 @@ command
    | open='rimfaces' argSurface end='endrimfaces' # CmdArgSurface
    | open='bank' name=ident set* end='endbank' # CmdBank
    | open='delete' deleteFace* end='enddelete' # CmdDelete
-   | open='subdivision' name=ident level=expression command* end='endsubdivision' # CmdSubdivision
+   | open='subdivision' name=ident expression command* end='endsubdivision' # CmdSubdivision
    | open='offset' name=ident k1='type' v1=ident k2='min' v2=expression k3='max' v3=expression k4='step' v4=expression end='endoffset' # CmdOffset
    ;
 

@@ -2,6 +2,7 @@
 #include <Parsing/SourceManager.h>
 #include <Scene/Scene.h>
 #include <Scene/TemporaryMeshManager.h>
+#include <Scene/MeshMerger.h>
 
 #include <QFormLayout>
 #include <QLineEdit>
@@ -107,6 +108,9 @@ private:
     std::unordered_map<std::string, QLayout*> SliderNameToWidget;
 
     std::unique_ptr<Scene::CTemporaryMeshManager> TemporaryMeshManager;
+
+    tc::TAutoPtr<Scene::CMeshMerger> merger;
+
 };
 
 }

@@ -71,12 +71,13 @@ class CSceneNode : public Flow::CFlowNode
 
 public:
     explicit CSceneNode(CScene* owningScene, std::string name, bool isRoot = false,
-                        bool isGroup = false);
+                        bool isGroup = false, bool isSubdivision = false);
     ~CSceneNode() override;
 
     const std::string& GetName() const { return Name; }
     bool SetName(std::string newName);
     bool IsGroup() const { return bIsGroup; }
+    bool IsSubdivision() const { return bIsSubdivision; }
 
     // Hierarchy management
     void AddParent(CSceneNode* newParent);
@@ -128,6 +129,7 @@ private:
     std::string Name;
     /// Denotes whether this node is a group. Group names can be skipped in a path
     bool bIsGroup = false;
+    bool bIsSubdivision = false;
     CScene* Scene;
 
     friend class CSceneTreeNode;

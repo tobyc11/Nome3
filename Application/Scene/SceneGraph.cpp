@@ -105,10 +105,11 @@ void CSceneNode::TransformMarkedDirty()
     }
 }
 
-CSceneNode::CSceneNode(CScene* owningScene, std::string name, bool isRoot, bool isGroup)
+CSceneNode::CSceneNode(CScene* owningScene, std::string name, bool isRoot, bool isGroup, bool isSubdivision)
     : Scene(owningScene)
     , Name(std::move(name))
     , bIsGroup(isGroup)
+    , bIsSubdivision(isSubdivision)
 {
     if (isRoot)
     {

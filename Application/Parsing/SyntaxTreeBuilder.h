@@ -33,7 +33,6 @@ public:
     antlrcpp::Any visitCmdArgSurface(NomParser::CmdArgSurfaceContext* context) override;
     antlrcpp::Any visitCmdBank(NomParser::CmdBankContext* context) override;
     antlrcpp::Any visitCmdDelete(NomParser::CmdDeleteContext* context) override;
-    antlrcpp::Any visitCmdSubdivision(NomParser::CmdSubdivisionContext* context) override;
     antlrcpp::Any visitCmdOffset(NomParser::CmdOffsetContext* context) override;
     antlrcpp::Any visitSet(NomParser::SetContext* context) override;
     antlrcpp::Any visitDeleteFace(NomParser::DeleteFaceContext* context) override;
@@ -57,6 +56,7 @@ private:
     AST::CToken* ConvertToken(antlr4::tree::TerminalNode* token);
 
     CStringBuffer& SrcStringBuffer;
+    antlrcpp::Any visitCmdSubdivision(NomParser::CmdSubdivisionContext* context);
 };
 
 }

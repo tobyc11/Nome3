@@ -77,6 +77,7 @@ private:
 
     CMeshImpl MergedMesh;
     unsigned int subdivisionLevel = 0;
+    friend struct Converter;
 
 
 };
@@ -84,157 +85,69 @@ private:
 }
 
 
+/*
+struct Converter {
 
-struct Vertex {
+public:
+    friend struct Converter;
 
-    // Minimal required interface ----------------------
-    Vertex() { }
-
-    Vertex(Vertex const & src) {
-        _position[0] = src._position[0];
-        _position[1] = src._position[1];
-        _position[2] = src._position[2];
+    Sdc::SchemeType GetType() const {
+        return Sdc::SCHEME_CATMARK;
     }
 
-    void Clear( void * =0 ) {
-        _position[0]=_position[1]=_position[2]=0.0f;
+    Sdc::Options GetOptions() const {
+        Sdc::Options options;
+        options.SetVtxBoundaryInterpolation(Sdc::Options::VTX_BOUNDARY_EDGE_ONLY);
+        return options;
     }
 
-    void AddWithWeight(Vertex const & src, float weight) {
-        _position[0]+=weight*src._position[0];
-        _position[1]+=weight*src._position[1];
-        _position[2]+=weight*src._position[2];
-    }
+    int GetNumFaces() const { return Merged; }
 
-    // Public interface ------------------------------------
-    void SetPosition(float x, float y, float z) {
-        _position[0]=x;
-        _position[1]=y;
-        _position[2]=z;
-    }
+    int GetNumEdges() const { return g_nedges; }
 
-    const float * GetPosition() const {
-        return _position;
-    }
+    int GetNumVertices() const { return g_nverts; }
+
+    //
+    // Face relationships
+    //
+    int GetNumFaceVerts(int face) const { return g_facenverts[face]; }
+
+    int const * GetFaceVerts(int face) const { return g_faceverts+getCompOffset(g_facenverts, face); }
+
+    int const * GetFaceEdges(int face) const { return g_faceedges+getCompOffset(g_facenverts, face); }
+
+
+    //
+    // Edge relationships
+    //
+    int const * GetEdgeVertices(int edge) const { return g_edgeverts+edge*2; }
+
+    int GetNumEdgeFaces(int edge) const { return g_edgenfaces[edge]; }
+
+    int const * GetEdgeFaces(int edge) const { return g_edgefaces+getCompOffset(g_edgenfaces, edge); }
+
+    //
+    // Vertex relationships
+    //
+    int GetNumVertexEdges(int vert) const { return g_vertexnedges[vert]; }
+
+    int const * GetVertexEdges(int vert) const { return g_vertexedges+getCompOffset(g_vertexnedges, vert); }
+
+    int GetNumVertexFaces(int vert) const { return g_vertexnfaces[vert]; }
+
+    int const * GetVertexFaces(int vert) const { return g_vertexfaces+getCompOffset(g_vertexnfaces, vert); }
 
 private:
-    float _position[3];
-};
 
-
-namespace OpenSubdiv {
-namespace OPENSUBDIV_VERSION {
-
-namespace Far {
-
-template <>
-bool
-TopologyRefinerFactory<CMeshImpl>::resizeComponentTopology(
-    TopologyRefiner & refiner, CMeshImpl const & conv) {
-
-    // Faces and face-verts
-    int nfaces = conv.n_faces();
-    setNumBaseFaces(refiner, nfaces);
-    for (int face=0; face<nfaces; ++face) {
-        setNumBaseFaceVertices(refiner, face, 4);
-    }
-
-    // Edges and edge-faces
-    int nedges = conv.n_edges();
-    setNumBaseEdges(refiner, nedges);
-
-
-    // Vertices and vert-faces and vert-edges
-
-    setNumBaseVertices(refiner, conv.n_vertices());
-    for (auto v_itr = conv.vertices_begin(); v_itr != conv.vertices_end() ; ++v_itr)
-    {
-        int i = 0;
-        for (auto edge : v_itr->edges())
-            i++;
-        setNumBaseVertexEdges(refiner, v_itr->idx(), i);
-        i = 0;
-        for (auto face : v_itr->faces())
-            i++;
-        setNumBaseVertexFaces(refiner, v_itr->idx(), i);
-    }
-    return true;
-}
-
-template <>
-bool
-TopologyRefinerFactory<CMeshImpl>::assignComponentTopology(
-    TopologyRefiner & refiner, CMeshImpl const & conv) {
-
-    typedef Far::IndexArray      IndexArray;
-
-    { // Face relations:
-        for (auto f_itr = conv.faces_begin(); f_itr != conv.faces_end() ; ++f_itr)
-        {
-            IndexArray dstFaceVerts = getBaseFaceVertices(refiner, f_itr->idx());
-            IndexArray dstFaceEdges = getBaseFaceEdges(refiner, f_itr->idx());
-            int i = 0;
-            for (auto vert : f_itr->vertices()) {
-                dstFaceVerts[i] = vert.idx();
-                i++;
-            }
-            i = 0;
-            for (auto edge : f_itr->edges())
-            {
-                dstFaceEdges[i] = edge.idx();
-                i++;
-            }
+    int getCompOffset(int const * comps, int comp) const {
+        int ofs=0;
+        for (int i=0; i<comp; ++i) {
+            ofs += comps[i];
         }
-
+        return ofs;
     }
 
-
-    { // Vertex relations
-
-        for (auto v_itr = conv.vertices_begin(); v_itr != conv.vertices_end() ; ++v_itr)
-        {
-            IndexArray vertFaces = getBaseVertexFaces(refiner, v_itr->idx());
-
-            int i = 0;
-            for (auto face : v_itr->faces()) {
-                vertFaces[i] = face.idx();
-                i++;
-            }
-            //  Vert-Edges:
-            IndexArray vertEdges = getBaseVertexEdges(refiner, v_itr->idx());
-            //LocalIndexArray vertInEdgeIndices = getBaseVertexEdgeLocalIndices(refiner, vert);
-            /*
-            for (int edge=0; edge<convGetNumVertexEdges(vert); ++edge) {
-                vertEdges[edge] = conv.GetVertexEdges(vert)[edge];
-            }
-             */
-            i = 0;
-            for (auto edge : v_itr->edges()) {
-                vertEdges[i] = edge.idx();
-            }
-        }
-
-    }
-
-    populateBaseLocalIndices(refiner);
-
-    return true;
 };
+ */
 
 
-template <>
-bool
-TopologyRefinerFactory<CMeshImpl>::assignComponentTags(
-    TopologyRefiner & refiner, CMeshImpl const & conv) {
-
-    // arbitrarily sharpen the 4 bottom edges of the pyramid to 2.5f
-    for (int vertex=0; vertex < conv.n_vertices(); ++vertex) {
-        setBaseVertexSharpness(refiner, vertex, conv.data(conv.vertex_handle(vertex)).sharpness()/*g_edgeCreases[edge]*/);
-
-    }
-    return true;
-}
-} // namespace Far
-
-} // namespace OPENSUBDIV_VERSION
-} // namespace OpenSubdiv

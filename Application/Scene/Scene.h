@@ -81,7 +81,7 @@ public:
 
 
 private:
-    void DFSTreeNodeUpdate(CSceneTreeNode* treeNode);
+    void DFSTreeNodeUpdate(CSceneTreeNode* treeNode, bool markDirty);
 
 private:
     bool markedDirty = true;

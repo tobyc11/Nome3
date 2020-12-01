@@ -18,6 +18,11 @@ antlrcpp::Any CFileBuilder::visitArgClosed(NomParser::ArgClosedContext* context)
     return arg;
 }
 
+antlrcpp::Any CFileBuilder::visitArgMarkingSharp(NomParser::ArgMarkingSharpContext* ctx)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
+    return arg;
+}
 
 
 antlrcpp::Any CFileBuilder::visitArgHidden(NomParser::ArgHiddenContext* context)
@@ -39,6 +44,13 @@ antlrcpp::Any CFileBuilder::visitArgSlices(NomParser::ArgSlicesContext* context)
 {
     auto* result = new AST::ANamedArgument(ConvertToken(context->getStart()));
     result->AddChild(visit(context->expression()).as<AST::AExpr*>());
+    return result;
+}
+
+antlrcpp::Any CFileBuilder::visitArgSharp(NomParser::ArgSharpContext* ctx)
+{
+    auto* result = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
+    result->AddChild(visit(ctx->expression()).as<AST::AExpr*>());
     return result;
 }
 

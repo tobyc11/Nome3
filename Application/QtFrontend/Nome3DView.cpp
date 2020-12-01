@@ -180,7 +180,7 @@ void CNome3DView::PostSceneUpdate()
                 mesh->UpdateTransform();
                 if (node->WasEntityUpdated())
                 {
-                    printf("Geom regen for %s\n", node->GetPath().c_str());
+                    printf("Geometry regenerated for %s\n", node->GetPath().c_str());
                     mesh->UpdateGeometry();
                     mesh->UpdateMaterial();
                     node->SetEntityUpdated(false);

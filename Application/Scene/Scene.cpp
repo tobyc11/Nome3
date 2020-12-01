@@ -181,14 +181,14 @@ std::pair<CSceneTreeNode*, std::string> CScene::WalkPath(const std::string& path
 }
 
 
-void CScene::DFSTreeNodeUpdate(CSceneTreeNode* treeNode)
+void CScene::DFSTreeNodeUpdate(CSceneTreeNode* treeNode, bool markDirty)
 {
 
     treeNode->L2WTransform.Update();
 
     const auto& childNodes = treeNode->GetChildren();
     for (CSceneTreeNode* child : childNodes)
-        DFSTreeNodeUpdate(child);
+        DFSTreeNodeUpdate(child, markDirty);
 
     if (auto* ent = treeNode->GetEntity())
     {
@@ -196,7 +196,7 @@ void CScene::DFSTreeNodeUpdate(CSceneTreeNode* treeNode)
         if (ent->IsDirty())
         {
             treeNode->SetEntityUpdated(true);
-            markedDirty = true;
+            markedDirty = markDirty;
         }
 
         ent->UpdateEntity();
@@ -206,7 +206,7 @@ void CScene::DFSTreeNodeUpdate(CSceneTreeNode* treeNode)
 void CScene::Update()
 {
     // Called every frame to make sure everything is up to date
-    DFSTreeNodeUpdate(GetRootTreeNode());
+    DFSTreeNodeUpdate(GetRootTreeNode(), true);
 
     if (markedDirty && !Merges.empty())
     {
@@ -227,16 +227,15 @@ void CScene::Update()
                                 entity = node->GetOwner()->GetEntity(); // If it's not instantiable, get entity instead of instance entity
 
                             if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity)) // set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
-                                ent->MergeIn(*mesh);
+                                ent->MergeIn(*mesh, node->GetOwner()->IfMarkedSharp());
                         });
                     }
                     ent->Catmull();
                 }
-                markedDirty = false;
             }
         }
 
-        DFSTreeNodeUpdate(GetRootTreeNode());
+        DFSTreeNodeUpdate(GetRootTreeNode(), false);
     }
 
 }

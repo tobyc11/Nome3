@@ -76,15 +76,16 @@ void CMesh::Draw(IDebugDraw* draw)
     }
 }
 
-CMeshImpl::VertexHandle CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
+CMeshImpl::VertexHandle CMesh::AddVertex(const std::string& name, tc::Vector3 pos, float sharpness)
 {
     // Silently fail if the name already exists
     auto iter = NameToVert.find(name);
     if (iter != NameToVert.end())
         return iter->second;
 
-    CMeshImpl::VertexHandle vertex;
-    vertex = Mesh.add_vertex(CMeshImpl::Point(pos.x, pos.y, pos.z));
+
+    auto vertex = Mesh.add_vertex(CMeshImpl::Point(pos.x, pos.y, pos.z));
+    Mesh.data(vertex).set_sharpness(sharpness);
     NameToVert.emplace(name, vertex);
     return vertex;
 }
@@ -167,6 +168,7 @@ AST::ACommand* CMesh::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
     }
     return node;
 }
+
 
 std::string CMeshInstancePoint::GetPointPath() const
 {

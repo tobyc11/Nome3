@@ -9,12 +9,27 @@
 #undef min
 #undef max
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+#include <OpenMesh/Core/Mesh/Traits.hh>
 
 #include <map>
 #include <set>
 #include <utility>
 
-typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
+struct CTraits : public OpenMesh::DefaultTraits
+{
+    // store barycenter of neighbors in this member
+    VertexTraits
+    {
+    private:
+        float  sharpness_;
+    public:
+        VertexT() : sharpness_( 0.0f ) { }
+        [[nodiscard]] const float& sharpness() const { return sharpness_; }
+        void set_sharpness(const float& _s) { sharpness_ = _s; }
+    };
+};
+
+typedef OpenMesh::PolyMesh_ArrayKernelT<CTraits> CMeshImpl;
 
 namespace Nome::Scene
 {
@@ -36,7 +51,7 @@ public:
     void UpdateEntity() override;
     void Draw(IDebugDraw* draw) override;
 
-    CMeshImpl::VertexHandle AddVertex(const std::string& name, Vector3 pos);
+    CMeshImpl::VertexHandle AddVertex(const std::string& name, Vector3 pos, float sharpness = 0.0f);
 
     bool HasVertex(const std::string& name) const
     {

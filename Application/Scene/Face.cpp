@@ -31,7 +31,7 @@ void CFace::UpdateEntity()
 
 size_t CFace::CountVertices() const { return Points.GetSize(); }
 
-void CFace::SetPointSourceNames(const TAutoPtr<CScene>& scene, std::vector<std::string> points)
+void CFace::SetPointSourceNames(const TAutoPtr<CScene>& scene, const std::vector<std::string>& points)
 {
     for (const auto& point : points)
     {
@@ -79,7 +79,7 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
                    point->Name.c_str(), newName.c_str());
         }
 
-        mesh->AddVertex(newName, point->Position);
+        mesh->AddVertex(newName, point->Position, point->sharpness);
         nameList.push_back(newName);
     }
     mesh->AddFace(GetName(), nameList);

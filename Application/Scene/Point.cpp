@@ -9,7 +9,7 @@ DEFINE_META_OBJECT(CPoint)
     BindPositionalArgument(&CPoint::Y, 1, 1);
     BindPositionalArgument(&CPoint::Z, 1, 2);
     BindPositionalArgument(&CPoint::ControlPoints, 2);
-    BindNamedArgument(&CPoint::sharpness, "sharp", 1);
+    BindNamedArgument(&CPoint::sharpness, "sharp", 0);
 
 }
 

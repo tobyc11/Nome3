@@ -27,7 +27,7 @@ public:
 
 
     // No update yet, please just use one time
-    void MergeIn(CMeshInstance& meshInstance);
+    void MergeIn(CMeshInstance& meshInstance, bool markedSharp = false);
 
     void MergeClear();
 

@@ -117,7 +117,7 @@ void CMeshMerger::MergeClear() {
     Mesh.clear();
 }
 
-void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
+void CMeshMerger::MergeIn(CMeshInstance& meshInstance, bool markedSharp)
 {
     auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
     const auto& otherMesh = meshInstance.GetMeshImpl(); // Getting OpeshMesh implementation of a mesh. This allows us to traverse the mesh's vertices/faces
@@ -126,6 +126,11 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
     std::unordered_map<CMeshImpl::VertexHandle, CMeshImpl::VertexHandle> vertMap;
     for (auto vi = otherMesh.vertices_begin(); vi != otherMesh.vertices_end(); ++vi) // Iterate through all the vertices in the mesh (the non-merger mesh, aka the one you're trying copy vertices from)
     {
+        /*
+        if (markedSharp) {
+            MergedMesh.;
+        }
+         */
         const auto& posArray = otherMesh.point(*vi);
         Vector3 localPos = Vector3(posArray[0], posArray[1], posArray[2]); // localPos is position before transformations (e.g. rotate, translate, etc.)
         Vector3 worldPos = tf * localPos; // worldPos is the actual position you see in the grid, after the transformation (e.g. rotate, translate, etc.)
@@ -134,6 +139,11 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
         if (distance < Epsilon)
         { // this is to check for cases where there is an overlap (two vertices lie in the exact same world space coordinate). We only want to create one merger vertex at this location!
             vertMap[*vi] = closestVert; //just set vi to the closestVert (which is a merger vertex in the same location added in a previous iteration)
+            if (markedSharp) {
+                MergedMesh.data(closestVert).set_sharpness(
+                    std::max(MergedMesh.data(closestVert).sharpness(),otherMesh.data(*vi).sharpness()));
+                printf("set sharpness: %f\n", MergedMesh.data(closestVert).sharpness());
+            }
         }
         else // Else, we haven't added a vertex at this location yet. So lets add_vertex to the merger mesh.
         {
@@ -142,6 +152,10 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
             std::string vName = "v" + std::to_string(VertCount); // we of course need a name for this new vertex handle
             NameToVert.insert({ vName, vnew }); // Add new merged vertex into NameToVert. This is if there wa sa floating point error above so we need to add an entirely new vertex + position ?
             ++VertCount; // VertCount is an attribute for this merger mesh. Starts at 0.
+            if (markedSharp) {
+                MergedMesh.data(vnew).set_sharpness(otherMesh.data(*vi).sharpness());
+                printf("set sharpness: %f\n", otherMesh.data(*vi).sharpness());
+            }
         }
     }
 

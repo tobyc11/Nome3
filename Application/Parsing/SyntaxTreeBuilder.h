@@ -50,13 +50,14 @@ public:
     antlrcpp::Any visitIdent(NomParser::IdentContext* context) override;
     antlrcpp::Any visitAtomExpr(NomParser::AtomExprContext* context) override;
     antlrcpp::Any visitIdList(NomParser::IdListContext *context) override;
+    antlrcpp::Any visitCmdSubdivision(NomParser::CmdSubdivisionContext* context) override;
+
 
 private:
     AST::CToken* ConvertToken(antlr4::Token* token);
     AST::CToken* ConvertToken(antlr4::tree::TerminalNode* token);
 
     CStringBuffer& SrcStringBuffer;
-    antlrcpp::Any visitCmdSubdivision(NomParser::CmdSubdivisionContext* context);
 };
 
 }

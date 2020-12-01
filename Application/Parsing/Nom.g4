@@ -31,7 +31,8 @@ ident
 idList : LPAREN (identList+=ident)* RPAREN ;
 
 argClosed : 'closed' ;
-argSharp : 'sharp' ;
+argSharp : 'sharp' expression;
+argMarkingSharp : 'marksharp';
 argHidden : 'hidden' ;
 argSurface : 'surface' ident ;
 argSlices : 'slices' expression ;
@@ -44,7 +45,7 @@ argTransform
 argColor : 'color' LPAREN expression expression expression RPAREN ;
 
 command
-   : open='point' name=ident LPAREN expression expression expression RPAREN idList* end='endpoint' # CmdExprListOne
+   : open='point' name=ident LPAREN expression expression expression RPAREN idList* argSharp* end='endpoint' # CmdExprListOne
    | open='polyline' name=ident idList argClosed* end='endpolyline' # CmdIdListOne
    | open='sweep' name=ident LPAREN expression expression expression expression RPAREN end='endsweep' # CmdExprListOne
    | open='sweepcontrol' name=ident LPAREN expression expression expression expression RPAREN end='endsweepcontrol' # CmdExprListOne
@@ -63,7 +64,7 @@ command
    | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
    | open='beziercurve' name=ident idList argSlices* end='endbeziercurve' # CmdIdListOne
    | open='bspline' name=ident argOrder* idList argSlices* end='endbspline' # CmdIdListOne
-   | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden | argSharp)* end='endinstance' # CmdInstance
+   | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden | argMarkingSharp)* end='endinstance' # CmdInstance
    | open='surface' name=ident argColor end='endsurface' # CmdSurface
    | open='background' argSurface end='endbackground' # CmdArgSurface
    | open='foreground' argSurface end='endforeground' # CmdArgSurface

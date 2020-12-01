@@ -11,6 +11,7 @@ struct CVertexInfo
     Vector3 Position;
     std::string Name;
     std::vector<CControlPointInfo*> ControlPoints;
+    float sharpness = 0;
 };
 
 class CPoint : public CEntity
@@ -18,6 +19,8 @@ class CPoint : public CEntity
     DEFINE_INPUT(float, X) { MarkDirty(); }
     DEFINE_INPUT(float, Y) { MarkDirty(); }
     DEFINE_INPUT(float, Z) { MarkDirty(); }
+    DEFINE_INPUT(float, sharpness) { MarkDirty(); }
+
     DEFINE_INPUT_ARRAY(CControlPointInfo*, ControlPoints) { MarkDirty(); }
 
     DEFINE_OUTPUT_WITH_UPDATE(CVertexInfo*, Point) { UpdateEntity(); }
@@ -37,6 +40,7 @@ public:
 
 private:
     CVertexInfo VI;
+
 };
 
 }

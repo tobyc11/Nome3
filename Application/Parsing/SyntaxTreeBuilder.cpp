@@ -107,6 +107,8 @@ antlrcpp::Any CFileBuilder::visitCmdExprListOne(NomParser::CmdExprListOneContext
     // Handle arguments other than name
     for (auto* arg : context->idList())
         cmd->PushPositionalArgument(visit(arg));
+    for (auto* arg : context->argSharp())
+        cmd->AddNamedArgument(visit(arg));
     return cmd;
 }
 
@@ -160,6 +162,9 @@ antlrcpp::Any CFileBuilder::visitCmdInstance(NomParser::CmdInstanceContext* cont
         cmd->AddNamedArgument(visit(arg));
     for (auto* arg : context->argTransform())
         cmd->AddTransform(visit(arg));
+    for (auto* arg : context->argMarkingSharp())
+        cmd->AddSharp(context->name->toString());
+
     return cmd;
 }
 

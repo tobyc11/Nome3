@@ -162,8 +162,8 @@ antlrcpp::Any CFileBuilder::visitCmdInstance(NomParser::CmdInstanceContext* cont
         cmd->AddNamedArgument(visit(arg));
     for (auto* arg : context->argTransform())
         cmd->AddTransform(visit(arg));
-    for (auto* arg : context->argMarkingSharp())
-        cmd->AddSharp(context->name->toString());
+    if (!context->argMarkingSharp().empty())
+        cmd->MarkSharp();
 
     return cmd;
 }

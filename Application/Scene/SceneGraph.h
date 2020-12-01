@@ -78,6 +78,7 @@ public:
     bool SetName(std::string newName);
     bool IsGroup() const { return bIsGroup; }
     bool IsSubdivision() const { return bIsSubdivision; }
+    bool IfMarkedSharp() {return bMarkedSharp;}
 
     // Hierarchy management
     void AddParent(CSceneNode* newParent);
@@ -132,6 +133,7 @@ private:
     /// Denotes whether this node is a group. Group names can be skipped in a path
     bool bIsGroup = false;
     bool bIsSubdivision = false;
+    bool bMarkedSharp = false;
     CScene* Scene;
 
     friend class CSceneTreeNode;

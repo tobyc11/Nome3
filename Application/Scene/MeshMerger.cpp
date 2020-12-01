@@ -192,8 +192,68 @@ std::pair<CMeshImpl::VertexHandle, float> CMeshMerger::FindClosestVertex(const t
     return { result, minDist };
 }
 
-bool CMeshMerger::subdivide(CMeshImpl& _m, int n, const bool _update_points=true)
+bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, const bool _update_points=true)
 {
+    Far::TopologyRefiner * refiner =
+        Far::TopologyRefinerFactory<CMeshImpl>::Create(_m,
+                                                       Far::TopologyRefinerFactory<CMeshImpl>::Options(subdivisionType(), subdivisionOptions()));
+
+    refiner->RefineUniform(Far::TopologyRefiner::UniformOptions(n));
+
+    std::vector<Vertex> vbuffer(refiner->GetNumVerticesTotal());
+    Vertex * verts = &vbuffer[0];
+
+    for (auto v_itr = _m.vertices_begin(); v_itr != _m.vertices_end(); ++v_itr) {
+        verts[v_itr->idx()].SetPosition(_m.point(*v_itr)[0], _m.point(*v_itr)[1], _m.point(*v_itr)[2]);
+    }
+
+
+    // Interpolate vertex primvar data
+    Far::PrimvarRefiner primvarRefiner(*refiner);
+
+    Vertex * src = verts;
+    for (int level = 1; level <= n; ++level) {
+        Vertex * dst = src + refiner->GetLevel(level-1).GetNumVertices();
+        primvarRefiner.Interpolate(level, src, dst);
+        src = dst;
+    }
+    _m.clear();
+    { // Output OBJ of the highest level refined -----------
+
+        Far::TopologyLevel const & refLastLevel = refiner->GetLevel(n);
+
+        int nverts = refLastLevel.GetNumVertices();
+        int nfaces = refLastLevel.GetNumFaces();
+
+        // Print vertex positions
+        int firstOfLastVerts = refiner->GetNumVerticesTotal() - nverts;
+
+        for (int vert = 0; vert < nverts; ++vert) {
+            float const * pos = verts[firstOfLastVerts + vert].GetPosition();
+            _m.add_vertex(CMeshImpl::Point(pos[0], pos[1], pos[2]));
+        }
+
+        // Print faces
+        for (int face = 0; face < nfaces; ++face) {
+
+            Far::ConstIndexArray fverts = refLastLevel.GetFaceVertices(face);
+
+            // all refined Catmark faces should be quads
+            assert(fverts.size()==4);
+
+
+            auto i = _m.vertex_handle(1);
+
+            for (int vert=0; vert<fverts.size(); ++vert) {
+
+                _m.add_face(_m.vertex_handle(fverts[vert]+1), _m.vertex_handle(fverts[vert]+2), _m.vertex_handle(fverts[vert]+3), _m.vertex_handle(fverts[vert]+4));
+
+            }
+
+        }
+    }
+
+    /*
     for (int i = 0; i < n; i++) {
         // Compute face centroid
         for ( auto fh : _m.faces())
@@ -235,6 +295,7 @@ bool CMeshMerger::subdivide(CMeshImpl& _m, int n, const bool _update_points=true
         assert( OpenMesh::Utils::MeshCheckerT<MeshType>(_m).check() );
 #endif
     }
+    */
 
     _m.update_normals();
 

@@ -15,7 +15,7 @@
 #include <set>
 #include <utility>
 
-struct CTraits : public OpenMesh::DefaultTraits
+struct CNomeTraits : public OpenMesh::DefaultTraits
 {
     // store barycenter of neighbors in this member
     VertexTraits
@@ -29,7 +29,7 @@ struct CTraits : public OpenMesh::DefaultTraits
     };
 };
 
-typedef OpenMesh::PolyMesh_ArrayKernelT<CTraits> CMeshImpl;
+typedef OpenMesh::PolyMesh_ArrayKernelT<CNomeTraits> CMeshImpl;
 
 namespace Nome::Scene
 {

@@ -13,9 +13,6 @@ expression
    |  atom # AtomExpr
    ;
 
-u_integer
-   :  UNSIGNED_INTEGER
-   ;
 
 atom
    : scientific
@@ -34,6 +31,7 @@ ident
 idList : LPAREN (identList+=ident)* RPAREN ;
 
 argClosed : 'closed' ;
+argSharp : 'sharp' ;
 argHidden : 'hidden' ;
 argSurface : 'surface' ident ;
 argSlices : 'slices' expression ;
@@ -65,7 +63,7 @@ command
    | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
    | open='beziercurve' name=ident idList argSlices* end='endbeziercurve' # CmdIdListOne
    | open='bspline' name=ident argOrder* idList argSlices* end='endbspline' # CmdIdListOne
-   | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
+   | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden | argSharp)* end='endinstance' # CmdInstance
    | open='surface' name=ident argColor end='endsurface' # CmdSurface
    | open='background' argSurface end='endbackground' # CmdArgSurface
    | open='foreground' argSurface end='endforeground' # CmdArgSurface

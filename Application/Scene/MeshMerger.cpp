@@ -18,19 +18,15 @@ void CMeshMerger::MarkDirty()
 }
  */
 
+
+
 void CMeshMerger::UpdateEntity()
 {
     if (!IsDirty())
         return;
-    unsigned int subdivisionLevel = Level.GetValue(0);
-    Mesh.clear();
-
-
-    Catmull(subdivisionLevel);
+    subdivisionLevel = Level.GetValue(0);
 
     Super::UpdateEntity();
-
-
 
     // Update is manual, so this entity has a dummy update method
 
@@ -38,9 +34,13 @@ void CMeshMerger::UpdateEntity()
     SetValid(true);
 }
 
-void CMeshMerger::Catmull(unsigned int level)
+void CMeshMerger::Catmull()
 {
-    if (level == 0) {
+    Mesh.clear();
+
+
+
+    if (subdivisionLevel == 0) {
         return;
     }
     //OpenMesh::Subdivider::Uniform::CatmullClarkT<CMeshImpl> catmull; // https://www.graphics.rwth-aachen.de/media/openmesh_static/Documentations/OpenMesh-4.0-Documentation/a00020.html
@@ -48,7 +48,7 @@ void CMeshMerger::Catmull(unsigned int level)
     CMeshImpl otherMesh = MergedMesh;
     //catmull.attach(otherMesh);
     prepare(otherMesh);
-    subdivide(otherMesh, level, true);
+    subdivide(otherMesh, subdivisionLevel, true);
     std::cout << "Apply catmullclark subdivision, may take a few minutes or so" << std::endl;
     //catmull(4);
     cleanup(otherMesh);
@@ -114,6 +114,7 @@ void CMeshMerger::Catmull(unsigned int level)
 
 void CMeshMerger::MergeClear() {
     MergedMesh.clear();
+    Mesh.clear();
 }
 
 void CMeshMerger::MergeIn(CMeshInstance& meshInstance)

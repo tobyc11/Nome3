@@ -32,7 +32,7 @@ public:
     void MergeClear();
 
     // Buggy, preset to 3 subdivision steps
-    void Catmull(unsigned int level);
+    void Catmull();
 
     bool subdivide(CMeshImpl& _m, int n, const bool _update_points);
 
@@ -48,6 +48,10 @@ public:
 
     bool cleanup(CMeshImpl& _m);
 
+    void setSubLevel(int level) {
+        subdivisionLevel = level;
+    }
+
 
 private:
     std::pair<CMeshImpl::VertexHandle, float> FindClosestVertex(const tc::Vector3& pos);
@@ -61,6 +65,7 @@ private:
     OpenMesh::EPropHandleT<double> creaseWeights_; // crease weights
 
     CMeshImpl MergedMesh;
+    unsigned int subdivisionLevel = 0;
 
 
 };

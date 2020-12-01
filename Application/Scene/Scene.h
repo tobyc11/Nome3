@@ -84,7 +84,7 @@ private:
     void DFSTreeNodeUpdate(CSceneTreeNode* treeNode);
 
 private:
-    bool markedDirty = false;
+    bool markedDirty = true;
     CBankAndSet BankAndSet;
 
     // This is the root node of the scene tree

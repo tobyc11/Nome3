@@ -183,7 +183,8 @@ void CMainWindow::on_actionSubdivide_triggered()
     // One shot merging, and add a new entity and its corresponding node
     Scene->Update();
     //tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge");
-    merger->Catmull(3);
+    merger->setSubLevel(3);
+    merger->Catmull();
     Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(
         merger));
     auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); 

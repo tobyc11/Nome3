@@ -125,6 +125,8 @@ public:
     AST::ACommand* BuildASTCommand(Nome::AST::CASTContext& ctx) const;
     void SyncToAST(AST::CASTContext& ctx);
 
+    const std::set<TAutoPtr<CSceneNode>>& GetSceneNodeChildren () {return Children;}
+
 private:
     std::string Name;
     /// Denotes whether this node is a group. Group names can be skipped in a path

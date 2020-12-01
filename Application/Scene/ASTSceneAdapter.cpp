@@ -12,7 +12,6 @@
 #include "Point.h"
 #include "Polyline.h"
 #include "Sphere.h"
-#include "Subdivision.h"
 #include "Surface.h"
 #include "Sweep.h"
 #include "SweepControlPoint.h"

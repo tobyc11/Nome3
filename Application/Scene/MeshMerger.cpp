@@ -196,6 +196,7 @@ std::pair<CMeshImpl::VertexHandle, float> CMeshMerger::FindClosestVertex(const t
 
 bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, const bool _update_points=true)
 {
+
     Far::TopologyRefiner * refiner =
         Far::TopologyRefinerFactory<CMeshImpl>::Create(_m,
                                                        Far::TopologyRefinerFactory<CMeshImpl>::Options(subdivisionType(), subdivisionOptions()));
@@ -245,12 +246,12 @@ bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, const bool _update_po
             // all refined Catmark faces should be quads
             assert(fverts.size()==4);
 
-            std::vector<OpenMesh::VertexHandle> orderVertices(4);
 
-            _m.add_face(_m.vertex_handle(fverts[0]+1), _m.vertex_handle(fverts[1]+1), _m.vertex_handle(fverts[2]+1), _m.vertex_handle(fverts[3]+1));
+            _m.add_face(_m.vertex_handle(fverts[0]), _m.vertex_handle(fverts[1]), _m.vertex_handle(fverts[2]), _m.vertex_handle(fverts[3]));
 
         }
     }
+
 
     /*
     for (int i = 0; i < n; i++) {

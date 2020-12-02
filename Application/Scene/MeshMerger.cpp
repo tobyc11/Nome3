@@ -37,22 +37,21 @@ void CMeshMerger::UpdateEntity()
 
 void CMeshMerger::Catmull()
 {
-    Mesh.clear();
 
-
-
-    if (subdivisionLevel == 0) {
+    if (subdivisionLevel == 0 || MergedMesh.vertices_empty()) {
         return;
     }
+    Mesh.clear();
     //OpenMesh::Subdivider::Uniform::CatmullClarkT<CMeshImpl> catmull; // https://www.graphics.rwth-aachen.de/media/openmesh_static/Documentations/OpenMesh-4.0-Documentation/a00020.html
     // Execute 2 subdivision steps
     CMeshImpl otherMesh = MergedMesh;
     //catmull.attach(otherMesh);
-    prepare(otherMesh);
+    //prepare(otherMesh);
+
     subdivide(otherMesh, subdivisionLevel, true);
     std::cout << "Apply catmullclark subdivision, may take a few minutes or so" << std::endl;
     //catmull(4);
-    cleanup(otherMesh);
+    //cleanup(otherMesh);
     //catmull.detach();
     //auto tf = dynamic_cast<Scene::CMeshInstance*>(this)->GetSceneTreeNode()->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
     auto tf = tc::Matrix3x4::IDENTITY;
@@ -196,9 +195,64 @@ std::pair<CMeshImpl::VertexHandle, float> CMeshMerger::FindClosestVertex(const t
 
 bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, const bool _update_points=true)
 {
+
+    /*
     Far::TopologyRefiner * refiner =
         Far::TopologyRefinerFactory<CMeshImpl>::Create(_m,
                                                        Far::TopologyRefinerFactory<CMeshImpl>::Options(subdivisionType(), subdivisionOptions()));
+
+     */
+    typedef Far::TopologyDescriptor Descriptor;
+
+    Sdc::SchemeType type = OpenSubdiv::Sdc::SCHEME_CATMARK;
+
+    Sdc::Options options;
+    options.SetVtxBoundaryInterpolation(Sdc::Options::VTX_BOUNDARY_NONE);
+    options.SetCreasingMethod(Sdc::Options::CREASE_CHAIKIN);
+    Descriptor desc;
+
+    int g_vertsperface[6] = { 4, 4, 4, 4, 4, 4 };
+
+
+    desc.numVertices  = _m.n_vertices();
+    desc.numFaces     = _m.n_faces();
+    desc.numVertsPerFace = g_vertsperface;
+
+    int i = 0;
+    int temp[(int)_m.n_faces() * 4];
+    for (auto face : _m.faces()) {
+        for (auto vertex : face.vertices())
+        {
+            temp[i] = vertex.idx();
+            i++;
+        }
+
+    }
+    i = 0;
+    float vertexsharp[_m.n_vertices()];
+    for (auto vertex : _m.vertices()) {
+
+        vertexsharp[i] = _m.data(vertex).sharpness();
+        i++;
+    }
+    int vertexi[_m.n_vertices()];
+    i = 0;
+    for (auto vertex : _m.vertices()) {
+        vertexi[i] = i;
+        i++;
+    }
+    desc.numCreases = _m.n_vertices();
+    desc.creaseVertexIndexPairs = vertexi;
+    desc.creaseWeights = vertexsharp;
+    desc.vertIndicesPerFace = temp;
+
+
+
+
+
+    // Instantiate a Far::TopologyRefiner from the descriptor
+    Far::TopologyRefiner * refiner = Far::TopologyRefinerFactory<Descriptor>::Create(desc,
+                                                                                     Far::TopologyRefinerFactory<Descriptor>::Options(type, options));
 
     refiner->RefineUniform(Far::TopologyRefiner::UniformOptions(n));
 
@@ -221,36 +275,48 @@ bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, const bool _update_po
     }
     _m.clear();
     { // Output OBJ of the highest level refined -----------
-
+        /// to debug
         Far::TopologyLevel const & refLastLevel = refiner->GetLevel(n);
+        for (int i = 0; i <= n; ++i)
+        {
+            printf("level:%d has %d vertices\n", i, refiner->GetLevel(i).GetNumVertices());
+        }
+        printf("total number of %d vertices\n", refiner->GetNumVerticesTotal());
 
         int nverts = refLastLevel.GetNumVertices();
         int nfaces = refLastLevel.GetNumFaces();
 
         // Print vertex positions
         int firstOfLastVerts = refiner->GetNumVerticesTotal() - nverts;
-        std::vector<OpenMesh::VertexHandle> addedVertices;
 
 
+        printf("============ output vertices======\n");
         for (int vert = 0; vert < nverts; ++vert) {
-            float const * pos = verts[firstOfLastVerts + vert].GetPosition();
-            addedVertices.emplace_back(_m.add_vertex(CMeshImpl::Point(pos[0], pos[1], pos[2])));
+            float const * pos = verts[vert + firstOfLastVerts].GetPosition();
+            _m.add_vertex(CMeshImpl::Point(pos[0], pos[1], pos[2]));
+            printf("v %f %f %f\n", pos[0], pos[1], pos[2]);
         }
 
         // Print faces
+        printf("============ output faces======\n");
         for (int face = 0; face < nfaces; ++face) {
-
             Far::ConstIndexArray fverts = refLastLevel.GetFaceVertices(face);
 
             // all refined Catmark faces should be quads
             assert(fverts.size()==4);
+            _m.add_face(_m.vertex_handle(fverts[0]), _m.vertex_handle(fverts[1]), _m.vertex_handle(fverts[2]), _m.vertex_handle(fverts[3]));
 
-            std::vector<OpenMesh::VertexHandle> orderVertices(4);
-
-            _m.add_face(_m.vertex_handle(fverts[0]+1), _m.vertex_handle(fverts[1]+1), _m.vertex_handle(fverts[2]+1), _m.vertex_handle(fverts[3]+1));
+            printf("f ");
+            for (int vert=0; vert<fverts.size(); ++vert) {
+                printf("%d ", fverts[vert]+1); // OBJ uses 1-based arrays...
+            }
+            printf("\n");
 
         }
     }
+
+
+
 
     /*
     for (int i = 0; i < n; i++) {
@@ -296,7 +362,7 @@ bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, const bool _update_po
     }
     */
 
-    _m.update_normals();
+    //_m.update_normals();
 
     return true;
 }
@@ -524,6 +590,7 @@ bool CMeshMerger::prepare(CMeshImpl& _m)
 
     return true;
 }
+
 
 bool CMeshMerger::cleanup( CMeshImpl& _m  )
 {

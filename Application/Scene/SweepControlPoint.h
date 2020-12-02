@@ -9,7 +9,7 @@ struct CSweepControlPointInfo : public CVertexInfo
 {
     Vector3 Scale;
     Vector3 Rotate;
-    float Range;
+    bool Reverse;
     CSweepPathInfo *CrossSection;
 };
 
@@ -22,7 +22,6 @@ class CSweepControlPoint : public CEntity {
     DEFINE_INPUT(float, RotateX) { MarkDirty(); }
     DEFINE_INPUT(float, RotateY) { MarkDirty(); }
     DEFINE_INPUT(float, RotateZ) { MarkDirty(); }
-    DEFINE_INPUT(float, Range) { MarkDirty(); }
     DEFINE_INPUT(CVertexInfo *, Position) { MarkDirty(); }
     DEFINE_INPUT(CSweepPathInfo *, CrossSection) { MarkDirty(); }
 
@@ -43,6 +42,7 @@ public:
 
 private:
     CSweepControlPointInfo SI;
+    bool bReverse = false;
 };
 
 }

@@ -15,6 +15,8 @@ DEFINE_META_OBJECT(CSweep)
     BindNamedArgument(&CSweep::Twist, "twist", 0);
     BindNamedArgument(&CSweep::bStartCap, "startcap", 0);
     BindNamedArgument(&CSweep::bEndCap, "endcap", 0);
+    BindNamedArgument(&CSweep::bReverse, "reverse", 0);
+    BindNamedArgument(&CSweep::bMintorsion, "mintorsion", 0);
 }
 
 // do cross pruduct with vectorA and vectorB
@@ -27,43 +29,34 @@ Vector3 crossProduct(Vector3 vectorA, Vector3 vectorB)
 
 void CSweep::drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
                         Vector3 T, Vector3 N, float rotateAngle, float angle,
-                        Vector3 controlScale, Vector3 controlAngle,
-                        int index, bool shouldReverse) {
+                        Vector3 controlScale, int index, bool shouldReverse) {
     Vector3 B = crossProduct(T, N);
 
     N.Normalize();
     B.Normalize();
 
-    rotateAngle += controlAngle.x;
     float scaleN = 1 / cosf(angle / 2);
 
     for (size_t i = 0; i < crossSection.size(); i++)
     {
         // make rotations
-        float x = crossSection[i].x * controlScale.x * cosf(rotateAngle) -
-            crossSection[i].y * controlScale.y * sinf(rotateAngle);
-        float y = crossSection[i].x * controlScale.x * sinf(rotateAngle) +
-            crossSection[i].y * controlScale.y *cosf(rotateAngle);
+        Vector3 point = bReverse ^ shouldReverse ?
+            crossSection[crossSection.size() - i - 1] : crossSection[i];
+
+        float x = point.x * controlScale.x * cosf(rotateAngle) -
+            point.y * controlScale.y * sinf(rotateAngle);
+        float y = point.x * controlScale.x * sinf(rotateAngle) +
+            point.y * controlScale.y *cosf(rotateAngle);
         // do thransform
         Vector3 transformVector = N * x * scaleN + B * y ;
         // add offset
         Vector3 curVertex = center + transformVector;
 
-        if (shouldReverse)
-        {
-            AddVertex(
-                "v" + std::to_string(index) + "_" + std::to_string(crossSection.size() - 1 - i),
-                { curVertex.x, curVertex.y, curVertex.z }
-            );
-        }
-        else
-        {
-            AddVertex(
-                "v" + std::to_string(index) + "_" + std::to_string(i),
-                { curVertex.x, curVertex.y, curVertex.z }
-            );
 
-        }
+        AddVertex(
+            "v" + std::to_string(index) + "_" + std::to_string(i),
+            { curVertex.x, curVertex.y, curVertex.z }
+        );
     }
 }
 
@@ -199,8 +192,8 @@ void CSweep::UpdateEntity()
     std::vector<std::vector<Vector3>> crossSections;
     // Scales from control points
     std::vector<Vector3> controlScales;
-    // Angles from control points
-    std::vector<Vector3> controlAngles;
+    // Reverse from control points
+    std::vector<bool> controlReverses;
 
     std::string name = GetName();
 
@@ -226,8 +219,14 @@ void CSweep::UpdateEntity()
             Vector3 prevVector = points[i] - points[i - 1];
             Vector3 curVector = points[i - 1] - points[i - 2];
 
+            // not mintorsion
+            if (!bMintorsion)
+            {
+                Ns.push_back(getDefaultN(prevVector));
+                angles.push_back(twist);
+            }
             // Three points in a single line.
-            if (isAtSameLine(prevVector, curVector))
+            else if (isAtSameLine(prevVector, curVector))
             {
                 Vector3 N;
 
@@ -260,7 +259,7 @@ void CSweep::UpdateEntity()
         }
 
         controlScales.push_back(Vector3(1.0f, 1.0f, 1.0f));
-        controlAngles.push_back(Vector3(0.0f, 0.0f, 0.0f));
+        controlReverses.push_back(false);
     }
 
     if (numPoints == 2) { Ns.push_back(getDefaultN(points[1] - points[0])); }
@@ -269,8 +268,14 @@ void CSweep::UpdateEntity()
     {
         Vector3 prevVector = points[1] - points[0];
         Vector3 curVector = points[0] - points[numPoints - 2];
+
+        if (!bMintorsion)
+        {
+            Ns.push_back(getDefaultN(prevVector));
+            angles.push_back(twist);
+        }
         // Three points in a single line.
-        if (isAtSameLine(prevVector, curVector))
+        else if (isAtSameLine(prevVector, curVector))
         {
             Vector3 N = getPerpendicularVector(Ns[numPoints - 2], prevVector);
 
@@ -305,21 +310,11 @@ void CSweep::UpdateEntity()
         auto& e = *point;
         if (typeid(e) == typeid(CSweepControlPointInfo)) {
             CSweepControlPointInfo* SI = dynamic_cast<CSweepControlPointInfo*>(point);
-            int range = std::max((int)SI->Range, 0);
-            int index = i;
-            int start = std::max(0, index - range);
-            int end = std::min((int)numPoints, index + range + 1);
 
-            for (int k = start; k < end; k++) {
-                float theta = (range + 1 - std::abs(k - index)) /
-                (float)(range + 1);
-                controlScales[k].x *= (SI->Scale.x - 1) * theta + 1;
-                controlScales[k].y *= (SI->Scale.y - 1) * theta + 1;
-                controlScales[k].z *= (SI->Scale.z - 1) * theta + 1;
-                controlAngles[k].x += SI->Rotate.x * tc::M_PI / 180 * theta;
-                controlAngles[k].y += SI->Rotate.y * tc::M_PI / 180 * theta;
-                controlAngles[k].z += SI->Rotate.z * tc::M_PI / 180 * theta;
-            }
+            angles[i] += SI->Rotate.z * tc::M_PI / 180;
+            controlScales[i].x *= SI->Scale.x;
+            controlScales[i].y *= SI->Scale.y;
+            controlReverses[i] = SI->Reverse;
 
             if (SI->CrossSection != NULL)
             {
@@ -340,7 +335,7 @@ void CSweep::UpdateEntity()
     int segmentCount = 0;
 
     Vector3 T, N;
-    bool shouldFlip = false;
+    bool shouldFlip = controlReverses[0];
 
     if (!isClosed)
     {
@@ -349,59 +344,47 @@ void CSweep::UpdateEntity()
 
         // generate points in a circle perpendicular to the curve at the current point
         drawCrossSection(crossSections[0], points[0], T, N, angles[0], 0,
-                         controlScales[0], controlAngles[0], ++segmentCount,
-                         shouldFlip);
+                         controlScales[0], ++segmentCount, shouldFlip);
     }
     else
     {
         Vector3 prevVector = (points[1] - points[0]).Normalized();
         Vector3 curVector = (points[0] - points[numPoints - 2]).Normalized();
-        float angle = (isAtSameLine(prevVector, curVector)) ?
-            0 : getAngle(prevVector, curVector);
+        float angle;
 
         if (isAtSameLine(prevVector, curVector))
         {
             N = Ns[Ns.size() - 1];
             T = curVector;
+            angle = 0;
         }
         else
         {
             N = prevVector - curVector;
             T = prevVector + curVector;
+            angle = getAngle(prevVector, curVector);
         }
 
-        if (isAtSameLine(prevVector, curVector) &&
-            !isAtSameDirection(prevVector, curVector))
-        {
-            drawCrossSection(crossSections[0], points[0], T, N, angles[0], angle,
-                             controlScales[0], controlAngles[0], ++segmentCount,
-                             true);
-        }
-        else
-        {
-            drawCrossSection(crossSections[0], points[0], T, N, angles[0], angle,
-                             controlScales[0], controlAngles[0], ++segmentCount,
-                             false);
-        }
+        drawCrossSection(crossSections[0], points[0], T, N, angles[0], angle,
+                         controlScales[0], ++segmentCount, shouldFlip);
     }
 
     for (size_t i = 1; i < numPoints; i++)
     {
-        bool tempFlip = shouldFlip;
+        shouldFlip ^= controlReverses[i];
         if (i == numPoints - 1)
         {
             if (isClosed)
             {
                 Vector3 prevVector = (points[1] - points[0]).Normalized();
                 Vector3 curVector = (points[0] - points[numPoints - 2]).Normalized();
-                float angle = (isAtSameLine(prevVector, curVector)) ? 0 : getAngle(prevVector, curVector);
+                float angle = (isAtSameLine(prevVector, curVector)) ?
+                    0 : getAngle(prevVector, curVector);
 
                 if (isAtSameLine(prevVector, curVector))
                 {
                     N = Ns[i - 1];
                     T = curVector;
-                    if (!isAtSameDirection(prevVector, curVector))
-                        shouldFlip = !shouldFlip;
                 }
                 else
                 {
@@ -412,7 +395,7 @@ void CSweep::UpdateEntity()
                 // 0 is perfect.
                 drawCrossSection(crossSections[i], points[i], T, N,
                                  angles[i] - twist, angle, controlScales[i],
-                                 controlAngles[i], ++segmentCount, tempFlip);
+                                 ++segmentCount, shouldFlip);
             }
             else
             {
@@ -420,7 +403,7 @@ void CSweep::UpdateEntity()
                 // add twist
                 drawCrossSection(crossSections[i], points[i], T, Ns[i - 1],
                                  angles[i] - twist, 0, controlScales[i],
-                                 controlAngles[i], ++segmentCount, tempFlip);
+                                 ++segmentCount, shouldFlip);
             }
         }
         else
@@ -434,8 +417,6 @@ void CSweep::UpdateEntity()
             {
                 N = Ns[i];
                 T = curVector;
-                if (!isAtSameDirection(prevVector, curVector))
-                    shouldFlip = !shouldFlip;
             }
             else
             {
@@ -444,8 +425,7 @@ void CSweep::UpdateEntity()
             }
 
             drawCrossSection(crossSections[i], points[i], T, N, angles[i], angle,
-                             controlScales[i], controlAngles[i], ++segmentCount,
-                             tempFlip);
+                             controlScales[i], ++segmentCount, shouldFlip);
         }
     }
 
@@ -457,14 +437,31 @@ void CSweep::UpdateEntity()
             // CCW winding
             // v1_next v1_i
             // v2_next v2_i
-            int next = (i + 1) % crossSection.size();
+            std::vector<std::string> upperFace;
+
             int next_k = (k + 1) % segmentCount;
-            std::vector<std::string> upperFace = {
+            int next = (i + 1) % crossSection.size();
+            if (k == 0 && isClosed && shouldFlip)
+            {
+                int reverse_i = (2 * crossSection.size() - i - 1) % crossSection.size();
+                int reverse_next = (2 *crossSection.size() - next - 1) % crossSection.size();
+                upperFace = {
+                    "v" + std::to_string(next_k + 1) + "_" + std::to_string(reverse_i),
+                    "v" + std::to_string(next_k + 1) + "_" + std::to_string(reverse_next),
+                    "v" + std::to_string(k + 1) + "_" + std::to_string(next),
+                    "v" + std::to_string(k + 1) + "_" + std::to_string(i),
+                };
+
+            }
+            else
+            {
+                upperFace = {
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(next),
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(i),
                     "v" + std::to_string(k + 1) + "_" + std::to_string(i),
                     "v" + std::to_string(k + 1) + "_" + std::to_string(next),
-            };
+                };
+            }
             AddFace("f" + std::to_string(k) + "_" + std::to_string(i), upperFace);
         }
     }

@@ -13,9 +13,9 @@ DEFINE_META_OBJECT(CSweepControlPoint)
     BindNamedArgument(&CSweepControlPoint::RotateX, "rotate", 0, 0);
     BindNamedArgument(&CSweepControlPoint::RotateY, "rotate", 0, 1);
     BindNamedArgument(&CSweepControlPoint::RotateZ, "rotate", 0, 2);
-    BindNamedArgument(&CSweepControlPoint::Range, "range", 0);
     BindNamedArgument(&CSweepControlPoint::Position, "point", 0);
     BindNamedArgument(&CSweepControlPoint::CrossSection, "cross", 0);
+    BindNamedArgument(&CSweepControlPoint::bReverse, "reverse", 0);
 }
 
 void CSweepControlPoint::MarkDirty()
@@ -40,12 +40,11 @@ void CSweepControlPoint::UpdateEntity()
     Rotate.z = RotateZ.GetValue(0.0f);
     SI.Rotate = Rotate;
 
-    SI.Range = Range.GetValue(0.0f);
-
     CVertexInfo *info = Position.GetValue(nullptr);
     if (info == nullptr) { return; }
     SI.Position = info->Position;
     SI.CrossSection = CrossSection.GetValue(nullptr);
+    SI.Reverse = bReverse;
     SI.Name = GetName();
     SweepControlPoint.UpdateValue(dynamic_cast<CVertexInfo*>(&SI));
     SetValid(true);

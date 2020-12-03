@@ -121,7 +121,7 @@ void CMeshMerger::MergeClear() {
 void CMeshMerger::MergeIn(CMeshInstance& meshInstance, bool markedSharp)
 {
     auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
-    const auto& otherMesh = meshInstance.GetMeshImpl(); // Getting OpeshMesh implementation of a mesh. This allows us to traverse the mesh's vertices/faces
+    auto& otherMesh = meshInstance.GetMeshImpl(); // Getting OpeshMesh implementation of a mesh. This allows us to traverse the mesh's vertices/faces
 
     // Copy over all the vertices and check for overlapping
     std::unordered_map<CMeshImpl::VertexHandle, CMeshImpl::VertexHandle> vertMap;
@@ -155,7 +155,6 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance, bool markedSharp)
             ++VertCount; // VertCount is an attribute for this merger mesh. Starts at 0.
             if (markedSharp) {
                 MergedMesh.data(vnew).set_sharpness(otherMesh.data(*vi).sharpness());
-                printf("set sharpness: %f\n", otherMesh.data(*vi).sharpness());
             }
         }
     }
@@ -196,12 +195,6 @@ std::pair<CMeshImpl::VertexHandle, float> CMeshMerger::FindClosestVertex(const t
 bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, const bool _update_points=true)
 {
 
-    /*
-    Far::TopologyRefiner * refiner =
-        Far::TopologyRefinerFactory<CMeshImpl>::Create(_m,
-                                                       Far::TopologyRefinerFactory<CMeshImpl>::Options(subdivisionType(), subdivisionOptions()));
-
-     */
     typedef Far::TopologyDescriptor Descriptor;
 
     Sdc::SchemeType type = OpenSubdiv::Sdc::SCHEME_CATMARK;
@@ -219,7 +212,7 @@ bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, const bool _update_po
     desc.numVertsPerFace = g_vertsperface;
 
     int i = 0;
-    int temp[(int)_m.n_faces() * 4];
+    int temp[24];
     for (auto face : _m.faces()) {
         for (auto vertex : face.vertices())
         {
@@ -229,30 +222,30 @@ bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, const bool _update_po
 
     }
     i = 0;
-    float vertexsharp[_m.n_vertices()];
+    float vertexsharp[8];
     for (auto vertex : _m.vertices()) {
 
         vertexsharp[i] = _m.data(vertex).sharpness();
         i++;
     }
-    int vertexi[_m.n_vertices()];
+    int vertexi[8];
     i = 0;
     for (auto vertex : _m.vertices()) {
-        vertexi[i] = i;
+        vertexi[i] = vertex.idx();
         i++;
     }
-    desc.numCreases = _m.n_vertices();
-    desc.creaseVertexIndexPairs = vertexi;
-    desc.creaseWeights = vertexsharp;
+    desc.numHoles = 1;
+    int v[1] = { 1 };
+    desc.holeIndices = v;
+    //esc.numCorners = _m.n_vertices();
+    //desc.cornerVertexIndices = vertexi;
+    //desc.cornerWeights = vertexsharp;
     desc.vertIndicesPerFace = temp;
-
-
-
-
 
     // Instantiate a Far::TopologyRefiner from the descriptor
     Far::TopologyRefiner * refiner = Far::TopologyRefinerFactory<Descriptor>::Create(desc,
                                                                                      Far::TopologyRefinerFactory<Descriptor>::Options(type, options));
+
 
     refiner->RefineUniform(Far::TopologyRefiner::UniformOptions(n));
 

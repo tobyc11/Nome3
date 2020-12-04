@@ -28,10 +28,14 @@ ident
    ;
 
 idList : LPAREN (identList+=ident)* RPAREN ;
+vector3 : LPAREN expression expression expression RPAREN ;
 
 argClosed : 'closed' ;
 argHidden : 'hidden' ;
+argBeginCap : 'begincap' ;
+argEndCap : 'endcap' ;
 argSurface : 'surface' ident ;
+argCross : 'cross' ident ;
 argSlices : 'slices' expression ;
 argOrder : 'order' expression ;
 argTransform
@@ -41,11 +45,20 @@ argTransform
    ;
 argColor : 'color' LPAREN expression expression expression RPAREN ;
 
+argControlRotate : 'rotate' vector3 ;
+argControlScale : 'scale' vector3 ;
+argPoint : 'point' ident ;
+argAzimuth : 'azimuth' expression ;
+argTwist : 'twist' expression ;
+argReverse : 'reverse' ;
+argMintorsion : 'mintorsion' ;
+
 command
-   : open='point' name=ident LPAREN expression expression expression RPAREN idList* end='endpoint' # CmdExprListOne
+   : open='point' name=ident LPAREN expression expression expression RPAREN end='endpoint' # CmdExprListOne
    | open='polyline' name=ident idList argClosed* end='endpolyline' # CmdIdListOne
-   | open='sweep' name=ident LPAREN expression expression expression expression RPAREN end='endsweep' # CmdExprListOne
-   | open='sweepcontrol' name=ident LPAREN expression expression expression expression RPAREN end='endsweepcontrol' # CmdExprListOne
+   | open='sweep' name=ident 'crosssection' crossId=ident (argBeginCap | argEndCap | argReverse)* 'endcrosssection'
+   'path' pathId=ident (argAzimuth | argTwist | argMintorsion)* 'endpath'  end='endsweep' # CmdSweep
+   | open='controlpoint' name=ident argPoint argControlScale argControlRotate (argCross | argReverse)* end='endcontrolpoint' # CmdNamedArgs
    | open='face' name=ident idList argSurface* end='endface' # CmdIdListOne
    | open='object' name=ident idList end='endobject' # CmdIdListOne
    | open='mesh' name=ident command* end='endmesh' # CmdSubCmds

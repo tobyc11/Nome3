@@ -6,5 +6,5 @@ bank knot_slider
   set num_seg 200 100 300 5
 endbank
 
-torusknot knot ({expr $knot_slider.p} {expr $knot_slider.q} {expr $knot_slider.n} {expr $knot_slider.r} {expr $knot_slider.num_seg}) endtorusknot
+torusknot knot ({expr $knot_slider.p} {expr $knot_slider.q} {expr $knot_slider.n} {expr $knot_slider.r} {expr $knot_slider.num_seg} 12 ) endtorusknot
 instance knot1 knot scale (10 10 10) endinstance

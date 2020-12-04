@@ -30,9 +30,11 @@ ident
 
 idList : LPAREN (identList+=ident)* RPAREN ;
 
+sdFlag : SDFLAG ;
+
 argClosed : 'closed' ;
-argSharp : 'sharp' expression;
-argMarkingSharp : 'marksharp';
+argSdFlag : 'sd_type' sdFlag;
+argSdLevel : 'sd_level' expression;
 argHidden : 'hidden' ;
 argSurface : 'surface' ident ;
 argSlices : 'slices' expression ;
@@ -45,7 +47,7 @@ argTransform
 argColor : 'color' LPAREN expression expression expression RPAREN ;
 
 command
-   : open='point' name=ident LPAREN expression expression expression RPAREN idList* argSharp* end='endpoint' # CmdExprListOne
+   : open='point' name=ident LPAREN expression expression expression RPAREN idList* end='endpoint' # CmdExprListOne
    | open='polyline' name=ident idList argClosed* end='endpolyline' # CmdIdListOne
    | open='sweep' name=ident LPAREN expression expression expression expression RPAREN end='endsweep' # CmdExprListOne
    | open='sweepcontrol' name=ident LPAREN expression expression expression expression RPAREN end='endsweepcontrol' # CmdExprListOne
@@ -64,7 +66,7 @@ command
    | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
    | open='beziercurve' name=ident idList argSlices* end='endbeziercurve' # CmdIdListOne
    | open='bspline' name=ident argOrder* idList argSlices* end='endbspline' # CmdIdListOne
-   | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden | argMarkingSharp)* end='endinstance' # CmdInstance
+   | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
    | open='surface' name=ident argColor end='endsurface' # CmdSurface
    | open='background' argSurface end='endbackground' # CmdArgSurface
    | open='foreground' argSurface end='endforeground' # CmdArgSurface
@@ -76,7 +78,8 @@ command
    | open='rimfaces' argSurface end='endrimfaces' # CmdArgSurface
    | open='bank' name=ident set* end='endbank' # CmdBank
    | open='delete' deleteFace* end='enddelete' # CmdDelete
-   | open='subdivision' name=ident expression command* end='endsubdivision' # CmdSubdivision
+   | open='subdivision' name=ident argSdFlag* argSdLevel* command* end='endsubdivision' # CmdSubdivision
+   | open='sharp' expression idList+ end='endsubdivision' # CmdSharp
    | open='offset' name=ident k1='type' v1=ident k2='min' v2=expression k3='max' v3=expression k4='step' v4=expression end='endoffset' # CmdOffset
    ;
 
@@ -94,8 +97,9 @@ SCIENTIFIC_NUMBER : NUMBER (E SIGN? UNSIGNED_INTEGER)? ;
 fragment NUMBER : ('0' .. '9') + ('.' ('0' .. '9') +)? ;
 fragment E : 'E' | 'e' ;
 fragment SIGN : ('+' | '-') ;
+fragment UNSIGNED_INTEGER : ('0' .. '9')+ ;
 
-UNSIGNED_INTEGER : ('0' .. '9')+ ;
+SDFLAG : 'NOME_SD_CC_sharp' | 'NOME_SD_CC' ;
 
 LPAREN : '(' ;
 RPAREN : ')' ;

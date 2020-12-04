@@ -19,7 +19,7 @@ class CPoint : public CEntity
     DEFINE_INPUT(float, X) { MarkDirty(); }
     DEFINE_INPUT(float, Y) { MarkDirty(); }
     DEFINE_INPUT(float, Z) { MarkDirty(); }
-    DEFINE_INPUT(float, sharpness) { MarkDirty(); }
+
 
     DEFINE_INPUT_ARRAY(CControlPointInfo*, ControlPoints) { MarkDirty(); }
 

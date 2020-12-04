@@ -109,7 +109,6 @@ CSceneNode::CSceneNode(CScene* owningScene, std::string name, bool isRoot, bool 
     : Scene(owningScene)
     , Name(std::move(name))
     , bIsGroup(isGroup)
-    , bIsSubdivision(isSubdivision)
 {
     if (isRoot)
     {
@@ -259,8 +258,7 @@ void CSceneNode::SyncFromAST(AST::ACommand* cmd, CScene& scene)
     }
     if (lastTransform)
         Transform.Connect(lastTransform->Output);
-    if (cmd->IsSharp())
-        bMarkedSharp = true;
+
 }
 
 void CSceneNode::SyncToAST(AST::CASTContext& ctx)

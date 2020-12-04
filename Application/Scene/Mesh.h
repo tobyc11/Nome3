@@ -1,5 +1,6 @@
 #pragma once
 #include "Face.h"
+#include "Sharp.h"
 #include "InteractivePoint.h"
 
 #include <Ray.h>
@@ -27,6 +28,17 @@ struct CNomeTraits : public OpenMesh::DefaultTraits
         [[nodiscard]] const float& sharpness() const { return sharpness_; }
         void set_sharpness(const float& _s) { sharpness_ = _s; }
     };
+    EdgeTraits
+    {
+        private :
+            float sharpness_;
+
+        public:
+            EdgeT() : sharpness_( 0.0f ) {}
+            [[nodiscard]] const float& sharpness() const { return sharpness_; }
+            void set_sharpness(const float& _s) { sharpness_ = _s; }
+
+    };
 };
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<CNomeTraits> CMeshImpl;
@@ -41,6 +53,7 @@ class CVertexSelector;
 class CMesh : public CEntity
 {
     DEFINE_INPUT_ARRAY(CFace*, Faces) { MarkDirty(); }
+    DEFINE_INPUT_ARRAY(CSharp*, Points) { MarkDirty(); }
 
 public:
     DECLARE_META_CLASS(CMesh, CEntity);

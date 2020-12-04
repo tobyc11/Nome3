@@ -58,8 +58,10 @@ private:
     AST::CToken* ConvertToken(antlr4::tree::TerminalNode* token);
 
     CStringBuffer& SrcStringBuffer;
-    antlrcpp::Any visitArgSharp(NomParser::ArgSharpContext* ctx);
-    antlrcpp::Any visitArgMarkingSharp(NomParser::ArgMarkingSharpContext* ctx);
+
+    antlrcpp::Any visitArgSdLevel(NomParser::ArgSdLevelContext* ctx);
+    antlrcpp::Any visitArgSdFlag(NomParser::ArgSdFlagContext* ctx);
+    antlrcpp::Any visitCmdSharp(NomParser::CmdSharpContext* ctx);
 };
 
 }

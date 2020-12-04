@@ -9,8 +9,6 @@ DEFINE_META_OBJECT(CPoint)
     BindPositionalArgument(&CPoint::Y, 1, 1);
     BindPositionalArgument(&CPoint::Z, 1, 2);
     BindPositionalArgument(&CPoint::ControlPoints, 2);
-    BindNamedArgument(&CPoint::sharpness, "sharp", 0);
-
 }
 
 void CPoint::MarkDirty()
@@ -33,7 +31,6 @@ void CPoint::UpdateEntity()
     VI.Position = { X.GetValue(0.0f), Y.GetValue(0.0f), Z.GetValue(0.0f) };
     VI.Name = GetName();
     VI.ControlPoints = controlPoints;
-    VI.sharpness = sharpness.GetValue(0.0);
     Point.UpdateValue(&VI);
     SetValid(true);
 }

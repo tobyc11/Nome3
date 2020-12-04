@@ -350,8 +350,7 @@ public:
     void SetPositionalArgument(size_t i, AExpr* expr) { PositionalArguments[i] = expr; }
     void AddNamedArgument(ANamedArgument* argument);
     void AddTransform(ANamedArgument* subCommand) { Transforms.push_back(subCommand); }
-    void MarkSharp() { MarkedSharp = true; }
-    bool IsSharp() {return MarkedSharp;}
+
 
     std::string GetCommand() const { return Token->ToString(); }
     std::string GetName() const { return GetPositionalIdentAsString(0); }
@@ -374,7 +373,6 @@ private:
     std::vector<AExpr*> PositionalArguments;
     std::map<std::string, ANamedArgument*> NamedArguments;
     std::vector<ANamedArgument*> Transforms;
-    bool MarkedSharp = false;
     bool bPendingSave = false;
 };
 

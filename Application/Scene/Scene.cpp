@@ -212,26 +212,23 @@ void CScene::Update()
     {
         for (auto itr = Merges.begin(); itr != Merges.end(); itr++)
         {
-            if (itr->second->IsSubdivision())
+            auto* ent = dynamic_cast<Scene::CMeshMerger*>(itr->second->GetEntity());
+            if (ent != nullptr)
             {
-                auto* ent = dynamic_cast<Scene::CMeshMerger*>(itr->second->GetEntity());
-                if (ent != nullptr)
+                ent->MarkDirty();
+                ent->MergeClear();
+                for (auto &child : itr->second->GetSceneNodeChildren())
                 {
-                    ent->MarkDirty();
-                    ent->MergeClear();
-                    for (auto &child : itr->second->GetSceneNodeChildren())
-                    {
-                        child->ForEachTreeNode([&](Scene::CSceneTreeNode* node) {
-                            auto* entity = node->GetInstanceEntity(); // Else, get the instance
-                            if (!entity) // Check to see if the an entity is instantiable (e.g., polyline, funnel, mesh, etc.), and not just an instance identifier.
-                                entity = node->GetOwner()->GetEntity(); // If it's not instantiable, get entity instead of instance entity
+                    child->ForEachTreeNode([&](Scene::CSceneTreeNode* node) {
+                        auto* entity = node->GetInstanceEntity(); // Else, get the instance
+                        if (!entity) // Check to see if the an entity is instantiable (e.g., polyline, funnel, mesh, etc.), and not just an instance identifier.
+                            entity = node->GetOwner()->GetEntity(); // If it's not instantiable, get entity instead of instance entity
 
-                            if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity)) // set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
-                                ent->MergeIn(*mesh, node->GetOwner()->IfMarkedSharp());
-                        });
-                    }
-                    ent->Catmull();
+                        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity)) // set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
+                            ent->MergeIn(*mesh);
+                    });
                 }
+                ent->Catmull();
             }
         }
 

@@ -219,7 +219,7 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
     AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CVertexInfo*>& value)
 {
     auto* vec = subpart.GetExpr(command);
-    if (vec == NULL)
+    if (vec == nullptr)
     {
         return false;
     }

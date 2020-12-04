@@ -53,7 +53,8 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
     { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
     { "subdivision", ECommandKind::Instance },  { "offset", ECommandKind::Dummy },
-    { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity }
+    { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity },
+    {"sharp", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)

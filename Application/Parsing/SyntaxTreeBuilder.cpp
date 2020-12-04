@@ -169,14 +169,17 @@ antlrcpp::Any CFileBuilder::visitCmdSubdivision(NomParser::CmdSubdivisionContext
 
 }
 
-antlrcpp::Any CFileBuilder::visitCmdSharp(NomParser::CmdSharpContext* ctx)
+antlrcpp::Any CFileBuilder::visitCmdSharp(NomParser::CmdSharpContext* context)
 {
-    auto* cmd = new AST::ACommand(ConvertToken(ctx->open), ConvertToken(ctx->end));
-    cmd->PushPositionalArgument(visit(ctx->expression()));
-
-    for (auto* arg : ctx->idList())
-        cmd->PushPositionalArgument(visit(arg));
+    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
+    cmd->PushPositionalArgument(visit(context->expression()));
+    for (auto* subCmd : context->idList())
+    {
+        cmd->AddSubCommand(visit(subCmd));
+    }
     return cmd;
+
+
 
 
 }

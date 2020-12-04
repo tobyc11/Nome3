@@ -32,6 +32,7 @@ private:
     CSceneNode* InstanciateUnder = nullptr;
     std::string EntityNamePrefix;
     CEntity* ParentEntity = nullptr;
+    void IterateSharpness(AST::ACommand* cmd, CScene& scene);
 };
 
 }

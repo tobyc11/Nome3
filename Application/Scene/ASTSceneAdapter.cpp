@@ -139,6 +139,11 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
     CmdTraverseStack.pop_back();
 }
 
+void CASTSceneAdapter::IterateSharpness(AST::ACommand* cmd, CScene& scene) {
+
+}
+
+
 void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, bool insubMesh)
 {
     CmdTraverseStack.push_back(cmd);
@@ -150,29 +155,41 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (kind == ECommandKind::Entity)
     {
-        TAutoPtr<CEntity> entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
-        entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
-         // All entities are added to the EntityLibrary dictionary
-        GEnv.Scene->AddEntity(entity);
-        if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
-            if (auto* face = dynamic_cast<CFace*>(entity.Get()))
-                mesh->Faces.Connect(face->Face);
+        if (cmd->GetCommand() == "Sharp") {
+            for (auto* sub : cmd->GetSubCommands())
+            {
+                sub->PushPositionalArgument(cmd->GetLevel());
+                IterateSharpness(sub, scene);
+            }
 
-        // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one face).
-        if (insubMesh == false)
+
+        } else
         {
-            ParentEntity = entity;
-            EntityNamePrefix = cmd->GetName() + ".";
-        }
+            TAutoPtr<CEntity> entity =
+                MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
+            entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
+            // All entities are added to the EntityLibrary dictionary
+            GEnv.Scene->AddEntity(entity);
+            if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
+                if (auto* face = dynamic_cast<CFace*>(entity.Get()))
+                    mesh->Faces.Connect(face->Face);
 
-        for (auto* sub : cmd->GetSubCommands())
-            VisitCommandSyncScene(sub, scene, true);
+            // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one face).
+            if (insubMesh == false)
+            {
+                ParentEntity = entity;
+                EntityNamePrefix = cmd->GetName() + ".";
+            }
 
-        // Added insubMesh bool to allow Meshes to process multiple faces.
-        if (insubMesh == false)
-        {
-            EntityNamePrefix = "";
-            ParentEntity = nullptr;
+            for (auto* sub : cmd->GetSubCommands())
+                VisitCommandSyncScene(sub, scene, true);
+
+            // Added insubMesh bool to allow Meshes to process multiple faces.
+            if (insubMesh == false)
+            {
+                EntityNamePrefix = "";
+                ParentEntity = nullptr;
+            }
         }
     }
     else if (cmd->GetCommand() == "instance")

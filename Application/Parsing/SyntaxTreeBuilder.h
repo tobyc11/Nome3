@@ -59,9 +59,9 @@ private:
 
     CStringBuffer& SrcStringBuffer;
 
-    antlrcpp::Any visitArgSdLevel(NomParser::ArgSdLevelContext* ctx);
-    antlrcpp::Any visitArgSdFlag(NomParser::ArgSdFlagContext* ctx);
-    antlrcpp::Any visitCmdSharp(NomParser::CmdSharpContext* ctx);
+    antlrcpp::Any visitArgSdLevel(NomParser::ArgSdLevelContext* ctx) override;
+    antlrcpp::Any visitArgSdFlag(NomParser::ArgSdFlagContext* ctx) override;
+    antlrcpp::Any visitCmdSharp(NomParser::CmdSharpContext* ctx) override;
 };
 
 }

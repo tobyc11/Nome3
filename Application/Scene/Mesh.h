@@ -53,7 +53,7 @@ class CVertexSelector;
 class CMesh : public CEntity
 {
     DEFINE_INPUT_ARRAY(CFace*, Faces) { MarkDirty(); }
-    DEFINE_INPUT_ARRAY(CSharp*, Points) { MarkDirty(); }
+    DEFINE_INPUT_ARRAY(CSharp*, SharpPoints) { MarkDirty(); }
 
 public:
     DECLARE_META_CLASS(CMesh, CEntity);

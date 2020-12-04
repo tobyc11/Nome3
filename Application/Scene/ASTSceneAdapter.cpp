@@ -140,7 +140,13 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
 }
 
 void CASTSceneAdapter::IterateSharpness(AST::ACommand* cmd, CScene& scene) {
+    TAutoPtr<CEntity> entity = new CSharp();
+    entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
+    GEnv.Scene->AddEntity(entity);
 
+    if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
+        if (auto* points = dynamic_cast<CSharp*>(entity.Get()))
+            mesh->Points.Connect(points->SharpPoints);
 }
 
 

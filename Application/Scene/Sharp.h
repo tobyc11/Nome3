@@ -28,10 +28,12 @@ public:
     {
     }
      */
-
+/*
 private:
     CVertexInfo VI;
+    */
 
+    bool AddSharpnessIntoMesh(CMesh* mesh) const;
 };
 
 }

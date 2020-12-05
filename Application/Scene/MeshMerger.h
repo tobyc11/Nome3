@@ -11,6 +11,7 @@ namespace Nome::Scene
 class CMeshMerger : public CMesh
 {
     DEFINE_INPUT(float, Level) { MarkDirty(); }
+    DEFINE_INPUT(std::string, Flag) { MarkDirty(); }
 
     void UpdateEntity() override;
     //void MarkDirty() override;
@@ -20,20 +21,20 @@ public:
 
     CMeshMerger() = default;
     explicit CMeshMerger(const std::string& name)
-        : CMesh(std::move(name))
+        : CMesh(name)
     {
     }
 
 
     // No update yet, please just use one time
-    void MergeIn(CMeshInstance& meshInstance, bool markedSharp = false);
+    void MergeIn(CMeshInstance& meshInstance);
 
     void MergeClear();
 
-    // Buggy, preset to 3 subdivision steps
+    // sd_flag can be set to sharp and plain cc to have different types of subdivision
     void Catmull();
 
-    bool subdivide(CMeshImpl& _m, unsigned int n, bool _update_points);
+    bool subdivide(CMeshImpl& _m, unsigned int n, bool isSharp);
 
     void split_face(CMeshImpl& _m, const CMeshImpl::FaceHandle& _fh);
 
@@ -43,9 +44,6 @@ public:
 
     void update_vertex( CMeshImpl& _m, const CMeshImpl::VertexHandle& _vh);
 
-    bool prepare(CMeshImpl& _m);
-
-    bool cleanup(CMeshImpl& _m);
 
     void setSubLevel(int level) {
         subdivisionLevel = level;
@@ -62,10 +60,10 @@ private:
     OpenMesh::VPropHandleT< CMeshImpl::Point > vp_pos_; // next vertex pos
     OpenMesh::EPropHandleT< CMeshImpl::Point > ep_pos_; // new edge pts
     OpenMesh::FPropHandleT< CMeshImpl::Point > fp_pos_; // new face pts
-    OpenMesh::EPropHandleT<double> creaseWeights_; // crease weights
 
     CMeshImpl MergedMesh;
     unsigned int subdivisionLevel = 0;
+    bool isSharp = false;
 
 
 };

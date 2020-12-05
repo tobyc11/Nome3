@@ -70,12 +70,19 @@ public:
     {
         return NameToVert.find(name) != NameToVert.end();
     }
+    CMeshImpl::VertexHandle FindVertex(const std::string& name) const
+    {
+        return NameToVert.find(name)->second;
+    }
 
     Vector3 GetVertexPos(const std::string& name) const;
+    void AddPointSharpness(const CMeshImpl::VertexHandle& sharpPoint, float sharpness);
+    void AddEdgeSharpness(const CMeshImpl::VertexHandle& e1, const CMeshImpl::VertexHandle& e2, float sharpness);
     void AddFace(const std::string& name, const std::vector<std::string>& facePoints);
     void AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints);
     void AddLineStrip(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& points);
     void ClearMesh();
+
 
     void SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexHandle> vnames,
                      std::map<std::string, CMeshImpl::FaceHandle> fnames);

@@ -146,7 +146,7 @@ void CASTSceneAdapter::IterateSharpness(AST::ACommand* cmd, CScene& scene) {
 
     if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
         if (auto* points = dynamic_cast<CSharp*>(entity.Get()))
-            mesh->Points.Connect(points->SharpPoints);
+            mesh->SharpPoints.Connect(points->SharpPoints);
 }
 
 

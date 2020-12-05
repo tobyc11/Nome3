@@ -7,17 +7,13 @@ namespace Nome::Scene
 {
 DEFINE_META_OBJECT(CMeshMerger)
 {
-    BindPositionalArgument(&CMeshMerger::Level, 1);
+    BindNamedArgument(&CMeshMerger::Level, "sd_flag", 0);
+    BindNamedArgument(&CMeshMerger::Flag, "sd_level", 0);
 }
 
 inline static const float Epsilon = 0.01f;
 
-/*
-void CMeshMerger::MarkDirty()
-{
-    Super::MarkDirty();
-}
- */
+
 
 
 
@@ -26,6 +22,10 @@ void CMeshMerger::UpdateEntity()
     if (!IsDirty())
         return;
     subdivisionLevel = Level.GetValue(0);
+    if (Flag.GetValue("NOME_SD_CC") == "NOME_SD_CC_sharp")
+        isSharp = true;
+    else
+        isSharp = false;
 
     Super::UpdateEntity();
 
@@ -48,7 +48,7 @@ void CMeshMerger::Catmull()
     //catmull.attach(otherMesh);
     //prepare(otherMesh);
 
-    subdivide(otherMesh, subdivisionLevel, true);
+    subdivide(otherMesh, subdivisionLevel, isSharp);
     std::cout << "Apply catmullclark subdivision, may take a few minutes or so" << std::endl;
     //catmull(4);
     //cleanup(otherMesh);
@@ -118,7 +118,7 @@ void CMeshMerger::MergeClear() {
     Mesh.clear();
 }
 
-void CMeshMerger::MergeIn(CMeshInstance& meshInstance, bool markedSharp)
+void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
 {
     auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
     auto& otherMesh = meshInstance.GetMeshImpl(); // Getting OpeshMesh implementation of a mesh. This allows us to traverse the mesh's vertices/faces
@@ -570,29 +570,10 @@ void CMeshMerger::update_vertex( CMeshImpl& _m, const CMeshImpl::VertexHandle& _
     _m.property( vp_pos_, _vh ) = pos;
 }
 
-bool CMeshMerger::prepare(CMeshImpl& _m)
-{
-    _m.add_property( vp_pos_ );
-    _m.add_property( ep_pos_ );
-    _m.add_property( fp_pos_ );
-    _m.add_property( creaseWeights_ );
-
-    // initialize all weights to 0 (= smooth edge)
-    for( CMeshImpl::EdgeIter e_it = _m.edges_begin(); e_it != _m.edges_end(); ++e_it)
-        _m.property(creaseWeights_, *e_it ) = 0.0;
-
-    return true;
-}
 
 
-bool CMeshMerger::cleanup( CMeshImpl& _m  )
-{
-    _m.remove_property( vp_pos_ );
-    _m.remove_property( ep_pos_ );
-    _m.remove_property( fp_pos_ );
-    _m.remove_property( creaseWeights_ );
-    return true;
-}
+
+
 
 
 }

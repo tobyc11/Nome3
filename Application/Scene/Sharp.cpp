@@ -38,6 +38,7 @@ bool CSharp::AddSharpnessIntoMesh(CMesh* mesh) const
         // point update failed etc
         if (!point)
         {
+            perror ("can't add find the point the add sharpness!\n");
             return false;
         }
 
@@ -45,28 +46,19 @@ bool CSharp::AddSharpnessIntoMesh(CMesh* mesh) const
         std::string newName = point->Name;
         if (mesh->HasVertex(point->Name))
         {
-            // See if those two points are close enough
-            float dist = mesh->GetVertexPos(point->Name).DistanceToPoint(point->Position);
-            const float epsilon = 0.001f;
-            if (dist < epsilon)
-            {
-                // Skip adding this vertex
-                nameList.push_back(point->Name);
-                continue;
-            }
-
-            // Not close enough, rename and add the vertex
-            int suffix = 1;
-            while (mesh->HasVertex(newName))
-                newName = point->Name + std::to_string(suffix++);
-            printf("[Mesh: %s] Vertex %s has been renamed to %s\n", mesh->GetName().c_str(),
-                   point->Name.c_str(), newName.c_str());
+            nameList.push_back(point->Name);
         }
 
-        mesh->AddVertex(newName, point->Position, point->sharpness);
-        nameList.push_back(newName);
     }
-    mesh->AddFace(GetName(), nameList);
+
+    if (nameList.size() == 1) {
+        mesh->AddPointSharpness(mesh->FindVertex(nameList.at(0)), Sharpness.GetValue(0.0f));
+    } else if (nameList.size() > 1){
+        for (int i = 0; i < nameList.size() - 1; ++i)
+        {
+            mesh->AddEdgeSharpness(mesh->FindVertex(nameList.at(i)), mesh->FindVertex(nameList.at(i + 1)), Sharpness.GetValue(0.0f));
+        }
+    }
     return true;
 }
 

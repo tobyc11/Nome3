@@ -30,10 +30,9 @@ ident
 
 idList : LPAREN (identList+=ident)* RPAREN ;
 
-sdFlag : SDFLAG ;
 
 argClosed : 'closed' ;
-argSdFlag : 'sd_type' sdFlag;
+argSdFlag : 'sd_type' ident;
 argSdLevel : 'sd_level' expression;
 argHidden : 'hidden' ;
 argSurface : 'surface' ident ;
@@ -99,7 +98,6 @@ fragment E : 'E' | 'e' ;
 fragment SIGN : ('+' | '-') ;
 fragment UNSIGNED_INTEGER : ('0' .. '9')+ ;
 
-SDFLAG : 'NOME_SD_CC_sharp' | 'NOME_SD_CC' ;
 
 LPAREN : '(' ;
 RPAREN : ')' ;

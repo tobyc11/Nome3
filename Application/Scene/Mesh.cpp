@@ -175,7 +175,19 @@ AST::ACommand* CMesh::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
     }
     return node;
 }
+void CMesh::AddEdgeSharpness(const CMeshImpl::VertexHandle& e1, const CMeshImpl::VertexHandle& e2, float sharpness)
+{
+    auto halfedge = Mesh.find_halfedge(e1, e2);
+    Mesh.data(halfedge.edge()).set_sharpness(sharpness);
 
+
+}
+void CMesh::AddPointSharpness(const CMeshImpl::VertexHandle& sharpPoint,
+                              float sharpness)
+{
+    Mesh.data(sharpPoint).set_sharpness(sharpness);
+
+}
 
 std::string CMeshInstancePoint::GetPointPath() const
 {

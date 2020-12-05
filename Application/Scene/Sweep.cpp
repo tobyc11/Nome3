@@ -9,10 +9,14 @@ namespace Nome::Scene
 
 DEFINE_META_OBJECT(CSweep)
 {
-    BindPositionalArgument(&CSweep::Path, 1, 0);
-    BindPositionalArgument(&CSweep::CrossSection, 1, 1);
-    BindPositionalArgument(&CSweep::Azimuth, 1, 2);
-    BindPositionalArgument(&CSweep::Twist, 1, 3);
+    BindPositionalArgument(&CSweep::CrossSection, 1, 0);
+    BindPositionalArgument(&CSweep::Path, 2, 0);
+    BindNamedArgument(&CSweep::Azimuth, "azimuth", 0);
+    BindNamedArgument(&CSweep::Twist, "twist", 0);
+    BindNamedArgument(&CSweep::bStartCap, "startcap", 0);
+    BindNamedArgument(&CSweep::bEndCap, "endcap", 0);
+    BindNamedArgument(&CSweep::bReverse, "reverse", 0);
+    BindNamedArgument(&CSweep::bMintorsion, "mintorsion", 0);
 }
 
 // do cross pruduct with vectorA and vectorB
@@ -23,28 +27,63 @@ Vector3 crossProduct(Vector3 vectorA, Vector3 vectorB)
                    vectorA.x * vectorB.y - vectorA.y * vectorB.x);
 }
 
-void CSweep::drawCrossSection(std::vector<Vector3> crossSection,
-                              Vector3 center, Vector3 T, Vector3 N,
-                              float angle, float scaleX, float scaleY,
-                              float scaleN, int index)
-{
+void CSweep::drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
+                        Vector3 T, Vector3 N, float rotateAngle, float angle,
+                        Vector3 controlScale, int index, bool shouldReverse) {
     Vector3 B = crossProduct(T, N);
 
     N.Normalize();
     B.Normalize();
 
+    float scaleN = 1 / cosf(angle / 2);
+
     for (size_t i = 0; i < crossSection.size(); i++)
     {
         // make rotations
-        float x = crossSection[i].x * scaleX * cosf(angle) - crossSection[i].y * scaleY * sinf(angle);
-        float y = crossSection[i].x * scaleX * sinf(angle) + crossSection[i].y * scaleY *cosf(angle);
+        Vector3 point = bReverse ^ shouldReverse ?
+            crossSection[crossSection.size() - i - 1] : crossSection[i];
+
+        float x = point.x * controlScale.x * cosf(rotateAngle) -
+            point.y * controlScale.y * sinf(rotateAngle);
+        float y = point.x * controlScale.x * sinf(rotateAngle) +
+            point.y * controlScale.y *cosf(rotateAngle);
         // do thransform
         Vector3 transformVector = N * x * scaleN + B * y ;
         // add offset
         Vector3 curVertex = center + transformVector;
 
-        AddVertex("v" + std::to_string(index) + "_" + std::to_string(i), { curVertex.x, curVertex.y, curVertex.z });
+
+        AddVertex(
+            "v" + std::to_string(index) + "_" + std::to_string(i),
+            { curVertex.x, curVertex.y, curVertex.z }
+        );
     }
+}
+
+void CSweep::drawCap(std::vector<Vector3> crossSection, int crossIndex,
+                     int faceIndex, bool shouldFlip)
+{
+    size_t size = crossSection.size();
+    std::vector<std::string> capFace;
+    // not a closed cross-section
+    if (crossSection[0] != crossSection[size - 1]) { size++; }
+
+    for (size_t i = 0; i < size; i++) {
+        if (shouldFlip)
+        {
+            capFace.push_back(
+                "v" + std::to_string(crossIndex) + "_" +
+                std::to_string((crossSection.size() - i - 1) % crossSection.size())
+            );
+        }
+        else
+        {
+            capFace.push_back(
+                "v" + std::to_string(crossIndex) + "_" + std::to_string(i % crossSection.size())
+            );
+        }
+    }
+    AddFace("f" + std::to_string(faceIndex), capFace);
 }
 
 // get the angle of two vectors (unsigned)
@@ -81,7 +120,7 @@ Vector3 vectorMultiplyMatrix(Vector3 vector, float matrix[3][3])
 }
 
 // calculate the rotation angle from vectorA to vectorB (signed)
-float calculateRoatateAngle(Vector3 vectorA, Vector3 vectorB, Vector3 T)
+float calculateRotateAngle(Vector3 vectorA, Vector3 vectorB, Vector3 T)
 {
     float angle = getAngle(vectorA, vectorB);
     T.Normalize();
@@ -90,12 +129,37 @@ float calculateRoatateAngle(Vector3 vectorA, Vector3 vectorB, Vector3 T)
     Vector3 direction = crossProduct(T, vectorA).Normalized();
 
     if (direction.DotProduct(perpendicular) >= 0)
-    {
         return angle;
-    }
-    else {
+    else
         return -angle;
-    }
+}
+
+Vector3 getDefaultN(Vector3 T)
+{
+    if (T.Normalized() != Vector3(1, 0, 0))
+        return crossProduct(T, Vector3(1, 0, 0));
+    else
+        return crossProduct(T, Vector3(0, 1, 0));
+}
+
+bool isAtSameLine(Vector3 vectorA, Vector3 vectorB)
+{
+    Vector3 zero = Vector3(0, 0, 0);
+    if (vectorA == zero || vectorB == zero)
+        return true;
+
+    Vector3 normVA = vectorA.Normalized();
+    Vector3 normVB = vectorB.Normalized();
+
+    if (normVA == normVB || normVA == -normVB)
+        return true;
+    else
+        return false;
+}
+
+bool isAtSameDirection(Vector3 vectorA, Vector3 vectorB)
+{
+    return vectorA.DotProduct(vectorB) >= 0;
 }
 
 void CSweep::UpdateEntity()
@@ -115,7 +179,8 @@ void CSweep::UpdateEntity()
     bool isClosed = pathInfo->IsClosed;
     size_t numPoints = pathInfo->Positions.size();
     // if the number of points cannot build a model, exit
-    if ((!isClosed && numPoints < 2) || (isClosed && numPoints < 3) || crossSectionInfo->Positions.size() < 3) { return; }
+    if ((!isClosed && numPoints < 2) || (isClosed && numPoints < 3) ||
+        crossSectionInfo->Positions.size() < 3) { return; }
 
     std::vector<Vector3> points;
     // Normal vectors of each paths
@@ -124,9 +189,11 @@ void CSweep::UpdateEntity()
     std::vector<float> angles;
     // Cross sections
     std::vector<Vector3> crossSection;
-    // Scales
-    std::vector<float> scaleX;
-    std::vector<float> scaleY;
+    std::vector<std::vector<Vector3>> crossSections;
+    // Scales from control points
+    std::vector<Vector3> controlScales;
+    // Reverse from control points
+    std::vector<bool> controlReverses;
 
     std::string name = GetName();
 
@@ -136,54 +203,97 @@ void CSweep::UpdateEntity()
 
     for (size_t i = 0; i < crossSectionInfo->Positions.size(); i++)
     {
-        CVertexInfo point = crossSectionInfo->Positions[i];
-        crossSection.push_back(Vector3(point.Position.x, point.Position.y, point.Position.z));
+        CVertexInfo *point = crossSectionInfo->Positions[i];
+        crossSection.push_back(Vector3(point->Position.x, point->Position.y, point->Position.z));
     }
 
     for (size_t i = 0; i < numPoints; i++)
     {
-        CVertexInfo point = pathInfo->Positions[i];
+        CVertexInfo *point = pathInfo->Positions[i];
 
-        points.push_back(Vector3(point.Position.x, point.Position.y, point.Position.z)); // current point
+        points.push_back(Vector3(point->Position.x, point->Position.y, point->Position.z)); // current point
+        crossSections.push_back(crossSection);
 
         if (i > 1)
         {
             Vector3 prevVector = points[i] - points[i - 1];
             Vector3 curVector = points[i - 1] - points[i - 2];
 
-            Vector3 sumVector = prevVector.Normalized() - curVector.Normalized();
-            Vector3 curPerpendicular = getPerpendicularVector(sumVector, prevVector);
-            Vector3 prevPerpendicular = getPerpendicularVector(sumVector, -curVector);
+            // not mintorsion
+            if (!bMintorsion)
+            {
+                Ns.push_back(getDefaultN(prevVector));
+                angles.push_back(twist);
+            }
+            // Three points in a single line.
+            else if (isAtSameLine(prevVector, curVector))
+            {
+                Vector3 N;
 
-            /* let the normal vector be the prevPerpendicular vector
-             * in this case, the rotation angle is 0 */
-            if (i == 2) { Ns.push_back(prevPerpendicular); }
-            // calculate the rotaion angle of each joint
-            angles.push_back(calculateRoatateAngle(Ns[i - 2], prevPerpendicular,
-                                        points[i - 1] - points[i - 2]) + twist);
-            // set the current normal vector
-            Ns.push_back(curPerpendicular);
+                if (i == 2)
+                {
+                    N = getDefaultN(prevVector);
+                    Ns.push_back(N);
+                }
+                else
+                    N = getPerpendicularVector(Ns[i - 2], prevVector);
+
+                angles.push_back(twist);
+                Ns.push_back(N);
+            }
+            else
+            {
+                Vector3 sumVector = prevVector.Normalized() - curVector.Normalized();
+                Vector3 curPerpendicular = getPerpendicularVector(sumVector, prevVector);
+                Vector3 prevPerpendicular = getPerpendicularVector(sumVector, -curVector);
+
+                /* let the normal vector be the prevPerpendicular vector
+                 * in this case, the rotation angle is 0 */
+                if (i == 2) { Ns.push_back(prevPerpendicular); }
+                // calculate the rotation angle of each joint
+                angles.push_back(calculateRotateAngle(Ns[i - 2], prevPerpendicular,
+                                                      points[i - 1] - points[i - 2]) + twist);
+                // set the current normal vector
+                Ns.push_back(curPerpendicular);
+            }
         }
 
-        scaleX.push_back(1.0f);
-        scaleY.push_back(1.0f);
-
+        controlScales.push_back(Vector3(1.0f, 1.0f, 1.0f));
+        controlReverses.push_back(false);
     }
+
+    if (numPoints == 2) { Ns.push_back(getDefaultN(points[1] - points[0])); }
 
     if (isClosed)
     {
         Vector3 prevVector = points[1] - points[0];
         Vector3 curVector = points[0] - points[numPoints - 2];
 
-        Vector3 sumVector = prevVector.Normalized() - curVector.Normalized();
-        Vector3 curPerpendicular = getPerpendicularVector(sumVector, prevVector);
-        Vector3 prevPerpendicular = getPerpendicularVector(sumVector, -curVector);
+        if (!bMintorsion)
+        {
+            Ns.push_back(getDefaultN(prevVector));
+            angles.push_back(twist);
+        }
+        // Three points in a single line.
+        else if (isAtSameLine(prevVector, curVector))
+        {
+            Vector3 N = getPerpendicularVector(Ns[numPoints - 2], prevVector);
 
-        angles.push_back(calculateRoatateAngle(Ns[numPoints - 2], prevPerpendicular,
-                      points[numPoints - 1] - points[numPoints - 2]));
-        Ns.push_back(curPerpendicular);
-        // add the rotation angle of the closed joint
-        angles[0] += calculateRoatateAngle(curPerpendicular, Ns[0], prevVector);
+            angles.push_back(twist);
+            Ns.push_back(N);
+        }
+        else
+        {
+            Vector3 sumVector = prevVector.Normalized() - curVector.Normalized();
+            Vector3 curPerpendicular = getPerpendicularVector(sumVector, prevVector);
+            Vector3 prevPerpendicular = getPerpendicularVector(sumVector, -curVector);
+
+            angles.push_back(calculateRotateAngle(Ns[numPoints - 2], prevPerpendicular,
+                                                  points[numPoints - 1] - points[numPoints - 2]));
+            Ns.push_back(curPerpendicular);
+            // add the rotation angle of the closed joint
+            angles[0] += calculateRotateAngle(curPerpendicular, Ns[0], prevVector);
+        }
     }
     angles.push_back(twist);
     angles.push_back(twist);
@@ -193,20 +303,31 @@ void CSweep::UpdateEntity()
     // add rotation
     for (size_t i = 0; i < numPoints; i++)
     {
-        CVertexInfo point = pathInfo->Positions[i];
+        CVertexInfo *point = pathInfo->Positions[i];
 
         angles[i] += azimuth;
 
-        for (size_t j = 0; j < point.ControlPoints.size(); j++)
-        {
-           CControlPointInfo* CI = point.ControlPoints[j];
-           if (CI->OwnerName == name)
-           {
-                CSweepControlPointInfo* SI = dynamic_cast<CSweepControlPointInfo*>(CI);
-                scaleX[i] *= SI->ScaleX;
-                scaleY[i] *= SI->ScaleY;
-                angles[i] += SI->Rotate * tc::M_PI / 180;
-           }
+        auto& e = *point;
+        if (typeid(e) == typeid(CSweepControlPointInfo)) {
+            CSweepControlPointInfo* SI = dynamic_cast<CSweepControlPointInfo*>(point);
+
+            angles[i] += SI->Rotate.z * tc::M_PI / 180;
+            controlScales[i].x *= SI->Scale.x;
+            controlScales[i].y *= SI->Scale.y;
+            controlReverses[i] = SI->Reverse;
+
+            if (SI->CrossSection != NULL)
+            {
+                CSweepPathInfo *sectionInfo = SI->CrossSection;
+                std::vector<Vector3> section;
+                for (size_t k = 0; k < sectionInfo->Positions.size(); k++)
+                {
+                    CVertexInfo *point = sectionInfo->Positions[k];
+                    section.push_back(Vector3(point->Position.x,
+                                point->Position.y, point->Position.z));
+                }
+                crossSections[i] = section;
+            }
         }
     }
 
@@ -214,6 +335,7 @@ void CSweep::UpdateEntity()
     int segmentCount = 0;
 
     Vector3 T, N;
+    bool shouldFlip = controlReverses[0];
 
     if (!isClosed)
     {
@@ -221,55 +343,89 @@ void CSweep::UpdateEntity()
         N = Ns[0];
 
         // generate points in a circle perpendicular to the curve at the current point
-        drawCrossSection(crossSection, points[0], T, N, angles[0], scaleX[0],
-                         scaleY[0], 1, ++segmentCount);
+        drawCrossSection(crossSections[0], points[0], T, N, angles[0], 0,
+                         controlScales[0], ++segmentCount, shouldFlip);
     }
-    else {
+    else
+    {
         Vector3 prevVector = (points[1] - points[0]).Normalized();
         Vector3 curVector = (points[0] - points[numPoints - 2]).Normalized();
-        float angle = getAngle(prevVector, curVector);
+        float angle;
 
-        T = prevVector + curVector;
-        N = prevVector - curVector;
+        if (isAtSameLine(prevVector, curVector))
+        {
+            N = Ns[Ns.size() - 1];
+            T = curVector;
+            angle = 0;
+        }
+        else
+        {
+            N = prevVector - curVector;
+            T = prevVector + curVector;
+            angle = getAngle(prevVector, curVector);
+        }
 
-        drawCrossSection(crossSection, points[0], T, N, angles[0], scaleX[0],
-                         scaleY[0], 1 / cosf(angle / 2), ++segmentCount);
+        drawCrossSection(crossSections[0], points[0], T, N, angles[0], angle,
+                         controlScales[0], ++segmentCount, shouldFlip);
     }
 
     for (size_t i = 1; i < numPoints; i++)
     {
+        shouldFlip ^= controlReverses[i];
         if (i == numPoints - 1)
         {
             if (isClosed)
             {
                 Vector3 prevVector = (points[1] - points[0]).Normalized();
                 Vector3 curVector = (points[0] - points[numPoints - 2]).Normalized();
-                float angle = getAngle(prevVector, curVector);
+                float angle = (isAtSameLine(prevVector, curVector)) ?
+                    0 : getAngle(prevVector, curVector);
 
-                T = prevVector + curVector;
-                N = prevVector - curVector;
+                if (isAtSameLine(prevVector, curVector))
+                {
+                    N = Ns[i - 1];
+                    T = curVector;
+                }
+                else
+                {
+                    N = prevVector - curVector;
+                    T = prevVector + curVector;
+                }
 
                 // 0 is perfect.
-                drawCrossSection(crossSection, points[i], T, N, angles[i] - twist,
-                                 scaleX[i], scaleY[i], 1 / cosf(angle / 2), ++segmentCount);
+                drawCrossSection(crossSections[i], points[i], T, N,
+                                 angles[i] - twist, angle, controlScales[i],
+                                 ++segmentCount, shouldFlip);
             }
-            else {
+            else
+            {
                 T = points[i] - points[i - 1];
                 // add twist
-                drawCrossSection(crossSection, points[i], T, Ns[i - 1], angles[i] - twist,
-                                 scaleX[i], scaleY[i], 1, ++segmentCount);
+                drawCrossSection(crossSections[i], points[i], T, Ns[i - 1],
+                                 angles[i] - twist, 0, controlScales[i],
+                                 ++segmentCount, shouldFlip);
             }
         }
-        else {
+        else
+        {
             Vector3 prevVector = (points[i + 1] - points[i]).Normalized();
             Vector3 curVector = (points[i] - points[i - 1]).Normalized();
-            float angle = getAngle(prevVector, curVector);
+            float angle = (isAtSameLine(prevVector, curVector)) ?
+                0 : getAngle(prevVector, curVector);
 
-            T = prevVector + curVector;
-            N = prevVector - curVector;
+            if (isAtSameLine(prevVector, curVector))
+            {
+                N = Ns[i];
+                T = curVector;
+            }
+            else
+            {
+                N = prevVector - curVector;
+                T = prevVector + curVector;
+            }
 
-            drawCrossSection(crossSection, points[i], T, N, angles[i], scaleX[i],
-                             scaleY[i], 1 / cosf(angle / 2), ++segmentCount);
+            drawCrossSection(crossSections[i], points[i], T, N, angles[i], angle,
+                             controlScales[i], ++segmentCount, shouldFlip);
         }
     }
 
@@ -281,16 +437,43 @@ void CSweep::UpdateEntity()
             // CCW winding
             // v1_next v1_i
             // v2_next v2_i
-            int next = (i + 1) % crossSection.size();
+            std::vector<std::string> upperFace;
+
             int next_k = (k + 1) % segmentCount;
-            std::vector<std::string> upperFace = {
+            int next = (i + 1) % crossSection.size();
+            if (k == 0 && isClosed && shouldFlip)
+            {
+                int reverse_i = (2 * crossSection.size() - i - 1) % crossSection.size();
+                int reverse_next = (2 *crossSection.size() - next - 1) % crossSection.size();
+                upperFace = {
+                    "v" + std::to_string(next_k + 1) + "_" + std::to_string(reverse_i),
+                    "v" + std::to_string(next_k + 1) + "_" + std::to_string(reverse_next),
+                    "v" + std::to_string(k + 1) + "_" + std::to_string(next),
+                    "v" + std::to_string(k + 1) + "_" + std::to_string(i),
+                };
+
+            }
+            else
+            {
+                upperFace = {
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(next),
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(i),
                     "v" + std::to_string(k + 1) + "_" + std::to_string(i),
                     "v" + std::to_string(k + 1) + "_" + std::to_string(next),
-            };
+                };
+            }
             AddFace("f" + std::to_string(k) + "_" + std::to_string(i), upperFace);
         }
+    }
+
+    // Create caps
+    // Cannot create caps when the path is closed
+    if (isClosed) { return; }
+    if (bStartCap) { drawCap(crossSections[0], 1, segmentCount++ - 1, true); }
+    if (bEndCap)
+    {
+        int index = crossSections.size() - 1;
+        drawCap(crossSections[index], index + 1, segmentCount++ - 1, false);
     }
 
 }

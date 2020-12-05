@@ -26,8 +26,14 @@ public:
 
 private:
     void drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
-                          Vector3 T, Vector3 N, float angle, float scaleX,
-                          float scaleY, float scaleN, int index);
+                          Vector3 T, Vector3 N, float rotateAngle, float angle,
+                          Vector3 controlScale, int index, bool shouldReverse);
+    void drawCap(std::vector<Vector3> crossSection, int crossIndex,
+                 int faceIndex, bool shouldFlip);
+    bool bStartCap = false;
+    bool bEndCap = false;
+    bool bMintorsion = false;
+    bool bReverse = false;
 };
 
 }

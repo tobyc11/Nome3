@@ -49,6 +49,7 @@ private:
     CBSplineMath Math;
     bool bClosed = false;
     std::vector<Vector3> SamplePositions;
+    std::vector<CVertexInfo> points;
 };
 
 }

@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "SweepControlPoint.h"
 #include "InteractivePoint.h"
 #include "Mesh.h"
 #include <StringUtils.h>
@@ -97,6 +98,12 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
         if (point)
         {
             return &point->Point;
+        }
+        TAutoPtr<CSweepControlPoint> controlPoint =
+            dynamic_cast<CSweepControlPoint*>(ent.Get());
+        if (controlPoint)
+        {
+            return &controlPoint->SweepControlPoint;
         }
     }
 

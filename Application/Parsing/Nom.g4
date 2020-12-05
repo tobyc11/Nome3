@@ -78,7 +78,7 @@ command
    | open='bank' name=ident set* end='endbank' # CmdBank
    | open='delete' deleteFace* end='enddelete' # CmdDelete
    | open='subdivision' name=ident argSdFlag* argSdLevel* command* end='endsubdivision' # CmdSubdivision
-   | open='sharp' expression idList+ end='endsubdivision' # CmdSharp
+   | open='sharp' expression idList+ end='endsharp' # CmdSharp
    | open='offset' name=ident k1='type' v1=ident k2='min' v2=expression k3='max' v3=expression k4='step' v4=expression end='endoffset' # CmdOffset
    ;
 

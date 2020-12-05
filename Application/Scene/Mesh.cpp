@@ -41,13 +41,7 @@ void CMesh::UpdateEntity()
 
     ClearMesh();
     bool isValid = true;
-    for (int i = 0; i < SharpPoints.GetSize(); ++i)
-    {
-        auto* sharp = SharpPoints.GetValue(i, nullptr);
-        if (!sharp->AddSharpnessIntoMesh(this)) {
-            isValid = false;
-        }
-    }
+
     for (size_t i = 0; i < Faces.GetSize(); i++)
     {
         // We assume the nullptr value is never returned, of course
@@ -55,6 +49,14 @@ void CMesh::UpdateEntity()
         bool successful = face->AddFaceIntoMesh(this);
         if (!successful)
         {
+            isValid = false;
+        }
+    }
+
+    for (int i = 0; i < SharpPoints.GetSize(); ++i)
+    {
+        auto* sharp = SharpPoints.GetValue(i, nullptr);
+        if (!sharp->AddSharpnessIntoMesh(this)) {
             isValid = false;
         }
     }

@@ -161,14 +161,12 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (kind == ECommandKind::Entity)
     {
-        if (cmd->GetCommand() == "Sharp") {
+        if (cmd->GetCommand() == "sharp") {
             for (auto* sub : cmd->GetSubCommands())
             {
                 sub->PushPositionalArgument(cmd->GetLevel());
                 IterateSharpness(sub, scene);
             }
-
-
         } else
         {
             TAutoPtr<CEntity> entity =
@@ -253,6 +251,15 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         // 2. merge all instances
         tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger(cmd->GetName());
         merger->GetMetaObject().DeserializeFromAST(*cmd, *merger);
+        auto flag = cmd->GetNamedArgument("sd_type");
+        if (flag)
+        {
+            auto flagName = flag->GetArgument(
+                0)[0]; // Returns a casted AExpr that was an AIdent before casting
+            auto flagIdentifier = static_cast<AST::AIdent*>(&flagName)->ToString(); // Downcast it back to an AIdent
+            if (flagIdentifier == "NOME_SD_CC_sharp")
+                merger->SetSharp();
+        }
 
         /*
         node->ForEachTreeNode([&](Scene::CSceneTreeNode* node) {

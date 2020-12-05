@@ -7,8 +7,7 @@ namespace Nome::Scene
 {
 DEFINE_META_OBJECT(CMeshMerger)
 {
-    BindNamedArgument(&CMeshMerger::Level, "sd_flag", 0);
-    BindNamedArgument(&CMeshMerger::Flag, "sd_level", 0);
+    BindNamedArgument(&CMeshMerger::Level, "sd_level", 0);
 }
 
 inline static const float Epsilon = 0.01f;
@@ -22,10 +21,7 @@ void CMeshMerger::UpdateEntity()
     if (!IsDirty())
         return;
     subdivisionLevel = Level.GetValue(0);
-    if (Flag.GetValue("NOME_SD_CC") == "NOME_SD_CC_sharp")
-        isSharp = true;
-    else
-        isSharp = false;
+
 
     Super::UpdateEntity();
 
@@ -127,11 +123,7 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
     std::unordered_map<CMeshImpl::VertexHandle, CMeshImpl::VertexHandle> vertMap;
     for (auto vi = otherMesh.vertices_begin(); vi != otherMesh.vertices_end(); ++vi) // Iterate through all the vertices in the mesh (the non-merger mesh, aka the one you're trying copy vertices from)
     {
-        /*
-        if (markedSharp) {
-            MergedMesh.;
-        }
-         */
+
         const auto& posArray = otherMesh.point(*vi);
         Vector3 localPos = Vector3(posArray[0], posArray[1], posArray[2]); // localPos is position before transformations (e.g. rotate, translate, etc.)
         Vector3 worldPos = tf * localPos; // worldPos is the actual position you see in the grid, after the transformation (e.g. rotate, translate, etc.)
@@ -140,11 +132,9 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
         if (distance < Epsilon)
         { // this is to check for cases where there is an overlap (two vertices lie in the exact same world space coordinate). We only want to create one merger vertex at this location!
             vertMap[*vi] = closestVert; //just set vi to the closestVert (which is a merger vertex in the same location added in a previous iteration)
-            if (markedSharp) {
-                MergedMesh.data(closestVert).set_sharpness(
-                    std::max(MergedMesh.data(closestVert).sharpness(),otherMesh.data(*vi).sharpness()));
-                printf("set sharpness: %f\n", MergedMesh.data(closestVert).sharpness());
-            }
+            MergedMesh.data(closestVert).set_sharpness(
+                std::max(MergedMesh.data(closestVert).sharpness(),otherMesh.data(*vi).sharpness()));
+            printf("set sharpness: %f\n", MergedMesh.data(closestVert).sharpness());
         }
         else // Else, we haven't added a vertex at this location yet. So lets add_vertex to the merger mesh.
         {
@@ -153,9 +143,7 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
             std::string vName = "v" + std::to_string(VertCount); // we of course need a name for this new vertex handle
             NameToVert.insert({ vName, vnew }); // Add new merged vertex into NameToVert. This is if there wa sa floating point error above so we need to add an entirely new vertex + position ?
             ++VertCount; // VertCount is an attribute for this merger mesh. Starts at 0.
-            if (markedSharp) {
-                MergedMesh.data(vnew).set_sharpness(otherMesh.data(*vi).sharpness());
-            }
+            MergedMesh.data(vnew).set_sharpness(otherMesh.data(*vi).sharpness());
         }
     }
 
@@ -167,8 +155,14 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
             verts.emplace_back(vertMap[vert]); // Add the vertice handles from above. In most cases, it will match the actual mesh's? Unless there is a floating point precision error?
         auto fnew = MergedMesh.add_face(verts); // add_face processes the merger vertex handles and adds the face into the merger mesh (Mesh refers to the merger mesh here)
         std::string fName = "v" + std::to_string(FaceCount);
+
         NameToFace.insert({ fName, fnew }); // We add a new face in the same location as the actual mesh's face. This means if we adjust the actual mesh's parameters using a slider, you'll see the merger mesh in the actual mesh's original location
         FaceCount++;
+    }
+    // Add edge property
+    for (auto edge : otherMesh.edges()) //Iterate through all the faces in the mesh (that is, the non-merger mesh, aka the one you're trying to copy faces from)
+    {
+        MergedMesh.data(edge).set_sharpness(std::max(otherMesh.data(edge).sharpness(), MergedMesh.data(edge).sharpness()));
     }
 }
 
@@ -192,60 +186,11 @@ std::pair<CMeshImpl::VertexHandle, float> CMeshMerger::FindClosestVertex(const t
     return { result, minDist };
 }
 
-bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, const bool _update_points=true)
+bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, bool isSharp)
 {
 
-    typedef Far::TopologyDescriptor Descriptor;
-
-    Sdc::SchemeType type = OpenSubdiv::Sdc::SCHEME_CATMARK;
-
-    Sdc::Options options;
-    options.SetVtxBoundaryInterpolation(Sdc::Options::VTX_BOUNDARY_NONE);
-    options.SetCreasingMethod(Sdc::Options::CREASE_CHAIKIN);
-    Descriptor desc;
-
-    int g_vertsperface[6] = { 4, 4, 4, 4, 4, 4 };
-
-
-    desc.numVertices  = _m.n_vertices();
-    desc.numFaces     = _m.n_faces();
-    desc.numVertsPerFace = g_vertsperface;
-
-    int i = 0;
-    int temp[24];
-    for (auto face : _m.faces()) {
-        for (auto vertex : face.vertices())
-        {
-            temp[i] = vertex.idx();
-            i++;
-        }
-
-    }
-    i = 0;
-    float vertexsharp[8];
-    for (auto vertex : _m.vertices()) {
-
-        vertexsharp[i] = _m.data(vertex).sharpness();
-        i++;
-    }
-    int vertexi[8];
-    i = 0;
-    for (auto vertex : _m.vertices()) {
-        vertexi[i] = vertex.idx();
-        i++;
-    }
-    desc.numHoles = 1;
-    int v[1] = { 1 };
-    desc.holeIndices = v;
-    //esc.numCorners = _m.n_vertices();
-    //desc.cornerVertexIndices = vertexi;
-    //desc.cornerWeights = vertexsharp;
-    desc.vertIndicesPerFace = temp;
-
     // Instantiate a Far::TopologyRefiner from the descriptor
-    Far::TopologyRefiner * refiner = Far::TopologyRefinerFactory<Descriptor>::Create(desc,
-                                                                                     Far::TopologyRefinerFactory<Descriptor>::Options(type, options));
-
+    Far::TopologyRefiner * refiner = GetRefiner(_m, isSharp);
 
     refiner->RefineUniform(Far::TopologyRefiner::UniformOptions(n));
 

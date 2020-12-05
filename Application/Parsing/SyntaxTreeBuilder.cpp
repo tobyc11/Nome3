@@ -53,7 +53,7 @@ antlrcpp::Any CFileBuilder::visitArgSdLevel(NomParser::ArgSdLevelContext* ctx)
 antlrcpp::Any CFileBuilder::visitArgSdFlag(NomParser::ArgSdFlagContext* ctx)
 {
     auto* result = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
-    result->AddChild(visit(ctx->sdFlag()).as<AST::AExpr*>());
+    result->AddChild(visit(ctx->ident()).as<AST::AExpr*>());
     return result;
 }
 
@@ -173,9 +173,11 @@ antlrcpp::Any CFileBuilder::visitCmdSharp(NomParser::CmdSharpContext* context)
 {
     auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
     cmd->PushPositionalArgument(visit(context->expression()));
-    for (auto* subCmd : context->idList())
+    for (auto* arg : context->idList())
     {
-        cmd->AddSubCommand(visit(subCmd));
+        auto* subCmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
+        subCmd->PushPositionalArgument(visit(arg));
+        cmd->AddSubCommand(subCmd);
     }
     return cmd;
 

@@ -42,8 +42,6 @@ bool CSharp::AddSharpnessIntoMesh(CMesh* mesh) const
             return false;
         }
 
-
-        std::string newName = point->Name;
         if (mesh->HasVertex(point->Name))
         {
             nameList.push_back(point->Name);

@@ -214,6 +214,9 @@ bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command,
 
     return true;
 }
+
+
+
 template <>
 bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
     AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CVertexInfo*>& value)

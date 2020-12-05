@@ -11,7 +11,6 @@ namespace Nome::Scene
 class CMeshMerger : public CMesh
 {
     DEFINE_INPUT(float, Level) { MarkDirty(); }
-    DEFINE_INPUT(std::string, Flag) { MarkDirty(); }
 
     void UpdateEntity() override;
     //void MarkDirty() override;
@@ -44,6 +43,7 @@ public:
 
     void update_vertex( CMeshImpl& _m, const CMeshImpl::VertexHandle& _vh);
 
+    void SetSharp() {isSharp = true;}
 
     void setSubLevel(int level) {
         subdivisionLevel = level;

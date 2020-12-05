@@ -4,6 +4,13 @@
 ##  CHS 2020/12/2
 ######################################################
 
+bank slider
+  set sublevel 3 0 5 1
+  set upper_sharpness 9 0 10 0.5
+  set lower_sharpness 2 0 10 0.5
+endbank
+
+
 ####  Some Surface colors  ###########################
 surface M  color  (0.9 0   1  ) endsurface   # Magenta
 surface G  color  (0   0.9 0  ) endsurface   # Green
@@ -25,19 +32,18 @@ mesh cube
   face fy   (xyz xyc ayc ayz) endface
   face fa   (ayc abc abz ayz) endface
   face fb   (abz abc xbc xbz) endface
+  sharp {expr $slider.upper_sharpness} (xyz ayz abz xbz xyz) endsharp         ## a very sharp top contour (closed)
+  sharp {expr $slider.lower_sharpness} (xbc abc ayc xyc) (xyc xbc) endsharp   ## a softly rounded bootm contour (specified in 2 pieces)
 endmesh
-  #sharp 9 (xyz ayz abz xbz xyz) endsharp         ## a very sharp top contour (closed)
-  #sharp 2 (xbc abc ayc xyc) (xyc xbc) endsharp   ## a softly rounded bootm contour (specified in 2 pieces)
-
 ###  >>>  The software should check that the specified edges are indeed valid edges in the mesh; if not -> report an error.
 
 
 
 
 subdivision cubeSharp 
-  #sd_type NOME_SD_CC_sharp
-  #sd_level 4
-  4
+  sd_type NOME_SD_CC_sharp
+  sd_level {expr $slider.sublevel}
+
   instance icube cube  endinstance
 endsubdivision
 

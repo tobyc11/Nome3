@@ -40,17 +40,17 @@ void CSphere::UpdateEntity()
           float x = radius * cosf(phi);
           float y = radius * sinf(phi);
           float z = 0;
-          float rotatedX = x;
-          float rotatedY = y * cosf(rotationTheta);
-          float rotatedZ = y * sinf(rotationTheta);
+          float rotatedX = y * cosf(rotationTheta);
+          float rotatedY = y * sinf(rotationTheta);
+          float rotatedZ = x;
           AddVertex("v" + std::to_string(j) + "-" + std::to_string(i),
-                                    { rotatedX, rotatedY, rotatedZ });
+                                    { rotatedX, rotatedY, rotatedZ});
           if (j == 0 && i == 0) {
-            width += rotatedX;
-            AddVertex("top", { rotatedX, 0, 0 });
+            width += rotatedZ;
+            AddVertex("top", { 0, 0, rotatedZ });
           } else if (j == 0 && i == n - 1) {
-            width += rotatedX;
-            AddVertex("bottom", { rotatedX, 0, 0 });
+            width += rotatedZ;
+            AddVertex("bottom", { 0, 0, rotatedZ });
           }
       }
     }
@@ -104,7 +104,7 @@ void CSphere::UpdateEntity()
       }
     }
 
-    AddVertex("center", { width / 2, 0, 0 });
+    AddVertex("center", { 0, 0, width / 2 });
 
     // add slice faces
     if (maxTheta != 360) {

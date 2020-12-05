@@ -192,6 +192,7 @@ bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, bool isSharp)
     // Instantiate a Far::TopologyRefiner from the descriptor
     Far::TopologyRefiner * refiner = GetRefiner(_m, isSharp);
 
+
     refiner->RefineUniform(Far::TopologyRefiner::UniformOptions(n));
 
     std::vector<Vertex> vbuffer(refiner->GetNumVerticesTotal());
@@ -244,18 +245,26 @@ bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, bool isSharp)
             assert(fverts.size()==4);
             _m.add_face(_m.vertex_handle(fverts[0]), _m.vertex_handle(fverts[1]), _m.vertex_handle(fverts[2]), _m.vertex_handle(fverts[3]));
 
+<<<<<<< HEAD
             printf("f ");
             for (int vert=0; vert<fverts.size(); ++vert) {
                 printf("%d ", fverts[vert]+1); // OBJ uses 1-based arrays...
             }
             printf("\n");
+=======
+
+            _m.add_face(_m.vertex_handle(fverts[0]), _m.vertex_handle(fverts[1]), _m.vertex_handle(fverts[2]), _m.vertex_handle(fverts[3]));
+>>>>>>> subdivision
 
         }
     }
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> subdivision
     /*
     for (int i = 0; i < n; i++) {
         // Compute face centroid

@@ -615,7 +615,7 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
         QVector3D cameraPosition = cameraset->position();
         zPos = cameraPosition.z();
         QPoint numPixels = ev->pixelDelta();
-        QPoint numDegrees = ev->angleDelta() / 20.0;
+        QPoint numDegrees = ev->angleDelta() / 10.0f;
 
         if (!numPixels.isNull())
         {

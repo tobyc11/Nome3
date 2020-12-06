@@ -258,7 +258,9 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 0)[0]; // Returns a casted AExpr that was an AIdent before casting
             auto flagIdentifier = static_cast<AST::AIdent*>(&flagName)->ToString(); // Downcast it back to an AIdent
             if (flagIdentifier == "NOME_SD_CC_sharp")
-                merger->SetSharp();
+                merger->SetSharp(true);
+            else
+                merger->SetSharp(false);
         }
 
         /*

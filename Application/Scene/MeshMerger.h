@@ -43,7 +43,8 @@ public:
 
     void update_vertex( CMeshImpl& _m, const CMeshImpl::VertexHandle& _vh);
 
-    void SetSharp() {isSharp = true;}
+    void SetSharp(bool setSharp) {isSharp = setSharp;}
+
 
     void setSubLevel(int level) {
         subdivisionLevel = level;

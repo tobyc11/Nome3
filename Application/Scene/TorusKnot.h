@@ -26,6 +26,9 @@ public:
 
     void UpdateEntity() override;
     void MarkDirty() override; // Check with Zachary
+
+private:
+    std::vector<CVertexInfo> points;
 };
 
 }

@@ -39,7 +39,7 @@ namespace Nome::Scene
 
 static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "point", ECommandKind::Entity },       { "polyline", ECommandKind::Entity },
-    { "sweep", ECommandKind::Entity },       { "sweepcontrol", ECommandKind::Entity },
+    { "sweep", ECommandKind::Entity },       { "controlpoint", ECommandKind::Entity },
     { "face", ECommandKind::Entity },        { "object", ECommandKind::Entity },
     { "mesh", ECommandKind::Entity },        { "group", ECommandKind::Instance },
     { "circle", ECommandKind::Entity },      { "sphere", ECommandKind::Entity },
@@ -89,7 +89,7 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CSphere(name);
     else if (cmd == "sweep")
         return new CSweep(name);
-    else if (cmd == "sweepcontrol")
+    else if (cmd == "controlpoint")
         return new CSweepControlPoint(name);
     else if (cmd == "surface")
         return new CSurface(name);
@@ -137,7 +137,7 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
         auto name = bank + "." + cmd->GetName();
         scene.GetBankAndSet().AddSlider(name, cmd, evalArg(1), evalArg(2), evalArg(3), evalArg(4));
     }
-    
+
     for (auto* sub : cmd->GetSubCommands())
         VisitCommandBankSet(sub, scene);
     CmdTraverseStack.pop_back();

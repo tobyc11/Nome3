@@ -153,7 +153,6 @@ void CMainWindow::on_actionSceneAsStl_triggered()
 void CMainWindow::on_actionMerge_triggered()
 {
     // One shot merging, and add a new entity and its corresponding node
-    Scene->Update();
     merger = new Scene::CMeshMerger("globalMerge"); //CmeshMerger is basically a CMesh, but with a MergeIn method. Merger will contain ALL the merged vertices (from various meshes)
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         if (node->GetOwner()->GetName() == "globalMergeNode") // If the node owner is a globalMergeNode, skip as that was a previously merger mesh (from a previous Merge process). We only want to merge vertices from our actual (non-merged) meshes.
@@ -165,6 +164,7 @@ void CMainWindow::on_actionMerge_triggered()
         if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))  //set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
             merger->MergeIn(*mesh);
     });
+    Scene->Update();
 
     // TODO: Next 3 lines are super buggy, but needed to perform Catmull w/ replacement. Often crashes when used on larger scenes.
     //Scene = new Scene::CScene();

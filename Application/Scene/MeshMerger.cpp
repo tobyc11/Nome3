@@ -121,37 +121,37 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
 
     // Copy over all the vertices and check for overlapping
     std::unordered_map<CMeshImpl::VertexHandle, CMeshImpl::VertexHandle> vertMap;
-    for (auto vi = otherMesh.vertices_begin(); vi != otherMesh.vertices_end(); ++vi) // Iterate through all the vertices in the mesh (the non-merger mesh, aka the one you're trying copy vertices from)
+    for (auto vi : otherMesh.vertices()) // Iterate through all the vertices in the mesh (the non-merger mesh, aka the one you're trying copy vertices from)
     {
 
-        const auto& posArray = otherMesh.point(*vi);
+        const auto& posArray = otherMesh.point(vi);
         Vector3 localPos = Vector3(posArray[0], posArray[1], posArray[2]); // localPos is position before transformations (e.g. rotate, translate, etc.)
         Vector3 worldPos = tf * localPos; // worldPos is the actual position you see in the grid, after the transformation (e.g. rotate, translate, etc.)
         auto [closestVert, distance] = FindClosestVertex(worldPos); // Find closest vertex already IN MERGER mesh, not the actual mesh. This is to prevent adding two merger vertices in the same location!
         // As a side note, closestVert is a VertexHandle, which is essentially, a pointer to the actual vertex. OpenMesh is great at working with these handles. You can basically treat them as the vertex themselves.
         if (distance < Epsilon)
         { // this is to check for cases where there is an overlap (two vertices lie in the exact same world space coordinate). We only want to create one merger vertex at this location!
-            vertMap[*vi] = closestVert; //just set vi to the closestVert (which is a merger vertex in the same location added in a previous iteration)
+            vertMap[vi] = closestVert; //just set vi to the closestVert (which is a merger vertex in the same location added in a previous iteration)
             MergedMesh.data(closestVert).set_sharpness(
-                std::max(MergedMesh.data(closestVert).sharpness(),otherMesh.data(*vi).sharpness()));
+                std::max(MergedMesh.data(closestVert).sharpness(),otherMesh.data(vi).sharpness()));
             printf("set sharpness: %f\n", MergedMesh.data(closestVert).sharpness());
         }
         else // Else, we haven't added a vertex at this location yet. So lets add_vertex to the merger mesh.
         {
             auto vnew = MergedMesh.add_vertex({ worldPos.x, worldPos.y, worldPos.z }); // This adds a new vertex. Notice, we are passing in coordinates here, but it actually returns a vertex handle (essentially, a pointer to this vertex.
-            vertMap[*vi] = vnew; // Map actual mesh vertex to merged vertex.This dictionary is useful for add face later.
+            vertMap[vi] = vnew; // Map actual mesh vertex to merged vertex.This dictionary is useful for add face later.
             std::string vName = "v" + std::to_string(VertCount); // we of course need a name for this new vertex handle
             NameToVert.insert({ vName, vnew }); // Add new merged vertex into NameToVert. This is if there wa sa floating point error above so we need to add an entirely new vertex + position ?
             ++VertCount; // VertCount is an attribute for this merger mesh. Starts at 0.
-            MergedMesh.data(vnew).set_sharpness(otherMesh.data(*vi).sharpness());
+            MergedMesh.data(vnew).set_sharpness(otherMesh.data(vi).sharpness());
         }
     }
 
     // Add faces
-    for (auto fi = otherMesh.faces_begin(); fi != otherMesh.faces_end(); ++fi) //Iterate through all the faces in the mesh (that is, the non-merger mesh, aka the one you're trying to copy faces from)
+    for (auto fi : otherMesh.faces()) //Iterate through all the faces in the mesh (that is, the non-merger mesh, aka the one you're trying to copy faces from)
     {
         std::vector<CMeshImpl::VertexHandle> verts;
-        for (auto vert : otherMesh.fv_range(*fi)) // iterate through all the vertices on this face
+        for (auto vert : fi.vertices()) // iterate through all the vertices on this face
             verts.emplace_back(vertMap[vert]); // Add the vertice handles from above. In most cases, it will match the actual mesh's? Unless there is a floating point precision error?
         auto fnew = MergedMesh.add_face(verts); // add_face processes the merger vertex handles and adds the face into the merger mesh (Mesh refers to the merger mesh here)
         std::string fName = "v" + std::to_string(FaceCount);
@@ -162,7 +162,17 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
     // Add edge property
     for (auto edge : otherMesh.edges()) //Iterate through all the faces in the mesh (that is, the non-merger mesh, aka the one you're trying to copy faces from)
     {
-        MergedMesh.data(edge).set_sharpness(std::max(otherMesh.data(edge).sharpness(), MergedMesh.data(edge).sharpness()));
+
+        auto mergedEdge = MergedMesh.find_halfedge(vertMap[edge.v0()], vertMap[edge.v1()]).edge();
+        try
+        {
+            MergedMesh.data(mergedEdge).set_sharpness(
+                std::max(otherMesh.data(edge).sharpness(), MergedMesh.data(mergedEdge).sharpness()));
+        }
+        catch (int e)
+        {
+            std::cerr << "When try to merge in sharpness the edges don't match" << e << '\n';
+        }
     }
 }
 
@@ -245,71 +255,16 @@ bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, bool isSharp)
             assert(fverts.size()==4);
             _m.add_face(_m.vertex_handle(fverts[0]), _m.vertex_handle(fverts[1]), _m.vertex_handle(fverts[2]), _m.vertex_handle(fverts[3]));
 
-<<<<<<< HEAD
             printf("f ");
             for (int vert=0; vert<fverts.size(); ++vert) {
                 printf("%d ", fverts[vert]+1); // OBJ uses 1-based arrays...
             }
             printf("\n");
-=======
 
-            _m.add_face(_m.vertex_handle(fverts[0]), _m.vertex_handle(fverts[1]), _m.vertex_handle(fverts[2]), _m.vertex_handle(fverts[3]));
->>>>>>> subdivision
 
         }
     }
 
-
-<<<<<<< HEAD
-
-
-=======
->>>>>>> subdivision
-    /*
-    for (int i = 0; i < n; i++) {
-        // Compute face centroid
-        for ( auto fh : _m.faces())
-        {
-            CMeshImpl::Point centroid;
-            _m.calc_face_centroid( fh, centroid);
-            _m.property( fp_pos_, fh ) = centroid;
-        }
-
-        // Compute position for new (edge-) vertices and store them in the edge property
-        for ( auto eh : _m.edges())
-            compute_midpoint( _m, eh, _update_points );
-
-        // position updates activated?
-        if(_update_points)
-        {
-            // compute new positions for old vertices
-            for ( auto vh : _m.vertices())
-                update_vertex( _m, vh );
-
-            // Commit changes in geometry
-            for ( auto vh : _m.vertices())
-                _m.set_point(vh, _m.property( vp_pos_, vh ) );
-        }
-
-        // Split each edge at midpoint stored in edge property ep_pos_;
-        // Attention! Creating new edges, hence make sure the loop ends correctly.
-        for ( auto eh : _m.edges())
-            split_edge( _m, eh );
-
-        // Commit changes in topology and reconsitute consistency
-        // Attention! Creating new faces, hence make sure the loop ends correctly.
-        for ( auto fh : _m.faces())
-            split_face( _m, fh);
-
-
-#if defined(_DEBUG) || defined(DEBUG)
-        // Now we have an consistent mesh!
-        assert( OpenMesh::Utils::MeshCheckerT<MeshType>(_m).check() );
-#endif
-    }
-    */
-
-    //_m.update_normals();
 
     return true;
 }

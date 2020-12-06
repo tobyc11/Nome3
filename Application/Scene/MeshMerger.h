@@ -63,7 +63,7 @@ private:
 
     CMeshImpl MergedMesh;
     unsigned int subdivisionLevel = 0;
-    bool isSharp = false;
+    bool isSharp = true;
 
 
 };

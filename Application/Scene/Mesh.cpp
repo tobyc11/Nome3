@@ -180,8 +180,11 @@ AST::ACommand* CMesh::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
 void CMesh::AddEdgeSharpness(const CMeshImpl::VertexHandle& e1, const CMeshImpl::VertexHandle& e2, float sharpness)
 {
     auto halfedge = Mesh.find_halfedge(e1, e2);
-    Mesh.data(halfedge.edge()).set_sharpness(sharpness);
+    if (halfedge.is_valid())
+        Mesh.data(halfedge.edge()).set_sharpness(sharpness);
 
+    else
+        perror("couldn't add add edge sharpness because can't match two input points to an edge\n");
 
 }
 void CMesh::AddPointSharpness(const CMeshImpl::VertexHandle& sharpPoint,

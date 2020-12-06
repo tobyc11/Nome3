@@ -36,19 +36,24 @@ Far::TopologyRefiner * GetRefiner(CMeshImpl& _m, bool isSharp) {
         desc.numVertices = _m.n_vertices();
         desc.numFaces = _m.n_faces();
         int *faceVerts = new int[_m.n_faces()];
-        int *faceVertsIndices = new int[_m.n_faces() * 4];
+        int count = 0;
         for (auto face : _m.faces()) {
-            faceVerts[face.idx()] = 4;
             int i = 0;
             for (auto vert : face.vertices()) {
-                faceVertsIndices[4 * face.idx() + i] = vert.idx();
+                i++;
+                count++;
+            }
+            faceVerts[face.idx()] = i;
+        }
+        int *faceVertsIndices = new int[count];
+        int i = 0;
+        for (auto face : _m.faces()) {
+            for (auto vert : face.vertices()) {
+                faceVertsIndices[i] = vert.idx();
                 i++;
             }
-
         }
         desc.numVertsPerFace = faceVerts;
-
-
         desc.vertIndicesPerFace = faceVertsIndices;
     }
 

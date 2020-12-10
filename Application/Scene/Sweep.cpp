@@ -303,13 +303,11 @@ void CSweep::UpdateEntity()
     // add rotation
     for (size_t i = 0; i < numPoints; i++)
     {
-        CVertexInfo *point = pathInfo->Positions[i];
+        CSweepControlPointInfo* SI = dynamic_cast<CSweepControlPointInfo*>(pathInfo->Positions[i]);
 
         angles[i] += azimuth;
 
-        auto& e = *point;
-        if (typeid(e) == typeid(CSweepControlPointInfo)) {
-            CSweepControlPointInfo* SI = dynamic_cast<CSweepControlPointInfo*>(point);
+        if (SI != nullptr) {
 
             angles[i] += SI->Rotate.z * tc::M_PI / 180;
             controlScales[i].x *= SI->Scale.x;

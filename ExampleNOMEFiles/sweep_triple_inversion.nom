@@ -1,0 +1,65 @@
+# Sliders
+bank p
+    set radius   1.2     1       5     0.1
+	set s_twist 0 0.1 360 1
+	set s_azimuth 0 0.1 360 1
+endbank
+
+# Cross Section
+point cp0 ({expr $p.radius * cos(0)}               {expr $p.radius * sin(0)} 0) endpoint
+point cp1 ({expr $p.radius * cos(0.0174533 * 45)}  {expr $p.radius * sin(0.0174533 * 45)} 0) endpoint
+point cp2 ({expr $p.radius * cos(0.0174533 * 90)}  {expr $p.radius * sin(0.0174533 * 90)} 0) endpoint
+point cp3 ({expr $p.radius * cos(0.0174533 * 135)} {expr $p.radius * sin(0.0174533 * 135)} 0) endpoint
+point cp4 ({expr $p.radius * cos(0.0174533 * 180)} {expr $p.radius * sin(0.0174533 * 180)} 0) endpoint
+point cp5 ({expr $p.radius * cos(0.0174533 * 225)} {expr $p.radius * sin(0.0174533 * 225)} 0) endpoint
+point cp6 ({expr $p.radius * cos(0.0174533 * 270)} {expr $p.radius * sin(0.0174533 * 270)} 0) endpoint
+point cp7 ({expr $p.radius * cos(0.0174533 * 315)} {expr $p.radius * sin(0.0174533 * 315)} 0) endpoint
+
+polyline s_crosssection (cp7 cp6 cp5 cp4 cp3 cp2 cp1 cp0) closed endpolyline
+
+point xp0   ( 0     -0.125  0 )   endpoint
+point xp1   ( 1      0      0 )   endpoint
+point xp2   ( 0.216  0.125  0 )   endpoint
+point xp3   ( 0.5    0.866  0 )   endpoint
+point xp4   ( 0      0.25   0 )   endpoint
+point xp5   (-0.5    0.866  0 )   endpoint
+point xp6   (-0.216  0.126  0 )   endpoint
+point xp7   (-1      0      0 )   endpoint
+
+polyline halfstar (xp1 xp0 xp7 xp6 xp5 xp4 xp3 xp2) closed endpolyline
+
+# Path
+point point0 (-5.5    4   0) endpoint
+point point1 (-5       4   0) endpoint
+point point2 ( 5       4   0) endpoint
+point point3 ( 5.5    4   0) endpoint
+point point4 ( 5       4   0) endpoint
+point point5 (-10     4   0) endpoint
+point point6 (-10    -6   0) endpoint
+point point7 ( 10    -6   0) endpoint
+point point8 ( 10     4   0) endpoint
+point point9 (-5       4   0) endpoint
+
+# Control Points
+controlpoint sc0 point point0 scale (1.5 1.5 0) rotate(0 0 0)         endcontrolpoint
+controlpoint sc1 point point1 scale (1.1 1.1 0) rotate(0 0 0)         endcontrolpoint
+controlpoint sc2 point point2 scale (1.1 1.1 0) rotate(0 0 0)         endcontrolpoint
+controlpoint sc3 point point3 scale (0.8 0.8 0) rotate(0 0 0)         endcontrolpoint
+controlpoint sc4 point point4 scale (0.5 0.5 0) rotate(0 0 0) reverse endcontrolpoint
+controlpoint sc5 point point5 scale (0.6 0.6 0) rotate(0 0 0)         endcontrolpoint
+controlpoint sc6 point point6 scale (1.0 1.0 0) rotate(0 0 0) endcontrolpoint
+controlpoint sc7 point point7 scale (1.4 1.4 0) rotate(0 0 0)         endcontrolpoint
+controlpoint sc8 point point8 scale (1.8 1.8 0) rotate(0 0 0)         endcontrolpoint
+controlpoint sc9 point point9 scale (1.9 1.9 0) rotate(0 0 0)         endcontrolpoint
+
+polyline s_path (sc0 sc1 sc2 sc3 sc4 sc5 sc6 sc7 sc8 sc9) closed endpolyline
+
+
+# Sweep
+
+sweep s0
+    crosssection s_crosssection endcrosssection
+    path s_path mintorsion azimuth {expr $p.s_azimuth} twist {expr $p.s_twist} endpath
+endsweep
+
+instance sweepinst s0 endinstance

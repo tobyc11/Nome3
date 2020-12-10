@@ -132,9 +132,15 @@ void CTorusKnot::UpdateEntity()
             CVertexInfo point;
             point.Position =p0vec3;
             points.push_back(point);
-            positions.push_back(&points[i]);
         }
     }
+
+    for (int i = 0; i < numSegments; i++) // Add Vertex Info to Sweeps
+    {
+        if (tubeRadius == 0)
+            positions.push_back(&points[i]);
+    }
+
 
     if (tubeRadius != 0)
     {

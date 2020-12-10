@@ -1,46 +1,32 @@
 bank b
-	set twist 0 0.1 360 1
-	set angle 0 0.1 360 1
+	set s_twist 0 0.1 360 1
+	set s_azimuth 0 0.1 360 1
 endbank
 
-# Path 1
+
+# Path
 point point1_1 (0 0 0) endpoint
-point point1_2 (4 11 0) endpoint
-point point1_3 (1 11 10) endpoint
-point point1_4 (16 15 10) endpoint
-point point1_5 (11 21 14) endpoint
-point point1_6 (1 25 -5) endpoint
-point point1_7 (11 30 1) endpoint
-point point1_8 (16 30 10) endpoint
-point point1_9 (1 30 10) endpoint
-point point1_10 (11 5 15) endpoint
-point point1_11 (11 5 0) endpoint
-point point1_12 (20 5 -10) endpoint
+point point1_2 (10 0 0) endpoint
+point point1_3 (10 10 0) endpoint
+point point1_4 (0 10 0) endpoint
+point point1_5 (0 5 0) endpoint
 
-polyline path1 (point1_1 point1_2 point1_3 point1_4 point1_5 point1_6 point1_7 point1_8 point1_9 point1_10 point1_11 point1_12) endpolyline
-
-# Path 2
-point point2_1 (0 0 0) endpoint
-point point2_2 (10 0 0) endpoint
-point point2_3 (10 10 0) endpoint
-point point2_4 (0 10 0) endpoint
-
-polyline path2 (point2_1 point2_2 point2_3 point2_4) closed endpolyline
+polyline path1 (point1_1 point1_2 point1_3 point1_4 point1_5) closed endpolyline
 
 # Cross Section
-point point3_1 (2 1 0) endpoint
-point point3_2 (-2 1 0) endpoint
-point point3_3 (-2 -1 0) endpoint
-point point3_4 (2 -1 0) endpoint
+point point2_1 (2 1 0) endpoint
+point point2_2 (-2 1 0) endpoint
+point point2_3 (-2 -1 0) endpoint
+point point2_4 (2 -1 0) endpoint
 
-polyline crossSection (point3_1 point3_2 point3_3 point3_4) endpolyline
+polyline crossSection (point2_1 point2_2 point2_3 point2_4) closed endpolyline
 
 # Sweep
 
-sweep s1 (path1 crossSection {expr $b.angle} {expr $b.twist}) endsweep
 
-sweep s2 (path2 crossSection {expr $b.angle} {expr $b.twist}) endsweep
+sweep s1
+    crosssection crossSection endcrosssection
+    path path1 mintorsion azimuth {expr $b.s_azimuth} twist {expr $b.s_twist} endpath
+endsweep
 
-#instance sweepinst s1 endinstance
-
-instance sweepinst s2 endinstance
+instance sweepinst s1 endinstance

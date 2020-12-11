@@ -54,21 +54,21 @@ void CMeshRenderComponent::Update()
             {
                 const auto& posVec = mesh.point(faceVert);
                 v0.Pos = { posVec[0], posVec[1], posVec[2] };
-                const auto& fnVec = mesh.normal(faceVert);
+                const auto& fnVec = bSmoothShading ? mesh.normal(faceVert) : mesh.normal(*fIter);
                 v0.Normal = { fnVec[0], fnVec[1], fnVec[2] };
             }
             else if (fvIndex == 1)
             {
                 const auto& posVec = mesh.point(faceVert);
                 vPrev.Pos = { posVec[0], posVec[1], posVec[2] };
-                const auto& fnVec = mesh.normal(faceVert);
+                const auto& fnVec = bSmoothShading ? mesh.normal(faceVert) : mesh.normal(*fIter);
                 vPrev.Normal = { fnVec[0], fnVec[1], fnVec[2] };
             }
             else
             {
                 const auto& posVec = mesh.point(faceVert);
                 vCurr.Pos = { posVec[0], posVec[1], posVec[2] };
-                const auto& fnVec = mesh.normal(faceVert);
+                const auto& fnVec = bSmoothShading ? mesh.normal(faceVert) : mesh.normal(*fIter);
                 vCurr.Normal = { fnVec[0], fnVec[1], fnVec[2] };
                 vertexDataArr.push_back(v0);
                 vertexDataArr.push_back(vPrev);

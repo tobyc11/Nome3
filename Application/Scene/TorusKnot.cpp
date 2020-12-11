@@ -15,13 +15,15 @@ typedef struct
 
 DEFINE_META_OBJECT(CTorusKnot)
 {
-    BindPositionalArgument(&CTorusKnot::P_Val, 1, 0); // equivalent to "symm" in the language reference
-    BindPositionalArgument(&CTorusKnot::Q_Val, 1, 1); // equivalent to "turns" in the language reference
+    BindPositionalArgument(&CTorusKnot::P_Val, 1,
+                           0); // equivalent to "symm" in the language reference
+    BindPositionalArgument(&CTorusKnot::Q_Val, 1,
+                           1); // equivalent to "turns" in the language reference
     BindPositionalArgument(&CTorusKnot::MajorRadius, 1, 2);
     BindPositionalArgument(&CTorusKnot::MinorRadius, 1, 3);
     BindPositionalArgument(&CTorusKnot::TubeRadius, 1, 4); // equivalent to "minor radius"
     BindPositionalArgument(&CTorusKnot::VerticesPerRing, 1, 5); // "circle_segs"
-    BindPositionalArgument(&CTorusKnot::Segments, 1, 6);// "sweep_segs"
+    BindPositionalArgument(&CTorusKnot::Segments, 1, 6); // "sweep_segs"
 }
 
 void CTorusKnot::MarkDirty()
@@ -56,25 +58,29 @@ void CTorusKnot::UpdateEntity()
 
     // Special case where tubeRadius == 0, create a polyline that can be used for Sweeps
     std::vector<CMeshImpl::VertexHandle> vertArray;
-    std::vector<CVertexInfo *> positions;
+    std::vector<CVertexInfo*> positions;
 
-    // https://mathworld.wolfram.com/Torus.html and http://makerhome.blogspot.com/2014/01/day-150-trefoil-torus-knots.html
-    for (int i = 0; i < numSegments; i++) // Create torus knot, creating one cross section at each iteration
+    // https://mathworld.wolfram.com/Torus.html and
+    // http://makerhome.blogspot.com/2014/01/day-150-trefoil-torus-knots.html
+    for (int i = 0; i < numSegments;
+         i++) // Create torus knot, creating one cross section at each iteration
     {
         float t0 = i * dt;
         float r0 = (majorRadius + minorRadius * cosf(_q * t0)); // * 0.5;
 
         Point p0 = { r0 * cosf(_p * t0), r0 * sinf(_p * t0), minorRadius * sinf(_q * t0) };
-        // Point p0 = { sinf(t0), cos(t0), 0}; // uncomment this to do torus instead    . naive circle method
+        // Point p0 = { sinf(t0), cos(t0), 0}; // uncomment this to do torus instead    . naive
+        // circle method
 
-        // Below, we'll work on approximating the Frenet frame { T, N, B } for the curve at the current point
+        // Below, we'll work on approximating the Frenet frame { T, N, B } for the curve at the
+        // current point
 
         float t1 = t0 + epsilon;
         float r1 = (majorRadius + minorRadius * cosf(_q * t1)); //* 0.5;
 
         // p1 is p0 advanced infinitesimally along the curve
         Point p1 = { r1 * cosf(_p * t1), r1 * sinf(_p * t1), minorRadius * sinf(_q * t1) };
-        //Point p1 = { sinf(t1), cos(t1), 0 }; //uncomment this to do torus instead
+        // Point p1 = { sinf(t1), cos(t1), 0 }; //uncomment this to do torus instead
 
         // compute approximate tangent as vector connecting p0 to p1
         Point T = { p1.x - p0.x, p1.y - p0.y, p1.z - p0.z };
@@ -130,17 +136,10 @@ void CTorusKnot::UpdateEntity()
             auto vertHandle = AddVertex("knotpoint" + std::to_string(i), p0vec3);
             vertArray.push_back(vertHandle);
             CVertexInfo point;
-            point.Position =p0vec3;
-            points.push_back(point);
+            point.Position = p0vec3;
+            positions.push_back(&point);
         }
     }
-
-    for (int i = 0; i < numSegments; i++) // Add Vertex Info to Sweeps
-    {
-        if (tubeRadius == 0)
-            positions.push_back(&points[i]);
-    }
-
 
     if (tubeRadius != 0)
     {
@@ -159,7 +158,7 @@ void CTorusKnot::UpdateEntity()
                     "v" + std::to_string(k + 1) + "_" + std::to_string(next)
 
                 };
-                AddFace("f1_" + std::to_string(i), upperFace);
+                AddFace("f" + std::to_string(k) + "_" + std::to_string(i), upperFace);
             }
         }
     }
@@ -173,6 +172,5 @@ void CTorusKnot::UpdateEntity()
         TorusKnot.UpdateValue(&SI);
         SetValid(true);
     }
-
 }
 }

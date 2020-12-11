@@ -150,59 +150,84 @@ void CMainWindow::on_actionSceneAsStl_triggered()
                                                     tr("Stl Files (*.stl);;All Files (*)"));
 }*/
 
+
 void CMainWindow::on_actionMerge_triggered()
 {
     // One shot merging, and add a new entity and its corresponding node
     Scene->Update();
-    tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge"); //CmeshMerger is basically a CMesh, but with a MergeIn method. Merger will contain ALL the merged vertices (from various meshes)
+    tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger(
+        "globalMerge"); // CmeshMerger is basically a CMesh, but with a MergeIn method. Merger will
+                        // contain ALL the merged vertices (from various meshes)
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        if (node->GetOwner()->GetName() == "globalMergeNode") // If the node owner is a globalMergeNode, skip as that was a previously merger mesh (from a previous Merge process). We only want to merge vertices from our actual (non-merged) meshes.
+        if (node->GetOwner()->GetName()
+            == "globalMergeNode") // If the node owner is a globalMergeNode, skip as that was a
+                                  // previously merger mesh (from a previous Merge process). We only
+                                  // want to merge vertices from our actual (non-merged) meshes.
             return;
         auto* entity = node->GetInstanceEntity(); // Else, get the instance
-        if (!entity) // Check to see if the an entity is instantiable (e.g., polyline, funnel, mesh, etc.), and not just an instance identifier.
-            entity = node->GetOwner()->GetEntity(); // If it's not instantiable, get entity instead of instance entity
+        if (!entity) // Check to see if the an entity is instantiable (e.g., polyline, funnel, mesh,
+                     // etc.), and not just an instance identifier.
+            entity = node->GetOwner()->GetEntity(); // If it's not instantiable, get entity instead
+                                                    // of instance entity
 
-        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))  //set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
+        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+        { // set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's
+          // vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get
+          // merged.
             merger->MergeIn(*mesh);
+        }
     });
-    // TODO: Next 3 lines are super buggy, but needed to perform Catmull w/ replacement. Often crashes when used on larger scenes.
-    //Scene = new Scene::CScene();
-    //Scene::GEnv.Scene = Scene.Get();
-    //PostloadSetup();
 
-    Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
-    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices. 
-    sn->SetEntity(merger.Get()); // Set sn, which is the scene node, to point to entity merger 
+    // TODO: 10/22 added.  These lines work to reset the scene
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        if (node->GetOwner()->GetName() != "globalMergeNode")
+            node->GetOwner()->SetEntity(nullptr);
+    });
 
+    Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(
+        merger)); // Merger now has all the vertices set, so we can add it into the scene as a new
+                  // entity
+    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode(
+        "globalMergeNode"); // Add it into the Scene Tree by creating a new node called
+                            // globalMergeNode. Notice, this is the same name everytime you Merge.
+                            // This means you can only have one merger mesh each time. It will
+                            // override previous merger meshes with the new vertices.
+    sn->SetEntity(merger.Get()); // Set sn, which is the scene node, to point to entity merger
 }
+
+
+/*
+void CMainWindow::on_actionSharpenFace_triggered()
+{
+    const auto& faces = Nome3DView->GetSelectedFaces();
+    std::cout << "Sharpen Face is not implemented yet. " << std::endl;
+    // TODO: Add option to sharpen face
+    // Commented out. I removed the SharpenFace function because it was incorrectly implemented.
+TemporaryMeshManager->SharpenFace(faces); Nome3DView->ClearSelectedFaces();
+}*/
+
 
 // only subdivide merge nodes
 void CMainWindow::on_actionSubdivide_triggered()
 {
     // One shot merging, and add a new entity and its corresponding node
     Scene->Update();
-    tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge"); 
+    tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge");
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         if (node->GetOwner()->GetName() == "globalMergeNode")
         {
-            auto* entity = node->GetInstanceEntity(); // this is non-null if the entity is
-                                                      // instantiable like a torus knot or polyline
-            if (!entity) // if it's not instantiable, like a face, then get the entity associated
-                         // with it
+            auto* entity = node->GetInstanceEntity();
+            if (!entity)
                 entity = node->GetOwner()->GetEntity();
             if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
-            {
                 merger->Catmull(*mesh);
-            }
         }
-        
     });
-    Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(
-        merger)); 
-    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); 
-    sn->SetEntity(merger.Get());  
-    
+    Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger));
+    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode");
+    sn->SetEntity(merger.Get());
 }
+
 /* Randy temporarily commenting out. Point and Instance don't work.
 void CMainWindow::on_actionPoint_triggered() { }
 
@@ -242,14 +267,10 @@ void CMainWindow::on_actionAddPolyline_triggered()
 
 void CMainWindow::on_actionRemoveFace_triggered()
 {
-    const auto& verts = Nome3DView->GetSelectedVertices();
-    if (verts.size() < 3)
-    {
-        statusBar()->showMessage("Selected vertices are less than 3");
-        return;
-    }
-    TemporaryMeshManager->AddFace(verts);
-    Nome3DView->ClearSelectedVertices(); // Randy added 9/27
+
+    const auto& faces = Nome3DView->GetSelectedFaces();
+    TemporaryMeshManager->RemoveFace(faces);
+    Nome3DView->ClearSelectedFaces(); // Randy added 9/27
 }
 
 // Randy temporarily commenting out because Reloading serves the same purpose as this.
@@ -258,12 +279,64 @@ void CMainWindow::on_actionRemoveFace_triggered()
 
 void CMainWindow::on_actionCommitChanges_triggered()
 {
-    TemporaryMeshManager->CommitChanges(
-        SourceMgr
-            ->GetASTContext()); // 10/1 Randy commented the following out because MeshName and
-                                // InstName are not used anymore MeshName->text().toStdString(),
-                                // InstName->text().toStdString());
+    TemporaryMeshManager->CommitChanges(SourceMgr->GetASTContext());
+    // InstName and MeshName are not used anymore
+    // MeshName->text().toStdString(),
+    // InstName->text().toStdString());
     this->setWindowModified(true);
+}
+
+// Toggle on/off Face facets/edges coloring
+void CMainWindow::on_actionShowFacets_triggered()
+{
+    Nome3DView->WireFrameMode = !(Nome3DView->WireFrameMode);
+
+    // mark all mesh instances dirty
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+
+        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+            mesh->MarkDirty();
+    });
+}
+
+// Toggle on/off Vertex selection
+void CMainWindow::on_actionToggleVertexSelection_triggered()
+{
+    Nome3DView->PickVertexBool = !Nome3DView->PickVertexBool;
+    // mark all mesh instances dirty. Added on 11/26
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+
+        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+            mesh->MarkDirty();
+    });
+}
+
+
+// Toggle on/off Edge Selection
+void CMainWindow::on_actionToggleEdgeSelection_triggered()
+{
+    Nome3DView->PickEdgeBool = !Nome3DView->PickEdgeBool;
+}
+
+// Toggle on/off Face Selection
+void CMainWindow::on_actionToggleFaceSelection_triggered()
+{
+    Nome3DView->PickFaceBool = !Nome3DView->PickFaceBool;
+    // mark all mesh instances dirty. Added on 11/26
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+
+        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+            mesh->MarkDirty();
+    });
 }
 
 void CMainWindow::SetupUI()
@@ -328,18 +401,22 @@ void CMainWindow::LoadEmptyNomeFile()
     PostloadSetup();
 }
 
+
 void CMainWindow::LoadNomeFile(const std::string& filePath)
 {
     setWindowFilePath(QString::fromStdString(filePath));
     bIsBlankFile = false;
     SourceMgr = std::make_shared<CSourceManager>(filePath);
-    bool parseSuccess = SourceMgr->ParseMainSource();
+
+    bool parseSuccess = SourceMgr->ParseMainSource(); // AST is created with this function call. If
+                                                      // want to add #include, must combine files
     if (!parseSuccess)
     {
         auto resp = QMessageBox::question(
             this, "Parser error",
             "The file did not completely successfully parse, do you still want "
             "to continue anyway? (See console for more information!)");
+
         if (resp != QMessageBox::Yes)
         {
             // Does not continue
@@ -352,7 +429,19 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
     Scene::CASTSceneAdapter adapter;
     try
     {
-        adapter.TraverseFile(SourceMgr->GetASTContext().GetAstRoot(), *Scene);
+        auto includeFileNames = adapter.TraverseFile(
+            SourceMgr->GetASTContext().GetAstRoot(),
+            *Scene); // randy added includeFileNames variable on 11/30. Currently assumes included
+                     // file names are in same directory as original
+        for (auto fileName : includeFileNames)
+        {
+            auto nofileNamepath = filePath.substr(0, filePath.find_last_of("/") + 1);
+            auto testSourceMgr = std::make_shared<CSourceManager>(
+                nofileNamepath + fileName); // TODO: TMRW 12/1, GENERALIZE THIS TO ANY PATH
+            bool testparseSuccess = testSourceMgr->ParseMainSource();
+            adapter.TraverseFile(testSourceMgr->GetASTContext().GetAstRoot(), *Scene);
+        }
+        // TODO: In the future, allow included files to be in different directories
     }
     catch (const AST::CSemanticError& e)
     {
@@ -366,7 +455,6 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
             return;
         }
     }
-
     PostloadSetup();
 }
 
@@ -383,6 +471,16 @@ void CMainWindow::PostloadSetup()
     connect(SceneUpdateClock, &QTimer::timeout, [this]() {
         Scene->Update();
         Nome3DView->PostSceneUpdate();
+        // Randy added this on 11/5 for edge selection
+        if (!Nome3DView->GetSelectedEdgeVertices().empty())
+        {
+            std::cout << "Here are the edge vertex names right before creating poly: "
+                    + Nome3DView->GetSelectedEdgeVertices()[0] + " "
+                    + Nome3DView->GetSelectedEdgeVertices()[1]
+                      << std::endl;
+            TemporaryMeshManager->SelectOrDeselectPolyline(Nome3DView->GetSelectedEdgeVertices());
+            Nome3DView->ClearSelectedEdges(); // TODO: This is assuming can only add one edge a time
+        }
         Scene->SetTime((float) elapsedRender->elapsed() / 1000);
         Scene->SetFrame(1);
         std::cout << "time" << Scene->GetTime()->GetNumber() << std::endl;
@@ -430,6 +528,31 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
         sliderDock->setWidget(m_pMapInfoScrollArea );
         SliderWidget.get()->setMinimumSize(280, 1200); //https://www.qtcentre.org/threads/55669-Scroll-Area-inside-Dock-Widget
     }
+    else
+    {
+        auto bankname = name.substr(0, name.find_last_of(".") + 1);
+        // Check if bank has already been added
+        auto alreadyAdded = false;
+        for (auto& Pair : SliderNameToWidget)
+        {
+            if (Pair.first.substr(0, Pair.first.find_last_of(".") + 1) == bankname)
+            {
+                alreadyAdded = true;
+            }
+        }
+        // If it hasn't been added, add a blank row
+        if (!alreadyAdded)
+        {
+            auto* sliderName = new QLabel();
+            sliderName->setText(QString::fromStdString(""));
+            QFont f("Arial", 13);
+            sliderName->setFont(f);
+            auto* sliderLayout = new QHBoxLayout();
+            SliderLayout->addRow(sliderName, sliderLayout);
+            SliderNameToWidget.emplace(name, sliderLayout);
+        }
+    }
+
 
     auto* sliderName = new QLabel();
     sliderName->setText(QString::fromStdString(name));
@@ -484,7 +607,7 @@ bool CMainWindow::eventFilter(QObject* obj, QEvent* event)
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
         if (keyEvent->key() == Qt::Key_Shift) {
-            Nome3DView->FreeVertexSelection();
+            //Nome3DView->FreeVertexSelection();
             return true;
         }
         else

@@ -8,7 +8,7 @@
             <RenderPass>
                 <ShaderProgram vertexShaderCode="qrc:/Shaders/DebugDraw.vert" fragmentShaderCode="qrc:/Shaders/LineShading.frag" />
                 <Blend op="Add" srcFactor="SourceAlpha" dstFactor="OneMinusSourceAlpha"/>
-                <PointSize value="float: 0.0"/> <!--this is the vertex colored box size. Was originally 8. Then changed to 0-->
+                <PointSize value="float: 6.0"/><!--this is the vertex colored box size. Was originally 8-->
             </RenderPass>
         </Technique>
     </Effect>

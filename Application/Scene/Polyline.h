@@ -24,7 +24,7 @@ public:
     void UpdateEntity() override;
     void SetPointSourceNames(const TAutoPtr<CScene>& scene, std::vector<std::string> points);
     void SetClosed(bool closed);
-    // AST::ACommand* SyncToAST(AST::CASTContext& ctx, bool createNewNode) override; Randy in progress
+    AST::ACommand* SyncToAST(AST::CASTContext& ctx, bool createNewNode) override; // Randy added this
 
 private:
     bool bClosed = false;

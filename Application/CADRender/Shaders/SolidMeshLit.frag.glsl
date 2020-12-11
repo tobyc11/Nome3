@@ -23,7 +23,7 @@ void main()
     // Specular lighting based on half vector
     float NoH = dot(N, H);
     if (NoL < 0.0f) NoL = -NoL;
-    float Alpha_spec = 128.0f;
+    float Alpha_spec = 64.0f;
     float Ispec = pow(NoH, Alpha_spec);
 
     vec3 Kdiff = vec3(0.8f, 0.8f, 1.0f);

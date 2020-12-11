@@ -29,6 +29,10 @@ class CMeshRenderComponent : public CRenderComponent
 public:
     void Update() override;
     void Draw(CDrawList& drawList) override;
+
+private:
+    // Controls whether the displayed normal is per-face or per-vertex
+    bool bSmoothShading = false;
 };
 
 }

@@ -150,6 +150,7 @@ void CNome3DView::UnloadScene()
     Scene = nullptr;
 }
 
+
 void CNome3DView::PostSceneUpdate()
 {
     using namespace Scene;
@@ -169,7 +170,7 @@ void CNome3DView::PostSceneUpdate()
 
         if (entity)
         {
-            CInteractiveMesh* mesh;
+            CInteractiveMesh* mesh = nullptr;
             // Check for existing InteractiveMesh
             auto iter = sceneNodeAssoc.find(node);
             if (iter != sceneNodeAssoc.end())
@@ -181,8 +182,8 @@ void CNome3DView::PostSceneUpdate()
                 if (node->WasEntityUpdated())
                 {
                     printf("Geom regen for %s\n", node->GetPath().c_str());
-                    mesh->UpdateGeometry();
-                    mesh->UpdateMaterial();
+                    mesh->UpdateGeometry(PickVertexBool);
+                    mesh->UpdateMaterial(WireFrameMode);
                     node->SetEntityUpdated(false);
                 }
             }
@@ -211,7 +212,8 @@ void CNome3DView::PostSceneUpdate()
         }
     });
 
-    // Now kill all the dead objects, i.e., not longer in the scene graph
+    // Now kill all the dead objects, i.e., not longer in the scene graph. If it wasn't added to
+    // aliveset above, then it is dead.
     for (auto* m : InteractiveMeshes)
     {
         auto iter = aliveSet.find(m);
@@ -232,6 +234,7 @@ void CNome3DView::PostSceneUpdate()
             delete iter.second;
         }
     }
+
     EntityDrawData = std::move(aliveEntityDrawData);
     for (const auto& pair : EntityDrawData)
     {
@@ -244,239 +247,385 @@ void CNome3DView::PostSceneUpdate()
 // Randy added 9/27
 void CNome3DView::ClearSelectedVertices()
 {
-    if (vertexSelectionEnabled)
-    {
-        SelectedVertices.clear();
-        Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-            // Obtain either an instance entity or a shared entity from the scene node
-            auto* entity = node->GetInstanceEntity();
-            if (!entity)
-                entity = node->GetOwner()->GetEntity();
-            if (entity)
-            {
-                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-                meshInst->DeselectAll();
-            }
-        });
-    }
+    SelectedVertices.clear();
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            meshInst->DeselectAll();
+        }
+    });
+}
+
+// Randy added on 10/14 to clear face selection
+void CNome3DView::ClearSelectedFaces()
+{
+    SelectedFaces.clear();
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            meshInst->DeselectAll();
+        }
+    });
+}
+
+// Randy added on 11/5 to clear edge selection
+void CNome3DView::ClearSelectedEdges()
+{
+    SelectedEdgeVertices.clear();
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            meshInst->DeselectAll();
+        }
+    });
 }
 
 
-void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
+void CNome3DView::PickFaceWorldRay(const tc::Ray& ray)
 {
-    if (vertexSelectionEnabled)
-    {
-
-        // copied from old version of PickVertexWorldRay
-        rotateRay(ray);
-
-        std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
-        Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-            // Obtain either an instance entity or a shared entity from the scene node
-            auto* entity = node->GetInstanceEntity();
-            if (!entity)
-                entity = node->GetOwner()->GetEntity();
-            if (entity)
-            {
-                const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-                auto localRay = ray.Transformed(l2w.Inverse());
-
-                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-                auto pickResults = meshInst->PickFaces(localRay);
-                for (const auto& [dist, name] : pickResults)
-                    hits.emplace_back(dist, meshInst, name);
-            }
-        });
-
-        std::sort(hits.begin(), hits.end());
-        if (hits.size() == 1)
+    std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
         {
-            const auto& [dist, meshInst, vertName] = hits[0];
-            SelectedVertices.push_back(vertName);
+            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+            auto localRay = ray.Transformed(l2w.Inverse());
+            localRay.Direction =
+                localRay.Direction
+                    .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            auto pickResults = meshInst->PickFaces(localRay);
+            for (const auto& [dist, name] : pickResults)
+                hits.emplace_back(dist, meshInst, name);
+        }
+    });
+
+    std::sort(hits.begin(), hits.end());
+    // if (!hits.empty()) {
+    //    hits.resize(1); // Force there to be only one face selected. This is more user-friendly.
+    //}
+    if (hits.size() == 1)
+    {
+        const auto& [dist, meshInst, faceName] = hits[0];
+        std::vector<std::string>::iterator position =
+            std::find(SelectedFaces.begin(), SelectedFaces.end(), faceName);
+        if (position == SelectedFaces.end())
+        { // if this face has not been selected before
+            SelectedFaces.push_back(faceName); // add face to selected faces
+            GFrtCtx->MainWindow->statusBar()->showMessage(
+                QString::fromStdString("Selected " + faceName));
+        }
+        else // else, this face has been selected previously
+        {
+            SelectedFaces.erase(position);
+            GFrtCtx->MainWindow->statusBar()->showMessage(
+                QString::fromStdString("Deselected " + faceName));
+        }
+        meshInst->MarkFaceAsSelected({ faceName }, true);
+    }
+    else if (!hits.empty())
+    {
+        // Show a dialog for the user to choose one face
+        auto* dialog = new QDialog(GFrtCtx->MainWindow);
+        dialog->setModal(true);
+        auto* layout1 = new QHBoxLayout(dialog);
+        auto* table = new QTableWidget();
+        table->setRowCount(hits.size());
+        table->setColumnCount(2);
+        QStringList titles;
+        titles.append(QString::fromStdString("Closeness Rank"));
+        titles.append(QString::fromStdString("Face Name"));
+        table->setHorizontalHeaderLabels(titles);
+        int closenessRank = 1;
+        for (size_t i = 0; i < hits.size(); i++)
+        {
+            const auto& [dist, meshInst, faceName] = hits[i];
+            if (i != 0)
+            {
+                const auto& [prevDist, prevMeshInst, prevFaceName] = hits[i - 1];
+                if (round(dist * 100) != round(prevDist * 100))
+                {
+                    closenessRank += 1;
+                }
+                // else, closenessRank stay the same as prev as the distance is the same (faces
+                // in same location)
+            }
+
+            auto* distWidget = new QTableWidgetItem(QString::number(closenessRank));
+            auto* item = new QTableWidgetItem(QString::fromStdString(faceName));
+            table->setItem(i, 0, distWidget); // i is row num, and 0 is col num
+            table->setItem(i, 1, item);
+        }
+        layout1->addWidget(table);
+        auto* layout2 = new QVBoxLayout();
+        auto* btnOk = new QPushButton();
+        btnOk->setText("OK");
+        connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
+            auto sel = table->selectedItems();
+            if (!sel.empty())
+            {
+                int row = sel[0]->row();
+                const auto& [dist, meshInst, faceName] = hits[row];
+                std::vector<std::string>::iterator position =
+                    std::find(SelectedFaces.begin(), SelectedFaces.end(), faceName);
+                if (position == SelectedFaces.end())
+                { // if this face has not been selected before
+                    SelectedFaces.push_back(faceName); // add face to selected face
+                    GFrtCtx->MainWindow->statusBar()->showMessage(
+                        QString::fromStdString("Selected " + faceName));
+                }
+                else // else, this face has been selected previously
+                {
+                    SelectedFaces.erase(position);
+                    GFrtCtx->MainWindow->statusBar()->showMessage(
+                        QString::fromStdString("Deselected " + faceName));
+                }
+                float selected_dist = round(dist * 100);
+
+                // mark all those that share the same location
+                for (int i = 0; i < hits.size(); i++)
+                {
+                    const auto& [dist, meshInst, overlapfaceName] = hits[i];
+                    if (round(dist * 100) == selected_dist)
+                    {
+                        meshInst->MarkFaceAsSelected({ overlapfaceName }, true);
+                    }
+                }
+            }
+            dialog->close();
+        });
+        auto* btnCancel = new QPushButton();
+        btnCancel->setText("Cancel");
+        connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
+        layout2->addWidget(btnOk);
+        layout2->addWidget(btnCancel);
+        layout1->addLayout(layout2);
+        dialog->show();
+    }
+    else
+    {
+        GFrtCtx->MainWindow->statusBar()->showMessage("No face hit.");
+    }
+}
+
+// Used for picking edges
+void CNome3DView::PickEdgeWorldRay(const tc::Ray& ray)
+{
+    std::vector<std::tuple<float, Scene::CMeshInstance*, std::vector<std::string>>>
+        hits; // note the string is a vector of strings
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        std::cout << "Currently in NOME3DView's PickEdgeWorldRay. At node: " + node->GetPath()
+                  << std::endl;
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+            auto localRay = ray.Transformed(l2w.Inverse());
+            localRay.Direction =
+                localRay.Direction
+                    .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            auto pickResults = meshInst->PickEdges(localRay);
+
+            for (const auto& [dist, names] : pickResults)
+                hits.emplace_back(dist, meshInst, names);
+        }
+    });
+    std::sort(hits.begin(), hits.end());
+
+    // TODO 11/21, If it contains a temp SELECT EDGE polyline, then immediately return that one
+    std::vector<std::tuple<float, Scene::CMeshInstance*, std::vector<std::string>>> temp;
+    for (auto hit : hits)
+    {
+        auto [dist, meshInst, edgeVertNames] = hit;
+        if (edgeVertNames[0].find("SELECTED") != std::string::npos)
+        {
+            temp.push_back(hit);
+        }
+    }
+
+    if (!temp.empty())
+        hits = temp;
+    if (hits.size() == 1)
+    {
+        const auto& [dist, meshInst, edgeVertNames] =
+            hits[0]; // where the edgeVertNames is defined to a vector of two vertex names
+        std::vector<std::string>::iterator position1 =
+            std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[0]);
+        std::vector<std::string>::iterator position2 =
+            std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[1]);
+        SelectedEdgeVertices.push_back(edgeVertNames[0]);
+        SelectedEdgeVertices.push_back(edgeVertNames[1]);
+
+        // if the selected edge is not a SELECTED (temp) edge
+        if (edgeVertNames[0].find("SELECTED") == std::string::npos)
+            GFrtCtx->MainWindow->statusBar()->showMessage(QString::fromStdString(
+                "Selected " + edgeVertNames[0] + edgeVertNames[1] + " edge"));
+        else
+        {
+            GFrtCtx->MainWindow->statusBar()->showMessage("Deselected edge");
+        }
+        std::set<std::string> edgeVertNamesSet(edgeVertNames.begin(), edgeVertNames.end());
+        meshInst->MarkEdgeAsSelected(edgeVertNamesSet, true); // here
+    }
+    // If you need to implement multiple edge intersection, please see the below line at:
+    // https://github.com/randyfan/NOME3/commit/55ab6d81140d09f1725e261ed810c1a15646ab5c
+    else
+        GFrtCtx->MainWindow->statusBar()->showMessage(
+            "No edge hit or more than one edge hit. Please select again");
+}
+
+void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
+{
+    std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+            auto localRay = ray.Transformed(l2w.Inverse());
+            localRay.Direction =
+                localRay.Direction
+                    .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            auto pickResults = meshInst->PickVertices(localRay);
+            for (const auto& [dist, name] : pickResults)
+                hits.emplace_back(dist, meshInst, name);
+        }
+    });
+
+    std::sort(hits.begin(), hits.end());
+
+    if (hits.size() == 1)
+    {
+        const auto& [dist, meshInst, vertName] = hits[0];
+        std::vector<std::string>::iterator position =
+            std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
+        if (position == SelectedVertices.end()) // if this vertex has not been selected before
+        {
+            SelectedVertices.push_back(vertName); // add vertex to selected vertices
             GFrtCtx->MainWindow->statusBar()->showMessage(
                 QString::fromStdString("Selected " + vertName));
-            meshInst->MarkAsSelected({ vertName }, true);
         }
-        else if (!hits.empty())
+        else // else, this vertex has been selected previously
         {
-            // Show a dialog for the user to choose one vertex
-            auto* dialog = new QDialog(GFrtCtx->MainWindow);
-            dialog->setModal(true);
-            auto* layout1 = new QHBoxLayout(dialog);
-            auto* table = new QTableWidget();
-            table->setRowCount(hits.size());
-            table->setColumnCount(2);
-            for (size_t i = 0; i < hits.size(); i++)
+            SelectedVertices.erase(position);
+            GFrtCtx->MainWindow->statusBar()->showMessage(
+                QString::fromStdString("Deselected " + vertName));
+        }
+        meshInst->MarkVertAsSelected({ vertName }, true);
+    }
+    else if (!hits.empty())
+    {
+        // Show a dialog for the user to choose one vertex
+        auto* dialog = new QDialog(GFrtCtx->MainWindow);
+        dialog->setModal(true);
+        auto* layout1 = new QHBoxLayout(dialog);
+        auto* table = new QTableWidget();
+        table->setRowCount(hits.size());
+        table->setColumnCount(2);
+        QStringList titles;
+        titles.append(QString::fromStdString("Closeness Rank"));
+        titles.append(QString::fromStdString("Vertex Name"));
+        table->setHorizontalHeaderLabels(titles);
+        int closenessRank = 1;
+        for (size_t i = 0; i < hits.size(); i++)
+        {
+            const auto& [dist, meshInst, vertName] = hits[i];
+            if (i != 0)
             {
-                const auto& [dist, meshInst, vertName] = hits[i];
-                auto* distWidget = new QTableWidgetItem(QString::number(dist));
-                auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
-                table->setItem(i, 0, distWidget);
-                table->setItem(i, 1, item);
-            }
-            layout1->addWidget(table);
-            auto* layout2 = new QVBoxLayout();
-            auto* btnOk = new QPushButton();
-            btnOk->setText("OK");
-            connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
-                auto sel = table->selectedItems();
-                if (!sel.empty())
+                const auto& [prevDist, prevMeshInst, prevVertName] = hits[i - 1];
+                if (round(dist * 100) != round(prevDist * 100))
                 {
-                    int row = sel[0]->row();
-                    const auto& [dist, meshInst, vertName] = hits[row];
-                    SelectedVertices.push_back(vertName);
+                    closenessRank += 1;
+                }
+                // else, closenessRank stay the same as prev as the distance is the same (vertices
+                // in same location)
+            }
+
+            auto* distWidget = new QTableWidgetItem(QString::number(closenessRank));
+            auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
+            table->setItem(i, 0, distWidget); // i is row num, and 0 is col num
+            table->setItem(i, 1, item);
+        }
+        layout1->addWidget(table);
+        auto* layout2 = new QVBoxLayout();
+        auto* btnOk = new QPushButton();
+        btnOk->setText("OK");
+        connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
+            auto sel = table->selectedItems();
+            if (!sel.empty())
+            {
+                int row = sel[0]->row();
+                const auto& [dist, meshInst, vertName] = hits[row];
+                std::vector<std::string>::iterator position =
+                    std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
+                if (position == SelectedVertices.end())
+                { // if this vertex has not been selected before
+                    SelectedVertices.push_back(vertName); // add vertex to selected vertices
                     GFrtCtx->MainWindow->statusBar()->showMessage(
                         QString::fromStdString("Selected " + vertName));
-                    meshInst->MarkAsSelected({ vertName }, true);
                 }
-                dialog->close();
-            });
-            auto* btnCancel = new QPushButton();
-            btnCancel->setText("Cancel");
-            connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
-            layout2->addWidget(btnOk);
-            layout2->addWidget(btnCancel);
-            layout1->addLayout(layout2);
-            dialog->show();
-        }
-        else
-        {
-            GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
-        }
-    }
-}
-void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
-{
-    if (vertexSelectionEnabled)
-    {
-        rotateRay(ray);
-        std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
-        Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-            // Obtain either an instance entity or a shared entity from the scene node
-            auto* entity = node->GetInstanceEntity();
-            if (!entity)
-                entity = node->GetOwner()->GetEntity();
-            if (entity)
-            {
-                const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-                auto localRay = ray.Transformed(l2w.Inverse());
-                localRay.Direction =
-                    localRay.Direction
-                        .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
-                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-                auto pickResults = meshInst->PickVertices(localRay);
-                for (const auto& [dist, name] : pickResults)
-                    hits.emplace_back(dist, meshInst, name);
+                else // else, this vertex has been selected previously
+                {
+                    SelectedVertices.erase(position);
+                    GFrtCtx->MainWindow->statusBar()->showMessage(
+                        QString::fromStdString("Deselected " + vertName));
+                }
+
+                float selected_dist = round(dist * 100);
+
+                // mark all those that share the same location
+                for (int i = 0; i < hits.size(); i++)
+                {
+                    const auto& [dist, meshInst, overlapvertName] = hits[i];
+                    if (round(dist * 100) == selected_dist)
+                    {
+                        meshInst->MarkVertAsSelected({ overlapvertName }, true);
+                    }
+                }
             }
+            dialog->close();
         });
-
-        std::sort(hits.begin(), hits.end());
-
-        if (hits.size() == 1) // RANDY BUG IS HERE, I ONLY IMPLEMENTED S LOGIC
-        {
-            const auto& [dist, meshInst, vertName] = hits[0];
-
-            auto position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
-            if (position == SelectedVertices.end())
-            { // if this vertex has not been selected before
-                SelectedVertices.push_back(vertName); // add vertex to selected vertices
-                GFrtCtx->MainWindow->statusBar()->showMessage(
-                    QString::fromStdString("Selected " + vertName));
-            }
-            else // else, this vertex has been selected previously
-            {
-                SelectedVertices.erase(position);
-                GFrtCtx->MainWindow->statusBar()->showMessage(
-                    QString::fromStdString("De-selected " + vertName));
-            }
-            meshInst->MarkAsSelected({ vertName }, true);
-        }
-        else if (!hits.empty())
-        {
-            // Show a dialog for the user to choose one vertex
-            auto* dialog = new QDialog(GFrtCtx->MainWindow);
-            dialog->setModal(true);
-            auto* layout1 = new QHBoxLayout(dialog);
-            auto* table = new QTableWidget();
-            table->setRowCount(hits.size());
-            table->setColumnCount(2);
-            QStringList titles;
-            titles.append(QString::fromStdString("Closeness Rank"));
-            titles.append(QString::fromStdString("Vertex Name"));
-            table->setHorizontalHeaderLabels(titles);
-            int closenessRank = 1;
-            for (size_t i = 0; i < hits.size(); i++)
-            {
-                const auto& [dist, meshInst, vertName] = hits[i];
-                if (i != 0)
-                {
-                    const auto& [prevDist, prevMeshInst, prevVertName] = hits[i - 1];
-                    if (round(dist * 100) != round(prevDist * 100))
-                    {
-                        closenessRank += 1;
-                    }
-                    // else, closenessRank stay the same as prev as the distance is the same (vertices in same location)
-                }
-
-                auto* distWidget = new QTableWidgetItem(QString::number(closenessRank));
-                auto* item = new QTableWidgetItem(QString::fromStdString(vertName));
-                table->setItem(i, 0, distWidget); // i is row num, and 0 is col num
-                table->setItem(i, 1, item);
-            }
-            layout1->addWidget(table);
-            auto* layout2 = new QVBoxLayout();
-            auto* btnOk = new QPushButton();
-            btnOk->setText("OK");
-            connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
-                auto sel = table->selectedItems();
-                if (!sel.empty())
-                {
-                    int row = sel[0]->row();
-                    const auto& [dist, meshInst, vertName] = hits[row];
-                    auto position =
-                        std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
-                    if (position == SelectedVertices.end())
-                    { // if this vertex has not been selected before
-
-                        SelectedVertices.push_back(vertName); // add vertex to selected vertices
-                        GFrtCtx->MainWindow->statusBar()->showMessage(
-                            QString::fromStdString("Selected " + vertName));
-                    }
-                    else // else, this vertex has been selected previously
-                    {
-                        SelectedVertices.erase(position);
-                        GFrtCtx->MainWindow->statusBar()->showMessage(
-                            QString::fromStdString("De-selected " + vertName));
-                    }
-
-                    float selected_dist = round(dist * 100);
-
-                    // mark all those that share the same location
-                    for (const auto& [dist, meshInst, overlapvertName] : hits)
-                    {
-                        if (round(dist * 100) == selected_dist)
-                        {
-                            meshInst->MarkAsSelected({ overlapvertName }, true);
-                        }
-                    }
-                }
-                dialog->close();
-            });
-            auto* btnCancel = new QPushButton();
-            btnCancel->setText("Cancel");
-            connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
-            layout2->addWidget(btnOk);
-            layout2->addWidget(btnCancel);
-            layout1->addLayout(layout2);
-            dialog->show();
-        }
-        else
-        {
-
-            GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
-        }
+        auto* btnCancel = new QPushButton();
+        btnCancel->setText("Cancel");
+        connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
+        layout2->addWidget(btnOk);
+        layout2->addWidget(btnCancel);
+        layout1->addLayout(layout2);
+        dialog->show();
+    }
+    else
+    {
+        GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
     }
 }
+
 
 // Currently not used
 Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
@@ -615,7 +764,7 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
         QVector3D cameraPosition = cameraset->position();
         zPos = cameraPosition.z();
         QPoint numPixels = ev->pixelDelta();
-        QPoint numDegrees = ev->angleDelta() / 20.0;
+        QPoint numDegrees = ev->angleDelta() / 10.0f;
 
         if (!numPixels.isNull())
         {

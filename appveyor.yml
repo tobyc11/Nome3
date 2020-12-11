@@ -1,43 +1,13 @@
 version: 3.0.{build}
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 install:
   - cd %APPVEYOR_BUILD_FOLDER%
   - git submodule update --init --recursive
-  # update msys2
-  #- C:\msys64\usr\bin\bash -lc "curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz"
-  #- C:\msys64\usr\bin\bash -lc "curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig"
-  #- C:\msys64\usr\bin\bash -lc "pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig"
-  #- C:\msys64\usr\bin\bash -lc "pacman -U --noconfirm msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz"
-  - C:\msys64\usr\bin\bash -lc "curl -O http://mirror.yandex.ru/mirrors/msys2/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz" #10/6 fix - good
-  - C:\msys64\usr\bin\bash -lc "curl -O http://mirror.yandex.ru/mirrors/msys2/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig" # 10/6 fix - good
-  - C:\msys64\usr\bin\bash -lc "pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig" # 10/6 fix - good
-  - C:\msys64\usr\bin\bash -lc "pacman -U --noconfirm msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz" # 10/6 - good
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/mingw/x86_64/' > /etc/pacman.d/mirrorlist.mingw64"
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/mingw/i686/' > /etc/pacman.d/mirrorlist.mingw32"
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/msys/$arch/' > /etc/pacman.d/mirrorlist.msys"
-  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Sy pacman" # still failed due to repo.msys2.org
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/mingw/x86_64/' > /etc/pacman.d/mirrorlist.mingw64"
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/mingw/i686/' > /etc/pacman.d/mirrorlist.mingw32"
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/msys/$arch/' > /etc/pacman.d/mirrorlist.msys"
-  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Su" # still failed due to repo.msys2.org
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/mingw/x86_64/' > /etc/pacman.d/mirrorlist.mingw64"
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/mingw/i686/' > /etc/pacman.d/mirrorlist.mingw32"
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/msys/$arch/' > /etc/pacman.d/mirrorlist.msys"
-  - C:\msys64\usr\bin\bash -lc "pacman --needed --noconfirm -Sy pacman-mirrors" # good
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/mingw/x86_64/' > /etc/pacman.d/mirrorlist.mingw64"
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/mingw/i686/' > /etc/pacman.d/mirrorlist.mingw32"
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/msys/$arch/' > /etc/pacman.d/mirrorlist.msys"
-  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Syu" # still failed due to repo.msys2.org
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/mingw/x86_64/' > /etc/pacman.d/mirrorlist.mingw64"
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/mingw/i686/' > /etc/pacman.d/mirrorlist.mingw32"
-  - C:\msys64\usr\bin\bash -lc "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/msys/$arch/' > /etc/pacman.d/mirrorlist.msys"
-  - C:\msys64\usr\bin\bash -lc "pacman --noconfirm --needed -S bison flex"
 
-# pacman -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
   # setup envionment
   - set PATH=C:\Qt\5.13\msvc2017_64\bin;%PATH%
-  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
   # Download Antlr 4 jar
   - curl -fsSL -o antlr.jar https://www.antlr.org/download/antlr-4.7.2-complete.jar
 
@@ -57,8 +27,6 @@ build_script:
 
     cmake .. -G "NMake Makefiles"
     -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake
-    -DFLEX_EXECUTABLE=C:/msys64/usr/bin/flex.exe
-    -DBISON_EXECUTABLE=C:/msys64/usr/bin/bison.exe
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/install
     -DANTLR_EXECUTABLE=%APPVEYOR_BUILD_FOLDER%/antlr.jar

@@ -4,10 +4,11 @@
     <Parameter name="kd" value="vec3: 0.7 0.7 0.7" />
     <Parameter name="ks" value="vec3: 0.95 0.95 0.95" />
     <Parameter name="shininess" value="float: 150.0" />
+    <Parameter name="showFacets" value="int: 0" /> <!-- 0 = don't show facets. 1 = show facets -->
     <Parameter name="light.position" value="vec4: 0.0 0.0 0.0 1.0" />
     <Parameter name="light.intensity" value="vec3: 1.0 1.0 1.0" />
     <Parameter name="line.width" value="float: 1.0" />
-    <Parameter name="line.color" value="vec4: 1.0 1.0 1.0 1.0" />
+    <Parameter name="line.color" value="vec4: 0.3 0.3 0.3 1.0" />
     <Effect>
         <Technique>
             <FilterKey name="renderingStyle" value="forward" />

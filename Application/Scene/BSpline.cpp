@@ -99,8 +99,9 @@ void CBSpline::UpdateEntity() {
         CVertexInfo point;
         point.Position = SamplePositions[i];
         points.push_back(point);
-        positions.push_back(&points[i]);
     }
+    for (int i = 0; i < n + 1; i++)
+        positions.push_back(&points[i]);
 
     SI.Positions = positions;
     SI.Name = GetName();

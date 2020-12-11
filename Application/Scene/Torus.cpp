@@ -22,7 +22,6 @@ DEFINE_META_OBJECT(CTorus)
     BindPositionalArgument(&CTorus::phi_max, 1, 4);
     BindPositionalArgument(&CTorus::theta_segs, 1, 5);
     BindPositionalArgument(&CTorus::phi_segs, 1, 6);
-    //BindPositionalArgument(&CTorus::phi_segs, 1, 6);
 }
 void CTorus::UpdateEntity()
 {
@@ -33,35 +32,41 @@ void CTorus::UpdateEntity()
     // Clear mesh
     Super::UpdateEntity();
 
-    // Initialize torus parameters from document 
+    // Initialize torus parameters from document
     float majorRadius = maj_rad.GetValue(1.0f);
     float minorRadius = min_rad.GetValue(1.0f);
     float thetaMax = theta_max.GetValue(1.0f);
     float phiMin = phi_min.GetValue(1.0f);
-    float phiMax= phi_max.GetValue(1.0f);
+    float phiMax = phi_max.GetValue(1.0f);
     // number of circles or cross sections
-    int thetaSegs = static_cast<int>(theta_segs.GetValue(1.0f)); 
+    int thetaSegs = static_cast<int>(theta_segs.GetValue(1.0f));
     int phiSegs = static_cast<int>(phi_segs.GetValue(5.0f));
 
     const float epsilon = 1e-4;
-    const float dt = (thetaMax * (float)tc::M_PI/180.0f) / (thetaSegs);
-    const float du = ((phiMax-phiMin) * (float)tc::M_PI / 180.0f) / phiSegs; // convert phiMax to radians then divide by # of segs on circle
-    const float du_offset = (phiMin * (float)tc::M_PI / 180.0f); // convert phiMin to radians. This will be used to offset so it starts at phiMin instead of 0 . DOESNT WORK
+    const float dt = (thetaMax * (float)tc::M_PI / 180.0f) / (thetaSegs);
+    const float du = ((phiMax - phiMin) * (float)tc::M_PI / 180.0f)
+        / phiSegs; // convert phiMax to radians then divide by # of segs on circle
+    const float du_offset = (phiMin * (float)tc::M_PI
+                             / 180.0f); // convert phiMin to radians. This will be used to offset so
+                                        // it starts at phiMin instead of 0 . DOESNT WORK
 
     // Create torus, creating one cross section at each iteration
-    for (int i = 0; i < thetaSegs + 1; i++) // thetaSegs + 1; for some reason thetaSegs was outputting an off by one torus...
+    for (int i = 0; i < thetaSegs + 1;
+         i++) // thetaSegs + 1; for some reason thetaSegs was outputting an off by one torus...
     {
         float t0 = i * dt;
 
-        Point p0 = {majorRadius*cos(t0), majorRadius*sinf(t0), 0}; 
+        Point p0 = { majorRadius * cos(t0), majorRadius * sinf(t0), 0 };
 
-        // Below, we'll work on approximating the Frenet frame { T, N, B } for the curve at the current point
+        // Below, we'll work on approximating the Frenet frame { T, N, B } for the curve at the
+        // current point
 
         float t1 = t0 + epsilon;
 
         // p1 is p0 advanced infinitesimally along the curve
 
-        Point p1 = {majorRadius*cos(t1), majorRadius*sinf(t1), 0 }; //uncomment this to do torus instead 
+        Point p1 = { majorRadius * cos(t1), majorRadius * sinf(t1),
+                     0 }; // uncomment this to do torus instead
 
         // compute approximate tangent as vector connecting p0 to p1
         Point T = { p1.x - p0.x, p1.y - p0.y, p1.z - p0.z };
@@ -96,7 +101,7 @@ void CTorus::UpdateEntity()
             float u = j * (du) + du_offset; // du_offset is needed for the phiMin adjustment
 
             // compute position of circle point
-            float x = minorRadius * cosf(u); // u is the angle 
+            float x = minorRadius * cosf(u); // u is the angle
             float y = minorRadius * sinf(u);
 
             Point p2 = { x * N.x + y * B.x, x * N.y + y * B.y, x * N.z + y * B.z };
@@ -127,19 +132,20 @@ void CTorus::UpdateEntity()
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(i),
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(next)*/
 
-                    // CCW 
+                    // CCW
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(next),
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(i),
                     "v" + std::to_string(k + 1) + "_" + std::to_string(i),
                     "v" + std::to_string(k + 1) + "_" + std::to_string(next),
                 };
-                AddFace("f1_" + std::to_string(i), upperFace);
+                AddFace("f" + std::to_string(k) + "_" + std::to_string(i), upperFace);
             }
         }
     }
     else
     {
-        for (int k = 0; k < thetaSegs; k++) // thetaSegs instead of thetaSegs + 1 because we don't to connect the last segment with the first segment
+        for (int k = 0; k < thetaSegs; k++) // thetaSegs instead of thetaSegs + 1 because we don't
+                                            // to connect the last segment with the first segment
         {
             for (int i = 0; i < phiSegs; i++)
             {
@@ -152,10 +158,9 @@ void CTorus::UpdateEntity()
                     "v" + std::to_string(k + 1) + "_" + std::to_string(i),
                     "v" + std::to_string(k + 1) + "_" + std::to_string(next)
                 };
-                AddFace("f1_" + std::to_string(i), upperFace);
+                AddFace("f" + std::to_string(k) + "_" + std::to_string(i), upperFace);
             }
         }
     }
-
 }
 }

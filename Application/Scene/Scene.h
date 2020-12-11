@@ -1,5 +1,6 @@
 #pragma once
 #include "BankAndSet.h"
+#include "Camera.h"
 #include "Entity.h"
 #include "Point.h"
 #include "SceneGraph.h"
@@ -15,12 +16,15 @@ class CPickingManager;
 namespace Nome::Scene
 {
 
+class CRenderComponent;
+
 class CScene : public tc::FRefCounted
 {
 public:
     CScene();
 
     CBankAndSet& GetBankAndSet() { return BankAndSet; }
+    CCamera& GetDefaultCamera() { return DefaultCamera; }
 
     TAutoPtr<CSceneNode> GetRootNode() const { return RootNode; }
     TAutoPtr<CSceneTreeNode> GetRootTreeNode() const;
@@ -65,8 +69,11 @@ public:
 
     CPickingManager* GetPickingMgr() const;
 
+    std::set<CRenderComponent*>& GetRenderCompList() { return RenderCompList; }
+
 private:
     CBankAndSet BankAndSet;
+    CCamera DefaultCamera;
 
     // This is the root node of the scene tree
     TAutoPtr<CSceneNode> RootNode;
@@ -77,6 +84,8 @@ private:
     // The following two maps enable looking up objects by their names
     std::map<std::string, TAutoPtr<CEntity>> EntityLibrary;
     std::map<std::string, TAutoPtr<CSceneNode>> Groups;
+
+    std::set<CRenderComponent*> RenderCompList;
 };
 
 }

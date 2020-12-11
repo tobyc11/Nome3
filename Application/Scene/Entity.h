@@ -1,5 +1,6 @@
 #pragma once
 #include "ASTBinding.h"
+#include "Component.h"
 #include "Flow/FlowNode.h"
 #include "RendererInterface.h"
 #include <Matrix3x4.h> //For convenience
@@ -117,10 +118,13 @@ public:
 
     virtual AST::ACommand* SyncToAST(AST::CASTContext& ctx, bool createNewNode);
 
+    bool AttachComponent(std::shared_ptr<CComponent> component);
+
 private:
     std::string Name;
     bool bIsValid = false;
     bool bEntityDirty = true;
+    std::vector<std::shared_ptr<CComponent>> Components;
 
     // For profiling
     uint32_t UpdateCount = 0;

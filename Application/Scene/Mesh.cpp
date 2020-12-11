@@ -1,5 +1,5 @@
 #include "Mesh.h"
-// Render related
+#include "RenderComponent.h"
 #include "SceneGraph.h"
 #include <StringPrintf.h>
 #include <StringUtils.h>
@@ -56,25 +56,7 @@ void CMesh::UpdateEntity()
     SetValid(isValid);
 }
 
-void CMesh::Draw(IDebugDraw* draw)
-{
-    CEntity::Draw(draw);
-
-    if (!LineStrip.empty())
-    {
-        std::vector<Vector3> positions;
-        for (auto vHandle : LineStrip)
-        {
-            const auto& vPos = Mesh.point(vHandle);
-            positions.emplace_back(vPos[0], vPos[1], vPos[2]);
-        }
-
-        for (size_t i = 1; i < positions.size(); i++)
-        {
-            draw->LineSegment(positions[i - 1], positions[i]);
-        }
-    }
-}
+void CMesh::Draw(IDebugDraw* draw) { }
 
 CMeshImpl::VertexHandle CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
 {
@@ -115,8 +97,7 @@ void CMesh::AddFace(const std::string& name, const std::vector<CMeshImpl::Vertex
     NameToFace.emplace(name, faceHandle);
 }
 
-void CMesh::AddLineStrip(const std::string& name,
-                         const std::vector<CMeshImpl::VertexHandle>& points)
+void CMesh::AddLineStrip(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& points)
 {
     LineStrip = points;
 }
@@ -139,7 +120,13 @@ void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexH
 
 bool CMesh::IsInstantiable() { return true; }
 
-CEntity* CMesh::Instantiate(CSceneTreeNode* treeNode) { return new CMeshInstance(this, treeNode); }
+CEntity* CMesh::Instantiate(CSceneTreeNode* treeNode)
+{
+    auto* meshInst = new CMeshInstance(this, treeNode);
+    auto renderComp = std::make_shared<CMeshRenderComponent>();
+    meshInst->AttachComponent(std::move(renderComp));
+    return meshInst;
+}
 
 AST::ACommand* CMesh::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
 {
@@ -162,10 +149,7 @@ AST::ACommand* CMesh::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
     return node;
 }
 
-std::string CMeshInstancePoint::GetPointPath() const
-{
-    return Owner->GetSceneTreeNode()->GetPath() + "." + GetName();
-}
+std::string CMeshInstancePoint::GetPointPath() const { return Owner->GetSceneTreeNode()->GetPath() + "." + GetName(); }
 
 CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
     : MeshGenerator(generator)
@@ -175,8 +159,8 @@ CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
     MeshGenerator->InstanceSet.insert(this);
 
     // We listen to the transformation changes of the associated tree node
-    TransformChangeConnection = SceneTreeNode->OnTransformChange.Connect(
-        std::bind(&CMeshInstance::MarkOnlyDownstreamDirty, this));
+    TransformChangeConnection =
+        SceneTreeNode->OnTransformChange.Connect(std::bind(&CMeshInstance::MarkOnlyDownstreamDirty, this));
 }
 
 CMeshInstance::~CMeshInstance()
@@ -217,8 +201,7 @@ void CMeshInstance::UpdateEntity()
         }
         else
         {
-            printf("Couldn't find face %s for deletion in mesh instance %s\n", face.c_str(),
-                   GetName().c_str());
+            printf("Couldn't find face %s for deletion in mesh instance %s\n", face.c_str(), GetName().c_str());
         }
     }
 
@@ -259,8 +242,7 @@ void CMeshInstance::UpdateEntity()
 
 void CMeshInstance::Draw(IDebugDraw* draw) { MeshGenerator->Draw(draw); }
 
-CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name,
-                                                     const std::string& outputName)
+CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name, const std::string& outputName)
 {
     auto* selector = new CVertexSelector(name, outputName);
     SelectorSignal.Connect(selector->MeshInstance);
@@ -349,8 +331,7 @@ void CVertexSelector::PointUpdate()
     auto iter = mi->NameToVert.find(TargetName);
     if (iter == mi->NameToVert.end())
     {
-        printf("Vertex %s does not exist in entity %s\n", TargetName.c_str(),
-               mi->GetName().c_str());
+        printf("Vertex %s does not exist in entity %s\n", TargetName.c_str(), mi->GetName().c_str());
         return;
     }
     auto vertHandle = iter->second;

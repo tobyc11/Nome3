@@ -21,7 +21,7 @@ void CMeshMerger::UpdateEntity()
 void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
 {
     auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-    const auto& otherMesh = meshInstance.GetMeshImpl();
+    const auto& otherMesh = meshInstance.Mesh;
 
     // Copy over all the vertices and check for overlapping
     std::unordered_map<CMeshImpl::VertexHandle, CMeshImpl::VertexHandle> vertMap;

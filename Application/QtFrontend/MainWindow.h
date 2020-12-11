@@ -1,4 +1,5 @@
 #pragma once
+#include "CentralGLWidget.h"
 #include <Parsing/SourceManager.h>
 #include <Scene/Scene.h>
 #include <Scene/TemporaryMeshManager.h>
@@ -18,16 +19,13 @@ class MainWindow;
 namespace Nome
 {
 
-class CCodeWindow;
-
 class CMainWindow : public QMainWindow, public Scene::ISliderObserver
 {
     Q_OBJECT
 
 public:
     explicit CMainWindow(QWidget* parent = nullptr, bool bDetached3d = false);
-    explicit CMainWindow(const QString& fileToOpen, QWidget* parent = nullptr,
-                         bool bDetached3d = false);
+    explicit CMainWindow(const QString& fileToOpen, QWidget* parent = nullptr, bool bDetached3d = false);
     ~CMainWindow() override;
 
     [[nodiscard]] const tc::TAutoPtr<Scene::CScene>& GetScene() const { return Scene; }
@@ -48,7 +46,7 @@ private slots:
     void on_actionAbout_triggered();
 
     void on_actionAddFace_triggered();
-    void on_actionAddPolyline_triggered(); 
+    void on_actionAddPolyline_triggered();
     void on_actionResetTempMesh_triggered();
     void on_actionCommitTempMesh_triggered();
 
@@ -65,8 +63,9 @@ private:
     void OnSliderRemoving(Scene::CSlider& slider, const std::string& name) override;
 
     Ui::MainWindow* ui;
-    QLineEdit* InstName;
-    QLineEdit* MeshName;
+    CCentralGLWidget* GLWidget = nullptr;
+    QLineEdit* InstName = nullptr;
+    QLineEdit* MeshName = nullptr;
 
     // Info about the currently open file
     std::shared_ptr<CSourceManager> SourceMgr;

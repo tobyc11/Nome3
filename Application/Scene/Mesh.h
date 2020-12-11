@@ -59,6 +59,7 @@ public:
 private:
     friend class CMeshInstance;
     friend class CMeshMerger;
+    friend class CMeshRenderComponent;
     std::set<CMeshInstance*> InstanceSet;
 
     CMeshImpl Mesh;
@@ -83,7 +84,7 @@ private:
 
 // This is the entity class for a mesh instance
 // Why is this needed?
-//  The same mesh might get instanciated multiple times and get separately edited by the user.
+//  The same mesh might get instantiated multiple times and get separately edited by the user.
 class CMeshInstance : public CEntity
 {
     // This connects to all the vertex selectors naming a vertex from this mesh instance
@@ -121,14 +122,15 @@ public:
 
     void CopyFromGenerator();
 
-    // I am really not sure whether this is a good interface or not
-    const CMeshImpl& GetMeshImpl() const { return Mesh; }
-
     std::vector<std::pair<float, std::string>> PickVertices(const tc::Ray& localRay);
     void MarkAsSelected(const std::set<std::string>& vertNames, bool bSel);
     void DeselectAll();
 
 private:
+    // CMeshMerger, CMeshRenderComponent needs to access CMeshImpl Mesh
+    friend class CMeshMerger;
+    friend class CMeshRenderComponent;
+
     TAutoPtr<CMesh> MeshGenerator;
     /// A weak pointer to the owning scene tree node
     CSceneTreeNode* SceneTreeNode;

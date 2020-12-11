@@ -84,7 +84,11 @@ public:
     {
     }
 
-    ~CEntity() override = default;
+    ~CEntity() override;
+
+    // Disable copy/move
+    CEntity(const CEntity&) = delete;
+    CEntity(CEntity&&) = delete;
 
     const std::string& GetName() const { return Name; }
     std::string GetNameWithoutPrefix() const;

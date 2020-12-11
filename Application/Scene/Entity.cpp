@@ -14,6 +14,14 @@ CEntity::CEntity()
     }
 }
 
+CEntity::~CEntity()
+{
+    for (const auto& comp : Components)
+    {
+        comp->OnBeforeDetach();
+    }
+}
+
 std::string CEntity::GetNameWithoutPrefix() const
 {
 

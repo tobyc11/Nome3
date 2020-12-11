@@ -9,56 +9,25 @@ namespace Nome::Scene
 using tc::Frustum;
 using tc::Matrix4;
 
-class CCamera : public tc::FRefCounted
+class CLens
 {
 public:
-    CCamera(CSceneTreeNode* treeNode)
-        : SceneTreeNode(treeNode)
-    {
-    }
+    [[nodiscard]] Matrix4 CalculateProjMatrix() const;
 
-    void CalculateProjMatrix() const;
+    [[nodiscard]] float GetAspectRatio() const { return AspectRatio; }
+    void SetAspectRatio(float value) { AspectRatio = value; }
 
-    const Matrix4& GetProjMatrix() const;
+    [[nodiscard]] float GetFovY() const { return FovY; }
+    void SetFovY(float value) { FovY = value; }
 
-    Matrix4 GetViewMatrix() const;
+    [[nodiscard]] float GetNearClip() const { return NearClip; }
+    void SetNearClip(float value) { NearClip = value; }
 
-    Frustum GetFrustum() const;
-
-    /// Property getter/setter
-    float GetAspectRatio() const { return AspectRatio; }
-    void SetAspectRatio(float value)
-    {
-        AspectRatio = value;
-        bProjMatrixDirty = true;
-    }
-
-    float GetFovY() const { return FovY; }
-    void SetFovY(float value)
-    {
-        FovY = value;
-        bProjMatrixDirty = true;
-    }
-
-    float GetNearClip() const { return NearClip; }
-    void SetNearClip(float value)
-    {
-        NearClip = value;
-        bProjMatrixDirty = true;
-    }
-
-    float GetFarClip() const { return FarClip; }
-    void SetFarClip(float value)
-    {
-        FarClip = value;
-        bProjMatrixDirty = true;
-    }
+    [[nodiscard]] float GetFarClip() const { return FarClip; }
+    void SetFarClip(float value) { FarClip = value; }
 
 private:
-    // This is where the view transform comes from
-    TAutoPtr<CSceneTreeNode> SceneTreeNode;
-
-    // bool bIsOrthographic = false;
+    bool bIsOrthographic = false;
     float AspectRatio = 1.0f;
     /// The vertical field of view, the default is 59 degrees
     float FovY = 59.0f;
@@ -66,30 +35,32 @@ private:
     float FarClip = 1000.0f;
     // float Zoom;
     // float OrthoSize;
-
-    mutable Matrix4 ProjMatrix;
-    mutable bool bProjMatrixDirty = true;
 };
 
-class COrbitCameraController : public Flow::CFlowNode
+// Based on SimpleCADRender/Camera.cpp from my other project
+class CCamera : public CLens
 {
-    // A transform whose inverse is the view matrix
-    DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Transform) { CalcTransform(); }
-
 public:
-    void Activate() { bIsActive = true; }
-    void Inactivate() { bIsActive = false; }
+    enum class EDir
+    {
+        Up,
+        Down,
+        Left,
+        Right
+    };
 
-    void MouseMoved(int deltaX, int deltaY);
-    void WheelMoved(int degree);
+    [[nodiscard]] Matrix4 GetViewMatrix() const;
+    [[nodiscard]] Frustum GetFrustum() const;
+    [[nodiscard]] Vector3 GetPosition() const { return Position; }
+
+    void Orbit(EDir dir, float angle);
+    void Turn(EDir dir, float angle);
+    void Move(Vector3 deltaPos);
 
 private:
-    void CalcTransform();
-
-    bool bIsActive = false;
-
-    Vector3 Location = { 0.0f, 0.0f, 10.0f };
-    float Yaw = 0.0f, Pitch = 0.0f;
+    // The camera looks at Pivot from Position
+    Vector3 Pivot { 0.0f, 0.0f, 0.0f }, Position { 0.0f, 3.0f, 4.0f };
+    Vector3 Up { 0.0f, 1.0f, 0.0f };
 };
 
 }

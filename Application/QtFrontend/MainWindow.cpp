@@ -53,8 +53,7 @@ void CMainWindow::on_actionNew_triggered()
     if (!bIsBlankFile)
     {
         QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(this, "New File",
-                                      "Your existing work will be discarded, continue?",
+        reply = QMessageBox::question(this, "New File", "Your existing work will be discarded, continue?",
                                       QMessageBox::Yes | QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
@@ -74,9 +73,8 @@ void CMainWindow::on_actionOpen_triggered()
     QSettings appSettings;
     const QString kDefaultDir("DefaultDir");
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Nome File"),
-                                                    appSettings.value(kDefaultDir).toString(),
-                                                    tr("Nome Code (*.nom);;All Files (*)"));
+    QString fileName = QFileDialog::getOpenFileName(
+        this, tr("Open Nome File"), appSettings.value(kDefaultDir).toString(), tr("Nome Code (*.nom);;All Files (*)"));
     if (fileName.isEmpty())
         return;
 
@@ -106,14 +104,6 @@ void CMainWindow::on_actionReload_triggered()
 
 void CMainWindow::on_actionSave_triggered()
 {
-    // Saves a list of all faces on the side
-    for (auto* node : Scene->GetSelectedNodes())
-    {
-        if (auto* ent = dynamic_cast<Scene::CMeshInstance*>(node->GetEntity()))
-        {
-            ent->GetMeshImpl();
-        }
-    }
     // Call source manager to save the file
     SourceMgr->SaveFile();
     this->setWindowModified(false);
@@ -122,14 +112,14 @@ void CMainWindow::on_actionSave_triggered()
 void CMainWindow::on_actionSceneAsObj_triggered()
 {
     QMessageBox::information(this, tr("Sorry"), tr("This feature is in the works"));
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Scene as Obj"), "",
-                                                    tr("Obj Files (*.obj);;All Files (*)"));
+    QString fileName =
+        QFileDialog::getSaveFileName(this, tr("Save Scene as Obj"), "", tr("Obj Files (*.obj);;All Files (*)"));
 }
 
 void CMainWindow::on_actionSceneAsStl_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Scene as Stl"), "",
-                                                    tr("Stl Files (*.stl);;All Files (*)"));
+    QString fileName =
+        QFileDialog::getSaveFileName(this, tr("Save Scene as Stl"), "", tr("Stl Files (*.stl);;All Files (*)"));
 }
 
 void CMainWindow::on_actionMerge_triggered()
@@ -198,8 +188,8 @@ void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->Res
 
 void CMainWindow::on_actionCommitTempMesh_triggered()
 {
-    TemporaryMeshManager->CommitTemporaryMesh(
-        SourceMgr->GetASTContext(), MeshName->text().toStdString(), InstName->text().toStdString());
+    TemporaryMeshManager->CommitTemporaryMesh(SourceMgr->GetASTContext(), MeshName->text().toStdString(),
+                                              InstName->text().toStdString());
     this->setWindowModified(true);
 }
 
@@ -208,9 +198,12 @@ void CMainWindow::SetupUI()
     // Add vertical layout for main window content
     //  Might not need to do this if layout is in the ui file
     auto* layout = new QVBoxLayout();
+    layout->setMargin(0);
     ui->centralwidget->setLayout(layout);
 
     // Initialize 3D view
+    GLWidget = new CCentralGLWidget(ui->centralwidget);
+    layout->addWidget(GLWidget);
 
     // Qt Designer won't let us put text boxes into a toolbar, so we do it here
     InstName = new QLineEdit();
@@ -243,10 +236,9 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
     bool parseSuccess = SourceMgr->ParseMainSource();
     if (!parseSuccess)
     {
-        auto resp = QMessageBox::question(
-            this, "Parser error",
-            "The file did not completely successfully parse, do you still want "
-            "to continue anyway? (See console for more information!)");
+        auto resp = QMessageBox::question(this, "Parser error",
+                                          "The file did not completely successfully parse, do you still want "
+                                          "to continue anyway? (See console for more information!)");
         if (resp != QMessageBox::Yes)
         {
             // Does not continue
@@ -264,9 +256,8 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
     catch (const AST::CSemanticError& e)
     {
         printf("Error encountered during scene generation:\n%s\n", e.what());
-        auto resp = QMessageBox::question(
-            this, "Scene Generation Error",
-            "See console for details. Do you want to keep what you already have?");
+        auto resp = QMessageBox::question(this, "Scene Generation Error",
+                                          "See console for details. Do you want to keep what you already have?");
         if (resp != QMessageBox::Yes)
         {
             LoadEmptyNomeFile();
@@ -282,9 +273,12 @@ void CMainWindow::PostloadSetup()
     Scene->GetBankAndSet().AddObserver(this);
 
     SceneUpdateClock = new QTimer(this);
-    SceneUpdateClock->setInterval(100);
+    SceneUpdateClock->setInterval(32);
     SceneUpdateClock->setSingleShot(false);
-    connect(SceneUpdateClock, &QTimer::timeout, [this]() { Scene->Update(); });
+    connect(SceneUpdateClock, &QTimer::timeout, [this]() {
+        Scene->Update();
+        GLWidget->update();
+    });
     SceneUpdateClock->start();
 
     TemporaryMeshManager = std::make_unique<Scene::CTemporaryMeshManager>(Scene, SourceMgr);

@@ -2,6 +2,7 @@
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(Parsing)
+add_subdirectory(CADRender)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -33,6 +34,9 @@ macro(config_playground2 target)
     target_link_libraries(${target} PRIVATE Math)
     target_compile_options(${target} ${DEFAULT_COMPILE_OPTIONS})
 
+    find_package(Threads REQUIRED)
+    target_link_libraries(${target} PRIVATE Threads::Threads)
+
     find_package(Qt5 COMPONENTS Widgets REQUIRED)
     target_link_libraries(${target} PRIVATE Qt5::Widgets)
 
@@ -44,6 +48,7 @@ macro(config_playground2 target)
     target_link_libraries(${target} PRIVATE pugixml)
 
     target_link_libraries(${target} PRIVATE NomParsing)
+    target_link_libraries(${target} PRIVATE CADRender)
 endmacro()
 
 add_executable(Nome3 ${PG2_SOURCES})

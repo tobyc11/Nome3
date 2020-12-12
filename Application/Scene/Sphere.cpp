@@ -32,10 +32,9 @@ void CSphere::UpdateEntity()
     float startPhi = minPhi / 180.f * (float)tc::M_PI;
 
     float width = 0;
-
     for (int j = 0; j < numCrossSections; j++) {
       float rotationTheta = (float)j / numCrossSections * (maxTheta / 360.f) * 2.f * (float)tc::M_PI;
-      for (int i = 0; i < n; i++) {
+      for (int i = 0; i <= n; i++) {
           float phi = startPhi + ((float)i / n * ((maxPhi - minPhi) / 180.f) * (float)tc::M_PI);
           float x = radius * cosf(phi);
           float y = radius * sinf(phi);
@@ -43,24 +42,25 @@ void CSphere::UpdateEntity()
           float rotatedX = y * cosf(rotationTheta);
           float rotatedY = y * sinf(rotationTheta);
           float rotatedZ = x;
-          AddVertex("v" + std::to_string(j) + "-" + std::to_string(i),
-                                    { rotatedX, rotatedY, rotatedZ});
-          if (j == 0 && i == 0) {
-            width += rotatedZ;
-            AddVertex("top", { 0, 0, rotatedZ });
-          } else if (j == 0 && i == n - 1) {
-            width += rotatedZ;
-            AddVertex("bottom", { 0, 0, rotatedZ });
+          AddVertex("v" + std::to_string(j) + "-" + std::to_string(i), {rotatedX, rotatedY, rotatedZ});
+          if (j == 0) {
+            if (i == 0) {
+              width += rotatedZ;
+              AddVertex("top", { 0, 0, rotatedZ});
+            } else if (i == n) {
+              width += rotatedZ;
+              AddVertex("bottom", { 0, 0, rotatedZ});
+            }
           }
       }
     }
 
     // Create faces
     for (int k = 0; k < numCrossSections; k++) {
-        for (int c = 0; c < n - 1; c++) {
+        for (int c = 0; c < n; c++) {
             // CCW winding
             int next_k = (k + 1) % numCrossSections;
-            int next_c = (c + 1) % n;
+            int next_c = (c + 1) % (n + 1);
             std::vector<std::string> upperFace = {
                 // CCW
                 "v" + std::to_string(next_k) + "-" + std::to_string(next_c),
@@ -92,7 +92,7 @@ void CSphere::UpdateEntity()
     }
 
     // add bottom face
-    i = n - 1;
+    i = n;
     for (int j = 0; j < numCrossSections; j++) {
       if (j != numCrossSections - 1 || maxTheta == 360) {
         std::vector<std::string> face = {
@@ -110,9 +110,9 @@ void CSphere::UpdateEntity()
     if (maxTheta != 360) {
       // add slice face 1
       int j = 0;
-      for (int i = 0; i < n - 1; i++) {
+      for (int i = 0; i < n; i++) {
         std::vector<std::string> face = {
-        "v" + std::to_string(j) + "-" + std::to_string((i + 1) % n),
+        "v" + std::to_string(j) + "-" + std::to_string((i + 1) % (n + 1)),
         "v" + std::to_string(j) + "-" + std::to_string(i),
         "center",
         };
@@ -125,7 +125,7 @@ void CSphere::UpdateEntity()
       };
       AddFace("slice-face-side-top" + std::to_string(j), slice_face_top);
       std::vector<std::string> slice_face_bottom = {
-        "v" + std::to_string(j) + "-" + std::to_string(n - 1),
+        "v" + std::to_string(j) + "-" + std::to_string(n),
         "center",
         "bottom",
       };
@@ -133,11 +133,11 @@ void CSphere::UpdateEntity()
 
       // add slice face 2
       j = numCrossSections - 1;
-      for (int i = 0; i < n - 1; i++) {
+      for (int i = 0; i < n; i++) {
         std::vector<std::string> face = {
           "center",
           "v" + std::to_string(j) + "-" + std::to_string(i),
-          "v" + std::to_string(j) + "-" + std::to_string((i + 1) % n),
+          "v" + std::to_string(j) + "-" + std::to_string((i + 1) % (n + 1)),
         };
         AddFace("slice-face" + std::to_string(j) + "-" + std::to_string(i), face);
       }
@@ -150,7 +150,7 @@ void CSphere::UpdateEntity()
       slice_face_bottom = {
         "bottom",
         "center",
-        "v" + std::to_string(j) + "-" + std::to_string(n - 1),
+        "v" + std::to_string(j) + "-" + std::to_string(n),
       };
       AddFace("slice-face-side-bottom" + std::to_string(j), slice_face_bottom);
 

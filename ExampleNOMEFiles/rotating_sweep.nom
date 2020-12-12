@@ -1,0 +1,72 @@
+#############################  BANK AND SURFACES  #############################
+bank b
+    set speed 0.15 0.001 1 0.01
+    set rotateRadius 3 1 20 1
+    set crossRadius 1 0.1 20 0.1
+endbank
+
+surface W  color  (1   1   1  ) endsurface   # White
+surface dynamic  color  (0 0.5*sin($b.speed*$frame)+0.5 1) endsurface
+
+#############################  STICK SWEEP  #############################
+
+point p5  ( {expr -10} {expr $b.rotateRadius*cos($b.speed*$frame + 2)} {expr $b.rotateRadius*sin($b.speed*$frame + 2)} ) endpoint
+point p6  ( 0 {expr $b.rotateRadius*cos($b.speed*$frame)} {expr $b.rotateRadius*sin($b.speed*$frame)}) endpoint
+polyline path1 (p5 p6) endpolyline
+
+point c1 ({expr -$b.crossRadius} {expr -$b.crossRadius} 0) endpoint
+point c2 ({expr -$b.crossRadius} {expr $b.crossRadius} 0) endpoint
+point c3 ({expr $b.crossRadius} {expr $b.crossRadius} 0) endpoint
+point c4 ({expr $b.crossRadius} {expr -$b.crossRadius} 0) endpoint
+bspline cross1 order 5 (c4 c3 c2 c1 c4 c3 c2 c1) endbspline
+
+sweep s0
+    crosssection cross1 begincap endcap endcrosssection
+    path path1 mintorsion endpath
+endsweep
+
+instance sweepinst s0 surface dynamic endinstance
+
+#############################  THREE FRAMES  #############################
+
+point inner0 (0.5*{expr 10} {expr $b.rotateRadius+2-$b.crossRadius} 0) endpoint
+point outer0 (0.5*{expr 10} {expr $b.rotateRadius+2+$b.crossRadius} 0) endpoint
+point inner1 (0 {expr $b.rotateRadius-$b.crossRadius} 0) endpoint
+point outer1 (0 {expr $b.rotateRadius+$b.crossRadius} 0) endpoint
+point inner2 (-0.5*{expr 10} {expr $b.rotateRadius-2-$b.crossRadius} 0) endpoint
+point outer2 (-0.5*{expr 10} {expr $b.rotateRadius-2+$b.crossRadius} 0) endpoint
+point inner3 (-{expr 10} {expr $b.rotateRadius-$b.crossRadius} 0) endpoint
+point outer3 (-{expr 10} {expr $b.rotateRadius+$b.crossRadius} 0) endpoint
+point inner4 (-1.5*{expr 10} {expr $b.rotateRadius+2-$b.crossRadius} 0) endpoint
+point outer4 (-1.5*{expr 10} {expr $b.rotateRadius+2+$b.crossRadius} 0) endpoint
+bspline bframe1 order 4 (inner0 inner1 inner2 inner3 inner4) endbspline
+bspline bframe2 order 4 (outer0 outer1 outer2 outer3 outer4) endbspline
+
+point cc1 (-0.1 -0.1 0) endpoint
+point cc2 (-0.1 0.1 0) endpoint
+point cc3 (0.1 0.1 0) endpoint
+point cc4 (0.1 -0.1 0) endpoint
+bspline cross2 order 5 (cc4 cc3 cc2 cc1 cc4 cc3 cc2 cc1) endbspline
+
+sweep inner
+    crosssection cross2 begincap endcap endcrosssection
+    path bframe1 mintorsion endpath
+endsweep
+sweep outer
+    crosssection cross2 begincap endcap endcrosssection
+    path bframe2 mintorsion endpath
+endsweep
+
+group frame
+  instance bf1 inner surface W endinstance
+  instance bf2 outer surface W endinstance
+endgroup
+
+instance f1 frame endinstance
+instance f2 frame rotate (1 0 0) 120 endinstance
+instance f2 frame rotate (1 0 0) 240 endinstance
+
+#############################  TOP AND BOTTOM BASES  #############################
+cylinder c ({expr $b.rotateRadius+$b.crossRadius} 1 360 20) endcylinder
+instance c1 c rotate (0 1 0) 90 surface W endinstance
+instance c2 c rotate (0 1 0) 90 translate (-{expr 10}+1 0 0) surface W endinstance

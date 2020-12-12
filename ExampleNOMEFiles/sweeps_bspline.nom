@@ -1,0 +1,51 @@
+####  Some test B-spline  ##########################
+bank p
+    set mrd     0.8      0       2     0.05
+    set msl     0.2      0       2     0.05
+    set wdx    -0.5     -5       2     0.1
+    set wdz     5.5      0       3     0.1
+    set wex    -0.4     -5       2     0.1
+    set wey     0.0     -5       2     0.1
+    set wez     5.5      0       3     0.1
+    set wfx    -0.2     -2       2     0.5
+    set wfy    -5.2     -6       6     0.1
+    set wfz     0.8     -2       2     0.5
+    set slicesN 48       4       50    1
+	set scaleX 1        0.5     2     0.1
+	set scaleY 1        0.5     2     0.1
+	set rot    0       -30      30    1
+	set s_twist   0        0.1     360   1
+	set s_azimuth 0        0.1     360   1
+endbank
+
+
+point eaR ( 0.3   6   0 )  endpoint
+point eb  (  0    4   0 )  endpoint
+point ecR ( -0.3  2   0 )  endpoint
+
+point wd  ( {expr  $p.wdx}   5              {expr  $p.wdz} )  endpoint
+point we  ( {expr  $p.wex}  {expr  $p.wey}  {expr  $p.wez} )  endpoint
+point wf  ( {expr  $p.wfx}  {expr  $p.wfy}  {expr  $p.wfz} )  endpoint
+
+point wg  ( {expr  $p.mrd}   -0.5  {expr  $p.msl} )  endpoint
+point wh  ( {expr  $p.mrd}    0     0 )              endpoint
+point wi  ( {expr  $p.mrd}    0.5  {expr -$p.msl} )  endpoint
+
+controlpoint cp point wd scale ({expr $p.scaleX} {expr $p.scaleY} 0) rotate (0 0 {expr $p.rot}) endcontrolpoint
+
+bspline s_path  order 4 ( eaR eb ecR  cp we wf wg wh wi )  slices {expr $p.slicesN}  endbspline
+
+point ra  ( 0.5 0.5 0 ) endpoint
+point rb  ( -0.5 0.5 0 ) endpoint
+point rc  ( -0.5 -0.5 0 ) endpoint
+point rd  ( 0.5 -0.5 0 ) endpoint
+
+polyline s_crosssection ( ra rb rc rd) endpolyline
+
+sweep s0
+    crosssection s_crosssection endcap endcrosssection
+    path s_path azimuth {expr $p.s_azimuth} twist {expr $p.s_twist} mintorsion endpath
+endsweep
+
+# instance bs path endinstance
+instance sweepinst s0 endinstance

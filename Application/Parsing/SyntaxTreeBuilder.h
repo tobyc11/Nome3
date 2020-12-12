@@ -50,6 +50,7 @@ public:
     antlrcpp::Any visitSet(NomParser::SetContext* context) override;
     antlrcpp::Any visitDeleteFace(NomParser::DeleteFaceContext* context) override;
 
+    antlrcpp::Any visitCmdInclude(NomParser::CmdIncludeContext* context) override; // Randy added this on 12/1 for include files. Look at the # after the command in Nom.g4 to determine which gets visited
     antlrcpp::Any visitCall(NomParser::CallContext* context) override;
     antlrcpp::Any visitUnaryOp(NomParser::UnaryOpContext* context) override;
     antlrcpp::Any visitSubExpParen(NomParser::SubExpParenContext* context) override;

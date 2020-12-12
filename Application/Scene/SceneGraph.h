@@ -105,6 +105,11 @@ public:
     AST::ACommand* BuildASTCommand(Nome::AST::CASTContext& ctx) const;
     void SyncToAST(AST::CASTContext& ctx);
 
+    void SelectNode() { SelectBool = true; } // Randy added this on 11/21 for selection coloring
+    void UnselectNode() { SelectBool = false; } // Randy added this on 11/21 for selection coloring
+    bool isSelected() { return SelectBool; } // Randy added this on 11/21 for selection coloring
+    Vector3 GetSelectSurface() const { return SelectSurface; } // Randy added this on 11/21
+
 private:
     std::string Name;
     /// Denotes whether this node is a group. Group names can be skipped in a path
@@ -121,6 +126,8 @@ private:
     TAutoPtr<CEntity> Entity;
     TAutoPtr<CSurface> Surface;
 
+    bool SelectBool = false;
+    Vector3 SelectSurface = { 0, 1, 0 }; // R , G , B Randy added this on 11/21
     AST::ACommand* ASTSource {};
 };
 

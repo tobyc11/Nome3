@@ -24,13 +24,11 @@ CBankAndSet::~CBankAndSet()
             observer->OnSliderRemoving(*nameSlider.second, nameSlider.first);
 }
 
-void CBankAndSet::AddSlider(const std::string& name, AST::ACommand* cmd, float value, float min,
-                            float max, float step)
+void CBankAndSet::AddSlider(const std::string& name, AST::ACommand* cmd, float value, float min, float max, float step)
 {
     if (GetSlider(name))
-    {
         throw std::runtime_error("Slider already exists");
-    }
+
     auto* slider = new CSlider(cmd, value, min, max, step);
     Sliders.insert({ name, slider });
 

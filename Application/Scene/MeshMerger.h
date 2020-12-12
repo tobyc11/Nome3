@@ -20,7 +20,7 @@ public:
     // No update yet, please just use one time
     void MergeIn(const CMeshInstance& meshInstance);
 
-    // Buggy, preset to 3 subdivision steps
+    // Buggy, preset to 2 subdivision steps
     void Catmull(const CMeshInstance& meshInstance);
 
 private:

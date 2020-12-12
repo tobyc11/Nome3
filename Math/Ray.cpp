@@ -202,6 +202,14 @@ float Ray::HitDistance(const Sphere& sphere) const
         return (-b + dSqrt) / (2.0f * a);
 }
 
+// TODO: ray intersection with edge
+// https://answers.unity.com/questions/53375/i-need-help-about-raycast-and-edges.html
+float Ray::HitDistance(const Vector3& point1, const Vector3& point2) const
+{
+    // Implement later.
+    return 9999;
+}
+
 float Ray::HitDistance(const Vector3& v0, const Vector3& v1, const Vector3& v2, Vector3* outNormal, Vector3* outBary) const
 {
     // Based on Fast, Minimum Storage Ray/Triangle Intersection by Möller & Trumbore

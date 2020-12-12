@@ -140,7 +140,6 @@ std::string CASTSceneAdapter::VisitInclude(AST::ACommand* cmd, CScene& scene)
     auto kind = ClassifyCommand(cmd->GetCommand());
     if (kind == ECommandKind::DocEdit && cmd->GetCommand() == "include")
     {
-
         auto name = cmd->GetName();
         includeFileName = name;
     }

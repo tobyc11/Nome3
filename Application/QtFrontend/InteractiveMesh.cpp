@@ -167,10 +167,13 @@ void CInteractiveMesh::UpdateMaterial(bool showFacets)
 
     mat->FindParameterByName("kd")->setValue(instanceColor);
     if (showFacets)
+    {
         mat->FindParameterByName("showFacets")->setValue(1);
+    }
     else
+    {
         mat->FindParameterByName("showFacets")->setValue(0);
-
+    }
     // Use non-default line color only if the instance has a surface
     auto surface = SceneTreeNode->GetOwner()->GetSurface();
     if (LineMaterial && surface)

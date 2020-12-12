@@ -296,8 +296,9 @@ void CNome3DView::ClearSelectedEdges()
 }
 
 
-void CNome3DView::PickFaceWorldRay(const tc::Ray& ray)
+void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
 {
+    rotateRay(ray);
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
@@ -427,8 +428,9 @@ void CNome3DView::PickFaceWorldRay(const tc::Ray& ray)
 }
 
 // Used for picking edges
-void CNome3DView::PickEdgeWorldRay(const tc::Ray& ray)
+void CNome3DView::PickEdgeWorldRay(tc::Ray& ray)
 {
+    rotateRay(ray);
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::vector<std::string>>>
         hits; // note the string is a vector of strings
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
@@ -497,8 +499,9 @@ void CNome3DView::PickEdgeWorldRay(const tc::Ray& ray)
             "No edge hit or more than one edge hit. Please select again");
 }
 
-void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
+void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
 {
+    rotateRay(ray);
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node

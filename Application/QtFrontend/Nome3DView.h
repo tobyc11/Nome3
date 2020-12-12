@@ -39,9 +39,9 @@ public:
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
-    void PickVertexWorldRay(const tc::Ray& ray);
-    void PickFaceWorldRay(const tc::Ray& ray); // Randy added on 10/10
-    void PickEdgeWorldRay(const tc::Ray& ray); // Randy added on 10/29
+    void PickVertexWorldRay(tc::Ray& ray);
+    void PickFaceWorldRay(tc::Ray& ray); // Randy added on 10/10
+    void PickEdgeWorldRay(tc::Ray& ray); // Randy added on 10/29
 
     bool WireFrameMode = false; // Randy added on 10/16 for choose wireframe mode or default mode.
                                 // Changed to false on 11/21

@@ -483,8 +483,9 @@ void CMainWindow::PostloadSetup()
         }
         Scene->SetTime((float) elapsedRender->elapsed() / 1000);
         Scene->SetFrame(1);
-        std::cout << "time" << Scene->GetTime()->GetNumber() << std::endl;
-        std::cout << "frame" << Scene->GetFrame()->GetNumber() << std::endl;
+        // randy commented this out for now. It is conflicting with debug messages.
+        // std::cout << "time" << Scene->GetTime()->GetNumber() << std::endl;
+        // std::cout << "frame" << Scene->GetFrame()->GetNumber() << std::endl;
     });
     SceneUpdateClock->start();
 

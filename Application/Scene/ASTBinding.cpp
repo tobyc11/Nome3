@@ -4,6 +4,8 @@
 #include "SweepPath.h"
 #include "Polyline.h"
 #include "BSpline.h"
+#include "Circle.h"
+#include "BezierSpline.h"
 #include "TorusKnot.h" // Check with Zachary
 #include "SweepControlPoint.h"
 #include <Flow/FlowNode.h>
@@ -305,6 +307,16 @@ bool TBindingTranslator<Flow::TInput<CSweepPathInfo*>>::FromASTToValue(
     {
         CBSpline* bspline = dynamic_cast<CBSpline*>(path);
         value.Connect(bspline->BSpline);
+    }
+    else if (typeid(e) == typeid(CCircle))
+    {
+        CCircle* circle = dynamic_cast<CCircle*>(path);
+        value.Connect(circle->Circle);
+    }
+    else if (typeid(e) == typeid(CBezierSpline))
+    {
+        CBezierSpline* bezierSpline = dynamic_cast<CBezierSpline*>(path);
+        value.Connect(bezierSpline->BezierSpline);
     }
     else if (typeid(e) == typeid(CTorusKnot))
     {

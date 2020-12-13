@@ -129,7 +129,6 @@ void CASTSceneAdapter::TraverseFile(AST::AFile* astRoot, CScene& scene)
 {
     assert(CmdTraverseStack.empty());
 
-
     for (auto* cmd : astRoot->GetCommands())
     {
         VisitCommandBankSet(cmd, scene);

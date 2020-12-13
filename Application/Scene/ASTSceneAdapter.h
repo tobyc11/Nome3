@@ -24,7 +24,7 @@ public:
     static CTransform* ConvertASTTransform(AST::ANamedArgument* namedArg);
 
     void TraverseFile(AST::AFile* astRoot, CScene& scene);
-    std::vector<std::string> CASTSceneAdapter::GetIncludes(AST::AFile* astRoot, CScene& scene); // Randy added on 12/13
+    std::vector<std::string> GetIncludes(AST::AFile* astRoot, CScene& scene); // Randy added on 12/13
 
     void VisitCommandBankSet(AST::ACommand* cmd, CScene& scene);
     void VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, bool insubMesh);

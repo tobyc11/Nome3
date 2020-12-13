@@ -56,7 +56,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
         {
             CMeshImpl::VertexHandle faceVert = *fvIter;
             const auto& posVec = fromMesh.point(faceVert);
-            if (faceVCount == 0) // first vert of triangle
+            if (faceVCount == 0) // first vert 
             {
                 const auto& posVec = fromMesh.point(faceVert);
                 v0.Pos = { posVec[0], posVec[1], posVec[2] };
@@ -65,7 +65,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
                 v0.colorSelected =
                     selected; // Randy added this to handle marking which things are selected.
             }
-            else if (faceVCount == 1) // second vert of triangle
+            else if (faceVCount == 1) // second vert 
             {
                 const auto& posVec = fromMesh.point(faceVert);
                 vPrev.Pos = { posVec[0], posVec[1], posVec[2] };
@@ -73,8 +73,9 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
                 vPrev.Normal = { fnVec[0], fnVec[1], fnVec[2] };
                 vPrev.colorSelected = selected;
             }
-            else // third vert of triangle
+            else // remaining 3rd, 4th (if a quad face), and any additional polygon vertices. For the 4th vert and beyong, we send to builder again, creating another triangle. 
             {
+                // Note: this is how we "triangulate" the meshes. It's just a visual triangulation. The half edge data structure was created for the added face, not the triangulated one passed into the shader.
                 const auto& posVec = fromMesh.point(faceVert);
                 vCurr.Pos = { posVec[0], posVec[1], posVec[2] };
                 const auto& fnVec = fromMesh.normal(*fIter);

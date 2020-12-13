@@ -46,7 +46,7 @@ vec3 adsModel( const in vec3 pos, const in vec3 n )
     vec3 specular = vec3( pow( max( dot( r, v ), 0.0 ), shininess ) );
 
     // Combine the ambient, diffuse and specular contributions
-    return light.intensity * ( ka + kd * diffuse + ks * specular );
+    return light.intensity * (ka + kd*diffuse); // Uncomment for Blinn-Phong: light.intensity * ( ka + kd * diffuse + ks * specular );
 }
 
 vec4 shadeLine( const in vec4 color )

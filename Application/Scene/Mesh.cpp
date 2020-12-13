@@ -867,14 +867,7 @@ CMeshInstance::GetSelectedFaceHandles() // Randy added on 10/11 to assist with f
 std::vector<std::string> CMeshInstance::GetFaceVertexNames(
     std::vector<std::string> facenames) // Randy added on 10/19 to return face vert names
 {
-
-    for (auto& pair : NameToFace)
-    {
-        std::cout << pair.first << std::endl;
-    }
     std::vector<std::string> vertnames;
-
-    std::cout << "this mesh contains the face that needs to be preserved" << std::endl;
     for (auto facename : facenames)
     {
         if (NameToFace.find(facename) != NameToFace.end())

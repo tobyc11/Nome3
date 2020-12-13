@@ -429,19 +429,22 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
     Scene::CASTSceneAdapter adapter;
     try
     {
-        auto includeFileNames = adapter.TraverseFile(
-            SourceMgr->GetASTContext().GetAstRoot(),
-            *Scene); // randy added includeFileNames variable on 11/30. Currently assumes included
+        auto includeFileNames = adapter.GetIncludes(SourceMgr->GetASTContext().GetAstRoot(), *Scene); // randy added includeFileNames variable on 11/30. Currently assumes included
                      // file names are in same directory as original
+
+        // TODO: In the future, allow included files to be in different directories
         for (auto fileName : includeFileNames)
         {
             auto nofileNamepath = filePath.substr(0, filePath.find_last_of("/") + 1);
             auto testSourceMgr = std::make_shared<CSourceManager>(
-                nofileNamepath + fileName); // TODO: TMRW 12/1, GENERALIZE THIS TO ANY PATH
+                nofileNamepath + fileName); 
             bool testparseSuccess = testSourceMgr->ParseMainSource();
             adapter.TraverseFile(testSourceMgr->GetASTContext().GetAstRoot(), *Scene);
         }
-        // TODO: In the future, allow included files to be in different directories
+
+
+
+        adapter.TraverseFile(SourceMgr->GetASTContext().GetAstRoot(), *Scene); 
     }
     catch (const AST::CSemanticError& e)
     {

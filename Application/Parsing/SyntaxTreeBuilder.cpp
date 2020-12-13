@@ -190,6 +190,8 @@ antlrcpp::Any CFileBuilder::visitCmdIdListOne(NomParser::CmdIdListOneContext* co
         cmd->AddNamedArgument(visit(arg));
     for (auto* arg : context->argSegs())
         cmd->AddNamedArgument(visit(arg));
+
+    // Randy 12/12 note: this means we can add surface after face, polyline, etc.
     for (auto* arg : context->argSurface())
         cmd->AddNamedArgument(visit(arg));
     return cmd;

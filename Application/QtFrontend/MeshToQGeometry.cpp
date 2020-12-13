@@ -6,6 +6,7 @@ namespace Nome
 
 CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
                                    std::vector<CMeshImpl::FaceHandle> selectedFaceHandles,
+                                   std::map<CMeshImpl::FaceHandle, std::array<float, 3>> fHWithColorVector, 
                                    bool bGenPointGeometry)
 {
     // Per face normal, thus no shared vertices between faces
@@ -14,6 +15,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
         std::array<float, 3> Pos; // a float is 4 bytes
         std::array<float, 3> Normal;
         int colorSelected; // Randy added this to color faces that are selected
+        std::array<float, 3> faceColor; // Randy added this on 12/12 to handle face entity coloring
 
         void SendToBuilder(
             CGeometryBuilder& builder) const // Randy note: I think here it's just decomposing it
@@ -22,10 +24,11 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
             builder.Ingest(Pos[0], Pos[1], Pos[2]);
             builder.Ingest(Normal[0], Normal[1], Normal[2]);
             builder.IngestInt(colorSelected);
+            builder.Ingest(faceColor[0], faceColor[1], faceColor[2]);
         }
     };
     const uint32_t stride = sizeof(CVertexData);
-    static_assert(stride == 28, "Vertex data size isn't as expected");
+    static_assert(stride == 40, "Vertex data size isn't as expected");
     QByteArray bufferArray;
     CAttribute attrPos { bufferArray, offsetof(CVertexData, Pos), stride,
                          Qt3DRender::QAttribute::Float, 3 };
@@ -33,10 +36,14 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
                          Qt3DRender::QAttribute::Float, 3 };
     CAttribute attrcolorSelected { bufferArray, offsetof(CVertexData, colorSelected), stride,
                                    Qt3DRender::QAttribute::Int, 1 };
+    CAttribute attrfaceColor { bufferArray, offsetof(CVertexData, faceColor), stride,
+                         Qt3DRender::QAttribute::Float, 3 };
+
     CGeometryBuilder builder;
     builder.AddAttribute(&attrPos);
     builder.AddAttribute(&attrNor);
     builder.AddAttribute(&attrcolorSelected);
+    builder.AddAttribute(&attrfaceColor);
 
     CMeshImpl::FaceIter fIter, fEnd = fromMesh.faces_end();
     for (fIter = fromMesh.faces_sbegin(); fIter != fEnd; ++fIter)
@@ -52,6 +59,13 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
         {
             selected = 1;
         }
+
+        // Randy added on 12/12
+        std::array<float, 3> color = {999.0, 999.0, 999.0 };
+        if (fHWithColorVector.find(fIter.handle()) != fHWithColorVector.end())
+            color = fHWithColorVector.at(fIter.handle());
+       
+
         for (; fvIter.is_valid(); ++fvIter)
         {
             CMeshImpl::VertexHandle faceVert = *fvIter;
@@ -62,8 +76,9 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
                 v0.Pos = { posVec[0], posVec[1], posVec[2] };
                 const auto& fnVec = fromMesh.normal(*fIter);
                 v0.Normal = { fnVec[0], fnVec[1], fnVec[2] };
-                v0.colorSelected =
-                    selected; // Randy added this to handle marking which things are selected.
+                v0.colorSelected = selected; // Randy added this to handle marking which things are selected.
+                v0.faceColor = { color[0], color[1], color[2] };
+                auto test = color[0];
             }
             else if (faceVCount == 1) // second vert 
             {
@@ -72,8 +87,9 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
                 const auto& fnVec = fromMesh.normal(*fIter);
                 vPrev.Normal = { fnVec[0], fnVec[1], fnVec[2] };
                 vPrev.colorSelected = selected;
+                vPrev.faceColor = { color[0], color[1], color[2] };
             }
-            else // remaining 3rd, 4th (if a quad face), and any additional polygon vertices. For the 4th vert and beyong, we send to builder again, creating another triangle. 
+            else // remaining 3rd, 4th (if a quad face), and any additional polygon vertices. For the 4th vert and beyond, we send to builder again, creating another triangle. 
             {
                 // Note: this is how we "triangulate" the meshes. It's just a visual triangulation. The half edge data structure was created for the added face, not the triangulated one passed into the shader.
                 const auto& posVec = fromMesh.point(faceVert);
@@ -81,6 +97,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
                 const auto& fnVec = fromMesh.normal(*fIter);
                 vCurr.Normal = { fnVec[0], fnVec[1], fnVec[2] };
                 vCurr.colorSelected = selected;
+                vCurr.faceColor = { color[0], color[1], color[2] };
                 v0.SendToBuilder(builder);
                 vPrev.SendToBuilder(builder);
                 vCurr.SendToBuilder(builder);
@@ -125,6 +142,14 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
     colorSelectedAttr->setCount(builder.GetVertexCount());
     attrcolorSelected.FillInQAttribute(colorSelectedAttr);
     Geometry->addAttribute(colorSelectedAttr);
+
+    auto* faceColorAttr = new Qt3DRender::QAttribute(Geometry);
+    faceColorAttr->setName("faceColor"); 
+    faceColorAttr->setAttributeType(Qt3DRender::QAttribute::VertexAttribute);
+    faceColorAttr->setBuffer(buffer);
+    faceColorAttr->setCount(builder.GetVertexCount());
+    attrfaceColor.FillInQAttribute(faceColorAttr);
+    Geometry->addAttribute(faceColorAttr);
 
     if (bGenPointGeometry)
     {

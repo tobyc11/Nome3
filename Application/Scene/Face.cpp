@@ -9,6 +9,7 @@ namespace Nome::Scene
 DEFINE_META_OBJECT(CFace)
 {
     BindPositionalArgument(&CFace::Points, 1);
+    BindNamedArgument(&CFace::faceSurfaceIdent, "surface", 0); // Randy added on 12/12 to handle face entity coloring
     // Handle argSurface
     // Handle parent mesh connection
 }
@@ -48,6 +49,9 @@ void CFace::SetPointSourceNames(const TAutoPtr<CScene>& scene, std::vector<std::
 
 bool CFace::AddFaceIntoMesh(CMesh* mesh) const
 {
+    if (this->faceSurfaceIdent != "")
+    { // then this means this face has a corresponding surface color
+    }
     std::vector<std::string> nameList;
     for (size_t i = 0; i < Points.GetSize(); i++)
     {

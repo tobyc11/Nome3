@@ -22,7 +22,7 @@ public:
     antlrcpp::Any visitArgHidden(NomParser::ArgHiddenContext* context) override;
     antlrcpp::Any visitArgSurface(NomParser::ArgSurfaceContext* context) override;
     antlrcpp::Any visitArgCross(NomParser::ArgCrossContext* context) override;
-    antlrcpp::Any visitArgSlices(NomParser::ArgSlicesContext* context) override;
+    antlrcpp::Any visitArgSegs(NomParser::ArgSegsContext* context) override;
     antlrcpp::Any visitArgOrder(NomParser::ArgOrderContext* context) override;
     antlrcpp::Any visitArgTransformTwo(NomParser::ArgTransformTwoContext* context) override;
     antlrcpp::Any visitArgTransformOne(NomParser::ArgTransformOneContext* context) override;

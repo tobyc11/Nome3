@@ -4,9 +4,10 @@ namespace Nome::Scene {
 
 DEFINE_META_OBJECT(CBSpline)
 {
-    BindPositionalArgument(&CBSpline::ControlPoints, 1);
-    BindNamedArgument(&CBSpline::Segments, "slices", 0);
     BindNamedArgument(&CBSpline::Order, "order", 0);
+    BindPositionalArgument(&CBSpline::ControlPoints, 1);
+    BindNamedArgument(&CBSpline::Segments, "segs", 0);
+
 }
 
 void CBSpline::MarkDirty()

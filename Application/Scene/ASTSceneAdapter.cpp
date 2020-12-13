@@ -226,7 +226,6 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (cmd->GetCommand() == "instance")
     {
-        // Instance transformations/surfaces are not handled in here,
         auto* sceneNode = InstanciateUnder->CreateChildNode(cmd->GetName());
         sceneNode->SyncFromAST(cmd, scene);
         // TODO: move the following logic into SyncFromAST

@@ -1,0 +1,122 @@
+bank p 
+    set fish_slices 7 0 10 1
+    set fish_sweep_twist   0        0.1     360   1
+	set fish_sweep_azimuth 0        0.1     360   1
+    set jelly_slices 10 1 100 1
+    set jelly_height 1 1 100 1
+endbank
+
+surface O  color  (({expr cos($time)})   0.6  0.8 ) endsurface
+surface W color (0.1 {expr sin($time)} 0.5 ) endsurface
+surface Y color (0.2 sin($time) 0.2) endsurface
+surface Z color (0.25 cos($time) 0.7) endsurface
+surface J color (0.9 0.2 sin($time)) endsurface
+surface K color (0.77 sin($time) sin($time)) endsurface
+
+point eaR ( 0   0   0 )  endpoint  
+point eb  (  0.1   0  {expr -0.075 * sin(1.25 * $time)} )  endpoint  
+point ecR ( 0.2   0.2 {expr -0.05 * sin(1.15 * $time)} )  endpoint
+
+point wd  ( 0.3   0.2  {expr -0.01 * sin(1.25 * $time)} )  endpoint  
+point we  ( 0.4   0.1  {expr 0.05 * sin(1.15 * $time)} ) endpoint
+point wf ( 0.5   0.1  {expr 0.1 * sin($time)} ) endpoint
+point wg ( 0.6   0.2  {expr  0.2 * sin(0.95 * $time)} ) endpoint
+point wh  ( 0.5   0.2  {expr 0.1 * sin(0.90 * $time)} ) endpoint
+point wi ( 0.6   -3  0 ) endpoint
+
+point xb  (  0.1   0  {expr -0.075 * sin(1.25 * $time)} )  endpoint  
+point xcR ( 0.2   -0.2  {expr -0.05 * sin(1.15 * $time)} )  endpoint
+
+point xd  ( 0.3   -0.2  {expr -0.01 * sin(1.25 * $time)} )  endpoint  
+point xe  ( 0.4   -0.1  {expr 0.05 * sin(1.15 * $time)} ) endpoint
+point xf ( 0.5   -0.1  {expr 0.1 * sin($time)} ) endpoint
+point xg ( 0.6   -0.2  {expr  0.2 * sin(0.95 * $time)} ) endpoint
+point xh  ( 0.5   -0.2  {expr 0.1 * sin(0.90 * $time)} ) endpoint
+point xi ( 0.6   3  0 ) endpoint
+
+point yb  (  -0.1  0  {expr -0.075 * sin(1.25 * $time)} )  endpoint  
+point ycR ( -0.2   0.2  {expr -0.05 * sin(1.15 * $time)} )  endpoint
+
+point yd  ( -0.3   0.2  {expr -0.01 * sin(1.25 * $time)} )  endpoint  
+point ye  ( -0.4   0.1  {expr 0.05 * sin(1.15 * $time)} ) endpoint
+point yf ( -0.5   0.1  {expr 0.1 * sin($time)} ) endpoint
+point yg ( -0.6   0.2  {expr  0.2 * sin(0.95 * $time)} ) endpoint
+point yh  ( -0.5   0.2  {expr 0.1 * sin(0.90 * $time)} ) endpoint
+point yi ( -0.6   -3  0 ) endpoint
+
+point zb  (  -0.1   0  {expr -0.075 * sin(1.25 * $time)} )  endpoint  
+point zcR ( -0.2   -0.2  {expr -0.05 * sin(1.15 * $time)} )  endpoint
+
+point zd  ( -0.3   -0.2  {expr -0.01 * sin(1.25 * $time)} )  endpoint  
+point ze  ( -0.4   -0.1  {expr 0.05 * sin(1.15 * $time)} ) endpoint
+point zf ( -0.5   -0.1  {expr 0.1 * sin($time)} ) endpoint
+point zg ( -0.6   -0.2  {expr  0.2 * sin(0.95 * $time)} ) endpoint
+point zh  ( -0.5   -0.2  {expr 0.1 * sin(0.90 * $time)} ) endpoint
+point zi ( -0.6   3  0 ) endpoint
+
+point p1 (-1*{expr 0.3 + sin($time)} 0 0) endpoint
+point p2 (-2*{expr 0.3 + sin($time)} 2*{expr $p.jelly_height} 0) endpoint
+point p3 (-1*{expr 0.3 + sin($time)} 4*{expr $p.jelly_height} 0) endpoint
+point p4 (1*{expr 0.3 + sin($time)} 4*{expr $p.jelly_height} 0) endpoint
+point p5 (2*{expr 0.3 + sin($time)} 2*{expr $p.jelly_height} 0) endpoint
+point p6 (1*{expr 0.3 + sin($time)} 0 0) endpoint
+
+beziercurve b_curve (p1 p2 p3 p4 p5 p6) segs $p.jelly_slices endbeziercurve
+group jellyfish 
+    instance bc b_curve surface K endinstance
+    instance bc b_curve rotate (0 1 0) (30) surface K endinstance
+    instance bc b_curve rotate (0 1 0) (60) surface K endinstance
+    instance bc b_curve rotate (0 1 0) (90) surface K endinstance
+    instance bc b_curve rotate (0 1 0) (120) surface K endinstance
+    instance bc b_curve rotate (0 1 0) (150) surface K endinstance
+    instance bc b_curve rotate (0 1 0) (180) surface K endinstance
+    instance bc b_curve rotate (0 1 0) (210) surface K endinstance
+    instance bc b_curve rotate (0 1 0) (240) surface K endinstance
+    instance bc b_curve rotate (0 1 0) (270) surface K endinstance
+    instance bc b_curve rotate (0 1 0) (300) surface K endinstance
+    instance bc b_curve rotate (0 1 0) (330) surface K endinstance
+endgroup 
+
+bspline bs1 order 5 ( eaR eb ecR wd we wf wg wh wi) segs $p.fish_slices  endbspline
+
+bspline bs2 order 5 ( eaR xb xcR xd xe xf xg xh xi) segs $p.fish_slices endbspline 
+
+bspline bs3 order 5 ( eaR yb ycR yd ye yf yg yh yi) segs $p.fish_slices endbspline 
+
+bspline bs4 order 5 ( eaR zb zcR zd ze zf zg zh zi) segs $p.fish_slices endbspline
+
+
+point ra  ( 0.05 0.05 0 ) endpoint
+point rb  ( -0.05 0.05 0 ) endpoint
+point rc  ( -0.05 -0.05 0 ) endpoint
+point rd  ( 0.05 -0.05 0 ) endpoint
+
+polyline s_crosssection ( ra rb rc rd) endpolyline
+
+sweep s0
+    crosssection s_crosssection endcap endcrosssection
+    path bs1 azimuth {expr $p.fish_sweep_azimuth} twist {expr $p.fish_sweep_twist} mintorsion endpath
+endsweep 
+
+sweep s1
+    crosssection s_crosssection endcap endcrosssection
+    path bs2 azimuth {expr $p.fish_sweep_azimuth} twist {expr $p.fish_sweep_twist} mintorsion endpath
+endsweep 
+
+group g
+    instance b1 bs1 scale (4 4 4) surface O endinstance
+    instance b2 bs2 scale (4 4 4) translate (0 0.7 0) surface W endinstance
+
+    instance b3 bs3 scale (2 2 2) translate (-2 -2 1) surface Y endinstance
+    instance b4 bs4 scale (2 2 2) translate (-2 -1.7 1) surface Z endinstance
+
+    instance b5 bs3 scale (6 6 6) translate (-1 1.5 -2) surface K endinstance
+    instance b6 bs4 scale (6 6 6) translate (-1 2.5 -2) surface J endinstance
+
+    instance sw s0 translate (0 -1.5 -2) scale (3 3 3) surface Z endinstance
+    instance sw s1 translate (0 -1.3 -2) scale (3 3 3) surface J endinstance
+endgroup 
+
+instance i1 g endinstance
+instance i2 jellyfish translate (2 -6 -2) scale (0.5 0.5 0.5) rotate (0 1 1) (30) endinstance
+instance i3 jellyfish translate (-5 -2 -3) scale (0.2 0.1 0.2) rotate (1 1 0) (100) endinstance

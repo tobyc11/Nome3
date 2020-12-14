@@ -5,7 +5,7 @@ namespace Nome::Scene
 
 DEFINE_META_OBJECT(CBezierSpline)
 {
-    BindPositionalArgument(&CBezierSpline::ControlPoints, 0);
+    BindPositionalArgument(&CBezierSpline::ControlPoints, 1);
     BindNamedArgument(&CBezierSpline::Segments, "segs", 0);
 }
 

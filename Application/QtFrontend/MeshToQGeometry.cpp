@@ -17,9 +17,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
         int colorSelected; // Randy added this to color faces that are selected
         std::array<float, 3> faceColor; // Randy added this on 12/12 to handle face entity coloring
 
-        void SendToBuilder(
-            CGeometryBuilder& builder) const // Randy note: I think here it's just decomposing it
-                                             // into a list of triangles with the correct normals
+        void SendToBuilder(CGeometryBuilder& builder) const
         {
             builder.Ingest(Pos[0], Pos[1], Pos[2]);
             builder.Ingest(Normal[0], Normal[1], Normal[2]);
@@ -61,10 +59,10 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
         }
 
         // Randy added on 12/12
-        std::array<float, 3> color = {999.0, 999.0, 999.0 };
-        if (fHWithColorVector.find(fIter.handle()) != fHWithColorVector.end())
+        std::array<float, 3> color = {999.0,999.0,999.0}; // dummy default values
+
+        if (fHWithColorVector.find(fIter.handle()) != fHWithColorVector.end()) 
             color = fHWithColorVector.at(fIter.handle());
-       
 
         for (; fvIter.is_valid(); ++fvIter)
         {
@@ -77,8 +75,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
                 const auto& fnVec = fromMesh.normal(*fIter);
                 v0.Normal = { fnVec[0], fnVec[1], fnVec[2] };
                 v0.colorSelected = selected; // Randy added this to handle marking which things are selected.
-                v0.faceColor = { color[0], color[1], color[2] };
-                auto test = color[0];
+                v0.faceColor = color;
             }
             else if (faceVCount == 1) // second vert 
             {
@@ -87,7 +84,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
                 const auto& fnVec = fromMesh.normal(*fIter);
                 vPrev.Normal = { fnVec[0], fnVec[1], fnVec[2] };
                 vPrev.colorSelected = selected;
-                vPrev.faceColor = { color[0], color[1], color[2] };
+                vPrev.faceColor = color;
             }
             else // remaining 3rd, 4th (if a quad face), and any additional polygon vertices. For the 4th vert and beyond, we send to builder again, creating another triangle. 
             {
@@ -97,7 +94,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
                 const auto& fnVec = fromMesh.normal(*fIter);
                 vCurr.Normal = { fnVec[0], fnVec[1], fnVec[2] };
                 vCurr.colorSelected = selected;
-                vCurr.faceColor = { color[0], color[1], color[2] };
+                vCurr.faceColor = color;
                 v0.SendToBuilder(builder);
                 vPrev.SendToBuilder(builder);
                 vCurr.SendToBuilder(builder);

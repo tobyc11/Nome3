@@ -49,9 +49,6 @@ void CFace::SetPointSourceNames(const TAutoPtr<CScene>& scene, std::vector<std::
 
 bool CFace::AddFaceIntoMesh(CMesh* mesh) const
 {
-    if (this->faceSurfaceIdent != "")
-    { // then this means this face has a corresponding surface color
-    }
     std::vector<std::string> nameList;
     for (size_t i = 0; i < Points.GetSize(); i++)
     {
@@ -87,7 +84,7 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
         mesh->AddVertex(newName, point->Position);
         nameList.push_back(newName);
     }
-    mesh->AddFace(GetName(), nameList);
+    mesh->AddFace(GetName(), nameList, faceSurfaceIdent); // Randy changed this on 12/12
     return true;
 }
 

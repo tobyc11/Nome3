@@ -50,7 +50,7 @@ vec3 adsModel( const in vec3 pos, const in vec3 n )
     return light.intensity * (ka + kd*diffuse); //light.intensity * ( ka + kd * diffuse + ks * specular );
 }
 
-vec3 customadsModel( const in vec3 pos, const in vec3 n, const in vec3 facecolor)
+vec3 customadsModel( const in vec3 pos, const in vec3 n, const in vec3 customColor)
 {
     // Calculate the vector from the light to the fragment
     vec3 s = normalize( vec3( light.position ) - pos );
@@ -63,7 +63,7 @@ vec3 customadsModel( const in vec3 pos, const in vec3 n, const in vec3 facecolor
     vec3 diffuse = vec3( max( dot( s, n ), 0.0 ) );
 
     // Combine the ambient, diffuse and specular contributions
-    return light.intensity * (ka + facecolor*diffuse);
+    return light.intensity * (ka + customColor*diffuse);
 }
 
 vec4 shadeLine( const in vec4 color )
@@ -121,16 +121,19 @@ vec4 shadeLine( const in vec4 color )
 
 void main()
 {
+    vec4 color;
+    const float eps = 0.01; // Needed for floating point error
 
-    // if this face doesn't have a special surfaceColor
-    vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
-    if (fs_in.faceColor[1] == 999) {
+    // if this face doesn't have a special faceColor (999.0 is default)
+    if (abs(fs_in.faceColor[1] - 999.0) > eps) {
+      color =  vec4( customadsModel( fs_in.position, normalize( fs_in.normal ), fs_in.faceColor ), 1.0 );
+    }
+    else{ // use instanceColor ("kd")
       // Calculate the color from the phong model. Specular has been removed.
       color =  vec4( adsModel( fs_in.position, normalize( fs_in.normal ) ), 1.0 );
     }
-    else { // BUG: it's entoring here for some reason. Temporarily change back to original
-      color = vec4( adsModel( fs_in.position, normalize( fs_in.normal ) ), 1.0 ); // vec4( customadsModel( fs_in.position, normalize( fs_in.normal ), fs_in.faceColor), 1.0 );
-    }
+
+
     if (fs_in.colorSelected == 0) { // Randy added this on 12/3
       if (showFacets == 1) {
         fragColor = shadeLine( color );
@@ -143,4 +146,5 @@ void main()
       vec4 selectedCol = vec4(1.0, 0.0, 1.0, 1.0);
       fragColor = selectedCol; // Randy added this on 12/3
     } // Randy added this on 12/3
+
 }

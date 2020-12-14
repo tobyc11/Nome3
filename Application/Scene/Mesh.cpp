@@ -112,6 +112,7 @@ void CMesh::AddFace(const std::string& name, const std::vector<std::string>& fac
     {
         faceVHandles.push_back(NameToVert[pointName]);
     }
+
     AddFace(name, faceVHandles, faceSurfaceIdent);
 }
 

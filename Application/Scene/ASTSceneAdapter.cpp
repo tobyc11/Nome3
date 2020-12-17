@@ -109,20 +109,26 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
     return nullptr;
 }
 
-
 // Randy changed on 11/30. TraverseFile returns list of additional file names that need to be parsed
-std::vector<std::string> CASTSceneAdapter::TraverseFile(AST::AFile* astRoot, CScene& scene)
-{
+std::vector<std::string> CASTSceneAdapter::GetIncludes(AST::AFile* astRoot, CScene& scene) { 
+
     assert(CmdTraverseStack.empty());
 
     std::vector<std::string> includeFileNames;
-
     for (auto* cmd : astRoot->GetCommands())
     {
         auto fileName = VisitInclude(cmd, scene);
         if (fileName != "")
             includeFileNames.push_back(fileName);
     }
+    return includeFileNames;
+
+}
+// Randy changed on 11/30. TraverseFile returns list of additional file names that need to be parsed
+void CASTSceneAdapter::TraverseFile(AST::AFile* astRoot, CScene& scene)
+{
+    assert(CmdTraverseStack.empty());
+
     for (auto* cmd : astRoot->GetCommands())
     {
         VisitCommandBankSet(cmd, scene);
@@ -130,7 +136,6 @@ std::vector<std::string> CASTSceneAdapter::TraverseFile(AST::AFile* astRoot, CSc
     InstanciateUnder = GEnv.Scene->GetRootNode();
     for (auto* cmd : astRoot->GetCommands())
         VisitCommandSyncScene(cmd, scene, false);
-    return includeFileNames;
 }
 
 std::string CASTSceneAdapter::VisitInclude(AST::ACommand* cmd, CScene& scene)
@@ -140,7 +145,6 @@ std::string CASTSceneAdapter::VisitInclude(AST::ACommand* cmd, CScene& scene)
     auto kind = ClassifyCommand(cmd->GetCommand());
     if (kind == ECommandKind::DocEdit && cmd->GetCommand() == "include")
     {
-
         auto name = cmd->GetName();
         includeFileName = name;
     }
@@ -227,7 +231,6 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (cmd->GetCommand() == "instance")
     {
-        // Instance transformations/surfaces are not handled in here,
         auto* sceneNode = InstanciateUnder->CreateChildNode(cmd->GetName());
         sceneNode->SyncFromAST(cmd, scene);
         // TODO: move the following logic into SyncFromAST
@@ -249,7 +252,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         auto entityName = cmd->GetPositionalIdentAsString(1);
         auto entity = GEnv.Scene->FindEntity(entityName);
         if (entity)
-            sceneNode->SetEntity(entity);
+            sceneNode->SetEntity(entity); // This line is very important. It attaches an entity (e.g. mesh) to the scene node
         else if (auto group =
                      GEnv.Scene->FindGroup(entityName)) // If the entityName is a group identifier
             group->AddParent(sceneNode);

@@ -9,6 +9,7 @@ namespace Nome::Scene
 DEFINE_META_OBJECT(CFace)
 {
     BindPositionalArgument(&CFace::Points, 1);
+    BindNamedArgument(&CFace::faceSurfaceIdent, "surface", 0); // Randy added on 12/12 to handle face entity coloring
     // Handle argSurface
     // Handle parent mesh connection
 }
@@ -83,7 +84,7 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
         mesh->AddVertex(newName, point->Position);
         nameList.push_back(newName);
     }
-    mesh->AddFace(GetName(), nameList);
+    mesh->AddFace(GetName(), nameList, faceSurfaceIdent); // Randy changed this on 12/12
     return true;
 }
 

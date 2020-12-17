@@ -6,7 +6,7 @@ namespace Nome::Scene
 DEFINE_META_OBJECT(CBezierSpline)
 {
     BindPositionalArgument(&CBezierSpline::ControlPoints, 1);
-    BindNamedArgument(&CBezierSpline::Segments, "slices", 0);
+    BindNamedArgument(&CBezierSpline::Segments, "segs", 0);
 }
 
 Matrix3 CBezierCurveMath::FrenetFrameAt(float t) { return Matrix3(); }

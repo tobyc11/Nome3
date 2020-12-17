@@ -60,7 +60,9 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             // Qt3DRender::QGeometryRenderer.
             auto selectedfacehandles =
                 meshInstance->GetSelectedFaceHandles(); // Randy added on 12/3
-            CMeshToQGeometry meshToQGeometry(meshInstance->GetMeshImpl(), selectedfacehandles,
+
+            auto fHWithColorVector = meshInstance->GetfHWithColorVector();
+            CMeshToQGeometry meshToQGeometry(meshInstance->GetMeshImpl(), selectedfacehandles, fHWithColorVector,
                                              true); // Randy added 2nd argument on 12/3
             Geometry = meshToQGeometry.GetGeometry();
             Geometry->setParent(this);
@@ -167,10 +169,13 @@ void CInteractiveMesh::UpdateMaterial(bool showFacets)
 
     mat->FindParameterByName("kd")->setValue(instanceColor);
     if (showFacets)
+    {
         mat->FindParameterByName("showFacets")->setValue(1);
+    }
     else
+    {
         mat->FindParameterByName("showFacets")->setValue(0);
-
+    }
     // Use non-default line color only if the instance has a surface
     auto surface = SceneTreeNode->GetOwner()->GetSurface();
     if (LineMaterial && surface)
@@ -244,7 +249,6 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
             std::cout << "You have selected a polyline/bspline entity" << std::endl;
             QVector3D instanceColor;
             auto color = SceneTreeNode->GetOwner()->GetSelectSurface();
-            std::cout << color.x + color.y + color.z << std::endl;
             instanceColor.setX(color.x);
             instanceColor.setY(color.y);
             instanceColor.setZ(color.z);

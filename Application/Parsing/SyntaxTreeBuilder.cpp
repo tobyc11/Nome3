@@ -98,7 +98,7 @@ antlrcpp::Any CFileBuilder::visitArgCross(NomParser::ArgCrossContext* context)
     return arg;
 }
 
-antlrcpp::Any CFileBuilder::visitArgSlices(NomParser::ArgSlicesContext* context)
+antlrcpp::Any CFileBuilder::visitArgSegs(NomParser::ArgSegsContext* context)
 {
     auto* result = new AST::ANamedArgument(ConvertToken(context->getStart()));
     result->AddChild(visit(context->expression()).as<AST::AExpr*>());
@@ -188,8 +188,10 @@ antlrcpp::Any CFileBuilder::visitCmdIdListOne(NomParser::CmdIdListOneContext* co
         cmd->AddNamedArgument(visit(arg));
     for (auto* arg : context->argClosed())
         cmd->AddNamedArgument(visit(arg));
-    for (auto* arg : context->argSlices())
+    for (auto* arg : context->argSegs())
         cmd->AddNamedArgument(visit(arg));
+
+    // Randy 12/12 note: this means we can add surface after face, polyline, etc.
     for (auto* arg : context->argSurface())
         cmd->AddNamedArgument(visit(arg));
     return cmd;

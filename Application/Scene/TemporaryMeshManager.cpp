@@ -8,61 +8,21 @@
 namespace Nome::Scene
 {
 
-// Randy note: after 10/1, ResetTemporaryMesh is not used anymore.
-/*
-void CTemporaryMeshManager::ResetTemporaryMesh()
-{
-    if (!TempMeshNode)
-        TempMeshNode = Scene->GetRootNode()->CreateChildNode("__tempMeshNode");
-    else
-        TempMeshNode->SetEntity(nullptr);
-    if (!TempPolylineNode)
-        TempPolylineNode = Scene->GetRootNode()->CreateChildNode("__tempPolylineNode");
-    else
-        TempPolylineNode->SetEntity(nullptr);
-    // Make entity and its corresponding scene node
-    //Commented out on 9/30. Instead of creating a single tempMesh node, I'm now creating a tempMesh
-(dummyMesh) for each face added Scene->RemoveEntity("__tempMesh", true); TempMesh = new
-CMesh("__tempMesh"); Scene->AddEntity(TempMesh); FaceCounter = 0;
-    Scene->RemoveEntity("__tempPolyline", true);
-    TempPolyline = new CPolyline("__tempPolyline");
-    Scene->AddEntity(TempPolyline);
-    num_polylines = 0;
-    TempMeshNode->SetEntity(TempMesh);
-    TempPolylineNode->SetEntity(TempPolyline);
-}*/
 
-// Randy note: probably not good to place removeface here
+// Warning: this function is poorly implemented. Need to fix in the future
 void CTemporaryMeshManager::RemoveFace(const std::vector<std::string>& faceNames)
 {
     Scene->Update();
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        auto* entity = node->GetInstanceEntity(); // this is non-null if the entity is instantiable
-                                                  // like a torus knot or polyline
+        auto* entity = node->GetInstanceEntity(); 
         if (!entity)
             entity = node->GetOwner()->GetEntity();
         if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
         {
             auto faceVertNames =
-                mesh->RemoveFace(faceNames); // silently do nothing if there is no face with those
-                                             // corresponding facepoints
-            std::cout << "tangible " + std::to_string(faceVertNames.size()) << std::endl;
+                mesh->RemoveFace(faceNames); // silently do nothing if mesh doesn't have face points
             if (faceVertNames.size() != 0)
-            {
                 removedfaceNames.push_back(mesh->GetSceneTreeNode()->GetPath());
-            }
-
-            // DEBUG WHY THE FACEVERTNAMES ARE DIFFERENT THAN THE FACENAMES . it's because BSline
-            // and sweep points aren't added into entitylibrary
-            // if (faceVertNames.size() > 0) // if removed a face
-            //{
-            //    for (auto debug : faceVertNames)
-            //        std::cout << "herey " + debug << std::endl;
-            //    AddFace(faceVertNames);
-            //}
-            std::cout << "inside temp mesh maanger, finished call to remove face." << std::endl;
-            // TODO: also need to remove corresponding interactivemesh. This can be done by removing
-            // the node
         }
     });
 }
@@ -70,55 +30,38 @@ void CTemporaryMeshManager::RemoveFace(const std::vector<std::string>& faceNames
 // This function should roughly mirror the structure of CASTSceneBuilder::VisitFace
 void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
 {
-    // if any of the facePoints contain a Temp name,
+    // if any of the selected facePoints contain a TempMesh name, then we should build a new TempMesh
     bool createNewMesh = false;
     for (auto facePoint : facePoints)
     {
-        std::cout << "currfacePoint name: " + facePoint << std::endl;
-        std::cout << addedMeshes.size() << std::endl;
-        if (facePoint.find("TempMesh") != std::string::npos
-            || addedMeshes.size() == 0) // if it contains a TempMesh or this is the first face being
-                                        // added in the session
+        if (facePoint.find("TempMesh") != std::string::npos || addedMeshes.size() == 0) 
             createNewMesh = true;
     }
     if (createNewMesh)
-    { // if at least one of our facepoints references a TempMesh vert, we need to make a new
-      // TempMesh.
-        std::cout << "create new mesh " << std::endl;
+    { 
         const std::string meshName = "TempMesh" + std::to_string(FaceCounter);
         const std::string faceName = meshName + "nnew" + std::to_string(FaceCounter);
         TAutoPtr<CFace> face = new CFace(faceName);
-        Scene->AddEntity(tc::static_pointer_cast<CEntity>(
-            face)); // Add face as an entity. Technically, this step can be skipped because we are
-                    // directly adding it to a single mesh below
+        Scene->AddEntity(tc::static_pointer_cast<CEntity>(face)); 
         std::cout << "add face: added face into the scene!" << std::endl;
-        face->SetPointSourceNames(Scene,
-                                  facePoints); // this is the point before any transformations
+        face->SetPointSourceNames(Scene, facePoints); 
         TAutoPtr<CMesh> dummyMesh = new CMesh(meshName);
         dummyMesh->Faces.Connect(face->Face);
         Scene->AddEntity(tc::static_pointer_cast<CEntity>(
             dummyMesh)); // needs to instanciated as a mesh face, not just a face
-        std::cout << "add face: added mesh into the scene!" << std::endl;
         auto sceneNode = Scene->GetRootNode()->CreateChildNode("inst" + meshName);
-        std::cout << "add face: created new node!" << std::endl;
-        auto entity = Scene->FindEntity(meshName); // entity needs to be the dummyMesh, instead of
-                                                   // the face as we can't instanciate a face rn
-        sceneNode->SetEntity(entity); // this doesn't work right now because you can't create an
-                                      // instance of a single face
-
+        auto entity = Scene->FindEntity(meshName); 
+        sceneNode->SetEntity(entity); 
         addedSceneNodes.push_back(sceneNode);
         addedMeshes.push_back(dummyMesh);
         FaceCounter += 1;
-        std::cout << "at the bottom of add face, this means were are done adding the face I think"
-                  << std::endl;
     }
     else
     {
-        std::cout << "the facepoints do not contain a tempmesh point and is not the first mesh "
-                     "being added"
-                  << std::endl;
+        // the facepoints do not contain a tempmesh point and is not the first mesh  being added"
+        // in this case, we append the added face name to the dummyMesh
         auto dummyMesh = addedMeshes.back(); //  get the most recently added mesh
-        auto sceneNode = addedSceneNodes.back(); // get the most recently added scene node
+        auto sceneNode = addedSceneNodes.back(); 
         auto meshName = dummyMesh->GetName();
         const std::string faceName = meshName + "." + "new" + std::to_string(FaceCounter);
         TAutoPtr<CFace> face = new CFace(faceName);
@@ -172,7 +115,6 @@ void CTemporaryMeshManager::SelectOrDeselectPolyline(const std::vector<std::stri
 
     if (alreadySelected) // Deselect
     {
-        std::cout << "trying to deselect" << std::endl;
         // const std::string polyName = points[0] + points[1]; // name is just the edge vert names
         // concatenated CSceneNode *temp;
         Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
@@ -186,7 +128,6 @@ void CTemporaryMeshManager::SelectOrDeselectPolyline(const std::vector<std::stri
     }
     else // Select
     {
-        std::cout << "trying to select" << std::endl;
         TAutoPtr<CPolyline> polyline = new CPolyline(polyName);
         polyline->SetClosed(false); // Hardcoding the closed bool to false. Change in the future.
         polyline->SetPointSourceNames(

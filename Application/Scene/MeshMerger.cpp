@@ -100,12 +100,12 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
     std::cout << "mesh class: "
             + meshInstance.GetSceneTreeNode()->GetOwner()->GetEntity()->GetMetaObject().ClassName()
               << std::endl;
-    auto meshClass =
-        meshInstance.GetSceneTreeNode()->GetOwner()->GetEntity()->GetMetaObject().ClassName();
-    if (meshClass == "CPolyline")
-    {
-        std::cout << "found Polyline entity" << std::endl;
-    }
+    //auto meshClass =
+    //    meshInstance.GetSceneTreeNode()->GetOwner()->GetEntity()->GetMetaObject().ClassName();
+    //if (meshClass == "CPolyline")
+    //{
+    //    std::cout << "found Polyline entity" << std::endl;
+    //}
 
     // Copy over all the vertices and check for overlapping
     std::unordered_map<CMeshImpl::VertexHandle, CMeshImpl::VertexHandle> vertMap;
@@ -114,11 +114,8 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
                // you're trying copy vertices from)
     {
         const auto& posArray = otherMesh.point(*vi);
-        Vector3 localPos = Vector3(posArray[0], posArray[1],
-                                   posArray[2]); // localPos is position before transformations
-                                                 // (e.g. rotate, translate, etc.)
-        Vector3 worldPos = tf * localPos; // worldPos is the actual position you see in the grid,
-                                          // after the transformation (e.g. rotate, translate, etc.)
+        Vector3 localPos = Vector3(posArray[0], posArray[1], posArray[2]); // localPos is position before transformations
+        Vector3 worldPos = tf * localPos; // worldPos is the actual position you see in the grid
         auto [closestVert, distance] = FindClosestVertex(
             worldPos); // Find closest vertex already IN MERGER mesh, not the actual mesh. This is
                        // to prevent adding two merger vertices in the same location!
@@ -138,11 +135,8 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
             auto vnew = Mesh.add_vertex({ worldPos.x, worldPos.y, worldPos.z });
             vertMap[*vi] = vnew; // Map actual mesh vertex to merged vertex.This dictionary is
                                  // useful for add face later.
-            std::string vName = "v"
-                + std::to_string(VertCount); // we of course need a name for this new vertex handle
-            NameToVert.insert({ vName, vnew }); // Add new merged vertex into NameToVert. This is if
-                                                // there wa sa floating point error above so we need
-                                                // to add an entirely new vertex + position ?
+            std::string vName = "v"+ std::to_string(VertCount); 
+            NameToVert.insert({ vName, vnew }); // Add new merged vertex into NameToVert. 
             VertToName.insert({ vnew, vName }); // Randy added on 10/15
             ++VertCount; // VertCount is an attribute for this merger mesh. Starts at 0.
         }
@@ -156,8 +150,7 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
         // TODO: Need to add vertices to scene if want to save changes back into .nom file I think
         // auto newface = new CFace("placeholder" + fi.handle().idx());  // TODO: may be useful in
         // the future to add faces as entities GEnv.Scene->AddEntity(newface);  // TODO: may be
-        // useful in the future to add faces as entities Faces.Connect(newface->Face); // TODO: may
-        // be useful in the future to add faces as entities
+        // useful in the future to add faces as entities Faces.Connect(newface->Face); 
 
         std::vector<CMeshImpl::VertexHandle> verts;
         for (auto vert : otherMesh.fv_range(*fi)) // iterate through all the vertices on this face
@@ -172,7 +165,7 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
                        // means if we adjust the actual mesh's parameters using a slider, you'll see
                        // the merger mesh in the actual mesh's original location
         FaceToName.insert({ fnew, fName });
-        FaceVertsToFace.insert({ verts, fnew }); // This DS is directly used  for face selection
+        FaceVertsToFace.insert({ verts, fnew }); // This DS is directly used for face selection
         FaceToFaceVerts.insert({ fnew, verts });
         FaceCount++;
     }
@@ -186,10 +179,8 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
     //    vHandles.push_back(vHandle);
     //}
 
-    // std::cout << "outside add line strip" << std::endl;
     // if (meshClass == "CPolyline")
     //{
-    //    std::cout << "adding line strip" << std::endl;
     //    AddLineStrip("mergedpoly" , vHandles);
     //}
 }

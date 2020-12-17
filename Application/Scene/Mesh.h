@@ -48,8 +48,8 @@ public:
     }
 
     Vector3 GetVertexPos(const std::string& name) const;
-    void AddFace(const std::string& name, const std::vector<std::string>& facePoints);
-    void AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints);
+    void AddFace(const std::string& name, const std::vector<std::string>& facePoints, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
+    void AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
     void AddLineStrip(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& points);
     void ClearMesh();
 
@@ -72,11 +72,10 @@ private:
         VertToName; // Randy added on 10/11.  used in PickEdges and GetFaceVertexNames
     std::map<std::string, CMeshImpl::FaceHandle> NameToFace; // used in FacestoDelete
     std::map<CMeshImpl::FaceHandle, std::string> FaceToName; // used in PickFaces
-    std::map<std::vector<CMeshImpl::VertexHandle>, CMeshImpl::FaceHandle>
-        FaceVertsToFace; // Randy added. used in PickFaces
-    std::map<CMeshImpl::FaceHandle, std::vector<CMeshImpl::VertexHandle>>
-        FaceToFaceVerts; // Randy added on 10/11 . Used in FacesToDelete and GetFaceVertexNames
+    std::map<std::vector<CMeshImpl::VertexHandle>, CMeshImpl::FaceHandle> FaceVertsToFace; // Randy added. used in PickFaces
+    std::map<CMeshImpl::FaceHandle, std::vector<CMeshImpl::VertexHandle>> FaceToFaceVerts; // Randy added on 10/11 . Used in FacesToDelete and GetFaceVertexNames
     std::vector<CMeshImpl::VertexHandle> LineStrip;
+    std::map<CMeshImpl::FaceHandle, std::string> fHWithColor; // Randy added on 12/12 for face entity coloring
 };
 
 class CMeshInstancePoint : public CInteractivePoint
@@ -152,6 +151,9 @@ public:
 
     std::vector<CMeshImpl::FaceHandle>
     GetSelectedFaceHandles(); // Get selected face handles. Used in InteractiveMesh.cpp.
+
+    std::map<CMeshImpl::FaceHandle, std::array<float,3> > GetfHWithColorVector() { return fHWithColorVector;}; // Randy added on 12/12 
+
     std::vector<std::string> GetFaceVertexNames(
         std::vector<std::string> facenames); // Randy added on 10/19 to return face vert names
 
@@ -170,11 +172,10 @@ private:
     std::map<CMeshImpl::VertexHandle, std::string> VertToName; // Randy added
     std::map<std::string, CMeshImpl::FaceHandle> NameToFace;
     std::map<CMeshImpl::FaceHandle, std::string> FaceToName; // Randy added
-    std::map<std::vector<CMeshImpl::VertexHandle>, CMeshImpl::FaceHandle>
-        FaceVertsToFace; // Randy added
-    std::map<CMeshImpl::FaceHandle, std::vector<CMeshImpl::VertexHandle>>
-        FaceToFaceVerts; // Randy added
+    std::map<std::vector<CMeshImpl::VertexHandle>, CMeshImpl::FaceHandle> FaceVertsToFace; // Randy added
+    std::map<CMeshImpl::FaceHandle, std::vector<CMeshImpl::VertexHandle>> FaceToFaceVerts; // Randy added
 
+    std::map<CMeshImpl::FaceHandle, std::array<float, 3>> fHWithColorVector; // Randy added on 12/12 for face entity coloring
     std::set<std::string> FacesToDelete;
 
     // std::map<std::string, std::pair<CMeshInstancePoint*, uint32_t>> PickingVerts; Randy commented
@@ -186,18 +187,15 @@ private:
     std::vector<CMeshImpl::VertexHandle> CurrSelectedVertHandles; // Randy added on 11/4
 
     // Store selected edge handles TODO: Create edge names
-    std::vector<CMeshImpl::HalfedgeHandle>
-        CurrSelectedHalfEdgeHandles; // Randy added on 11/4. TODO: Should I use HalfedgeHandle or
+    std::vector<CMeshImpl::HalfedgeHandle> CurrSelectedHalfEdgeHandles; // Randy added on 11/4. TODO: Should I use HalfedgeHandle or
                                      // EdgeHandle? Store selected vertex handles and names
     std::vector<std::string> CurrSelectedEdgeVertNames;
     std::vector<std::string> CurrSelectedEdgeVertNamesWithPrefix;
     std::vector<CMeshImpl::VertexHandle> CurrSelectedEdgeVertHandles; // Randy added on 11/4
     // Store selected face handles and names
     std::vector<std::string> CurrSelectedFaceNames; // face name only
-    std::vector<std::string>
-        CurrSelectedFaceNamesWithPrefix; // includes prefix (path) and face name
-    std::vector<CMeshImpl::FaceHandle>
-        CurrSelectedFaceHandles; // Randy added on 10/10 for face selection
+    std::vector<std::string> CurrSelectedFaceNamesWithPrefix; // includes prefix (path) and face name
+    std::vector<CMeshImpl::FaceHandle> CurrSelectedFaceHandles; // Randy added on 10/10 for face selection
 };
 
 class CVertexSelector : public Flow::CFlowNode

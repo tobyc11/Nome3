@@ -52,7 +52,7 @@ void CMesh::UpdateEntity()
         }
     }
 
-    // Randy added below loop on 12/5. Should add a point->AddPointIntoMesh(this) probably
+    // Randy added below loop on 12/5. Do I need to add point->AddPointIntoMesh(this)?
     for (size_t i = 0; i < Points.GetSize(); i++)
     {
         auto* point = Points.GetValue(i, nullptr);
@@ -105,19 +105,25 @@ Vector3 CMesh::GetVertexPos(const std::string& name) const
     return Vector3(pos[0], pos[1], pos[2]);
 }
 
-void CMesh::AddFace(const std::string& name, const std::vector<std::string>& facePoints)
+void CMesh::AddFace(const std::string& name, const std::vector<std::string>& facePoints, std::string faceSurfaceIdent)
 {
     std::vector<CMeshImpl::VertexHandle> faceVHandles;
     for (const std::string& pointName : facePoints)
     {
         faceVHandles.push_back(NameToVert[pointName]);
     }
-    AddFace(name, faceVHandles);
+
+    AddFace(name, faceVHandles, faceSurfaceIdent);
 }
 
-void CMesh::AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints)
+void CMesh::AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints, std::string faceSurfaceIdent)
 {
     auto faceHandle = Mesh.add_face(facePoints);
+    
+    // Randy added this on 12/12 for face entity coloring
+    if (faceSurfaceIdent != "")
+        fHWithColor.emplace(faceHandle, faceSurfaceIdent); 
+
     if (!faceHandle.is_valid())
         printf("Could not add face %s into mesh %s\n", name.c_str(), GetName().c_str());
     FaceVertsToFace.emplace(facePoints,
@@ -340,7 +346,6 @@ void CMeshInstance::UpdateEntity()
             for (auto& pair : f)
             {
                 int i = pair.second.idx();
-                std::cout << i << std::endl;
                 if (pair.first != face) // if the name is not the one that needs to be deleted
                 {
                     auto newhandle = facetemp.at(i - facedisplacement);
@@ -464,6 +469,32 @@ void CMeshInstance::CopyFromGenerator()
     FaceToName = MeshGenerator->FaceToName; // Randy added
     FaceVertsToFace = MeshGenerator->FaceVertsToFace; // Randy added
     FaceToFaceVerts = MeshGenerator->FaceToFaceVerts; // Randy added
+
+
+    CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();
+
+    // Randy added on 12/12
+    for (auto& pair : MeshGenerator->fHWithColor)
+    {
+        if (pair.second != "")
+        {
+            auto surfaceIdentifier = pair.second;
+            auto surfaceEntity = scene->FindEntity(surfaceIdentifier);
+            if (surfaceEntity)
+            {
+                CSurface* surfaceObject = dynamic_cast<CSurface*>(surfaceEntity.Get());
+                std::array<float, 3> color = { surfaceObject->ColorR.GetValue(1.0f),
+                                               surfaceObject->ColorG.GetValue(1.0f),
+                                               surfaceObject->ColorB.GetValue(1.0f) };
+                fHWithColorVector.emplace(pair.first, color);
+            }
+            else
+            {
+                std::cout << "Invalid surface color name" << std::endl;
+            }
+        }
+    }
+    
 }
 
 // Warning: Still buggy. Use with caution.
@@ -867,14 +898,7 @@ CMeshInstance::GetSelectedFaceHandles() // Randy added on 10/11 to assist with f
 std::vector<std::string> CMeshInstance::GetFaceVertexNames(
     std::vector<std::string> facenames) // Randy added on 10/19 to return face vert names
 {
-
-    for (auto& pair : NameToFace)
-    {
-        std::cout << pair.first << std::endl;
-    }
     std::vector<std::string> vertnames;
-
-    std::cout << "this mesh contains the face that needs to be preserved" << std::endl;
     for (auto facename : facenames)
     {
         if (NameToFace.find(facename) != NameToFace.end())

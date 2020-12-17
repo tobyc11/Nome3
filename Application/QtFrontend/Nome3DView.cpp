@@ -23,9 +23,8 @@ CNome3DView::CNome3DView()
 {
     // Create a Base entity to host all entities
     Base = new Qt3DCore::QEntity;
-    torusX = new Qt3DCore::QEntity(Base);
-    torusY = new Qt3DCore::QEntity(Base);
-    torusZ = new Qt3DCore::QEntity(Base);
+    torus = new Qt3DCore::QEntity(Base);
+
     Root = new Qt3DCore::QEntity(Base);
     this->setRootEntity(Base);
 
@@ -36,39 +35,16 @@ CNome3DView::CNome3DView()
     torusMesh->setRings(100);
     torusMesh->setSlices(100);
 
-    materialX = new Qt3DExtras::QPhongAlphaMaterial(Root);
-    materialX->setAlpha(0.2f);
-    materialX->setDiffuse(QColor(0, 255, 0));
-    materialX->setAmbient(QColor(0, 255, 0));
-    materialX->setShininess(5);
-    materialY = new Qt3DExtras::QPhongAlphaMaterial(materialX);
-    materialY->setAlpha(0.2f);
-    materialY->setDiffuse(QColor(255, 0, 0));
-    materialY->setAmbient(QColor(255, 0, 0));
-    materialY->setShininess(5);
-    materialZ = new Qt3DExtras::QPhongAlphaMaterial(materialX);
-    materialZ->setAlpha(0.2f);
-    materialZ->setDiffuse(QColor(0, 0, 255));
-    materialZ->setAmbient(QColor(0, 0, 255));
-    materialZ->setShininess(5);
+    material = new Qt3DExtras::QPhongAlphaMaterial(Root);
+    material->setAlpha(0.0f);
+    material->setDiffuse(QColor(0, 255, 0));
+    material->setAmbient(QColor(0, 255, 0));
+    material->setShininess(5);
 
-    torusX->addComponent(torusMesh);
-    torusY->addComponent(torusMesh);
-    torusZ->addComponent(torusMesh);
-    torusX->addComponent(materialX);
-    torusY->addComponent(materialY);
-    torusZ->addComponent(materialZ);
 
-    torusTransformX = new Qt3DCore::QTransform();
-    quaternionX =  QQuaternion::fromAxisAndAngle(QVector3D(0.0f, 1.0f, 0.0f), 90.0f);
-    torusTransformX->setRotation(quaternionX);
-    torusTransformY = new Qt3DCore::QTransform();
-    quaternionY = QQuaternion::fromAxisAndAngle(QVector3D(1.0f, 0.0f, 0.0f), 90.0f);
-    torusTransformY->setRotation(quaternionY);
-    torusTransformZ = new Qt3DCore::QTransform();
-    torusX->addComponent(torusTransformX);
-    torusY->addComponent(torusTransformY);
-    torusZ->addComponent(torusTransformZ);
+    torus->addComponent(torusMesh);
+    torus->addComponent(material);
+
 
 
 
@@ -296,8 +272,9 @@ void CNome3DView::ClearSelectedEdges()
 }
 
 
-void CNome3DView::PickFaceWorldRay(const tc::Ray& ray)
+void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
 {
+    rotateRay(ray);
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
@@ -427,8 +404,9 @@ void CNome3DView::PickFaceWorldRay(const tc::Ray& ray)
 }
 
 // Used for picking edges
-void CNome3DView::PickEdgeWorldRay(const tc::Ray& ray)
+void CNome3DView::PickEdgeWorldRay(tc::Ray& ray)
 {
+    rotateRay(ray);
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::vector<std::string>>>
         hits; // note the string is a vector of strings
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
@@ -497,8 +475,9 @@ void CNome3DView::PickEdgeWorldRay(const tc::Ray& ray)
             "No edge hit or more than one edge hit. Please select again");
 }
 
-void CNome3DView::PickVertexWorldRay(const tc::Ray& ray)
+void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
 {
+    rotateRay(ray);
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
@@ -692,9 +671,8 @@ void CNome3DView::mousePressEvent(QMouseEvent* e)
 {
     if (!vertexSelectionEnabled)
     {
-        materialX->setAlpha(0.7f);
-        materialY->setAlpha(0.7f);
-        materialZ->setAlpha(0.7f);
+        material->setAlpha(0.7f);
+
         rotationEnabled = e->button() == Qt::RightButton ? false : true;
         zPos = cameraset->position().z();
         // Save mouse press position
@@ -742,18 +720,15 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
             }
         }
         sphereTransform->setRotation(rotation);
-        torusTransformX->setRotation(rotation * quaternionX);
-        torusTransformY->setRotation(rotation * quaternionY);
-        torusTransformZ->setRotation(rotation);
+
         firstPosition = secondPosition;
     }
 }
 
 void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
 {
-    materialX->setAlpha(0.2f);
-    materialY->setAlpha(0.2f);
-    materialZ->setAlpha(0.2f);
+    material->setAlpha(0.0f);
+
     mousePressEnabled = false;
 }
 
@@ -787,7 +762,7 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
     switch (ev->key())
     {
     case Qt::Key_Tab:
-        materialX->setAlpha(rotationEnabled * 0.1);
+        material->setAlpha(rotationEnabled * 0.1);
 
         break;
     case Qt::Key_Shift:

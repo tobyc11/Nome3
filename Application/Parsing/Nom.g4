@@ -36,7 +36,7 @@ argBeginCap : 'begincap' ;
 argEndCap : 'endcap' ;
 argSurface : 'surface' ident ;
 argCross : 'cross' ident ;
-argSlices : 'slices' expression ;
+argSegs : 'segs' expression ;
 argOrder : 'order' expression ;
 argTransform
    : 'rotate' LPAREN exp1=expression exp2=expression exp3=expression RPAREN LPAREN exp4=expression RPAREN # argTransformTwo
@@ -74,8 +74,8 @@ command
    | open='tunnel' name=ident LPAREN expression expression expression expression RPAREN end='endtunnel' # CmdExprListOne
    | open='torusknot' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorusknot' # CmdExprListOne
    | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
-   | open='beziercurve' name=ident idList argSlices* end='endbeziercurve' # CmdIdListOne
-   | open='bspline' name=ident argOrder* idList argSlices* end='endbspline' # CmdIdListOne
+   | open='beziercurve' name=ident idList argSegs* end='endbeziercurve' # CmdIdListOne
+   | open='bspline' name=ident argOrder* idList argSegs* end='endbspline' # CmdIdListOne
    | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
    | open='surface' name=ident argColor end='endsurface' # CmdSurface
    | open='background' argSurface end='endbackground' # CmdArgSurface

@@ -163,7 +163,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
             pointBufferData.push_back(point[0]);
             pointBufferData.push_back(point[1]);
             pointBufferData.push_back(point[2]);
-            // TODO: if selected, change color to something else
+
             pointBufferData.push_back(color[0] / 255.0f);
             pointBufferData.push_back(color[1] / 255.0f);
             pointBufferData.push_back(color[2] / 255.0f);

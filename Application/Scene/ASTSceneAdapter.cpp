@@ -3,6 +3,7 @@
 #include "BezierSpline.h"
 #include "Circle.h"
 #include "Sphere.h"
+#include "Ellipsoid.h"
 #include "Cylinder.h"
 #include "MobiusStrip.h"
 #include "Environment.h"
@@ -44,7 +45,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "mesh", ECommandKind::Entity },        { "group", ECommandKind::Instance },
     { "circle", ECommandKind::Entity },      { "sphere", ECommandKind::Entity },
     { "cylinder", ECommandKind::Entity },    { "funnel", ECommandKind::Entity },
-    { "hyperboloid", ECommandKind::Entity }, {"dupin", ECommandKind::Entity },
+    { "hyperboloid", ECommandKind::Entity }, { "dupin", ECommandKind::Entity },
     { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
     { "torusknot", ECommandKind::Entity },   { "torus", ECommandKind::Entity },
     { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
@@ -56,7 +57,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
     { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy },
     { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity },
-    { "include", ECommandKind::DocEdit }
+    { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -74,6 +75,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CCircle(name);
     else if (cmd == "cylinder")
         return new CCylinder(name);
+    else if (cmd == "ellipsoid")
+        return new CEllipsoid(name);
     else if (cmd == "face")
         return new CFace(name);
     else if (cmd == "funnel")
@@ -110,7 +113,7 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
 }
 
 // Randy changed on 11/30. TraverseFile returns list of additional file names that need to be parsed
-std::vector<std::string> CASTSceneAdapter::GetIncludes(AST::AFile* astRoot, CScene& scene) { 
+std::vector<std::string> CASTSceneAdapter::GetIncludes(AST::AFile* astRoot, CScene& scene) {
 
     assert(CmdTraverseStack.empty());
 

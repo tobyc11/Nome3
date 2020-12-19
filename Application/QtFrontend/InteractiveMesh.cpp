@@ -232,10 +232,8 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
 
     auto* lineEntity = new Qt3DCore::QEntity(this);
     lineEntity->setObjectName(QStringLiteral("lineEntity"));
-
-    if (!LineMaterial
-        || SceneTreeNode->GetOwner()
-               ->isSelected()) // Randy added the second boolean on 11/21 to color polyline/bspline
+    QVector3D instanceColor { 1.0f, 0.0f, 1.0f }; // Magenta color is default
+    if (!LineMaterial || SceneTreeNode->GetOwner()->isSelected()) // Randy added the second boolean on 11/21 to color polyline/bspline
     {
         auto xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
         auto* lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
@@ -244,26 +242,57 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
         LineMaterial->setParent(this);
         lineEntity->addComponent(LineMaterial);
         // Randy added this on 11/21
+        QVector3D instanceColor;
         if (SceneTreeNode->GetOwner()->isSelected())
         {
-            std::cout << "You have selected a polyline/bspline entity" << std::endl;
-            QVector3D instanceColor;
             auto color = SceneTreeNode->GetOwner()->GetSelectSurface();
             instanceColor.setX(color.x);
             instanceColor.setY(color.y);
             instanceColor.setZ(color.z);
-            lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
-            SceneTreeNode->GetOwner()
-                ->UnselectNode(); // deselect it so it won't be colored again the next time
+            SceneTreeNode->GetOwner()->UnselectNode(); // deselect it so it won't be colored again the next time
         }
-        else if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
+        else if (!SceneTreeNode->GetParent()->GetOwner()->IsGroup())     // If the scene tree node is not within a group, then we can directly use its surface color
         {
-            QVector3D instanceColor;
-            instanceColor.setX(surface->ColorR.GetValue(1.0f));
-            instanceColor.setY(surface->ColorG.GetValue(1.0f));
-            instanceColor.setZ(surface->ColorB.GetValue(1.0f));
-            lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
+            if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
+            {
+                instanceColor.setX(surface->ColorR.GetValue(1.0f));
+                instanceColor.setY(surface->ColorG.GetValue(1.0f));
+                instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+            }
+        } 
+        else // else, the scenetreenode is within a group, and we keep bubbling up from where we are (going up the tree) until we get to an instance scene node that has a surface color
+        {
+            bool setColor = false;
+            auto currNode = SceneTreeNode;
+            while (currNode->GetParent()->GetOwner()->IsGroup())
+            { // while currNode is within a group
+                if (auto surface = currNode->GetOwner()->GetSurface())
+                { // if the currNode itself is assigned a surface color, then this color is
+                  // prioritzed. we set the color and break.
+                    instanceColor.setX(surface->ColorR.GetValue(1.0f));
+                    instanceColor.setY(surface->ColorG.GetValue(1.0f));
+                    instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+                    setColor = true;
+                    break;
+                    
+                }
+                currNode = currNode->GetParent();
+            }
+
+            if (!setColor) // If the surface color hasn't been set yet
+            {
+                currNode = currNode->GetParent(); // then, here, currNode's parent is guaranteed to be a
+                                           // instance scene tree node due to previous while loop
+                if (auto surface = currNode->GetOwner()->GetSurface())
+                {
+                    instanceColor.setX(surface->ColorR.GetValue(1.0f));
+                    instanceColor.setY(surface->ColorG.GetValue(1.0f));
+                    instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+                }
+            }
         }
+        lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
+
     }
 
     auto* lineRenderer = new Qt3DRender::QGeometryRenderer(lineEntity);

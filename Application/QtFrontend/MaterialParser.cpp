@@ -82,7 +82,6 @@ bool CMaterialParser::Parse()
             auto graphicsApiFilterNode = techNode.child("GraphicsApiFilter");
             if (graphicsApiFilterNode)
             {
-                // TODO:
                 technique->graphicsApiFilter()->setApi(QGraphicsApiFilter::OpenGL);
                 technique->graphicsApiFilter()->setProfile(QGraphicsApiFilter::CoreProfile);
                 technique->graphicsApiFilter()->setMajorVersion(3);

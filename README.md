@@ -46,7 +46,7 @@ Open up the CMake GUI, and set it up like this:
 Then click on "Add Entry" to add the following variables so that CMake can find all those libraries:
 ```
 CMAKE_TOOLCHAIN_FILE = [Vcpkg dir]/scripts/buildsystems/vcpkg.cmake
-CMAKE_INSTALL_PREFIX =  In my case it is C:/Qt/5.12.5/msvc2017_64/lib/cmake to give you an example. This environment variable CMAKE_PREFIX_PATH is needed so that CMake knows where to look for Qt (
+CMAKE_INSTALL_PREFIX =  In my case it is C:/Qt/5.12.5/msvc2017_64/lib/cmake to give you an example. This environment variable CMAKE_PREFIX_PATH is needed so that CMake knows where to look for Qt.
 ```
 
 Now you can click on "Configure" and "Generate" to generate a Visual Studio solution file and open it with Visual Studio. Then, click Build Solution, and a NOME3.exe should appear in the Build directory.

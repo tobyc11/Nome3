@@ -84,6 +84,7 @@
       <addaction name="actionToggleVertexSelection"/>
       <addaction name="actionToggleEdgeSelection"/>
       <addaction name="actionToggleFaceSelection"/>
+	  <addaction name="actionTogglePolylineSelection"/>
     </widget>
 
     <widget class="QMenu" name="menuModifySelected">
@@ -238,7 +239,6 @@
        <bool>true</bool>
      </property>
    </action>
-
    <action name="actionToggleEdgeSelection">
      <property name="text">
        <string>Enable Edge Selection</string>
@@ -247,7 +247,6 @@
        <bool>true</bool>
      </property>
    </action>
-
    <action name="actionToggleFaceSelection">
      <property name="text">
        <string>Enable Face Selection</string>
@@ -256,7 +255,15 @@
        <bool>true</bool>
      </property>
    </action>
-   
+	 
+	<action name="actionTogglePolylineSelection">
+		<property name="text">
+			<string>Enable Polyline Selection</string>
+		</property>
+		<property name ="checkable">
+			<bool>true</bool>
+		</property>
+	</action>
  </widget>
  <resources/>
  <connections/>

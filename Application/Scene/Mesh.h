@@ -140,6 +140,7 @@ public:
     std::vector<std::pair<float, std::string>> PickVertices(const tc::Ray& localRay);
     std::vector<std::pair<float, std::string>>
     PickFaces(const tc::Ray& localRay); // Randy added on 10/10 for face selection
+    std::vector<std::pair<float, std::vector<std::string>>> PickPolylines(const tc::Ray& localRay); // Randy added on 12/22 for polyline selection
     std::vector<std::pair<float, std::vector<std::string>>>
     PickEdges(const tc::Ray& localRay); // Randy added on 10/29 for edge selection
     void MarkVertAsSelected(const std::set<std::string>& vertNames, bool bSel);

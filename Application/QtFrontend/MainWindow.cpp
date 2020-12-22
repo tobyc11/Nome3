@@ -324,6 +324,12 @@ void CMainWindow::on_actionToggleEdgeSelection_triggered()
     Nome3DView->PickEdgeBool = !Nome3DView->PickEdgeBool;
 }
 
+// Toggle on/off Polyline Selection
+void CMainWindow::on_actionTogglePolylineSelection_triggered()
+{
+    Nome3DView->PickPolylineBool = !Nome3DView->PickPolylineBool;
+}
+
 // Toggle on/off Face Selection
 void CMainWindow::on_actionToggleFaceSelection_triggered()
 {

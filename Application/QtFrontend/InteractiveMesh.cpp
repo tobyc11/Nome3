@@ -206,10 +206,11 @@ void CInteractiveMesh::InitInteractions()
             if (GFrtCtx->NomeView->PickVertexBool)
                 GFrtCtx->NomeView->PickVertexWorldRay(ray);
             if (GFrtCtx->NomeView->PickEdgeBool)
-                GFrtCtx->NomeView->PickEdgeWorldRay(ray); // Randy added on 10/29 for edge selection
+                GFrtCtx->NomeView->PickEdgeWorldRay(ray); 
             if (GFrtCtx->NomeView->PickFaceBool)
-                GFrtCtx->NomeView->PickFaceWorldRay(
-                    ray); // Randy added on 10/10 for face selection.
+                GFrtCtx->NomeView->PickFaceWorldRay(ray); 
+            if (GFrtCtx->NomeView->PickPolylineBool)
+                GFrtCtx->NomeView->PickPolylineWorldRay(ray); 
         }
     });
     this->addComponent(picker);

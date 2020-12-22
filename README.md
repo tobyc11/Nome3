@@ -1,5 +1,4 @@
 # NOME3
-# NOME3
 # Preparation
 This section will walk you through the steps for setting up a build environment for Nome 3 on Windows (see below for MacOS). Here is a list of the required dependencies:
 
@@ -20,10 +19,10 @@ Please install __Visual Studio__ first, as it is necessary for any development w
 Now hopefully you are familiar with those package managers. Run the following commands (potentially in different directories depending on where you installed each package manager) to install what we need:
 
 ```
-## scoop install cmake
-## vcpkg --triplet x64-windows install openmesh 
-## vcpkg --triplet x64-windows install pugixml 
-## ~~vcpkg --triplet x64-windows install qt5-base qt5-3d~~  (Update 12/21/2020: the most recent qt5 package, 5.15 as of 12/21, is no longer compatible with NOME3. Please read below instructions to install Qt on Windows)
+scoop install cmake
+vcpkg --triplet x64-windows install openmesh 
+vcpkg --triplet x64-windows install pugixml 
+<del>vcpkg --triplet x64-windows install qt5-base qt5-3d</del> (Update 12/21/2020: the most recent qt5 package, 5.15 as of 12/21, is no longer compatible with NOME3. Please read below instructions to install Qt on Windows)
 
 git clone --recursive https://github.com/randyfan/NOME3
 ```

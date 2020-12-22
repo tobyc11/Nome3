@@ -33,8 +33,8 @@ To fix this, please download Qt directly:
 1. Go to https://www.qt.io/download
 2. Click on "Go open source" , which leads to: https://www.qt.io/download-open-source?hsCtaTracking=9f6a2170-a938-42df-a8e2-a9f0b1d6cdce%7C6cb0de4f-9bb5-4778-ab02-bfb62735f3e5
 3. Scroll down and click "Download the Qt Online Installer"
-4. Download the installer and run it (should run automatically I think)
-5. Follow the setup instructions,  which will likely require to create a Qt account. However, when you to "Select Components" page, please select the follow (this is very important. We choose to install Qt 5.12.5 since it works w/ NOME3):
+4. Download the installer and run it 
+5. Follow the setup instructions,  which will require you to create a Qt account if I recall correctly. When you to "Select Components" page, please select the following. We choose to install Qt 5.12.5 since it works w/ NOME3 (__this is a very important step__):
 ![](https://github.com/randyfan/NOME3/blob/master/Docs/Qtsetup.png)
 6. Click next and complete installation. Qt should be ~40gb, so make sure you have enough storage space. 
 7. Done, move on to compilation 

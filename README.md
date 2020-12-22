@@ -3,7 +3,7 @@ NOME is a CAD tool that allows users to procedurally generate complex shapes and
 
 We have introduced multiple unique language constructs, such as "group" and "mesh", that allows user to piece together shapes and reuse them easily. We also have implemented advanced shape generators (e.g. torus knot) that may make certain modelling tasks easier. Please view our full language reference here: https://docs.google.com/document/d/15c1VIXpGUxIL3daA3pI-iYW4K5ebd3snveDFWXRpa70/edit?ts=5fcb20ad#
 
-# Preparation
+# Compilation Preparation
 This section will walk you through the steps for setting up a build environment for Nome 3 on Windows (see below for MacOS). Here is a list of the required dependencies:
 
 - Visual Studio 2019 (https://visualstudio.microsoft.com/)

@@ -1,4 +1,6 @@
 # NOME3
+NOME is a CAD tool that allows users to procedurally generate sculptures and interactively modify them through the GUI. Please view our language reference here: https://docs.google.com/document/d/15c1VIXpGUxIL3daA3pI-iYW4K5ebd3snveDFWXRpa70/edit?ts=5fcb20ad#
+
 # Preparation
 This section will walk you through the steps for setting up a build environment for Nome 3 on Windows (see below for MacOS). Here is a list of the required dependencies:
 

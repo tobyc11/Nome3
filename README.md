@@ -27,7 +27,7 @@ git clone --recursive https://github.com/randyfan/NOME3
 ~~vcpkg --triplet x64-windows install qt5-base qt5-3d~~ (Update 12/21/2020: the most recent qt5 package, 5.15 as of 12/21, is no longer compatible with NOME3. Please read Qt installation below. 
 
 # Qt Installation for NOME
-Unfortunately, the more recent qt5 packages are not compatible with NOME3 (5.15 is confirmed to not work, not sure about the newer ones). Vcpkg essentially forces users to install the most recent version, so we can't use vcpkg to install qt5. Thus, as a temporary solution, let's download Qt directly from the Qt website.
+Unfortunately, the more recent qt5 packages are not compatible with NOME3 (Qt 5.15 is confirmed to not work, not sure about the newer ones). Vcpkg essentially forces users to install the most recent version, so we can't use vcpkg to install qt5. Thus, as a temporary solution, let's download Qt directly from the Qt website.
 
 To fix this, please download Qt directly:
 1. Go to https://www.qt.io/download

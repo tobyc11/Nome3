@@ -76,7 +76,7 @@ brew install open-mesh
 brew install pugixml
 brew install cmake
 ```
-You'll also need to download: ANTLR parser generator (https://www.antlr.org/download/antlr-4.8-complete.jar). Zachary informed me you can just do brew install antlr, and that should work as well. Install Java as well.
+You'll also need to download: ANTLR parser generator (https://www.antlr.org/download/antlr-4.8-complete.jar). Zachary informed me you can just do brew install antlr, and that should work. Make sure to install Java as well.
 
 Finally, run the following commands:
 ```

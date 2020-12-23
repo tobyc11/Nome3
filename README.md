@@ -1,7 +1,7 @@
 # NOME3
 NOME is a CAD tool that allows users to procedurally generate complex shapes and interactively modify them in the GUI. 
 
-We have introduced multiple unique language constructs, such as "group" and "mesh", that allows user to piece together shapes and reuse them easily. We also have implemented advanced shape generators (e.g. torus knot) that may make certain modelling tasks easier. Please view our full language reference here: https://docs.google.com/document/d/15c1VIXpGUxIL3daA3pI-iYW4K5ebd3snveDFWXRpa70/edit?ts=5fcb20ad#
+We have introduced multiple unique language constructs, such as "group" and "mesh", that allow users to piece together shapes and reuse them easily. We also have implemented advanced shape generators (e.g. torus knot) that may make certain modelling tasks easier. Please view our full language reference here: https://docs.google.com/document/d/15c1VIXpGUxIL3daA3pI-iYW4K5ebd3snveDFWXRpa70/edit?ts=5fcb20ad#
 
 # Compilation Preparation
 This section will walk you through the steps for setting up a build environment for Nome 3 on Windows (see below for MacOS). Here is a list of the required dependencies:
@@ -30,8 +30,8 @@ git clone --recursive https://github.com/randyfan/NOME3
 ```
 ~~vcpkg --triplet x64-windows install qt5-base qt5-3d~~ (Update 12/21/2020: the most recent qt5 package, 5.15 as of 12/21, is no longer compatible with NOME3. Please read Qt installation below. 
 
-# Qt Installation for NOME
-Unfortunately, the more recent qt5 packages are not compatible with NOME3 (Qt 5.15 is confirmed to not work, and I assume the newer ones, if any, may not work also). Vcpkg essentially forces users to install the most recent version of any package (there is a way to bypass this, but it is a bit of a headache), so we can't use vcpkg to install qt5. Thus, as a temporary solution, let's download Qt directly from the Qt website.
+# Qt Installation for NOME on Windows
+Unfortunately, the more recent qt5 packages are not compatible with NOME3 on Windows (Qt 5.15 is confirmed to not work, and I assume the newer ones, if any, may not work also). Vcpkg essentially forces users to install the most recent version of any package (there is a way to bypass this, but it is a bit of a headache), so we can't use vcpkg to install qt5. Thus, as a temporary solution, let's download Qt directly from the Qt website.
 
 To fix this, please download Qt directly:
 1. Go to https://www.qt.io/download

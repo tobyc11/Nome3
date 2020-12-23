@@ -687,15 +687,10 @@ std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolyl
                 auto point1 = NameToVert.at(name1withoutinstprefix);
                 auto point2 = NameToVert.at(name2withoutinstprefix);
 
-                if (meshName.find("SELECTED") == std::string::npos)
-                {
-                    GetSceneTreeNode()->GetOwner()->SelectNode();
-                    MarkDirty();
-                }
-                else // this is a temp selection polyline, deselect by adding to results
-                {
-                    result.emplace_back(mindist, hitpointnames);
-                }
+                GetSceneTreeNode()->GetOwner()->SelectNode();
+                MarkDirty();
+                
+
             }
         }
     }

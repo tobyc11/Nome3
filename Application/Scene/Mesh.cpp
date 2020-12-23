@@ -614,7 +614,6 @@ std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolyl
         std::vector<CMeshImpl::VertexHandle> edgeVertsOnly;
         for (const auto& pair : VertToName)
             edgeVertsOnly.push_back(pair.first);
-
         for (int i = 0; i < edgeVertsOnly.size(); i++) // adjacent elements are the edge verts
         {
             std::vector<float> hitdistances;
@@ -630,18 +629,15 @@ std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolyl
                 tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
 
                 // naive method, extend the plane out of the line in 6 directions a little
-                tc::Vector3 dummy1 = (pos1 + pos2) / 2; dummy1.y += 0.170; // used to be 0.350 
-                tc::Vector3 dummy2 = (pos1 + pos2) / 2; dummy2.x += 0.170;
-                tc::Vector3 dummy3 = (pos1 + pos2) / 2; dummy3.z += 0.170;
-                tc::Vector3 dummy4 = (pos1 + pos2) / 2; dummy4.y += 0.170;
-                tc::Vector3 dummy5 = (pos1 + pos2) / 2; dummy5.x += 0.170;
-                tc::Vector3 dummy6 = (pos1 + pos2) / 2; dummy6.z += 0.170;
-                float testdist1 = std::min({ localRay.HitDistance(pos1, pos2, dummy1),
-                                             localRay.HitDistance(pos1, pos2, dummy2),
-                                             localRay.HitDistance(pos1, pos2, dummy3),
-                                             localRay.HitDistance(pos1, pos2, dummy4),
-                                             localRay.HitDistance(pos1, pos2, dummy5),
-                                             localRay.HitDistance(pos1, pos2, dummy6) });
+                tc::Vector3 dummy1 = (pos1 + pos2) / 2;
+                float offset = 0.170; // TODO: Optimize this to vary by scene
+                float testdist1 = std::min(
+                    { localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }) });
                 hitdistances.push_back(testdist1);
                 std::cout << "testdist1a: " + std::to_string(testdist1) << std::endl;
                 auto vertname1 = instPrefix + VertToName.at(firstpoint);
@@ -661,18 +657,15 @@ std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolyl
                 tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
 
                 // naive method, extend the plane out of the line in 6 directions a little
-                tc::Vector3 dummy1 = (pos1 + pos2) / 2; dummy1.y += 0.170; // used to be 0.350 
-                tc::Vector3 dummy2 = (pos1 + pos2) / 2; dummy2.x += 0.170;
-                tc::Vector3 dummy3 = (pos1 + pos2) / 2; dummy3.z += 0.170;
-                tc::Vector3 dummy4 = (pos1 + pos2) / 2; dummy4.y += 0.170;
-                tc::Vector3 dummy5 = (pos1 + pos2) / 2; dummy5.x += 0.170;
-                tc::Vector3 dummy6 = (pos1 + pos2) / 2; dummy6.z += 0.170;
-                float testdist1 = std::min({ localRay.HitDistance(pos1, pos2, dummy1),
-                                             localRay.HitDistance(pos1, pos2, dummy2),
-                                             localRay.HitDistance(pos1, pos2, dummy3),
-                                             localRay.HitDistance(pos1, pos2, dummy4),
-                                             localRay.HitDistance(pos1, pos2, dummy5),
-                                             localRay.HitDistance(pos1, pos2, dummy6) });
+                tc::Vector3 dummy1 = (pos1 + pos2) / 2; 
+                float offset = 0.170; // TODO: Optimize this to vary by scene
+                float testdist1 = std::min(
+                    { localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }) });
                 hitdistances.push_back(testdist1);
                 std::cout << "testdist1b: " + std::to_string(testdist1) << std::endl;
                 auto vertname1 = instPrefix + VertToName.at(firstpoint);
@@ -731,109 +724,60 @@ CMeshInstance::PickEdges(const tc::Ray& localRay)
     if (meshClass == "CPolyline")
     {
         auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-
         std::vector<CMeshImpl::VertexHandle> edgeVertsOnly;
         for (const auto& pair : VertToName)
             edgeVertsOnly.push_back(pair.first);
+        std::vector<float> hitdistances;
+        std::map<float, std::vector<std::string>> distToNames;
+        auto firstpoint = edgeVertsOnly[0];
+        auto secondpoint = edgeVertsOnly[1];
+        const auto& posArr1 = Mesh.point(firstpoint);
+        tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
+        const auto& posArr2 = Mesh.point(secondpoint);
+        tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
+             
+        // naive method, extend the plane out of the line in 6 directions a little
+        tc::Vector3 dummy1 = (pos1 + pos2) / 2; 
+        float offset = 0.170; // TODO: Optimize this to vary by scene
+        float testdist1 = std::min(
+            { localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
+              localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0,  0 }),
+              localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset}),
+              localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
+                       localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0 , 0}),
+                       localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }) });
+        hitdistances.push_back(testdist1);
+        std::cout << "testdist1b: " + std::to_string(testdist1) << std::endl;
+        auto vertname1 = instPrefix + VertToName.at(firstpoint);
+        auto vertname2 = instPrefix + VertToName.at(secondpoint);
+        std::vector<std::string> names;
+        names.push_back(vertname1);
+        names.push_back(vertname2);
+        distToNames.insert({ testdist1, names });
+            
+        auto mindist = *std::min_element(hitdistances.begin(), hitdistances.end());
+        std::cout << "Triangle hit distance for edge:  " + std::to_string(mindist) << std::endl;
 
-        for (int i = 0; i < edgeVertsOnly.size(); i++) // adjacent elements are the edge verts
+        if (mindist < 100)
         {
-            std::vector<float> hitdistances;
-            std::map<float, std::vector<std::string>> distToNames;
+            auto hitpointnames = distToNames.at(mindist); // Guaranteed to be two names
+            auto name1withoutinstprefix = hitpointnames[0].substr(instPrefix.length());
+            auto name2withoutinstprefix = hitpointnames[1].substr(instPrefix.length());
 
-            if (i == edgeVertsOnly.size() - 1)
-            { // if at the last point, the last edge is last point connected to first point
-                auto firstpoint = edgeVertsOnly[i];
-                auto secondpoint = edgeVertsOnly[0];
-                const auto& posArr1 = Mesh.point(firstpoint);
-                const auto& posArr2 = Mesh.point(secondpoint);
-                tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
-                tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
+            auto point1 = NameToVert.at(name1withoutinstprefix);
+            auto point2 = NameToVert.at(name2withoutinstprefix);
 
-                // naive method, extend the plane out of the line in 6 directions a little
-                tc::Vector3 dummy1 = (pos1 + pos2) / 2; dummy1.y += 0.170; // used to be 0.350
-                tc::Vector3 dummy2 = (pos1 + pos2) / 2; dummy2.x += 0.170;
-                tc::Vector3 dummy3 = (pos1 + pos2) / 2; dummy3.z += 0.170;
-                tc::Vector3 dummy4 = (pos1 + pos2) / 2; dummy4.y += 0.170;
-                tc::Vector3 dummy5 = (pos1 + pos2) / 2; dummy5.x += 0.170;
-                tc::Vector3 dummy6 = (pos1 + pos2) / 2; dummy6.z += 0.170;
-                float testdist1 = std::min({
-                   localRay.HitDistance(pos1, pos2, dummy1), localRay.HitDistance(pos1, pos2, dummy2),
-                        localRay.HitDistance(pos1, pos2, dummy3),
-                        localRay.HitDistance(pos1, pos2, dummy4),
-                        localRay.HitDistance(pos1, pos2, dummy5),
-                        localRay.HitDistance(pos1, pos2, dummy6)});
-                hitdistances.push_back(testdist1);
-                std::cout << "testdist1a: " + std::to_string(testdist1) << std::endl;
-                auto vertname1 = instPrefix + VertToName.at(firstpoint);
-                auto vertname2 = instPrefix + VertToName.at(secondpoint);
-                std::vector<std::string> names;
-                names.push_back(vertname1);
-                names.push_back(vertname2);
-                distToNames.insert({ testdist1, names });
-            }
-            else
+            if (meshName.find("SELECTED") == std::string::npos)
             {
-                auto firstpoint = edgeVertsOnly[i];
-                auto secondpoint = edgeVertsOnly[i+1];
-                const auto& posArr1 = Mesh.point(firstpoint);
-                tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
-                const auto& posArr2 = Mesh.point(secondpoint);
-                tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
-
-                // naive method, extend the plane out of the line in 6 directions a little
-                tc::Vector3 dummy1 = (pos1 + pos2) / 2; dummy1.y += 0.170; // used to be 0.350
-                tc::Vector3 dummy2 = (pos1 + pos2) / 2; dummy2.x += 0.170;
-                tc::Vector3 dummy3 = (pos1 + pos2) / 2; dummy3.z += 0.170;
-                tc::Vector3 dummy4 = (pos1 + pos2) / 2; dummy4.y += 0.170;
-                tc::Vector3 dummy5 = (pos1 + pos2) / 2; dummy5.x += 0.170;
-                tc::Vector3 dummy6 = (pos1 + pos2) / 2; dummy6.z += 0.170;
-                float testdist1 = std::min({ localRay.HitDistance(pos1, pos2, dummy1),
-                                             localRay.HitDistance(pos1, pos2, dummy2),
-                                             localRay.HitDistance(pos1, pos2, dummy3),
-                                             localRay.HitDistance(pos1, pos2, dummy4),
-                                             localRay.HitDistance(pos1, pos2, dummy5),
-                                             localRay.HitDistance(pos1, pos2, dummy6) });
-                hitdistances.push_back(testdist1);
-                std::cout << "testdist1b: " + std::to_string(testdist1) << std::endl;
-                auto vertname1 = instPrefix + VertToName.at(firstpoint);
-                auto vertname2 = instPrefix + VertToName.at(secondpoint);
-                std::vector<std::string> names;
-                names.push_back(vertname1);
-                names.push_back(vertname2);
-                distToNames.insert({ testdist1, names });
+                GetSceneTreeNode()->GetOwner()->SelectNode();
+                MarkDirty();
             }
-            auto mindist = *std::min_element(hitdistances.begin(), hitdistances.end());
-            std::cout << "Triangle hit distance for edge:  " + std::to_string(mindist) << std::endl;
-
-            if (mindist < 100)
+            else // this is a temp selection polyline, deselect by adding to results
             {
-                auto hitpointnames = distToNames.at(mindist); // Guaranteed to be two names
-                auto name1withoutinstprefix = hitpointnames[0].substr(instPrefix.length());
-                auto name2withoutinstprefix = hitpointnames[1].substr(instPrefix.length());
-
-                auto point1 = NameToVert.at(name1withoutinstprefix);
-                auto point2 = NameToVert.at(name2withoutinstprefix);
-
-                // result.emplace_back(mindist, hitpointnames); // Commented this out on 11/22.
-                // Purposely don't want to include those results.
-
-                // Randy added this on 11/21. Key to selecting entire polylines and bsplines
-                std::cout << "Pick edges in Mesh.cpp: found entity: " + meshClass << std::endl;
-
-                // Add deselection in for polyline and bspline entities (not the recently selected
-                // polyline)
-                if (meshName.find("SELECTED") == std::string::npos)
-                {
-                    GetSceneTreeNode()->GetOwner()->SelectNode();
-                    MarkDirty();
-                }
-                else // this is a temp selection polyline, deselect by adding to results
-                {
-                    result.emplace_back(mindist, hitpointnames);
-                }
+                result.emplace_back(mindist, hitpointnames);
             }
         }
+        
     }
 
     // Else, for entities other than Polyline or BSpline...
@@ -866,18 +810,15 @@ CMeshInstance::PickEdges(const tc::Ray& localRay)
 
                 // TODO: Fix this naive method. Naive method extend the plane out of the line in 6
                 // directions
-                tc::Vector3 dummy1 = (pos1 + pos2) / 2; dummy1.y += 0.170; // used to be 0.350
-                tc::Vector3 dummy2 = (pos1 + pos2) / 2; dummy2.x += 0.170;
-                tc::Vector3 dummy3 = (pos1 + pos2) / 2; dummy3.z += 0.170;
-                tc::Vector3 dummy4 = (pos1 + pos2) / 2; dummy4.y += 0.170;
-                tc::Vector3 dummy5 = (pos1 + pos2) / 2; dummy5.x += 0.170;
-                tc::Vector3 dummy6 = (pos1 + pos2) / 2; dummy6.z += 0.170;
-                float testdist1 = std::min({ localRay.HitDistance(pos1, pos2, dummy1),
-                                             localRay.HitDistance(pos1, pos2, dummy2),
-                                             localRay.HitDistance(pos1, pos2, dummy3),
-                                             localRay.HitDistance(pos1, pos2, dummy4),
-                                             localRay.HitDistance(pos1, pos2, dummy5),
-                                             localRay.HitDistance(pos1, pos2, dummy6) });
+                tc::Vector3 dummy1 = (pos1 + pos2) / 2;
+                float offset = 0.170; // TODO: Optimize this to vary by scene
+                float testdist1 = std::min(
+                    { localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }) });
                 hitdistances.push_back(testdist1);
                 auto vertname1 = instPrefix + VertToName.at(firstpoint);
                 auto vertname2 = instPrefix + VertToName.at(secondpoint);
@@ -889,7 +830,7 @@ CMeshInstance::PickEdges(const tc::Ray& localRay)
             else
             {
                 auto firstpoint = points[i];
-                auto secondpoint = points[i + 1];
+                auto secondpoint = points[i+1];
                 const auto& posArr1 = Mesh.point(firstpoint);
                 tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
                 const auto& posArr2 = Mesh.point(secondpoint);
@@ -897,18 +838,15 @@ CMeshInstance::PickEdges(const tc::Ray& localRay)
 
                 // TODO: Fix \this naive method. Naive method extend the plane out of the line in 6
                 // directions
-                tc::Vector3 dummy1 = (pos1 + pos2) / 2; dummy1.y += 0.170; // used to be 0.350
-                tc::Vector3 dummy2 = (pos1 + pos2) / 2; dummy2.x += 0.170;
-                tc::Vector3 dummy3 = (pos1 + pos2) / 2; dummy3.z += 0.170;
-                tc::Vector3 dummy4 = (pos1 + pos2) / 2; dummy4.y += 0.170;
-                tc::Vector3 dummy5 = (pos1 + pos2) / 2; dummy5.x += 0.170;
-                tc::Vector3 dummy6 = (pos1 + pos2) / 2; dummy6.z += 0.170;
-                float testdist1 = std::min({ localRay.HitDistance(pos1, pos2, dummy1),
-                                             localRay.HitDistance(pos1, pos2, dummy2),
-                                             localRay.HitDistance(pos1, pos2, dummy3),
-                                             localRay.HitDistance(pos1, pos2, dummy4),
-                                             localRay.HitDistance(pos1, pos2, dummy5),
-                                             localRay.HitDistance(pos1, pos2, dummy6) });
+                tc::Vector3 dummy1 = (pos1 + pos2) / 2;
+                float offset = 0.170; // TODO: Optimize this to vary by scene
+                float testdist1 = std::min(
+                    { localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
+                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }) });
                 hitdistances.push_back(testdist1);
                 auto vertname1 = instPrefix + VertToName.at(firstpoint);
                 auto vertname2 = instPrefix + VertToName.at(secondpoint);

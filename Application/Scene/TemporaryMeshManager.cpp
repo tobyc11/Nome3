@@ -120,7 +120,6 @@ void CTemporaryMeshManager::SelectOrDeselectPolyline(const std::vector<std::stri
         Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
             if (node->GetOwner()->GetName() == removeName)
             { // removeName includes the "inst" as prefix
-                std::cout << "found the old polyline, trying to remove " << std::endl;
                 std::cout << removeName << std::endl;
                 node->GetOwner()->SetEntity(nullptr);
             }

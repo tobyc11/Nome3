@@ -73,6 +73,7 @@ private slots:
     void on_actionShowFacets_triggered(); // Randy added this
     void on_actionToggleVertexSelection_triggered(); // Randy added this on 11/5
     void on_actionToggleEdgeSelection_triggered(); // Randy added this on 11/5
+    void on_actionTogglePolylineSelection_triggered(); // Randy added this on 12/22
     void on_actionToggleFaceSelection_triggered(); // Randy added this on 11/5
 
 private:

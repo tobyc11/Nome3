@@ -42,6 +42,7 @@ public:
     void PickVertexWorldRay(tc::Ray& ray);
     void PickFaceWorldRay(tc::Ray& ray); // Randy added on 10/10
     void PickEdgeWorldRay(tc::Ray& ray); // Randy added on 10/29
+    void PickPolylineWorldRay(tc::Ray& ray); // Randy added on 12/22
 
     bool WireFrameMode = false; // Randy added on 10/16 for choose wireframe mode or default mode.
                                 // Changed to false on 11/21
@@ -54,6 +55,7 @@ public:
     bool PickVertexBool = false; // Randy added on 11/5
     bool PickFaceBool = false; // Randy added on 11/5
     bool PickEdgeBool = false; // Randy added on 11/5
+    bool PickPolylineBool = false; // Randy added on 12/22
 
 protected:
     // Xinyu added on Oct 8 for rotation

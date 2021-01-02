@@ -420,12 +420,82 @@ void CNome3DView::PickEdgeWorldRay(tc::Ray& ray)
         {
             const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
             auto localRay = ray.Transformed(l2w.Inverse());
+            localRay.Direction =localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            auto pickResults = meshInst->PickEdges(localRay);
+
+            for (const auto& [dist, names] : pickResults)
+                hits.emplace_back(dist, meshInst, names);
+        }
+    });
+    std::sort(hits.begin(), hits.end());
+
+    // TODO 11/21, If it contains a temp SELECT EDGE polyline, then immediately return that one
+    std::vector<std::tuple<float, Scene::CMeshInstance*, std::vector<std::string>>> temp;
+    for (auto hit : hits)
+    {
+        auto [dist, meshInst, edgeVertNames] = hit;
+        if (edgeVertNames[0].find("SELECTED") != std::string::npos)
+        {
+            temp.push_back(hit);
+        }
+    }
+
+    if (!temp.empty())
+        hits = temp;
+    if (hits.size() == 1)
+    {
+        const auto& [dist, meshInst, edgeVertNames] =
+            hits[0]; // where the edgeVertNames is defined to a vector of two vertex names
+        std::vector<std::string>::iterator position1 =
+            std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[0]);
+        std::vector<std::string>::iterator position2 =
+            std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[1]);
+        SelectedEdgeVertices.push_back(edgeVertNames[0]);
+        SelectedEdgeVertices.push_back(edgeVertNames[1]);
+
+        // if the selected edge is not a SELECTED (temp) edge
+        if (edgeVertNames[0].find("SELECTED") == std::string::npos)
+            GFrtCtx->MainWindow->statusBar()->showMessage(QString::fromStdString(
+                "Selected " + edgeVertNames[0] + edgeVertNames[1] + " edge"));
+        else
+        {
+            GFrtCtx->MainWindow->statusBar()->showMessage("Deselected edge");
+        }
+        std::set<std::string> edgeVertNamesSet(edgeVertNames.begin(), edgeVertNames.end());
+        meshInst->MarkEdgeAsSelected(edgeVertNamesSet, true); // here
+    }
+    // If you need to implement multiple edge intersection, please see the below line at:
+    // https://github.com/randyfan/NOME3/commit/55ab6d81140d09f1725e261ed810c1a15646ab5c
+    else
+        GFrtCtx->MainWindow->statusBar()->showMessage(
+            "No edge hit or more than one edge hit. Please select again");
+}
+
+// Used for picking edges
+void CNome3DView::PickPolylineWorldRay(tc::Ray& ray)
+{
+    rotateRay(ray);
+    std::vector<std::tuple<float, Scene::CMeshInstance*, std::vector<std::string>>>
+        hits; // note the string is a vector of strings
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        std::cout << "Currently in NOME3DView's PickPolylineWorldRay. At node: " + node->GetPath()
+                  << std::endl;
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+            auto localRay = ray.Transformed(l2w.Inverse());
             localRay.Direction =
                 localRay.Direction
                     .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
 
             auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-            auto pickResults = meshInst->PickEdges(localRay);
+            auto pickResults = meshInst->PickPolylines(localRay);
 
             for (const auto& [dist, names] : pickResults)
                 hits.emplace_back(dist, meshInst, names);

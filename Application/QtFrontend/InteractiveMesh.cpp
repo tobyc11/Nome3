@@ -147,14 +147,14 @@ void CInteractiveMesh::UpdateMaterial(bool showFacets)
         if (!setColor) // If the surface color hasn't been set yet
         {
             currNode = currNode->GetParent(); // here, currNode's parent is guaranteed to be a
-                                              // instance scene tree node due to previous while loop
+// instance scene tree node due to previous while loop
 
-            if (auto surface = currNode->GetOwner()->GetSurface())
-            {
-                instanceColor.setX(surface->ColorR.GetValue(1.0f));
-                instanceColor.setY(surface->ColorG.GetValue(1.0f));
-                instanceColor.setZ(surface->ColorB.GetValue(1.0f));
-            }
+if (auto surface = currNode->GetOwner()->GetSurface())
+{
+    instanceColor.setX(surface->ColorR.GetValue(1.0f));
+    instanceColor.setY(surface->ColorG.GetValue(1.0f));
+    instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+}
         }
     }
 
@@ -206,12 +206,13 @@ void CInteractiveMesh::InitInteractions()
             if (GFrtCtx->NomeView->PickVertexBool)
                 GFrtCtx->NomeView->PickVertexWorldRay(ray);
             if (GFrtCtx->NomeView->PickEdgeBool)
-                GFrtCtx->NomeView->PickEdgeWorldRay(ray); // Randy added on 10/29 for edge selection
+                GFrtCtx->NomeView->PickEdgeWorldRay(ray);
             if (GFrtCtx->NomeView->PickFaceBool)
-                GFrtCtx->NomeView->PickFaceWorldRay(
-                    ray); // Randy added on 10/10 for face selection.
+                GFrtCtx->NomeView->PickFaceWorldRay(ray);
+            if (GFrtCtx->NomeView->PickPolylineBool)
+                GFrtCtx->NomeView->PickPolylineWorldRay(ray);
         }
-    });
+        });
     this->addComponent(picker);
 }
 
@@ -232,7 +233,7 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
 
     auto* lineEntity = new Qt3DCore::QEntity(this);
     lineEntity->setObjectName(QStringLiteral("lineEntity"));
-    QVector3D instanceColor { 1.0f, 0.0f, 1.0f }; // Magenta color is default
+    QVector3D instanceColor{ 1.0f, 0.0f, 1.0f }; // Magenta color is default
     if (!LineMaterial || SceneTreeNode->GetOwner()->isSelected()) // Randy added the second boolean on 11/21 to color polyline/bspline
     {
         auto xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
@@ -243,21 +244,28 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
         lineEntity->addComponent(LineMaterial);
         // Randy added this on 11/21
         QVector3D instanceColor;
-        if (SceneTreeNode->GetOwner()->isSelected())
+
+        if (SceneTreeNode->GetOwner()->isSelected() && !SceneTreeNode->GetOwner()->isResetColor())
         {
             auto color = SceneTreeNode->GetOwner()->GetSelectSurface();
             instanceColor.setX(color.x);
             instanceColor.setY(color.y);
             instanceColor.setZ(color.z);
-            SceneTreeNode->GetOwner()->UnselectNode(); // deselect it so it won't be colored again the next time
+            SceneTreeNode->GetOwner()->DoneSelecting(); // set SelectBool to false
+            SceneTreeNode->GetOwner()->NeedResetColor(); // next selection will reset 
         }
-        else if (!SceneTreeNode->GetParent()->GetOwner()->IsGroup())     // If the scene tree node is not within a group, then we can directly use its surface color
+        else if (!SceneTreeNode->GetParent()->GetOwner()->IsGroup() )     // If the scene tree node is not within a group, then we can directly use its surface color
         {
             if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
             {
                 instanceColor.setX(surface->ColorR.GetValue(1.0f));
                 instanceColor.setY(surface->ColorG.GetValue(1.0f));
                 instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+            }
+            if (SceneTreeNode->GetOwner()->isResetColor())
+            {
+                SceneTreeNode->GetOwner()->DoneSelecting(); // set SelectBool to false
+                SceneTreeNode->GetOwner()->DoneResettingColor();
             }
         } 
         else // else, the scenetreenode is within a group, and we keep bubbling up from where we are (going up the tree) until we get to an instance scene node that has a surface color
@@ -290,9 +298,13 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
                     instanceColor.setZ(surface->ColorB.GetValue(1.0f));
                 }
             }
+            if (SceneTreeNode->GetOwner()->isResetColor())
+            {
+                SceneTreeNode->GetOwner()->DoneSelecting(); // set SelectBool to false
+                SceneTreeNode->GetOwner()->DoneResettingColor();
+            }
         }
         lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
-
     }
 
     auto* lineRenderer = new Qt3DRender::QGeometryRenderer(lineEntity);

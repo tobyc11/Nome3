@@ -105,9 +105,22 @@ public:
     AST::ACommand* BuildASTCommand(Nome::AST::CASTContext& ctx) const;
     void SyncToAST(AST::CASTContext& ctx);
 
-    void SelectNode() { SelectBool = true; } // Randy added this on 11/21 for selection coloring
-    void UnselectNode() { SelectBool = false; } // Randy added this on 11/21 for selection coloring
+    void SelectNode()
+    {
+        SelectBool = true;
+    } // Randy added this on 11/21 for selection coloring
+    void DoneSelecting() { SelectBool = false; // TODO 12/23 THIS MORNING. CHANGE IT SO SELECTBOOL IS JJUST A SINGLE VARIABLE iN MESHCPP. no if else, just toggle on and off
+    }
+
+    void NeedResetColor() {
+        ResetColor = true; } // Randy added this on 11/21 for selection coloring
+
+    void DoneResettingColor() { 
+        ResetColor = false; // if selected and 
+    }
+
     bool isSelected() { return SelectBool; } // Randy added this on 11/21 for selection coloring
+    bool isResetColor() { return ResetColor; }
     Vector3 GetSelectSurface() const { return SelectSurface; } // Randy added this on 11/21
 
 private:
@@ -127,6 +140,7 @@ private:
     TAutoPtr<CSurface> Surface;
 
     bool SelectBool = false;
+    bool ResetColor = false;
     Vector3 SelectSurface = { 0, 1, 0 }; // R , G , B Randy added this on 11/21
     AST::ACommand* ASTSource {};
 };

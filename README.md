@@ -1,5 +1,5 @@
 # NOME3
-NOME is a CAD tool that allows users to procedurally generate complex shapes and interactively modify them in the GUI. 
+NOME is a CAD tool that allows users to generate complex shapes via scripts and interactively modify them in the GUI. 
 
 We have introduced multiple unique language constructs, such as "group" and "mesh", that allow users to piece together shapes and reuse them easily. We also have implemented advanced shape generators (e.g. torus knot) that may make certain modelling tasks easier. Please view our full language reference here: https://docs.google.com/document/d/15c1VIXpGUxIL3daA3pI-iYW4K5ebd3snveDFWXRpa70/edit?ts=5fcb20ad#
 
@@ -18,7 +18,7 @@ To make your life easier, there are a few package management software on Windows
 - Scoop (We need this for cmake) 
 - Vcpkg (We need this for OpenMesh and Qt5)
 
-Please install __Visual Studio__ first, as it is necessary for any development work on Windows. Then you can install __scoop__ and __vcpkg__; Scoop installation instructions are here: https://scoop.sh/, and vcpkg instructions are here: https://github.com/microsoft/vcpkg (just run git clone https://github.com/microsoft/vcpkg and .\vcpkg\bootstrap-vcpkg.bat first. You'll install the needed packages below). It should be straightforward. Go ahead and spend a few minutes playing with each package management tool. Please read this: https://docs.microsoft.com/en-us/cpp/build/vcpkg?view=msvc-160. They will save you tons of time trying to pull together different C++ libraries, potentially in the future. Now you might be wondering why we need two different package managers. So I will explain: __scoop__ deals with applications, such as CMake and Python; __vcpkg__ is a C++ dependency manager from Microsoft that goes together with Visual Studio, and it concerns with libraries that we can `#include` from our own code. 
+Please install __Visual Studio__ first, as it is necessary for any C++ development work on Windows. Then you can install __scoop__ and __vcpkg__; Scoop installation instructions are here: https://scoop.sh/, and vcpkg instructions are here: https://github.com/microsoft/vcpkg (just run git clone https://github.com/microsoft/vcpkg and .\vcpkg\bootstrap-vcpkg.bat first. You'll install the needed packages below). It should be straightforward. Go ahead and spend a few minutes playing with each package management tool. Please read this: https://docs.microsoft.com/en-us/cpp/build/vcpkg?view=msvc-160. They will save you tons of time trying to pull together different C++ libraries, potentially in the future. Now you might be wondering why we need two different package managers. So I will explain: __scoop__ deals with applications, such as CMake and Python; __vcpkg__ is a C++ dependency manager from Microsoft that goes together with Visual Studio, and it concerns with libraries that we can `#include` from our own code. 
 
 Now hopefully you are familiar with those package managers. Run the following commands (potentially in different directories depending on where you installed each package manager) to install what we need:
 
@@ -50,7 +50,7 @@ Open up the CMake GUI, and set it up like this:
 Then click on "Add Entry" to add the following variables so that CMake can find all those libraries:
 ```
 CMAKE_TOOLCHAIN_FILE = [Vcpkg dir]/scripts/buildsystems/vcpkg.cmake
-CMAKE_INSTALL_PREFIX =  In my case it is C:/Qt/5.12.5/msvc2017_64/lib/cmake to give you an example. This environment variable CMAKE_PREFIX_PATH is needed so that CMake knows where to look for Qt.
+CMAKE_INSTALL_PREFIX =  add Qt cmake filepath. In my case it is C:/Qt/5.12.5/msvc2017_64/lib/cmake to give you an example. This environment variable CMAKE_PREFIX_PATH is needed so that CMake knows where to look for Qt.
 ```
 
 Now you can click on "Configure" and "Generate" to generate a Visual Studio solution file and open it with Visual Studio. Then, click Build Solution, and a NOME3.exe should appear in the Build directory.

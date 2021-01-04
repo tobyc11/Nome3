@@ -6,7 +6,8 @@
 #include "BSpline.h"
 #include "Circle.h"
 #include "BezierSpline.h"
-#include "TorusKnot.h" // Check with Zachary
+#include "TorusKnot.h" // Randy added
+#include "Polyline.h" // Randy added on 12/29
 #include "SweepControlPoint.h"
 #include <Flow/FlowNode.h>
 #include <Flow/FlowNodeArray.h>
@@ -56,6 +57,14 @@ std::any CExprToNodeGraph::VisitUnaryOp(AST::AUnaryOp* unaryOp)
     if (unaryOp->GetOperatorType() == AST::AUnaryOp::EOperator::Neg)
     {
         auto* node = new Flow::CFloatNeg();
+        InputStack.push(&node->Operand0);
+        unaryOp->GetOperand()->Accept(this);
+        InputStack.pop();
+        node->Result.Connect(*InputStack.top());
+    }
+    else if (unaryOp->GetOperatorType() == AST::AUnaryOp::EOperator::Plus)
+    {
+        auto* node = new Flow::CFloatAdd();
         InputStack.push(&node->Operand0);
         unaryOp->GetOperand()->Accept(this);
         InputStack.pop();
@@ -240,6 +249,7 @@ bool TBindingTranslator<Flow::TInput<CVertexInfo*>>::FromASTToValue(
     return true;
 }
 
+// Uses TInputArray instead of TInput
 template <>
 bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
     AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CVertexInfo*>& value)
@@ -265,6 +275,78 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
                                       ident);
         }
         value.Connect(*pointOutput);
+    }
+    return true;
+}
+
+// Uses TInputArray instead of TInput. Used for polyline-related entities defined within Mesh command
+template <>
+bool TBindingTranslator<Flow::TInputArray<CSweepPathInfo*>>::FromASTToValue(
+    AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CSweepPathInfo*>& value)
+{
+    auto* vec = subpart.GetExpr(command);
+    if (vec == NULL)
+    {
+        return false;
+    }
+
+    if (vec->GetKind() != AST::EKind::Vector)
+        throw AST::CSemanticError("TInputArray<CSweepPathInfo*> is not matched with a vector",
+                                  command);
+
+    for (const auto* ident : static_cast<AST::AVector*>(vec)->GetItems())
+    {
+        if (ident->GetKind() != AST::EKind::Ident)
+            throw AST::CSemanticError("TInput<CSweepPathInfo*> is not matched with a Ident",
+                                      command);
+
+        std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
+        TAutoPtr<CEntity> entity = GEnv.Scene->FindEntity(identVal);
+        if (!entity)
+        {
+            throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()),
+                                      ident);
+        }
+
+        CSweepPath* path = dynamic_cast<CSweepPath*>(entity.Get());
+        if (!path)
+        {
+            throw AST::CSemanticError(
+                tc::StringPrintf("Entity %s is not a sweep path", identVal.c_str()), ident);
+        }
+
+        auto& e = *entity.Get();
+        if (typeid(e) == typeid(CPolyline))
+        {
+            CPolyline* polyline = dynamic_cast<CPolyline*>(path);
+            value.Connect(polyline->Polyline);
+        }
+        else if (typeid(e) == typeid(CBSpline))
+        {
+            CBSpline* bspline = dynamic_cast<CBSpline*>(path);
+            value.Connect(bspline->BSpline);
+        }
+        else if (typeid(e) == typeid(CCircle))
+        {
+            CCircle* circle = dynamic_cast<CCircle*>(path);
+            value.Connect(circle->Circle);
+        }
+        else if (typeid(e) == typeid(CBezierSpline))
+        {
+            CBezierSpline* bezierSpline = dynamic_cast<CBezierSpline*>(path);
+            value.Connect(bezierSpline->BezierSpline);
+        }
+        else if (typeid(e) == typeid(CTorusKnot))
+        {
+            CTorusKnot* torusknot = dynamic_cast<CTorusKnot*>(path);
+            value.Connect(torusknot->TorusKnot);
+        }
+        else
+        {
+            throw AST::CSemanticError(
+                tc::StringPrintf("Entity %s is not a sweep path", identVal.c_str()), ident);
+        }
+        
     }
     return true;
 }

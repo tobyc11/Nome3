@@ -44,9 +44,6 @@ macro(config_playground2 target)
     target_include_directories(${target} PRIVATE ${OPENMESH_INCLUDE_DIRS})
     target_link_libraries(${target} PRIVATE ${OPENMESH_LIBRARIES})
 
-    find_package(pugixml REQUIRED)
-    target_link_libraries(${target} PRIVATE pugixml)
-
     target_link_libraries(${target} PRIVATE NomParsing)
     target_link_libraries(${target} PRIVATE CADRender)
 endmacro()

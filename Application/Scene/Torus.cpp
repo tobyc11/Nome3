@@ -48,7 +48,7 @@ void CTorus::UpdateEntity()
         / phiSegs; // convert phiMax to radians then divide by # of segs on circle
     const float du_offset = (phiMin * (float)tc::M_PI
                              / 180.0f); // convert phiMin to radians. This will be used to offset so
-                                        // it starts at phiMin instead of 0 . DOESNT WORK
+                                        // it starts at phiMin instead of 0 .
 
     // Create torus, creating one cross section at each iteration
     for (int i = 0; i < thetaSegs + 1;
@@ -96,7 +96,7 @@ void CTorus::UpdateEntity()
         N = { N.x / N_length, N.y / N_length, N.z / N_length };
 
         // generate points in a circle perpendicular to the curve at the current point
-        for (int j = 0; j < phiSegs; ++j)
+        for (int j = 0; j < phiSegs + 1; ++j)
         {
             float u = j * (du) + du_offset; // du_offset is needed for the phiMin adjustment
 
@@ -120,10 +120,10 @@ void CTorus::UpdateEntity()
     {
         for (int k = 0; k < thetaSegs + 1; k++)
         {
-            for (int i = 0; i < phiSegs; i++)
+            for (int i = 0; i < phiSegs + 1; i++)
             {
                 // CCW winding
-                int next = (i + 1) % phiSegs;
+                int next = (i + 1) % (phiSegs + 1);
                 int next_k = (k + 1) % thetaSegs;
                 std::vector<std::string> upperFace = {
                     /* Old method was incorrectly CW (back face was showing in the front)
@@ -147,11 +147,11 @@ void CTorus::UpdateEntity()
         for (int k = 0; k < thetaSegs; k++) // thetaSegs instead of thetaSegs + 1 because we don't
                                             // to connect the last segment with the first segment
         {
-            for (int i = 0; i < phiSegs; i++)
+            for (int i = 0; i < phiSegs + 1; i++)
             {
                 // CCW winding
-                int next = (i + 1) % phiSegs;
-                int next_k = (k + 1) % (thetaSegs + 1);
+                int next = (i + 1) % (phiSegs + 1); // points along minor axis
+                int next_k = (k + 1) % (thetaSegs + 1); // points along major axis
                 std::vector<std::string> upperFace = {
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(next),
                     "v" + std::to_string(next_k + 1) + "_" + std::to_string(i),

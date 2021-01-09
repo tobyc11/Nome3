@@ -6,7 +6,8 @@
 #include "BSpline.h"
 #include "Circle.h"
 #include "BezierSpline.h"
-#include "TorusKnot.h" // Check with Zachary
+#include "TorusKnot.h" // Randy added
+#include "Polyline.h" // Randy added on 12/29
 #include "SweepControlPoint.h"
 #include <Flow/FlowNode.h>
 #include <Flow/FlowNodeArray.h>
@@ -56,6 +57,14 @@ std::any CExprToNodeGraph::VisitUnaryOp(AST::AUnaryOp* unaryOp)
     if (unaryOp->GetOperatorType() == AST::AUnaryOp::EOperator::Neg)
     {
         auto* node = new Flow::CFloatNeg();
+        InputStack.push(&node->Operand0);
+        unaryOp->GetOperand()->Accept(this);
+        InputStack.pop();
+        node->Result.Connect(*InputStack.top());
+    }
+    else if (unaryOp->GetOperatorType() == AST::AUnaryOp::EOperator::Plus)
+    {
+        auto* node = new Flow::CFloatAdd();
         InputStack.push(&node->Operand0);
         unaryOp->GetOperand()->Accept(this);
         InputStack.pop();
@@ -240,6 +249,7 @@ bool TBindingTranslator<Flow::TInput<CVertexInfo*>>::FromASTToValue(
     return true;
 }
 
+// Uses TInputArray instead of TInput
 template <>
 bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
     AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CVertexInfo*>& value)

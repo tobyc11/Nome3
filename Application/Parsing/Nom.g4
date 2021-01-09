@@ -4,11 +4,11 @@ file : command* EOF;
 
 expression
    :  ident LPAREN expression RPAREN # Call
+   |  op= (PLUS | MINUS) expression # UnaryOp
    |  expression op=POW expression # BinOp
    |  expression op=(TIMES | DIV)  expression # BinOp
    |  expression op=(PLUS | MINUS) expression # BinOp
    |  LPAREN expression RPAREN # SubExpParen
-   |  (PLUS | MINUS) expression # UnaryOp
    |  beg='{' sec='expr' expression end='}' # SubExpCurly
    |  atom # AtomExpr
    ;

@@ -28,7 +28,11 @@ ident
    | DOLLAR IDENT
    ;
 
-vector : LPAREN expression* RPAREN ;
+vector
+   /* This is so that the parser tries the 4 expression version before 3 and 2 */
+   : LPAREN expression expression expression expression RPAREN
+   | LPAREN expression expression expression RPAREN
+   | LPAREN expression* RPAREN ;
 
 /* Arguments and commands */
 argClosed : KW_CLOSED ;

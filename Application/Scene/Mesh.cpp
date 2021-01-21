@@ -195,7 +195,7 @@ void CMeshInstance::UpdateEntity()
 
     // Construct interactive points
     CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();
-    for (auto pair : PickingVerts)
+    for (const auto& pair : PickingVerts)
     {
         scene->GetPickingMgr()->UnregisterObj(pair.second.second);
         delete pair.second.first;

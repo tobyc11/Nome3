@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <unordered_map>
 
 namespace Nome::AST
 {
@@ -47,10 +48,7 @@ void ANode::AddChild(ANode* node)
     Children.push_back(node);
 }
 
-void ANode::ClearChildren()
-{
-    Children.clear();
-}
+void ANode::ClearChildren() { Children.clear(); }
 
 std::string ANode::ToString() const
 {
@@ -58,7 +56,8 @@ std::string ANode::ToString() const
     for (const auto* token : this->ToTokenList())
     {
         // TODO: right now we always insert a space between. There should be something we can do.
-        result += " ";
+        if (!result.empty())
+            result += " ";
         result += token->ToString();
     }
     return result;
@@ -122,7 +121,7 @@ private:
     TFunc& Func;
 };
 
-float ANumber::AsFloat() const { return std::atof(Token->ToString().c_str()); }
+float ANumber::AsFloat() const { return static_cast<float>(std::atof(Token->ToString().c_str())); }
 double ANumber::AsDouble() const { return std::atof(Token->ToString().c_str()); }
 
 static const std::map<std::string, AUnaryOp::EOperator> UnaryOpStringDecode = { { "-", AUnaryOp::EOperator::Neg },
@@ -260,7 +259,7 @@ std::vector<ACommand*> ACommand::GetSubCommands() const
     return result;
 }
 
-std::vector<ANamedArgument *> ACommand::GetNamedArguments() const
+std::vector<ANamedArgument*> ACommand::GetNamedArguments() const
 {
     std::vector<ANamedArgument*> result;
     for (auto* child : Children)

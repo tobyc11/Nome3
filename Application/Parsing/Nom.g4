@@ -50,8 +50,8 @@ argColor : KW_COLOR LPAREN expression expression expression RPAREN ;
 
 positionalArg
    : ident /* Prioritize ident in this context since otherwise `name(1 2 3)` can be parsed as an expr */
-   | expression
    | vector
+   | expression
    ;
 
 namedArg

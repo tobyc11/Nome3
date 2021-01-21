@@ -177,6 +177,9 @@ antlrcpp::Any CFileBuilder::visitScientific(NomParser::ScientificContext* contex
 
 antlrcpp::Any CFileBuilder::visitIdent(NomParser::IdentContext* context)
 {
+    if (context->DOLLAR())
+        return static_cast<AST::AExpr*>(
+            new (*Ctx) AST::AIdent(ConvertToken(context->DOLLAR()), ConvertToken(context->IDENT())));
     return static_cast<AST::AExpr*>(new (*Ctx) AST::AIdent(ConvertToken(context->IDENT())));
 }
 
@@ -198,9 +201,6 @@ AST::CToken* CFileBuilder::ConvertToken(antlr4::Token* token)
     return AST::CToken::Create(*Ctx, beginLoc, len);
 }
 
-AST::CToken* CFileBuilder::ConvertToken(antlr4::tree::TerminalNode* token)
-{
-    return ConvertToken(token->getSymbol());
-}
+AST::CToken* CFileBuilder::ConvertToken(antlr4::tree::TerminalNode* token) { return ConvertToken(token->getSymbol()); }
 
 }

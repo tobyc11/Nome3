@@ -121,6 +121,13 @@ private:
     TFunc& Func;
 };
 
+std::string AIdent::ToString() const
+{
+    if (GetCloseToken())
+        return GetCloseToken()->ToString();
+    return GetOpenToken()->ToString();
+}
+
 float ANumber::AsFloat() const { return static_cast<float>(std::atof(Token->ToString().c_str())); }
 double ANumber::AsDouble() const { return std::atof(Token->ToString().c_str()); }
 
@@ -155,7 +162,7 @@ std::vector<CToken*> ABinaryOp::ToTokenList() const
     result.insert(result.begin(), leftTokens.begin(), leftTokens.end());
     result.push_back(GetOpenToken());
     auto rightTokens = Children[1]->ToTokenList();
-    result.insert(result.begin(), rightTokens.begin(), rightTokens.end());
+    result.insert(result.end(), rightTokens.begin(), rightTokens.end());
     return result;
 }
 

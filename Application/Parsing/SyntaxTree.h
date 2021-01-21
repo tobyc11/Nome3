@@ -120,7 +120,15 @@ public:
     {
     }
 
+    AIdent(CToken* dollar, CToken* token)
+        : AExpr(EKind::Ident, dollar, token)
+    {
+    }
+
     static inline bool classof(const ANode* other) { return other->GetKind() == EKind::Ident; }
+
+    /// For ident, ToString does not include any additional text like $
+    [[nodiscard]] std::string ToString() const override;
 };
 
 /// A number, like `123.456`

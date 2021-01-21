@@ -197,9 +197,9 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
 
 CTransform* CASTSceneAdapter::ConvertASTTransform(AST::ANamedArgument* namedArg)
 {
-    auto items = cast<AST::AVector>(namedArg->GetArgument(0))->GetItems();
     if (namedArg->GetName() == "translate")
     {
+        auto items = cast<AST::AVector>(namedArg->GetArgument(0))->GetItems();
         auto* transform = new CTranslate();
         CExprToNodeGraph c1 { items.at(0), GEnv.Scene->GetBankAndSet(), &transform->X };
         CExprToNodeGraph c2 { items.at(1), GEnv.Scene->GetBankAndSet(), &transform->Y };
@@ -208,16 +208,18 @@ CTransform* CASTSceneAdapter::ConvertASTTransform(AST::ANamedArgument* namedArg)
     }
     else if (namedArg->GetName() == "rotate")
     {
+        auto items = cast<AST::AVector>(namedArg->GetArgument(0))->GetItems();
+        auto v2 = cast<AST::AVector>(namedArg->GetArgument(1))->GetItems();
         auto* transform = new CRotate();
         CExprToNodeGraph c1 { items.at(0), GEnv.Scene->GetBankAndSet(), &transform->AxisX };
         CExprToNodeGraph c2 { items.at(1), GEnv.Scene->GetBankAndSet(), &transform->AxisY };
         CExprToNodeGraph c3 { items.at(2), GEnv.Scene->GetBankAndSet(), &transform->AxisZ };
-        auto v2 = cast<AST::AVector>(namedArg->GetArgument(1))->GetItems();
         CExprToNodeGraph c4 { v2.at(0), GEnv.Scene->GetBankAndSet(), &transform->Angle };
         return transform;
     }
     else if (namedArg->GetName() == "scale")
     {
+        auto items = cast<AST::AVector>(namedArg->GetArgument(0))->GetItems();
         auto* transform = new CScale();
         CExprToNodeGraph c1 { items.at(0), GEnv.Scene->GetBankAndSet(), &transform->X };
         CExprToNodeGraph c2 { items.at(1), GEnv.Scene->GetBankAndSet(), &transform->Y };

@@ -49,7 +49,8 @@ argColor : KW_COLOR LPAREN expression expression expression RPAREN ;
 
 
 positionalArg
-   : expression
+   : ident
+   | expression
    | vector
    ;
 

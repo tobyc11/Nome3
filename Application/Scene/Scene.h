@@ -72,6 +72,7 @@ public:
     std::set<CRenderComponent*>& GetRenderCompList() { return RenderCompList; }
 
 private:
+    std::set<CRenderComponent*> RenderCompList;
     CBankAndSet BankAndSet;
     CCamera DefaultCamera;
 
@@ -84,8 +85,6 @@ private:
     // The following two maps enable looking up objects by their names
     std::map<std::string, TAutoPtr<CEntity>> EntityLibrary;
     std::map<std::string, TAutoPtr<CSceneNode>> Groups;
-
-    std::set<CRenderComponent*> RenderCompList;
 };
 
 }

@@ -102,8 +102,6 @@ public:
     void NotifySurfaceDirty() const;
 
     void SyncFromAST(AST::ACommand* cmd, CScene& scene);
-    AST::ACommand* BuildASTCommand(Nome::AST::CASTContext& ctx) const;
-    void SyncToAST(AST::CASTContext& ctx);
 
 private:
     std::string Name;

@@ -1,5 +1,5 @@
 #pragma once
-#include "SyntaxTree.h"
+#include "SourceManager.h"
 #include <memory>
 #include <utility>
 #include <vector>
@@ -7,56 +7,42 @@
 namespace Nome::AST
 {
 
+/// This class manages memory for an AST
 class CASTContext
 {
 public:
-    CASTContext();
+    explicit CASTContext(CSourceManager* sourceMgr);
 
-    template <typename T, typename... Args> T* Make(Args&&... args)
-    {
-        size_t i = 0;
-        bool found = false;
-        for (i = 0; i < Slabs.size(); ++i)
-        {
-            if (SlabLeft[i] > sizeof(T) * 2)
-            {
-                found = true;
-                break;
-            }
-        }
-        if (!found)
-        {
-            Slabs.push_back(std::make_unique<char[]>(InitialSize));
-            SlabLeft.push_back(InitialSize);
-            SlabUsedCount.push_back(0);
-            InitialSize *= 2;
-        }
-        void* p = Slabs[i].get() + SlabUsedCount[i];
-        size_t size = SlabLeft[i];
-        if (std::align(alignof(T), sizeof(T), p, size))
-        {
-            T* result = new (p) T(std::forward<Args>(args)...);
-            size -= sizeof(T);
-            SlabUsedCount[i] += SlabLeft[i] - size;
-            SlabLeft[i] = size;
-            return result;
-        }
-        return nullptr;
-    }
+    /// Allocate memory from one of the exponentially growing slabs
+    [[nodiscard]] void* Allocate(size_t bytes, size_t alignment) const;
 
-    CToken* MakeToken(std::string identifier);
-    AIdent* MakeIdent(std::string identifier);
-    AVector* MakeVector(const std::vector<AExpr*>& children);
+    /// We don't free any memory until the whole ASTContext is destructed
+    void Deallocate(void* ptr) const { }
 
-    [[nodiscard]] AFile* GetAstRoot() const { return ASTRoot; }
-    void SetAstRoot(AFile* astRoot) { ASTRoot = astRoot; }
+    CSourceManager* GetSourceMgr() const { return SourceMgr; }
 
 private:
-    size_t InitialSize = 1024 * 32;
-    std::vector<std::unique_ptr<char[]>> Slabs;
-    std::vector<size_t> SlabUsedCount;
-    std::vector<size_t> SlabLeft;
-    AST::AFile* ASTRoot {};
+    mutable size_t InitialSize = 1024 * 32;
+    mutable std::vector<std::unique_ptr<char[]>> Slabs;
+    mutable std::vector<size_t> SlabUsedCount;
+    mutable std::vector<size_t> SlabLeft;
+
+    /// A weak pointer to the owning source manager
+    CSourceManager* SourceMgr;
 };
 
+} // namespace Nome::AST
+
+inline void* operator new(size_t bytes, const Nome::AST::CASTContext& ctx, size_t alignment = 8)
+{
+    return ctx.Allocate(bytes, alignment);
 }
+
+inline void operator delete(void* ptr, const Nome::AST::CASTContext& ctx, size_t) { ctx.Deallocate(ptr); }
+
+inline void* operator new[](size_t bytes, const Nome::AST::CASTContext& ctx, size_t alignment = 8)
+{
+    return ctx.Allocate(bytes, alignment);
+}
+
+inline void operator delete[](void* ptr, const Nome::AST::CASTContext& ctx, size_t) { ctx.Deallocate(ptr); }

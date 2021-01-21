@@ -20,8 +20,6 @@ void CTemporaryMeshManager::ResetTemporaryMesh()
     else
         TempPolylineNode->SetEntity(nullptr);
 
-
-
     // Make entity and its corresponding scene node
     Scene->RemoveEntity("__tempMesh", true);
     TempMesh = new CMesh("__tempMesh");
@@ -55,25 +53,23 @@ void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
 
 void CTemporaryMeshManager::AddPolyline(const std::vector<std::string>& facePoints)
 {
-    std::vector<std::string> currPoints =  std::vector<std::string>(facePoints.begin() + polyline_prev_num_points, facePoints.end());
-    std::cout << "Inside Add Polyline" << std::endl;
+    std::vector<std::string> currPoints =
+        std::vector<std::string>(facePoints.begin() + polyline_prev_num_points, facePoints.end());
     CSceneNode* TempPolylineNode = nullptr;
     if (!TempPolylineNode)
-        TempPolylineNode = Scene->GetRootNode()->CreateChildNode("__tempPolylineNode"
-                                                          + std::to_string(num_polylines));
+        TempPolylineNode = Scene->GetRootNode()->CreateChildNode("__tempPolylineNode" + std::to_string(num_polylines));
     else
         TempPolylineNode->SetEntity(nullptr);
-    
-    TempPolyline = new CPolyline("__tempPolyline." + std::to_string(num_polylines)); 
+
+    TempPolyline = new CPolyline("__tempPolyline." + std::to_string(num_polylines));
     TempPolylineNode->SetEntity(TempPolyline);
-    TempPolyline->SetPointSourceNames(Scene, currPoints); 
+    TempPolyline->SetPointSourceNames(Scene, currPoints);
     TempPolyline->SetClosed(false); // Hardcoding the closed bool to true. Change in the future.
     num_polylines += 1;
     polyline_prev_num_points += currPoints.size();
 }
 
-std::string CTemporaryMeshManager::CommitTemporaryMesh(AST::CASTContext& ctx,
-                                                       const std::string& entityName,
+std::string CTemporaryMeshManager::CommitTemporaryMesh(AST::CASTContext& ctx, const std::string& entityName,
                                                        const std::string& nodeName)
 {
     if (!TempMesh || !TempMeshNode)
@@ -84,10 +80,7 @@ std::string CTemporaryMeshManager::CommitTemporaryMesh(AST::CASTContext& ctx,
     if (!TempMeshNode->SetName(nodeName))
         throw std::runtime_error("Cannot rename the scene node to the desired name");
 
-    auto* meshCmd = TempMesh->SyncToAST(ctx, true);
-    SourceMgr->AppendCmdEndOfFile(meshCmd);
-    auto* instanceCmd = TempMeshNode->BuildASTCommand(ctx);
-    SourceMgr->AppendCmdEndOfFile(instanceCmd);
+    // TODO: modify the AST
 
     TempMesh = nullptr;
     TempMeshNode = nullptr;

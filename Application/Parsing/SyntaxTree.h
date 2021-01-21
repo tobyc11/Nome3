@@ -1,49 +1,50 @@
 #pragma once
-#include "StringBuffer.h"
+#include "ASTContext.h"
+#include "SourceManager.h"
 #include <any>
 #include <exception>
-#include <iostream>
 #include <map>
 #include <string>
-#include <utility>
 #include <vector>
+
+/*
+ * TODO:
+ *   allow some flexibility by implementing the following
+ *   SourceManager->InsertTextAndParse(location, string) => ANode
+ *   ACommand::Create(location, cmdName, name)
+ */
 
 namespace Nome::AST
 {
 
-struct CBufLoc
-{
-    unsigned int BufId;
-    unsigned int Start;
-};
-
 class CToken
 {
+protected:
+    CToken(CSourceLocation beginLoc, unsigned len);
+
 public:
-    CToken(std::string text, unsigned int bufId, unsigned int start);
-    [[nodiscard]] std::string ToString() const;
-    [[nodiscard]] const CBufLoc& GetLocation() const { return BufLoc; }
-    void SetLocation(unsigned int bufId, unsigned int offset)
-    {
-        BufLoc.BufId = bufId;
-        BufLoc.Start = offset;
-    }
-    void SetLocInvalid() { BufLoc.BufId = -1; }
-    [[nodiscard]] bool IsLocInvalid() const { return BufLoc.BufId == -1; }
+    /// Creates a token object, here we assume that the text referred to exists
+    static CToken* Create(CASTContext& ctx, CSourceLocation beginLoc, unsigned len);
+    [[nodiscard]] const std::string& ToString() const;
+    [[nodiscard]] CSourceLocation GetBeginningLocation() const { return BeginningLocation; }
 
 private:
-    std::string Text;
-    CBufLoc BufLoc;
+    CSourceLocation BeginningLocation;
+    unsigned Length;
+    std::string CachedString;
 };
 
 enum class EKind : uint16_t
 {
     Node,
     File,
-    NamedArgument,
-    NamedArgumentPost,
+    CommandChildren,
     Command,
     CommandPost,
+    PositionalArgument,
+    NamedArgument,
+    TransformArgument,
+    CommandChildrenPost,
     Expr,
     Ident,
     Number,
@@ -52,30 +53,33 @@ enum class EKind : uint16_t
     Vector,
     Call,
     WrappedExpr,
-    ExprPost,
-    NodePost,
-    LastKind
+    ExprPost
 };
 
+/// Base class for all AST nodes
 class ANode
 {
 public:
+    static inline bool classof(const ANode*) { return true; }
     bool CanBeChild(ANode* node) const;
     void AddChild(ANode* node);
-    bool AddChildAfter(const ANode* after, ANode* child);
+    /// Clears the children list, does not modify the actual text buffer in any way
+    void ClearChildren();
     [[nodiscard]] EKind GetKind() const { return Kind; }
     [[nodiscard]] CToken* GetOpenToken() const { return Token; }
     [[nodiscard]] CToken* GetCloseToken() const { return CloseToken; }
+    /// Returns the string representation, default implementation invokes ToTokenList.
+    [[nodiscard]] virtual std::string ToString() const;
+    /// Returns the tokens in order. Override for more specific AST node types.
+    [[nodiscard]] virtual std::vector<CToken*> ToTokenList() const;
 
 protected:
-    ANode(EKind kind, EKind childKindBegin, EKind childKindEnd, CToken* token,
-          CToken* closeToken = nullptr)
+    ANode(EKind kind, EKind childKindBegin, EKind childKindEnd, CToken* token, CToken* closeToken = nullptr)
         : Kind(kind)
         , Token(token)
         , CloseToken(closeToken)
     {
-        ChildKindRange =
-            static_cast<uint32_t>(childKindBegin) | (static_cast<uint32_t>(childKindEnd) << 16);
+        ChildKindRange = static_cast<uint32_t>(childKindBegin) | (static_cast<uint32_t>(childKindEnd) << 16);
     }
 
     EKind Kind;
@@ -89,13 +93,16 @@ protected:
 
 class IExprVisitor;
 
+/// Base class for all expression types. Should not be used directly.
 class AExpr : public ANode
 {
 public:
     std::any Accept(IExprVisitor* visitor);
 
-    void CollectTokens(std::vector<CToken*>& tokenList) const;
-    friend std::ostream& operator<<(std::ostream& os, const AExpr& node);
+    static inline bool classof(const ANode* other)
+    {
+        return other->GetKind() >= EKind::Expr && other->GetKind() < EKind::ExprPost;
+    }
 
 protected:
     AExpr(EKind kind, CToken* token, CToken* closeToken = nullptr)
@@ -104,41 +111,31 @@ protected:
     }
 };
 
+/// An identifier, like `abc123`
 class AIdent : public AExpr
 {
 public:
-    AIdent(CToken* token)
+    explicit AIdent(CToken* token)
         : AExpr(EKind::Ident, token)
     {
     }
 
-    std::string ToString() const { return Token->ToString(); }
-
-    void CollectTokens(std::vector<CToken*>& tokenList) const { tokenList.push_back(Token); }
-    friend std::ostream& operator<<(std::ostream& os, const AIdent& node)
-    {
-        os << node.ToString();
-        return os;
-    }
+    static inline bool classof(const ANode* other) { return other->GetKind() == EKind::Ident; }
 };
 
+/// A number, like `123.456`
 class ANumber : public AExpr
 {
 public:
-    ANumber(CToken* token)
+    explicit ANumber(CToken* token)
         : AExpr(EKind::Number, token)
     {
     }
 
-    float AsFloat() const;
-    double AsDouble() const;
+    static inline bool classof(const ANode* other) { return other->GetKind() == EKind::Number; }
 
-    void CollectTokens(std::vector<CToken*>& tokenList) const { tokenList.push_back(Token); }
-    friend std::ostream& operator<<(std::ostream& os, const ANumber& node)
-    {
-        os << node.AsDouble();
-        return os;
-    }
+    [[nodiscard]] float AsFloat() const;
+    [[nodiscard]] double AsDouble() const;
 };
 
 class AUnaryOp : public AExpr
@@ -156,20 +153,10 @@ public:
         AddChild(operand);
     }
 
-    EOperator GetOperatorType() const;
-    AExpr* GetOperand() const;
+    static inline bool classof(const ANode* other) { return other->GetKind() == EKind::UnaryOp; }
 
-    void CollectTokens(std::vector<CToken*>& tokenList) const
-    {
-        tokenList.push_back(Token);
-        GetOperand()->CollectTokens(tokenList);
-    }
-    friend std::ostream& operator<<(std::ostream& os, const AUnaryOp& node)
-    {
-        os << node.Token->ToString();
-        os << *node.GetOperand();
-        return os;
-    }
+    [[nodiscard]] EOperator GetOperatorType() const;
+    [[nodiscard]] AExpr* GetOperand() const;
 };
 
 class ABinaryOp : public AExpr
@@ -191,26 +178,16 @@ public:
         AddChild(right);
     }
 
-    EOperator GetOperatorType() const;
-    AExpr* GetLeft() const;
-    AExpr* GetRight() const;
+    static inline bool classof(const ANode* other) { return other->GetKind() == EKind::BinaryOp; }
 
-    void CollectTokens(std::vector<CToken*>& tokenList) const
-    {
-        GetLeft()->CollectTokens(tokenList);
-        tokenList.push_back(Token);
-        GetRight()->CollectTokens(tokenList);
-    }
-    friend std::ostream& operator<<(std::ostream& os, const ABinaryOp& node)
-    {
-        os << *node.GetLeft();
-        os << node.Token->ToString();
-        os << *node.GetRight();
-        return os;
-    }
+    [[nodiscard]] EOperator GetOperatorType() const;
+    [[nodiscard]] AExpr* GetLeft() const;
+    [[nodiscard]] AExpr* GetRight() const;
+
+    [[nodiscard]] std::vector<CToken*> ToTokenList() const override;
 };
 
-// Vector means a list in this context
+/// A list of items enclosed by a pair of parentheses, open and close tokens are the two parentheses
 class AVector : public AExpr
 {
 public:
@@ -219,46 +196,24 @@ public:
     {
     }
 
-    std::vector<AExpr*> GetItems() const;
+    static inline bool classof(const ANode* other) { return other->GetKind() == EKind::Vector; }
 
-    void CollectTokens(std::vector<CToken*>& tokenList) const
-    {
-        tokenList.push_back(Token);
-        for (auto* expr : GetItems())
-            expr->CollectTokens(tokenList);
-        tokenList.push_back(CloseToken);
-    }
-    friend std::ostream& operator<<(std::ostream& os, const AVector& node)
-    {
-        os << "(";
-        for (AExpr* expr : node.GetItems())
-            os << *expr << " ";
-        os << ")";
-        return os;
-    }
+    [[nodiscard]] std::vector<AExpr*> GetItems() const;
 };
 
+/// A call expression in the form of `funcName argumentList`
 class ACall : public AExpr
 {
 public:
     ACall(CToken* funcToken, AVector* argumentList);
 
-    std::string GetFuncName() const { return Token->ToString(); }
-    AVector* GetOperandList() const { return static_cast<AVector*>(Children[0]); }
+    static inline bool classof(const ANode* other) { return other->GetKind() == EKind::Call; }
 
-    void CollectTokens(std::vector<CToken*>& tokenList) const
-    {
-        tokenList.push_back(Token);
-        GetOperandList()->CollectTokens(tokenList);
-    }
-    friend std::ostream& operator<<(std::ostream& os, const ACall& node)
-    {
-        os << node.GetFuncName();
-        os << *node.GetOperandList();
-        return os;
-    }
+    [[nodiscard]] std::string GetFuncName() const { return Token->ToString(); }
+    [[nodiscard]] AVector* GetOperandList() const { return cast<AVector>(Children[0]); }
 };
 
+/// Represents () or ${} in the context of an expression
 class AWrappedExpr : public AExpr
 {
 public:
@@ -269,21 +224,10 @@ public:
         AddChild(expr);
     }
 
-    AExpr* GetExpr() const { return static_cast<AExpr*>(Children[0]); }
+    static inline bool classof(const ANode* other) { return other->GetKind() == EKind::WrappedExpr; }
 
-    void CollectTokens(std::vector<CToken*>& tokenList) const
-    {
-        tokenList.push_back(Token);
-        if (SecondToken)
-            tokenList.push_back(SecondToken);
-        GetExpr()->CollectTokens(tokenList);
-        tokenList.push_back(CloseToken);
-    }
-    friend std::ostream& operator<<(std::ostream& os, const AWrappedExpr& node)
-    {
-        os << *node.GetExpr();
-        return os;
-    }
+    [[nodiscard]] AExpr* GetExpr() const { return cast<AExpr>(Children[0]); }
+    [[nodiscard]] std::vector<CToken*> ToTokenList() const override;
 
 private:
     CToken* SecondToken;
@@ -315,26 +259,38 @@ public:
     {
     }
 
-    std::vector<ACommand*> GetCommands() const;
-    void CollectTokens(std::vector<CToken*>& tokenList) const;
+    static inline bool classof(const ANode* other) { return other->GetKind() == EKind::File; }
 
-    friend std::ostream& operator<<(std::ostream& os, const AFile& node);
+    [[nodiscard]] std::vector<ACommand*> GetCommands() const;
+};
+
+class APositionalArgument : public ANode
+{
+public:
+    explicit APositionalArgument(AExpr* expression)
+        : ANode(EKind::PositionalArgument, EKind::Expr, EKind::ExprPost, nullptr)
+    {
+        AddChild(expression);
+    }
+
+    static inline bool classof(const ANode* other) { return other->GetKind() == EKind::PositionalArgument; }
+
+    [[nodiscard]] AExpr* GetExpr() const;
 };
 
 class ANamedArgument : public ANode
 {
 public:
-    ANamedArgument(CToken* nameToken)
+    explicit ANamedArgument(CToken* nameToken)
         : ANode(EKind::NamedArgument, EKind::Expr, EKind::ExprPost, nameToken)
     {
     }
 
-    std::string GetName() const;
-    AExpr* GetArgument(size_t index) const;
-    std::vector<AExpr*> GetArguments() const;
-    void CollectTokens(std::vector<CToken*>& tokenList) const;
+    static inline bool classof(const ANode* other) { return other->GetKind() == EKind::NamedArgument; }
 
-    friend std::ostream& operator<<(std::ostream& os, const ANamedArgument& node);
+    [[nodiscard]] std::string GetName() const;
+    [[nodiscard]] AExpr* GetArgument(size_t index) const;
+    [[nodiscard]] std::vector<AExpr*> GetArguments() const;
 };
 
 class ACommand : public ANode
@@ -342,35 +298,15 @@ class ACommand : public ANode
 public:
     ACommand(CToken* openToken, CToken* closeToken);
 
-    // `Children` field of ACommand only stores sub-commands
-    void AddSubCommand(ACommand* subCommand) { AddChild(subCommand); }
-    // The arguments are stored separately as private fields
-    //     Named arguments and transforms are both ANamedArgument, but transforms are ordered
-    void PushPositionalArgument(AExpr* expr) { PositionalArguments.push_back(expr); }
-    void SetPositionalArgument(size_t i, AExpr* expr) { PositionalArguments[i] = expr; }
-    void AddNamedArgument(ANamedArgument* argument);
-    void AddTransform(ANamedArgument* subCommand) { Transforms.push_back(subCommand); }
+    static inline bool classof(const ANode* other) { return other->GetKind() == EKind::Command; }
 
-    std::string GetCommand() const { return Token->ToString(); }
-    std::string GetName() const { return GetPositionalIdentAsString(0); }
-    std::string GetPositionalIdentAsString(size_t index) const;
-    AExpr* GetPositionalArgument(size_t index) const;
-    ANamedArgument* GetNamedArgument(const std::string& name) const;
-    const std::vector<ANamedArgument*>& GetTransforms() const { return Transforms; }
-
-    std::vector<ACommand*> GetSubCommands() const;
-    void CollectTokens(std::vector<CToken*>& tokenList) const;
-
-    friend std::ostream& operator<<(std::ostream& os, const ACommand& node);
-
-    bool IsPendingSave() const { return bPendingSave; }
-    void SetPendingSave(bool value) { bPendingSave = value; }
-
-private:
-    std::vector<AExpr*> PositionalArguments;
-    std::map<std::string, ANamedArgument*> NamedArguments;
-    std::vector<ANamedArgument*> Transforms;
-    bool bPendingSave = false;
+    // Getters
+    [[nodiscard]] std::string GetCommand() const { return Token->ToString(); }
+    [[nodiscard]] std::string GetName() const { return GetPositionalArgument(0)->ToString(); }
+    [[nodiscard]] APositionalArgument* GetPositionalArgument(size_t index) const;
+    [[nodiscard]] ANamedArgument* GetNamedArgument(const std::string& name) const;
+    [[nodiscard]] std::vector<ACommand*> GetSubCommands() const;
+    [[nodiscard]] std::vector<ANamedArgument*> GetNamedArguments() const;
 };
 
 //============================== Misc ==============================
@@ -391,4 +327,5 @@ private:
     std::string Message;
     const ANode* Node;
 };
-}
+
+} // namespace Nome::AST

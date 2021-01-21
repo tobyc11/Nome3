@@ -1,7 +1,8 @@
 grammar Nom;
 
-file : command* EOF;
+file : generalizedCommand* EOF;
 
+/* Basic data */
 expression
    :  ident LPAREN expression RPAREN # Call
    |  expression op=POW expression # BinOp
@@ -9,7 +10,7 @@ expression
    |  expression op=(PLUS | MINUS) expression # BinOp
    |  LPAREN expression RPAREN # SubExpParen
    |  (PLUS | MINUS) expression # UnaryOp
-   |  beg='{' sec='expr' expression end='}' # SubExpCurly
+   |  beg=LBRACE sec=KW_EXPR expression end=RBRACE # SubExpCurly
    |  atom # AtomExpr
    ;
 
@@ -24,57 +25,72 @@ scientific
 
 ident
    : IDENT
-   | '$' IDENT
+   | DOLLAR IDENT
    ;
 
-idList : LPAREN (identList+=ident)* RPAREN ;
+vector : LPAREN expression* RPAREN ;
 
-argClosed : 'closed' ;
-argHidden : 'hidden' ;
-argSurface : 'surface' ident ;
-argSlices : 'slices' expression ;
-argOrder : 'order' expression ;
+/* Arguments and commands */
+argClosed : KW_CLOSED ;
+argHidden : KW_HIDDEN ;
+argSurface : KW_SURFACE ident ;
+argSlices : KW_SLICES expression ;
+argOrder : KW_ORDER expression ;
 argTransform
-   : 'rotate' LPAREN exp1=expression exp2=expression exp3=expression RPAREN LPAREN exp4=expression RPAREN # argTransformTwo
-   | 'scale' LPAREN expression expression expression RPAREN # argTransformOne
-   | 'translate' LPAREN expression expression expression RPAREN # argTransformOne
+   : KW_ROTATE LPAREN exp1=expression exp2=expression exp3=expression RPAREN LPAREN exp4=expression RPAREN # argTransformTwo
+   | KW_SCALE LPAREN expression expression expression RPAREN # argTransformOne
+   | KW_TRANSLATE LPAREN expression expression expression RPAREN # argTransformOne
    ;
-argColor : 'color' LPAREN expression expression expression RPAREN ;
+argColor : KW_COLOR LPAREN expression expression expression RPAREN ;
 
-command
-   : open='point' name=ident LPAREN expression expression expression RPAREN idList* end='endpoint' # CmdExprListOne
-   | open='polyline' name=ident idList argClosed* end='endpolyline' # CmdIdListOne
-   | open='sweep' name=ident LPAREN expression expression expression expression RPAREN end='endsweep' # CmdExprListOne
-   | open='sweepcontrol' name=ident LPAREN expression expression expression expression RPAREN end='endsweepcontrol' # CmdExprListOne
-   | open='face' name=ident idList argSurface* end='endface' # CmdIdListOne
-   | open='object' name=ident idList end='endobject' # CmdIdListOne
-   | open='mesh' name=ident command* end='endmesh' # CmdSubCmds
-   | open='group' name=ident command* end='endgroup' # CmdSubCmds
-   | open='circle' name=ident LPAREN expression expression RPAREN end='endcircle' # CmdExprListOne
-   | open='funnel' name=ident LPAREN expression expression expression expression RPAREN end='endfunnel' # CmdExprListOne
-   | open='tunnel' name=ident LPAREN expression expression expression expression RPAREN end='endtunnel' # CmdExprListOne
-   | open='beziercurve' name=ident idList argSlices* end='endbeziercurve' # CmdIdListOne
-   | open='bspline' name=ident idList (argClosed | argSlices | argOrder)* end='endbspline' # CmdIdListOne
-   | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
-   | open='surface' name=ident argColor end='endsurface' # CmdSurface
-   | open='background' argSurface end='endbackground' # CmdArgSurface
-   | open='foreground' argSurface end='endforeground' # CmdArgSurface
-   | open='insidefaces' argSurface end='endinsidefaces' # CmdArgSurface
-   | open='outsidefaces' argSurface end='endoutsidefaces' # CmdArgSurface
-   | open='offsetfaces' argSurface end='endoffsetfaces' # CmdArgSurface
-   | open='frontfaces' argSurface end='endfrontfaces' # CmdArgSurface
-   | open='backfaces' argSurface end='endbackfaces' # CmdArgSurface
-   | open='rimfaces' argSurface end='endrimfaces' # CmdArgSurface
-   | open='bank' name=ident set* end='endbank' # CmdBank
-   | open='delete' deleteFace* end='enddelete' # CmdDelete
-   | open='subdivision' name=ident k1='type' v1=ident k2='subdivisions' v2=expression end='endsubdivision' # CmdSubdivision
-   | open='offset' name=ident k1='type' v1=ident k2='min' v2=expression k3='max' v3=expression k4='step' v4=expression end='endoffset' # CmdOffset
+
+positionalArg
+   : expression
+   | vector
    ;
 
-set : open='set' ident expression expression expression expression ;
+namedArg
+   : argClosed
+   | argHidden
+   | argSurface
+   | argSlices
+   | argOrder
+   | argTransform
+   | argColor
+   ;
 
-deleteFace : open='face' ident end='endface' ;
+anyArg : positionalArg | namedArg ;
 
+setCommand : KW_SET ident expression expression expression expression ;
+
+generalizedCommand : (KW_CMD | KW_SURFACE) anyArg* generalizedCommand* setCommand* KW_END_CMD ;
+
+
+/* subdivision and offset currently misparse, but we aren't using them anyway */
+fragment VALID_CMDS
+   : 'point' | 'polyline' | 'sweep' | 'sweepcontrol' | 'face' | 'object' | 'mesh' | 'group' | 'circle'
+   | 'funnel' | 'tunnel' | 'beziercurve' | 'bspline' | 'instance' | 'background' | 'foreground'
+   | 'insidefaces' | 'outsidefaces' | 'offsetfaces' | 'frontfaces' | 'backfaces' | 'rimfaces' | 'bank'
+   | 'delete' | 'subdivision' | 'offset'
+   ;
+
+KW_CMD : VALID_CMDS;
+KW_END_CMD : 'end' VALID_CMDS | 'end' KW_SURFACE ;
+KW_SET : 'set' ;
+
+/* keywords used in arguments */
+KW_CLOSED : 'closed' ;
+KW_HIDDEN : 'hidden' ;
+KW_SURFACE : 'surface' ;
+KW_SLICES : 'slices' ;
+KW_ORDER : 'order' ;
+KW_ROTATE : 'rotate' ;
+KW_SCALE : 'scale' ;
+KW_TRANSLATE : 'translate' ;
+KW_COLOR : 'color' ;
+
+/* other keywords */
+KW_EXPR : 'expr' ;
 
 IDENT : VALID_ID_START VALID_ID_CHAR* ;
 fragment VALID_ID_START : ('a' .. 'z') | ('A' .. 'Z') | '_' | '.' ;
@@ -87,6 +103,8 @@ fragment UNSIGNED_INTEGER : ('0' .. '9')+ ;
 fragment E : 'E' | 'e' ;
 fragment SIGN : ('+' | '-') ;
 
+LBRACE : '{' ;
+RBRACE : '}' ;
 LPAREN : '(' ;
 RPAREN : ')' ;
 PLUS : '+' ;
@@ -98,6 +116,7 @@ LT : '<' ;
 EQ : '=' ;
 POINT : '.' ;
 POW : '^' ;
+DOLLAR : '$' ;
 WS : [ \r\n\t] + -> skip ;
 
 COMMENT : '(*' .*? '*)' -> skip ;

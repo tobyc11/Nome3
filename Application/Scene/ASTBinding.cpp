@@ -12,8 +12,7 @@
 namespace Nome::Scene
 {
 
-CExprToNodeGraph::CExprToNodeGraph(AST::AExpr* expr, CBankAndSet& bankAndSet,
-                                   Flow::TInput<float>* output)
+CExprToNodeGraph::CExprToNodeGraph(AST::AExpr* expr, CBankAndSet& bankAndSet, Flow::TInput<float>* output)
     : BankAndSet(bankAndSet)
 {
     InputStack.push(output);
@@ -24,15 +23,14 @@ std::any CExprToNodeGraph::VisitIdent(AST::AIdent* ident)
 {
     auto* node = BankAndSet.GetSlider(ident->ToString());
     if (!node)
-        throw AST::CSemanticError(
-            tc::StringPrintf("Could not find slider %s", ident->ToString().c_str()), ident);
+        throw AST::CSemanticError(tc::StringPrintf("Could not find slider %s", ident->ToString().c_str()), ident);
     node->Value.Connect(*InputStack.top());
     return {};
 }
 
 std::any CExprToNodeGraph::VisitNumber(AST::ANumber* number)
 {
-    auto* node = new Flow::CFloatNumber(static_cast<float>(number->AsDouble()));
+    auto* node = new Flow::CFloatNumber(number->AsFloat());
     node->Value.Connect(*InputStack.top());
     return {};
 }
@@ -129,7 +127,8 @@ AST::AExpr* CCommandSubpart::GetExpr(AST::ACommand* cmd) const
     if (NamedArgName.empty())
     {
         // Assume to be positional
-        expr = cmd->GetPositionalArgument(Index);
+        if (auto* posArg = cmd->GetPositionalArgument(Index))
+            expr = posArg->GetExpr();
     }
     else
     {
@@ -161,8 +160,7 @@ bool CCommandSubpart::DoesNamedArgumentExist(AST::ACommand* cmd) const
 IBindingFunctor::~IBindingFunctor() = default;
 
 template <>
-bool TBindingTranslator<bool>::FromASTToValue(AST::ACommand* command,
-                                              const CCommandSubpart& subpart, bool& value)
+bool TBindingTranslator<bool>::FromASTToValue(AST::ACommand* command, const CCommandSubpart& subpart, bool& value)
 {
     assert(subpart.Index == 0);
     value = subpart.DoesNamedArgumentExist(command);
@@ -172,8 +170,7 @@ bool TBindingTranslator<bool>::FromASTToValue(AST::ACommand* command,
 }
 
 template <>
-bool TBindingTranslator<Flow::TInput<float>>::FromASTToValue(AST::ACommand* command,
-                                                             const CCommandSubpart& subpart,
+bool TBindingTranslator<Flow::TInput<float>>::FromASTToValue(AST::ACommand* command, const CCommandSubpart& subpart,
                                                              Flow::TInput<float>& value)
 {
     auto* expr = subpart.GetExpr(command);
@@ -185,31 +182,35 @@ bool TBindingTranslator<Flow::TInput<float>>::FromASTToValue(AST::ACommand* comm
 }
 
 template <>
-bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command,
-                                                             const CCommandSubpart& subpart,
-                                                             std::string& value)
+bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command, const CCommandSubpart& subpart,
+                                                     std::string& value)
 {
     auto* ident = subpart.GetExpr(command);
-    if (ident == NULL) { return false; }
+    if (ident == NULL)
+    {
+        return false;
+    }
 
     if (ident->GetKind() != AST::EKind::Ident)
-        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident",
-                                  command);
+        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident", command);
 
     value = static_cast<const AST::AIdent*>(ident)->ToString();
 
     return true;
 }
 template <>
-bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
-    AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CVertexInfo*>& value)
+bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(AST::ACommand* command,
+                                                                         const CCommandSubpart& subpart,
+                                                                         Flow::TInputArray<CVertexInfo*>& value)
 {
     auto* vec = subpart.GetExpr(command);
-    if (vec == NULL) { return false; }
+    if (vec == NULL)
+    {
+        return false;
+    }
 
     if (vec->GetKind() != AST::EKind::Vector)
-        throw AST::CSemanticError("TInputArray<CVertexInfo*> is not matched with a vector",
-                                  command);
+        throw AST::CSemanticError("TInputArray<CVertexInfo*> is not matched with a vector", command);
     for (const auto* ident : static_cast<AST::AVector*>(vec)->GetItems())
     {
         if (ident->GetKind() != AST::EKind::Ident)
@@ -218,8 +219,7 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
         Flow::TOutput<CVertexInfo*>* pointOutput = GEnv.Scene->FindPointOutput(identVal);
         if (!pointOutput)
         {
-            throw AST::CSemanticError(tc::StringPrintf("Cannot find point %s", identVal.c_str()),
-                                      ident);
+            throw AST::CSemanticError(tc::StringPrintf("Cannot find point %s", identVal.c_str()), ident);
         }
         value.Connect(*pointOutput);
     }
@@ -227,29 +227,30 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
 }
 
 template <>
-bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(
-        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CPolylineInfo*>& value)
+bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(AST::ACommand* command,
+                                                                      const CCommandSubpart& subpart,
+                                                                      Flow::TInput<CPolylineInfo*>& value)
 {
     auto* ident = subpart.GetExpr(command);
-    if (ident == NULL) { return false; }
+    if (ident == NULL)
+    {
+        return false;
+    }
 
     if (ident->GetKind() != AST::EKind::Ident)
-        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident",
-                                  command);
+        throw AST::CSemanticError("TInput<CPolylineInfo*> is not matched with a Ident", command);
 
     std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
     TAutoPtr<CEntity> entity = GEnv.Scene->FindEntity(identVal);
     if (!entity)
     {
-        throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()),
-                                  ident);
+        throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()), ident);
     }
 
     CPolyline* polyline = dynamic_cast<CPolyline*>(entity.Get());
     if (!polyline)
     {
-        throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a polyline", identVal.c_str()),
-                                  ident);
+        throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a polyline", identVal.c_str()), ident);
     }
 
     value.Connect(polyline->Polyline);
@@ -258,14 +259,16 @@ bool TBindingTranslator<Flow::TInput<CPolylineInfo*>>::FromASTToValue(
 
 template <>
 bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
-        AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CControlPointInfo*>& value)
+    AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CControlPointInfo*>& value)
 {
     auto* vec = subpart.GetExpr(command);
-    if (vec == NULL) { return false; }
+    if (vec == NULL)
+    {
+        return false;
+    }
 
     if (vec->GetKind() != AST::EKind::Vector)
-        throw AST::CSemanticError("TInputArray<CControlPointInfo*> is not matched with a vector",
-                                  command);
+        throw AST::CSemanticError("TInputArray<CControlPointInfo*> is not matched with a vector", command);
     for (const auto* ident : static_cast<AST::AVector*>(vec)->GetItems())
     {
         if (ident->GetKind() != AST::EKind::Ident)
@@ -275,8 +278,7 @@ bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
         TAutoPtr<CEntity> entity = GEnv.Scene->FindEntity(identVal);
         if (!entity)
         {
-            throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()),
-                                      ident);
+            throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()), ident);
         }
         auto& e = *entity.Get();
         if (typeid(e) == typeid(CSweepControlPoint))

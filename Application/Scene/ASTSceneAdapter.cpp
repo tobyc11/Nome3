@@ -46,10 +46,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy }
 };
 
-ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
-{
-    return CommandInfoMap.at(cmd);
-}
+ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd) { return CommandInfoMap.at(cmd); }
 
 CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string& name)
 {
@@ -101,7 +98,7 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
         auto bank = CmdTraverseStack.rbegin()[1]->GetName();
         // You could generalize this somehow
         auto evalArg = [cmd](size_t index) {
-            auto* expr = cmd->GetPositionalArgument(index);
+            auto* expr = cmd->GetPositionalArgument(index)->GetExpr();
             CExprEvalDirect eval;
             auto result = expr->Accept(&eval);
             return std::any_cast<float>(result);
@@ -142,7 +139,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one).
         // Previously, there was an error where the subcommands' ParentEntity were not always
         // pointing to the mesh.
-        if (insubMesh == false)
+        if (!insubMesh)
         {
             ParentEntity = entity;
             EntityNamePrefix = cmd->GetName() + ".";
@@ -156,7 +153,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one).
         // Previously, there was an error where EntityNamePrefix and ParentEntity were being reset
         // before the subcommands were finished processing.
-        if (insubMesh == false)
+        if (!insubMesh)
         {
             EntityNamePrefix = "";
             ParentEntity = nullptr;
@@ -167,7 +164,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         auto* sceneNode = InstanciateUnder->CreateChildNode(cmd->GetName());
         sceneNode->SyncFromAST(cmd, scene);
         // TODO: move the following logic into SyncFromAST
-        auto entityName = cmd->GetPositionalIdentAsString(1);
+        auto entityName = cmd->GetPositionalArgument(1)->ToString();
         auto entity = GEnv.Scene->FindEntity(entityName);
         if (entity)
             sceneNode->SetEntity(entity);
@@ -175,8 +172,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
             group->AddParent(sceneNode);
         else
             throw AST::CSemanticError(
-                tc::StringPrintf("Instantiation failed, unknown generator: %s", entityName.c_str()),
-                cmd);
+                tc::StringPrintf("Instantiation failed, unknown generator: %s", entityName.c_str()), cmd);
     }
     else if (cmd->GetCommand() == "group")
     {
@@ -185,7 +181,6 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         for (auto* sub : cmd->GetSubCommands())
         {
             VisitCommandSyncScene(sub, scene, false);
-            std::cout << "test" << std::endl;
         }
         InstanciateUnder = GEnv.Scene->GetRootNode();
     }
@@ -194,7 +189,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
 
 CTransform* CASTSceneAdapter::ConvertASTTransform(AST::ANamedArgument* namedArg)
 {
-    auto items = static_cast<AST::AVector*>(namedArg->GetArgument(0))->GetItems();
+    auto items = cast<AST::AVector>(namedArg->GetArgument(0))->GetItems();
     if (namedArg->GetName() == "translate")
     {
         auto* transform = new CTranslate();
@@ -209,7 +204,7 @@ CTransform* CASTSceneAdapter::ConvertASTTransform(AST::ANamedArgument* namedArg)
         CExprToNodeGraph c1 { items.at(0), GEnv.Scene->GetBankAndSet(), &transform->AxisX };
         CExprToNodeGraph c2 { items.at(1), GEnv.Scene->GetBankAndSet(), &transform->AxisY };
         CExprToNodeGraph c3 { items.at(2), GEnv.Scene->GetBankAndSet(), &transform->AxisZ };
-        auto v2 = static_cast<AST::AVector*>(namedArg->GetArgument(1))->GetItems();
+        auto v2 = cast<AST::AVector>(namedArg->GetArgument(1))->GetItems();
         CExprToNodeGraph c4 { v2.at(0), GEnv.Scene->GetBankAndSet(), &transform->Angle };
         return transform;
     }

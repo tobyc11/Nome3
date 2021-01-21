@@ -1,18 +1,36 @@
 #include "SyntaxTree.h"
 
 #include <algorithm>
-#include <utility>
+#include <stdexcept>
 
 namespace Nome::AST
 {
 
-CToken::CToken(std::string text, unsigned int bufId, unsigned int start)
-    : Text(std::move(text))
-    , BufLoc { bufId, start }
+CToken::CToken(CSourceLocation beginLoc, unsigned len)
+    : BeginningLocation(beginLoc)
+    , Length(len)
 {
 }
 
-std::string CToken::ToString() const { return Text; }
+CToken* CToken::Create(CASTContext& ctx, CSourceLocation beginLoc, unsigned len)
+{
+    auto* r = new (ctx) CToken(beginLoc, len);
+
+    size_t fileOff = ctx.GetSourceMgr()->GetFileOffset(beginLoc).value();
+    // TODO: Supremely inefficient
+    auto text = ctx.GetSourceMgr()->CollectText();
+    r->CachedString = text.substr(fileOff, len);
+
+    return r;
+}
+
+const std::string& CToken::ToString() const
+{
+    const static std::string errorString("<TOKEN ERROR>");
+    if (CachedString.length() == Length)
+        return CachedString;
+    return errorString;
+}
 
 bool ANode::CanBeChild(ANode* node) const
 {
@@ -29,15 +47,36 @@ void ANode::AddChild(ANode* node)
     Children.push_back(node);
 }
 
-bool ANode::AddChildAfter(const ANode* after, ANode* child)
+void ANode::ClearChildren()
 {
-    if (!CanBeChild(child))
-        throw CSemanticError("Node is not allowed to be added as a child", child);
-    auto afterIter = std::find(Children.begin(), Children.end(), after);
-    if (afterIter == Children.end())
-        return false;
-    Children.insert(afterIter, child);
-    return true;
+    Children.clear();
+}
+
+std::string ANode::ToString() const
+{
+    std::string result;
+    for (const auto* token : this->ToTokenList())
+    {
+        // TODO: right now we always insert a space between. There should be something we can do.
+        result += " ";
+        result += token->ToString();
+    }
+    return result;
+}
+
+std::vector<CToken*> ANode::ToTokenList() const
+{
+    std::vector<CToken*> result;
+    if (GetOpenToken())
+        result.push_back(GetOpenToken());
+    for (const auto* child : Children)
+    {
+        auto childResult = child->ToTokenList();
+        result.insert(result.end(), childResult.begin(), childResult.end());
+    }
+    if (GetCloseToken())
+        result.push_back(GetCloseToken());
+    return result;
 }
 
 std::any AExpr::Accept(IExprVisitor* visitor)
@@ -45,23 +84,23 @@ std::any AExpr::Accept(IExprVisitor* visitor)
     switch (Kind)
     {
     case EKind::Ident:
-        return visitor->VisitIdent(static_cast<AIdent*>(this));
+        return visitor->VisitIdent(cast<AIdent>(this));
     case EKind::Number:
-        return visitor->VisitNumber(static_cast<ANumber*>(this));
+        return visitor->VisitNumber(cast<ANumber>(this));
     case EKind::UnaryOp:
-        return visitor->VisitUnaryOp(static_cast<AUnaryOp*>(this));
+        return visitor->VisitUnaryOp(cast<AUnaryOp>(this));
     case EKind::BinaryOp:
-        return visitor->VisitBinaryOp(static_cast<ABinaryOp*>(this));
+        return visitor->VisitBinaryOp(cast<ABinaryOp>(this));
     case EKind::Call:
-        return visitor->VisitCall(static_cast<ACall*>(this));
+        return visitor->VisitCall(cast<ACall>(this));
     case EKind::Vector:
-        return visitor->VisitVector(static_cast<AVector*>(this));
+        return visitor->VisitVector(cast<AVector>(this));
     case EKind::WrappedExpr:
-        return visitor->VisitWrappedExpr(static_cast<AWrappedExpr*>(this));
+        return visitor->VisitWrappedExpr(cast<AWrappedExpr>(this));
     default:
         break;
     }
-    throw std::runtime_error("AExpr corruption detected in Accept(visitor)");
+    throw std::logic_error("AExpr corruption detected in Accept(visitor)");
 }
 
 template <typename TFunc> class TGenericVisitor final : public IExprVisitor
@@ -83,67 +122,49 @@ private:
     TFunc& Func;
 };
 
-void AExpr::CollectTokens(std::vector<CToken*>& tokenList) const
-{
-    auto callSubType = [&](auto* subExpr) -> std::any {
-        subExpr->CollectTokens(tokenList);
-        return {};
-    };
-    TGenericVisitor visitor { callSubType };
-    const_cast<AExpr*>(this)->Accept(&visitor);
-}
-
-std::ostream& operator<<(std::ostream& os, const AExpr& node)
-{
-    auto callOperatorOnSubType = [&](auto* subExpr) -> std::any {
-        os << *subExpr;
-        return nullptr;
-    };
-    TGenericVisitor visitor { callOperatorOnSubType };
-    const_cast<AExpr&>(node).Accept(&visitor);
-    return os;
-}
-
 float ANumber::AsFloat() const { return std::atof(Token->ToString().c_str()); }
 double ANumber::AsDouble() const { return std::atof(Token->ToString().c_str()); }
 
-static const std::map<std::string, AUnaryOp::EOperator> UnaryOpStringDecode = {
-    { "-", AUnaryOp::EOperator::Neg }, { "+", AUnaryOp::EOperator::Plus }
-};
+static const std::map<std::string, AUnaryOp::EOperator> UnaryOpStringDecode = { { "-", AUnaryOp::EOperator::Neg },
+                                                                                { "+", AUnaryOp::EOperator::Plus } };
 
-AUnaryOp::EOperator AUnaryOp::GetOperatorType() const
-{
-    return UnaryOpStringDecode.at(Token->ToString());
-}
+AUnaryOp::EOperator AUnaryOp::GetOperatorType() const { return UnaryOpStringDecode.at(Token->ToString()); }
 
 AExpr* AUnaryOp::GetOperand() const
 {
     // Type checking is done in ANode::AddChild, so in theory this shouldn't be a concern
-    return static_cast<AExpr*>(Children[0]);
+    return cast<AExpr>(Children[0]);
 }
 
-static const std::map<std::string, ABinaryOp::EOperator> BinaryOpStringDecode = {
-    { "+", ABinaryOp::EOperator::Add },
-    { "-", ABinaryOp::EOperator::Sub },
-    { "/", ABinaryOp::EOperator::Div },
-    { "^", ABinaryOp::EOperator::Exp },
-    { "*", ABinaryOp::EOperator::Mul }
-};
+static const std::map<std::string, ABinaryOp::EOperator> BinaryOpStringDecode = { { "+", ABinaryOp::EOperator::Add },
+                                                                                  { "-", ABinaryOp::EOperator::Sub },
+                                                                                  { "/", ABinaryOp::EOperator::Div },
+                                                                                  { "^", ABinaryOp::EOperator::Exp },
+                                                                                  { "*", ABinaryOp::EOperator::Mul } };
 
-ABinaryOp::EOperator ABinaryOp::GetOperatorType() const
+ABinaryOp::EOperator ABinaryOp::GetOperatorType() const { return BinaryOpStringDecode.at(Token->ToString()); }
+
+AExpr* ABinaryOp::GetLeft() const { return cast<AExpr>(Children[0]); }
+
+AExpr* ABinaryOp::GetRight() const { return cast<AExpr>(Children[1]); }
+
+std::vector<CToken*> ABinaryOp::ToTokenList() const
 {
-    return BinaryOpStringDecode.at(Token->ToString());
+    assert(Children.size() == 2 && "A binary operator must have 2 children.");
+    std::vector<CToken*> result;
+    auto leftTokens = Children[0]->ToTokenList();
+    result.insert(result.begin(), leftTokens.begin(), leftTokens.end());
+    result.push_back(GetOpenToken());
+    auto rightTokens = Children[1]->ToTokenList();
+    result.insert(result.begin(), rightTokens.begin(), rightTokens.end());
+    return result;
 }
-
-AExpr* ABinaryOp::GetLeft() const { return static_cast<AExpr*>(Children[0]); }
-
-AExpr* ABinaryOp::GetRight() const { return static_cast<AExpr*>(Children[1]); }
 
 std::vector<AExpr*> AVector::GetItems() const
 {
     std::vector<AExpr*> exprs;
     for (ANode* child : Children)
-        exprs.push_back(static_cast<AExpr*>(child));
+        exprs.push_back(cast<AExpr>(child));
     return exprs;
 }
 
@@ -156,21 +177,35 @@ ACall::ACall(CToken* funcToken, AVector* argumentList)
     AddChild(argumentList);
 }
 
-IExprVisitor::~IExprVisitor() { }
+std::vector<CToken*> AWrappedExpr::ToTokenList() const
+{
+    // Similar to ANode::ToTokenList, except we also consider SecondToken
+    std::vector<CToken*> result = { GetOpenToken() };
+    if (SecondToken)
+        result.push_back(SecondToken);
+    for (const auto* child : Children)
+    {
+        auto childResult = child->ToTokenList();
+        result.insert(result.end(), childResult.begin(), childResult.end());
+    }
+    if (GetCloseToken())
+    {
+        result.push_back(GetCloseToken());
+    }
+    return result;
+}
+
+IExprVisitor::~IExprVisitor() = default;
 
 std::vector<ACommand*> AFile::GetCommands() const
 {
     std::vector<ACommand*> cmds;
     for (ANode* child : Children)
-        cmds.push_back(static_cast<ACommand*>(child));
+        cmds.push_back(cast<ACommand>(child));
     return cmds;
 }
 
-void AFile::CollectTokens(std::vector<CToken*>& tokenList) const
-{
-    for (auto* cmd : GetCommands())
-        cmd->CollectTokens(tokenList);
-}
+AExpr* APositionalArgument::GetExpr() const { return cast<AExpr>(Children[0]); }
 
 std::string ANamedArgument::GetName() const { return Token->ToString(); }
 
@@ -178,115 +213,60 @@ AExpr* ANamedArgument::GetArgument(size_t index) const
 {
     if (index >= Children.size())
         throw CSemanticError("Argument index out of bound for named argument", this);
-    return static_cast<AExpr*>(Children[index]);
+    return cast<AExpr>(Children[index]);
 }
 
 std::vector<AExpr*> ANamedArgument::GetArguments() const
 {
     std::vector<AExpr*> exprs;
     for (ANode* child : Children)
-        exprs.push_back(static_cast<AExpr*>(child));
+        exprs.push_back(cast<AExpr>(child));
     return exprs;
 }
 
-void ANamedArgument::CollectTokens(std::vector<CToken*>& tokenList) const
-{
-    tokenList.push_back(Token);
-    for (auto* expr : GetArguments())
-        expr->CollectTokens(tokenList);
-}
-
 ACommand::ACommand(CToken* openToken, CToken* closeToken)
-    : ANode(EKind::Command, EKind::Command, EKind::CommandPost, openToken, closeToken)
+    : ANode(EKind::Command, EKind::CommandChildren, EKind::CommandChildrenPost, openToken, closeToken)
 {
 }
 
-void ACommand::AddNamedArgument(ANamedArgument* argument)
+APositionalArgument* ACommand::GetPositionalArgument(size_t index) const
 {
-    auto iter = NamedArguments.find(argument->GetName());
-    if (iter != NamedArguments.end())
-        throw CSemanticError("Named argument is repeated.", argument);
-    NamedArguments[argument->GetName()] = argument;
-}
-
-std::string ACommand::GetPositionalIdentAsString(size_t index) const
-{
-    if (!PositionalArguments.empty() && PositionalArguments.at(index)->GetKind() == EKind::Ident
-        && PositionalArguments.size() > index)
-    {
-        return static_cast<AIdent*>(PositionalArguments.at(index))->ToString();
-    }
-    return {};
-}
-
-AExpr* ACommand::GetPositionalArgument(size_t index) const
-{
-    if (index >= PositionalArguments.size())
-        return nullptr;
-    return static_cast<AExpr*>(PositionalArguments[index]);
+    size_t i = 0;
+    for (auto* child : Children)
+        if (isa<APositionalArgument>(child))
+        {
+            if (i == index)
+                return cast<APositionalArgument>(child);
+            ++i;
+        }
+    return nullptr;
 }
 
 ANamedArgument* ACommand::GetNamedArgument(const std::string& name) const
 {
-    auto iter = NamedArguments.find(name);
-    if (iter != NamedArguments.end())
-        return iter->second;
-    return nullptr;
+    std::unordered_map<std::string, ANamedArgument*> result;
+    for (auto* child : Children)
+        if (auto* filteredChild = dyn_cast<ANamedArgument>(child))
+            result.emplace(filteredChild->GetName(), filteredChild);
+    return result[name];
 }
 
 std::vector<ACommand*> ACommand::GetSubCommands() const
 {
     std::vector<ACommand*> result;
-    for (auto* node : Children)
-        result.push_back(static_cast<ACommand*>(node));
+    for (auto* child : Children)
+        if (auto* filteredChild = dyn_cast<ACommand>(child))
+            result.push_back(filteredChild);
     return result;
 }
 
-void ACommand::CollectTokens(std::vector<CToken*>& tokenList) const
+std::vector<ANamedArgument *> ACommand::GetNamedArguments() const
 {
-    tokenList.push_back(GetOpenToken());
-    for (auto* expr : PositionalArguments)
-        expr->CollectTokens(tokenList);
-    for (auto* arg : Transforms)
-        arg->CollectTokens(tokenList);
-    for (auto [name, arg] : NamedArguments)
-        arg->CollectTokens(tokenList);
-    for (auto* sub : GetSubCommands())
-        sub->CollectTokens(tokenList);
-    if (GetCloseToken())
-        tokenList.push_back(GetCloseToken());
-}
-
-std::ostream& operator<<(std::ostream& os, const AFile& node)
-{
-    for (ACommand* cmd : node.GetCommands())
-        os << *cmd << std::endl;
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const ANamedArgument& node)
-{
-    os << node.Token->ToString();
-    for (AExpr* expr : node.GetArguments())
-        os << ":" << *expr;
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const ACommand& node)
-{
-    os << node.Token->ToString();
-    int i = 0;
-    for (auto* expr : node.PositionalArguments)
-    {
-        os << " " << i << ":" << *expr;
-        i++;
-    }
-    for (auto* expr : node.Transforms)
-        os << " " << *expr;
-    for (const auto& pair : node.NamedArguments)
-        os << " " << *pair.second;
-    os << " " << node.CloseToken->ToString();
-    return os;
+    std::vector<ANamedArgument*> result;
+    for (auto* child : Children)
+        if (auto* filteredChild = dyn_cast<ANamedArgument>(child))
+            result.push_back(filteredChild);
+    return result;
 }
 
 const char* CSemanticError::what() const noexcept { return Message.c_str(); }

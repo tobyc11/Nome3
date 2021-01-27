@@ -21,6 +21,7 @@
 #include "Tunnel.h"
 #include "Hyperboloid.h"
 #include "Dupin.h"
+#include "LineMesh.h"
 #include <StringPrintf.h>
 #include <unordered_map>
 
@@ -59,7 +60,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy },
     { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity },
     { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
-    { "spiral", ECommandKind::Entity }
+    { "spiral", ECommandKind::Entity },      { "linemesh", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -113,6 +114,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CDupin(name);
     else if (cmd == "spiral")
         return new SSpiral(name);
+    else if (cmd == "linemesh")
+        return new CLineMesh(name);
     return nullptr;
 }
 
@@ -196,7 +199,6 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (kind == ECommandKind::Entity)
     {
-
         TAutoPtr<CEntity> entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
         entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
         // All entities are added to the EntityLibrary dictionary

@@ -90,7 +90,7 @@ void CBSpline::UpdateEntity() {
         SamplePositions.emplace_back(ret.x, ret.y, ret.z);
     }
 
-    std::vector<CMeshImpl::VertexHandle> handles;
+    std::vector<Vertex*> handles;
     handles.reserve(n + 1);
 
     std::vector<CVertexInfo *> positions;

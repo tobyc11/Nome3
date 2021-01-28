@@ -23,8 +23,11 @@ public:
     // Buggy, preset to 2 subdivision steps
     void Catmull(const CMeshInstance& meshInstance);
 
+    // hacky way to fix Mobius face, where CCW goes to CW edge orientation
+    std::vector<Vector3> fixEdgeOrientation(std::vector<Vector3> facePositions);
+
 private:
-    std::pair<CMeshImpl::VertexHandle, float> FindClosestVertex(const tc::Vector3& pos);
+    std::pair<Vertex*, float> FindClosestVertex(const tc::Vector3& pos);
 
     unsigned int VertCount = 0;
     unsigned int FaceCount = 0;

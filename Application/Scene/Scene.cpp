@@ -103,6 +103,7 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
     {
         auto idWithPeriod = "." + id;
         auto entityName = NameEntity.first;
+   
         if (entityName.find(idWithPeriod)
             != std::string::npos) // meshName.pointName is the convention for mesh points
         {
@@ -143,11 +144,13 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
     CSceneTreeNode* currNode = *RootNode->GetTreeNodes().begin();
     while (true)
     {
+ 
         CSceneTreeNode* nextNode = nullptr;
         size_t nextDot = id.find('.', charsToIgnore);
         if (nextDot != std::string::npos)
         {
             std::string nextSeg = id.substr(charsToIgnore, nextDot - charsToIgnore);
+            //cout << "curr nextSeg: " + nextSeg << endl;
             nextNode = currNode->FindChild(nextSeg);
         }
 
@@ -157,15 +160,28 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
             {
                 std::string idTurnedVertName = id;
                 std::replace(idTurnedVertName.begin(), idTurnedVertName.end(), '.', '_');
+                //cout << "curr idTurnedVertName: " + idTurnedVertName << endl;
+                //cout << charsToIgnore << endl;
                 auto* point =
                     meshInstance->CreateVertexSelector(id.substr(charsToIgnore), idTurnedVertName);
                 if (point)
+                {
+                    cout << meshInstance->GetName() << endl;
+                    cout << "congrats, found point: " + idTurnedVertName << endl;
+                    cout << "aka " + id.substr(charsToIgnore) << endl;
                     return &point->Point;
+                }
                 else
+                {
+                    cout << "return null" << endl;
                     return nullptr;
+                }
             }
             else
+            {
+                cout << "return null" << endl;
                 return nullptr;
+            }
         }
         currNode = nextNode;
         // If the current node has only 1 child, it might be a group instance
@@ -177,6 +193,7 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
         }
         charsToIgnore = nextDot + 1;
     }
+    cout << "return null" << endl;
     return nullptr;
 }
 

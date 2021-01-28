@@ -159,17 +159,15 @@ void CMainWindow::on_actionMerge_triggered()
         "globalMerge"); // CmeshMerger is basically a CMesh, but with a MergeIn method. Merger will
                         // contain ALL the merged vertices (from various meshes)
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        if (node->GetOwner()->GetName()
-            == "globalMergeNode") // If the node owner is a globalMergeNode, skip as that was a
-                                  // previously merger mesh (from a previous Merge process). We only
+        if (node->GetOwner()->GetName() == "globalMergeNode") // If the node owner is a globalMergeNode, skip as that was a
+                                  // previously merger mesh (from a previous Merge iteration). We only
                                   // want to merge vertices from our actual (non-merged) meshes.
             return;
         auto* entity = node->GetInstanceEntity(); // Else, get the instance
-        if (!entity) // Check to see if the an entity is instantiable (e.g., polyline, funnel, mesh,
-                     // etc.), and not just an instance identifier.
+        if (!entity) // Check to see if the an entity is instantiable
+        {
             entity = node->GetOwner()->GetEntity(); // If it's not instantiable, get entity instead
-                                                    // of instance entity
-
+        } 
         if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
         { // set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's
           // vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get

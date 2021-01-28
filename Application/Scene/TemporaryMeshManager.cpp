@@ -95,8 +95,6 @@ void CTemporaryMeshManager::SelectOrDeselectPolyline(const std::vector<std::stri
 {
     auto searchpoint0 = points[0].substr(0, points[0].find("._"));
     auto searchpoint1 = points[0].substr(0, points[0].find("._"));
-    std::cout << searchpoint0 << std::endl;
-    std::cout << searchpoint1 << std::endl;
     bool alreadySelected = false;
     std::string removeName;
     for (auto name : AddedTempPolylineNodeNames)

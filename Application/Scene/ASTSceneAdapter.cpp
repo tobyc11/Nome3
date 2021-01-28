@@ -2,24 +2,24 @@
 #include "BSpline.h"
 #include "BezierSpline.h"
 #include "Circle.h"
-#include "Sphere.h"
-#include "Ellipsoid.h"
 #include "Cylinder.h"
-#include "MobiusStrip.h"
+#include "Dupin.h"
+#include "Ellipsoid.h"
 #include "Environment.h"
 #include "Face.h"
 #include "Funnel.h"
 #include "Helix.h"
+#include "Hyperboloid.h"
+#include "MobiusStrip.h"
 #include "Point.h"
 #include "Polyline.h"
+#include "Sphere.h"
 #include "Surface.h"
 #include "Sweep.h"
-#include "TorusKnot.h"
-#include "Torus.h"
 #include "SweepControlPoint.h"
+#include "Torus.h"
+#include "TorusKnot.h"
 #include "Tunnel.h"
-#include "Hyperboloid.h"
-#include "Dupin.h"
 #include <StringPrintf.h>
 #include <unordered_map>
 
@@ -56,7 +56,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
     { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
     { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy },
-    { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity },
+    { "mobiusstrip", ECommandKind::Entity }, { "helix", ECommandKind::Entity },
     { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit }
 };
 
@@ -113,7 +113,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
 }
 
 // Randy changed on 11/30. TraverseFile returns list of additional file names that need to be parsed
-std::vector<std::string> CASTSceneAdapter::GetIncludes(AST::AFile* astRoot, CScene& scene) {
+std::vector<std::string> CASTSceneAdapter::GetIncludes(AST::AFile* astRoot, CScene& scene)
+{
 
     assert(CmdTraverseStack.empty());
 
@@ -125,7 +126,6 @@ std::vector<std::string> CASTSceneAdapter::GetIncludes(AST::AFile* astRoot, CSce
             includeFileNames.push_back(fileName);
     }
     return includeFileNames;
-
 }
 // Randy changed on 11/30. TraverseFile returns list of additional file names that need to be parsed
 void CASTSceneAdapter::TraverseFile(AST::AFile* astRoot, CScene& scene)
@@ -179,7 +179,6 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
         VisitCommandBankSet(sub, scene);
     CmdTraverseStack.pop_back();
 }
-
 
 void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, bool insubMesh)
 {
@@ -255,7 +254,8 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         auto entityName = cmd->GetPositionalIdentAsString(1);
         auto entity = GEnv.Scene->FindEntity(entityName);
         if (entity)
-            sceneNode->SetEntity(entity); // This line is very important. It attaches an entity (e.g. mesh) to the scene node
+            sceneNode->SetEntity(entity); // This line is very important. It attaches an entity
+                                          // (e.g. mesh) to the scene node
         else if (auto group =
                      GEnv.Scene->FindGroup(entityName)) // If the entityName is a group identifier
             group->AddParent(sceneNode);

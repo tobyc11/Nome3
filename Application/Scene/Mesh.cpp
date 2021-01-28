@@ -36,6 +36,7 @@ void CMesh::MarkDirty()
 
 void CMesh::UpdateEntity()
 {
+    cout << "CMesh's UpdateEntity. Here is Mesh's name: " + GetName() << endl;
     if (!IsDirty())
         return;
 
@@ -59,56 +60,322 @@ void CMesh::UpdateEntity()
         this->AddVertex(point->Name, point->Position);
     }
 
+
+    // TODO: REMOVE BELOW IN THE FUTURE. ALTHOUGH SHOULD PROBABLY KEEP CURRMESH.BUILDBOUNDARY()
+    // Project SwitchDS subdivison debug 
+    // Face
+    std::cout << "right before subdivison debug" << std::endl;
+
+
+    currMesh.buildBoundary();
+
+    vector<Face*>::iterator fIt;
+    int counter = 0;
+    for (fIt = currMesh.faceList.begin(); fIt < currMesh.faceList.end(); fIt++)
+    {
+
+        Vertex* newFacePoint = new Vertex;
+        tc::Vector3 newFacePointPosition = tc::Vector3(0, 0, 0);
+        Face* currFace = (*fIt);
+        Edge* firstEdge = currFace->oneEdge;
+        if (firstEdge == NULL)
+        {
+            cout << "ERROR: This face (with ID) does not have a sideEdge." << endl;
+            exit(1);
+        }
+        Edge* currEdge = firstEdge;
+        uint counter = 0;
+        Vertex* currVert;
+        do
+        {
+            if (currFace == currEdge->fa)
+            {
+                currVert = currEdge->vb;
+                currEdge = currEdge->nextVbFa;
+            }
+            else if (currFace == currEdge->fb)
+            {
+                if (currEdge->mobius)
+                {
+                    currVert = currEdge->vb;
+                    currEdge = currEdge->nextVbFb;
+                }
+                else
+                {
+                    currVert = currEdge->va;
+                    currEdge = currEdge->nextVaFb;
+                }
+            }
+            newFacePointPosition += currVert->position;
+            counter += 1;
+        } while (currEdge != firstEdge);
+
+        newFacePointPosition /= counter;
+        newFacePoint->position = newFacePointPosition;
+        newFacePoint->ID = counter;
+        cout << "New Face Point: ID: " << newFacePoint->ID
+             << " Position: " << (newFacePoint->position).x << " " << (newFacePoint->position).y
+             << " " << (newFacePoint->position).z << endl;
+        currFace->facePoint = newFacePoint;
+        // newVertList.push_back(newFacePoint); temp comment out. this would be the subdivided face
+        // point
+        counter += 1;
+    }
+
+    std::cout << "edge point debug" << std::endl;
+    vector<Face*>::iterator fIt2;
+    int edgecounter = 0;
+    for (fIt2 = currMesh.faceList.begin(); fIt2 < currMesh.faceList.end(); fIt2++)
+    {
+       // cout << "here" << endl;
+        Face* currFace = (*fIt2);
+        Edge* firstEdge = currFace->oneEdge;
+        Edge* currEdge = firstEdge;
+        Vertex* currVert;
+      //  cout << "here1" << endl;
+        do
+        {
+           // cout << "here2" << endl;
+            edgecounter += 1;
+            Vertex* newEdgePoint = new Vertex;
+            if (currEdge->edgePoint == NULL)
+            {
+               // cout << "here3" << endl;
+                if (currEdge->isSharp)
+                {
+                    //cout << "here3.1" << endl;
+                    newEdgePoint->position =
+                        (currEdge->va->position + currEdge->vb->position) / (float)2.0;
+                }
+                else
+                {
+                 //   cout << "here3.20" << endl;
+                    Vertex* faceVert1 = currEdge->fa->facePoint;
+                   // cout << "here3.21" << endl;
+                    Vertex* edgeVert1 = currEdge->va;
+                    //cout << "here3.22" << endl;
+                    Vertex* edgeVert2 = currEdge->vb;
+                    //cout << "here3.23" << endl;
+                    cout << (currEdge->fb == NULL) << endl;
+                    //cout << " pa" << endl;
+                    //cout << currEdge->fb->id << endl;
+                    //cout << "here3.230" << endl;
+                    Vertex* faceVert2 = currEdge->fb->facePoint; // this causing it to crash
+                    //cout << "here3.24" << endl;
+                    newEdgePoint->position = (faceVert1->position + faceVert2->position
+                                              + edgeVert1->position + edgeVert2->position)
+                        / (float)4.0;
+                   // cout << "here3.25" << endl;
+                }
+               // cout << "here4" << endl;
+                currEdge->edgePoint = newEdgePoint;
+                newEdgePoint->ID = edgecounter;
+               //newVertList.push_back(newEdgePoint); // Randy temp comment this out
+                // cout<<"New Edge Point: ID: "<< newEdgePoint -> ID <<" Position: "<< (newEdgePoint
+                // -> position)[0]<<" "<<(newEdgePoint -> position)[1]<<" "<<(newEdgePoint ->
+                // position)[2]<<endl;
+            }
+            //cout << "here5" << endl;
+            if (currFace == currEdge->fa)
+            {
+                currVert = currEdge->vb;
+                currEdge = currEdge->nextVbFa;
+            }
+            else if (currFace == currEdge->fb)
+            {
+                if (currEdge->mobius)
+                {
+                    currVert = currEdge->vb;
+                    currEdge = currEdge->nextVbFb;
+                }
+                else
+                {
+                    currVert = currEdge->va;
+                    currEdge = currEdge->nextVaFb;
+                }
+            }
+          //  cout << "here6" << endl;
+        } while (currEdge != firstEdge);
+       // cout << "done with edge point" << endl;
+    }
+
+    
+    std::cout << "vert point debug removed cause was causing NOME to crash for hierarchnametest. fix in the future" << std::endl;
+
+    // vector<Vertex*>::iterator vIt2;
+    //Vertex facePointAvg;
+    //Vertex edgePointAvg;
+    //Vertex* currVert;
+    //Vertex* newVertexPoint;
+    //int vertcounter = 0;
+    //for (vIt2 = currMesh.vertList.begin(); vIt2 < currMesh.vertList.end(); vIt2++)
+    //{
+    //    // cout<<"New Vertex!"<<endl;
+    //    currVert = (*vIt2);
+    //    newVertexPoint = new Vertex;
+    //    // cout<<"vertexID: "<<currVert -> ID<<endl;
+    //    Edge* firstEdge = currVert->oneEdge;
+    //    Edge* currEdge = firstEdge;
+    //    Face* currFace = currEdge->fa;
+    //    int sharpEdgeCounter = 0;
+    //    Edge* sharpEdgeI;
+    //    Edge* sharpEdgeK;
+    //    tc::Vector3 facePointAvgPosition = tc::Vector3(0, 0, 0);
+    //    tc::Vector3 midPointAvgPoistion = tc::Vector3(0, 0, 0);
+    //    int n = 0;
+    //    do
+    //    {
+    //        vertcounter += 1;
+    //        // cout<<"Now the sharp edge counter is "<<sharpEdgeCounter<<endl;
+    //        // cout<<"here"<<endl<<nextOutEdge -> end -> ID<<endl;
+    //        midPointAvgPoistion += (currEdge->va->position + currEdge->vb->position) / 2.0f;
+    //        facePointAvgPosition += currFace->facePoint->position;
+    //        n += 1;
+    //        if (currEdge->isSharp)
+    //        {
+    //            // cout<<"A"<<endl;
+    //            sharpEdgeCounter += 1;
+    //            if (sharpEdgeCounter == 1)
+    //            {
+    //                sharpEdgeI = currEdge;
+    //            }
+    //            else if (sharpEdgeCounter == 2)
+    //            {
+    //                sharpEdgeK = currEdge;
+    //            }
+    //            currFace = currEdge->theOtherFace(currFace);
+    //            if (currFace == NULL)
+    //            {
+    //                // cout<<"A1"<<endl;
+    //                currEdge = currEdge->nextEdge(currVert, currFace);
+    //                currFace = currEdge->theOtherFace(currFace);
+    //                midPointAvgPoistion += (currEdge->va->position + currEdge->vb->position) / 2.0f;
+    //                sharpEdgeCounter += 1;
+    //                if (sharpEdgeCounter == 2)
+    //                {
+    //                    sharpEdgeK = currEdge;
+    //                }
+    //            }
+    //            currEdge = currEdge->nextEdge(currVert, currFace);
+    //        }
+    //        else
+    //        {
+    //            currFace = currEdge->theOtherFace(currFace);
+    //            currEdge = currEdge->nextEdge(currVert, currFace);
+    //        }
+    //    } while (currEdge != firstEdge);
+    //    if (sharpEdgeCounter <= 1)
+    //    {
+    //        facePointAvgPosition /= n;
+    //        midPointAvgPoistion /= n;
+    //        newVertexPoint->position = ((float)(n - 3) * currVert->position
+    //                                    + 2.0f * midPointAvgPoistion + facePointAvgPosition)
+    //            / (float)n;
+    //        // cout<<"this is a normal vertex! "<<newVertexPoint -> position[0] << newVertexPoint ->
+    //        // position [1]<< newVertexPoint -> position[2]<<endl;
+    //    }
+    //    else if (sharpEdgeCounter == 2)
+    //    {
+    //        Vertex* pointI = sharpEdgeI->theOtherVertex(currVert);
+    //        Vertex* pointK = sharpEdgeK->theOtherVertex(currVert);
+    //        newVertexPoint->position =
+    //            (pointI->position + pointK->position + 6.0f * currVert->position) / 8.0f;
+    //        // cout<<"this is a crease vertex! "<<newVertexPoint -> position[0] << newVertexPoint ->
+    //        // position [1]<< newVertexPoint -> position[2]<<endl;;
+    //    }
+    //    else
+    //    {
+    //        newVertexPoint->position = currVert->position;
+    //        // cout<<"this is a conner vertex! "<<newVertexPoint -> position[0] << newVertexPoint ->
+    //        // position [1]<< newVertexPoint -> position[2]<<endl;
+    //    }
+    //    newVertexPoint->ID = vertcounter;
+    //    currVert->vertexPoint = newVertexPoint;
+    //    //newVertList.push_back(newVertexPoint); temporary push this back
+    //    // cout<<"New Vertex Point: ID: "<< newVertexPoint -> ID <<" Position: "<< (newVertexPoint
+    //    // -> position)[0]<<" "<<(newVertexPoint -> position)[1]<<" "<<(newVertexPoint ->
+    //    // position)[2]<<endl;
+    //}
+
+    std::cout << "done with subdivision debug" << std::endl;
+
+
+    // Randy added below loop on 12/29
+    //for (size_t i = 0; i < Points.GetSize(); i++) {
+    //    auto* polyline = Polylines.GetValue(i, nullptr); 
+
+    //    
+    //}
     Super::UpdateEntity();
     SetValid(isValid);
+    std::cout << "doone with mesh updateentity" << std::endl;
 }
 
 void CMesh::Draw(IDebugDraw* draw)
 {
     CEntity::Draw(draw);
 
-    if (!LineStrip.empty())
+    if (!LineStrips.empty())
     {
-        std::vector<Vector3> positions;
-        for (auto vHandle : LineStrip)
+        // Randy added below for loop on 12/27 to draw multiple line strips
+        for (auto LineStrip : LineStrips)
         {
-            const auto& vPos = Mesh.point(vHandle);
-            positions.emplace_back(vPos[0], vPos[1], vPos[2]);
-        }
+            std::vector<Vector3> positions;
+            for (auto vHandle : LineStrip)
+            {
+                const auto& vPos = vHandle->position; // Mesh.point(vHandle);
+                positions.emplace_back(vPos.x, vPos.y, vPos.z);
+            }
 
-        for (size_t i = 1; i < positions.size(); i++)
-        {
-            draw->LineSegment(positions[i - 1], positions[i]);
+            for (size_t i = 1; i < positions.size(); i++)
+            {
+                draw->LineSegment(positions[i - 1], positions[i]);
+            }
         }
     }
 }
 
-CMeshImpl::VertexHandle CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
+Vertex * CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
 {
     // Silently fail if the name already exists
     auto iter = NameToVert.find(name);
     if (iter != NameToVert.end())
         return iter->second;
 
-    CMeshImpl::VertexHandle vertex;
-    vertex = Mesh.add_vertex(CMeshImpl::Point(pos.x, pos.y, pos.z));
-    NameToVert.emplace(name, vertex);
-    VertToName.emplace(vertex, name); // Randy added on 10/15
-    return vertex;
+    //Vertex vertex;
+
+    // Comment out for Project SwitchDS
+    //vertex = Mesh.add_vertex(CMeshImpl::Point(pos.x, pos.y, pos.z));
+
+
+    Vertex * currVert = new Vertex(pos.x, pos.y, pos.z, name, NameToVert.size()); // Project SwitchDS // Vertex::Vertex(float x, float y, float z, string assignedName, unsigned long ID)
+  //  currVert->position = tc::Vector3(pos.x, pos.y, pos.z); // Project SwitchDS
+    //currVert->ID = NameToVert.size(); // Project SwitchDS . hacky implementation
+    //currVert->name = name; // ADded this AND FIXED THE BUG AFTER 2 DAYS. THIS WAS IT AND DUE TOCVertexSelector:PointUpdate not finding name match
+   
+    currMesh.addVertex(currVert); // Project SwitchDS
+
+    // Project SwitchDS
+    NameToVert.emplace(name, currVert);
+    VertToName.emplace(currVert, name); // Randy added on 10/15
+
+
+    return currVert;
 }
 
 Vector3 CMesh::GetVertexPos(const std::string& name) const
 {
     auto iter = NameToVert.find(name);
-    CMeshImpl::VertexHandle vertex = iter->second;
-    const auto& pos = Mesh.point(vertex);
-    return Vector3(pos[0], pos[1], pos[2]);
+    Vertex * vertex = iter->second;
+    //const auto& pos = Mesh.point(vertex);
+    auto pos = vertex->position;
+    return Vector3(pos.x, pos.y, pos.z);
 }
 
 void CMesh::AddFace(const std::string& name, const std::vector<std::string>& facePoints,
                     std::string faceSurfaceIdent)
 {
-    std::vector<CMeshImpl::VertexHandle> faceVHandles;
+    std::vector<Vertex *> faceVHandles;
     for (const std::string& pointName : facePoints)
     {
         faceVHandles.push_back(NameToVert[pointName]);
@@ -117,50 +384,58 @@ void CMesh::AddFace(const std::string& name, const std::vector<std::string>& fac
     AddFace(name, faceVHandles, faceSurfaceIdent);
 }
 
-void CMesh::AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints,
+void CMesh::AddFace(const std::string& name, const std::vector<Vertex*>& facePoints,
                     std::string faceSurfaceIdent)
 {
-    auto faceHandle = Mesh.add_face(facePoints);
+    //auto faceHandle = Mesh.add_face(facePoints);
+    
+    std::vector<Vertex *> newVerts; // Project SwitchDS
+    for (auto point : facePoints) { // Project SwitchDS
+        newVerts.push_back(point);
+    }
 
-    // Randy added this on 12/12 for face entity coloring
-    if (faceSurfaceIdent != "")
-        fHWithColor.emplace(faceHandle, faceSurfaceIdent);
+    Face * newFace = currMesh.addPolygonFace(newVerts, false); // Project SwitchDS . Check if need to reverseOrder = true or false?
+    //currMesh.buildBoundary(); Project SwitchDS
+   
+    
+    // Project SwitchDS. Temp comment out below lines
+    //// Randy added this on 12/12 for face entity coloring
+    //if (faceSurfaceIdent != "")
+    //    fHWithColor.emplace(faceHandle, faceSurfaceIdent);
 
-    if (!faceHandle.is_valid())
-        printf("Could not add face %s into mesh %s\n", name.c_str(), GetName().c_str());
+    //if (!faceHandle.is_valid())
+    //    printf("Could not add face %s into mesh %s\n", name.c_str(), GetName().c_str());
+   
+    //Project SwitchDS . ID = the size currently. This is problematic when we delete stuff I think
     FaceVertsToFace.emplace(facePoints,
-                            faceHandle); // Key: vertex handle, Value: faceHandle. Randy added
-    FaceToFaceVerts.emplace(faceHandle,
+                            newFace); // Key: vertex handle, Value: faceHandle. Randy added
+    FaceToFaceVerts.emplace(newFace,
                             facePoints); // Key: vertex handle, Value: faceHandle. Randy added
-    NameToFace.emplace(name, faceHandle);
-    FaceToName.emplace(faceHandle, name); // Randy added
+    NameToFace.emplace(name, newFace );
+    FaceToName.emplace(newFace, name); // Randy added
 }
 
 void CMesh::AddLineStrip(const std::string& name,
-                         const std::vector<CMeshImpl::VertexHandle>& points)
+                         const std::vector<Vertex*>& points)
 {
-    if (LineStrip.empty())
-        LineStrip = points;
-    else // Added this to allow line strips to be merged I think. RANDY TODO: this is not utilized
-         // in merge currently. Implement a merge polyline command in the future
-        LineStrip.insert(LineStrip.end(), points.begin(), points.end());
+    LineStrips.push_back(points);
 }
 
 void CMesh::ClearMesh()
 {
-    Mesh.clear();
+    // Mesh.clear(); Project SwitchDS
     NameToVert.clear();
     VertToName.clear();
     NameToFace.clear();
     FaceToName.clear(); // Randy added
     FaceVertsToFace.clear(); // Randy added
     FaceToFaceVerts.clear(); // Randy added
-    LineStrip.clear();
+    LineStrips.clear();
 }
 
 // WARNING this function is not currently used and outdated. leaving here for future use
-void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexHandle> vnames,
-                        std::map<std::string, CMeshImpl::FaceHandle> fnames)
+void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, Vertex*> vnames,
+                        std::map<std::string, Face*> fnames)
 {
     Mesh = std::move(mesh);
     NameToVert = std::move(vnames);
@@ -230,192 +505,35 @@ void CMeshInstance::UpdateEntity()
         return;
     MeshGenerator->UpdateEntity();
     CopyFromGenerator();
-    Mesh.request_vertex_status();
-    Mesh.request_vertex_colors();
-    Mesh.request_edge_status();
-    Mesh.request_face_status();
-    Mesh.request_face_colors(); // Randy added on 10/10 for face selection. May be useful in the
-                                // future for flat coloring. Currently doesn't do anything
-    for (auto vH : Mesh.vertices())
-    {
-        Mesh.set_color(vH, { VERT_COLOR });
-    }
+    //Mesh.request_vertex_status();
+    //Mesh.request_vertex_colors();
+    //Mesh.request_edge_status();
+    //Mesh.request_face_status();
+    //Mesh.request_face_colors(); // Randy added on 10/10 for face selection. May be useful in the
+    //                            // future for flat coloring. Currently doesn't do anything
+    //for (auto vH : Mesh.vertices())
+    //{
+    //    Mesh.set_color(vH, { VERT_COLOR });
+    //}
     // don't need to set face color because it gets overwritten by material's instancecolor (shader)
 
-    // IMPORTANT NOTE: This for loop is very messy. Fix this and RemoveFace later. If you're not
-    // working on RemoveFace, feel free to ignore it for now
-    for (const std::string& face : FacesToDelete)
-    {
-        auto iter = NameToFace.find(face);
-        if (iter != NameToFace.end())
-        {
-            Mesh.delete_face(iter->second,
-                             true); // TODO: Change to true to remove isolated vertices. But some
-                                    // strange bug, where I can't delete a second mesh face occurs
-            Mesh.garbage_collection(); // Needed to execute deleting the faces
+    // Add back to delete face later. I think ~100 hundred lines of code deleted here due to incompability with new data structure. 
+    // Please look at previous commits to add back DeleteFace
+    
 
-            auto facehandle = NameToFace.at(face);
-            auto faceverts = FaceToFaceVerts.at(facehandle);
-
-            std::vector<int> deleted; // deleted indices
-            int originalvertsize = VertToName.size();
-
-            // useful for counting number of occurences
-            std::vector<CMeshImpl::VertexHandle> vflattened;
-            for (auto& imap : FaceToFaceVerts)
-                vflattened.insert(
-                    vflattened.begin(), imap.second.begin(),
-                    imap.second
-                        .end()); // https://stackoverflow.com/questions/313432/c-extend-a-vector-with-another-vector
-
-            for (auto facevert : faceverts)
-            { // facevert is not sorted by index
-                bool isolated = std::count(vflattened.begin(), vflattened.end(), facevert)
-                    == 1; // if this vertex is not shared by any other face
-                if (isolated)
-                    deleted.push_back(facevert.idx());
-            }
-
-            // map for new vert handle index to new vert handle
-            std::map<int, CMeshImpl::VertexHandle> temp;
-            for (auto newverthandle : Mesh.vertices())
-            {
-                int newindex = newverthandle.idx();
-                std::cout << newindex << std::endl;
-                temp.try_emplace(newindex, std::move(newverthandle));
-            }
-            // need a new map mapping old VertHandles to new verthandles
-            std::map<CMeshImpl::VertexHandle, CMeshImpl::VertexHandle> tempVertToVert;
-            int displacement = 0;
-
-            // sort nametovert using sorted vector consisting of its key, value pairs
-            std::vector<std::pair<std::string, CMeshImpl::VertexHandle>> v(NameToVert.begin(),
-                                                                           NameToVert.end());
-            sort(v.begin(), v.end(),
-                 [=](std::pair<std::string, CMeshImpl::VertexHandle>& a,
-                     std::pair<std::string, CMeshImpl::VertexHandle>& b) {
-                     return a.second.idx() < b.second.idx();
-                 });
-
-            for (auto& pair : v)
-            { // THE BUG IS THAT NAMETOVERT IS NOT SORTED
-                int i = pair.second.idx();
-                if (std::find(deleted.begin(), deleted.end(), i) == deleted.end())
-                {
-                    auto newhandle = temp.at(i - displacement);
-                    tempVertToVert.try_emplace(std::move(pair.second), std::move(newhandle));
-                }
-                else // else,it is one that needs to be deleted. don't add it. but the next index i
-                     // + 1, should correspond the new vert handle at index i
-                    displacement += 1; // so we need to push vertices back
-            }
-
-            // handle both vertoname and nametovert together since they are the same size
-            std::map<std::string, CMeshImpl::VertexHandle> newNameToVert;
-            std::map<CMeshImpl::VertexHandle, std::string> newVertToName; // Randy added on 10/11
-
-            // construct newVertToName
-            for (auto& pair : VertToName)
-            {
-                if (tempVertToVert.find(pair.first)
-                    != tempVertToVert.end()) // if this vert is not the one of the deleted ones
-                {
-                    auto updatedverthandle = tempVertToVert.at(pair.first);
-                    newVertToName.emplace(updatedverthandle, pair.second);
-                    newNameToVert.emplace(pair.second, updatedverthandle);
-                }
-            }
-
-            // Maybe I need to clear them before reassigning?
-            VertToName = newVertToName;
-            NameToVert = newNameToVert;
-
-            // map for new face handle index to new face handle
-            std::map<int, CMeshImpl::FaceHandle> facetemp;
-            for (auto newfacehandle : Mesh.faces())
-                facetemp.try_emplace(newfacehandle.idx(), std::move(newfacehandle));
-
-            std::vector<std::pair<std::string, CMeshImpl::FaceHandle>> f(NameToFace.begin(),
-                                                                         NameToFace.end());
-            sort(f.begin(), f.end(),
-                 [=](std::pair<std::string, CMeshImpl::FaceHandle>& a,
-                     std::pair<std::string, CMeshImpl::FaceHandle>& b) {
-                     return a.second.idx() < b.second.idx();
-                 });
-            std::map<CMeshImpl::FaceHandle, CMeshImpl::FaceHandle> tempFaceToFace;
-            int facedisplacement = 0;
-
-            for (auto& pair : f)
-            {
-                int i = pair.second.idx();
-                if (pair.first != face) // if the name is not the one that needs to be deleted
-                {
-                    auto newhandle = facetemp.at(i - facedisplacement);
-                    tempFaceToFace.try_emplace(pair.second, newhandle);
-                }
-                else // this pair needs to be deleted, so we can take care of it here
-                    facedisplacement += 1;
-            }
-
-            std::map<std::string, CMeshImpl::FaceHandle> newNameToFace;
-            std::map<CMeshImpl::FaceHandle, std::string> newFaceToName; // Randy added on 10/11
-
-            for (auto& pair : FaceToName)
-            {
-                if (pair.second != face) // if this face is not that one we want to delete
-                {
-                    auto updatedFacehandle = tempFaceToFace.at(pair.first);
-                    newFaceToName.emplace(updatedFacehandle, pair.second);
-                    newNameToFace.emplace(pair.second, updatedFacehandle);
-                }
-            }
-
-            // Maybe I need to clear them before reassigning?
-            FaceToName = newFaceToName;
-            NameToFace = newNameToFace;
-
-            //  Here, since none of them use Name, we can just rebuild it
-            FaceToFaceVerts.clear();
-            FaceVertsToFace.clear();
-            for (auto& realface : Mesh.faces())
-            {
-                std::vector<CMeshImpl::VertexHandle> realverts;
-                for (auto vert : Mesh.fv_range(realface))
-                {
-                    realverts.push_back(vert);
-                }
-                FaceToFaceVerts.emplace(realface, realverts);
-                FaceVertsToFace.emplace(realverts, realface);
-            }
-        }
-        else
-        {
-            printf("Couldn't find face %s for deletion in mesh instance %s\n", face.c_str(),
-                   GetName().c_str());
-        }
-        MeshGenerator->Mesh = Mesh;
-        MeshGenerator->NameToVert = NameToVert;
-        MeshGenerator->VertToName = VertToName;
-        MeshGenerator->NameToFace = NameToFace;
-        MeshGenerator->FaceToName = FaceToName;
-        MeshGenerator->FaceVertsToFace = FaceVertsToFace;
-        MeshGenerator->FaceToFaceVerts = FaceToFaceVerts;
-    }
-
-    if (!Mesh.faces_empty())
-    {
-        Mesh.request_face_normals();
-        Mesh.request_vertex_normals();
-        Mesh.update_face_normals();
-        Mesh.update_vertex_normals();
-        // Update visual layer geometry
-    }
-    else
-    {
-        // std::cout << "no faces left in mesh. handle this else condition in the future" <<
-        // std::endl; should probably implement this logic in the future OR else may be further bugs
-        // cause this mesh has no faces after removing
-    }
+    //if (!Mesh.faces_empty())
+    //{
+    //    Mesh.request_face_normals();
+    //    Mesh.request_vertex_normals();
+    //    Mesh.update_face_normals();
+    //    Mesh.update_vertex_normals();
+    //    // Update visual layer geometry
+    //}
+    //else
+    //{
+    //    // std::cout << "no faces left in mesh. handle this else condition in the future" <<
+    //    // should probably implement this logic in the future OR else may be further bugs
+    //}
     FacesToDelete.clear(); // Randy added this on 10/18. Clear it, we have finished deleting them.
 
     // Randy commented the below section on 10/10. i don't think it does anything ???
@@ -442,6 +560,7 @@ void CMeshInstance::UpdateEntity()
     //}
     Super::UpdateEntity();
     SetValid(MeshGenerator->IsEntityValid());
+    std::cout << "DONE with CMeshInstance update entity" << std::endl;
 }
 
 void CMeshInstance::Draw(IDebugDraw* draw) { MeshGenerator->Draw(draw); }
@@ -456,14 +575,16 @@ CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name,
 
 void CMeshInstance::CopyFromGenerator()
 {
-    Mesh.clear();
+    //Mesh.clear(); Project SwitchDS
     NameToVert.clear();
     NameToFace.clear();
     FaceToName.clear(); // Randy added
     FaceVertsToFace.clear();
     FaceToFaceVerts.clear(); // Randy added
 
-    Mesh = MeshGenerator->Mesh;
+    //Mesh = MeshGenerator->Mesh; ProjectSwitchDS
+    currMesh = MeshGenerator->currMesh; // Project SwitchDS CRUCIAL STEP
+
     // Since the handle only contains an index, we can just copy
     NameToVert = MeshGenerator->NameToVert;
     VertToName = MeshGenerator->VertToName; // Randy added on 10/15
@@ -526,8 +647,7 @@ CMeshInstance::RemoveFace(const std::vector<std::string>& faceNames) // Randy ad
             }
         }
     }
-    GetSceneTreeNode()->SetEntityUpdated(
-        true); // Randy added this on 10/18. Didn't seem to fix bug?
+    GetSceneTreeNode()->SetEntityUpdated(true); // Randy added this on 10/18. Didn't seem to fix bug?
     return removedVertName;
 }
 
@@ -544,12 +664,9 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ra
         auto secondpoint = points[1];
         auto thirdpoint = points[2];
 
-        const auto& posArr1 = Mesh.point(firstpoint);
-        tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
-        const auto& posArr2 = Mesh.point(secondpoint);
-        tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
-        const auto& posArr3 = Mesh.point(thirdpoint);
-        tc::Vector3 pos3 { posArr3[0], posArr3[1], posArr3[2] };
+        tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y, firstpoint->position.z };
+        tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y, secondpoint->position.z };
+        tc::Vector3 pos3 { thirdpoint->position.x, thirdpoint->position.y, thirdpoint->position.z };
         auto testplane = new tc::Plane(pos1, pos2, pos3);
 
         // tc::Vector3 projected = localRay.Project(pos);
@@ -571,12 +688,12 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ra
                     auto firstpoint = points[i];
                     auto secondpoint = points[j];
                     auto thirdpoint = points[k];
-                    const auto& posArr1 = Mesh.point(firstpoint);
-                    tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
-                    const auto& posArr2 = Mesh.point(secondpoint);
-                    tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
-                    const auto& posArr3 = Mesh.point(thirdpoint);
-                    tc::Vector3 pos3 { posArr3[0], posArr3[1], posArr3[2] };
+                    tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y,
+                                       firstpoint->position.z };
+                    tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
+                                       secondpoint->position.z };
+                    tc::Vector3 pos3 { thirdpoint->position.x, thirdpoint->position.y,
+                                       thirdpoint->position.z };
                     auto testdist1 = localRay.HitDistance(pos1, pos2, pos3);
                     hitdistances.push_back(testdist1);
                 }
@@ -611,7 +728,7 @@ std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolyl
     {
         auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
 
-        std::vector<CMeshImpl::VertexHandle> edgeVertsOnly;
+        std::vector<Vertex*> edgeVertsOnly;
         for (const auto& pair : VertToName)
             edgeVertsOnly.push_back(pair.first);
         for (int i = 0; i < edgeVertsOnly.size(); i++) // adjacent elements are the edge verts
@@ -623,10 +740,11 @@ std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolyl
             { // if at the last point, the last edge is last point connected to first point
                 auto firstpoint = edgeVertsOnly[i];
                 auto secondpoint = edgeVertsOnly[0];
-                const auto& posArr1 = Mesh.point(firstpoint);
-                const auto& posArr2 = Mesh.point(secondpoint);
-                tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
-                tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
+                tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y,
+                                   firstpoint->position.z };
+                tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
+                                   secondpoint->position.z };
+
 
                 // naive method, extend the plane out of the line in 6 directions a little
                 tc::Vector3 dummy1 = (pos1 + pos2) / 2;
@@ -650,11 +768,11 @@ std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolyl
             else
             {
                 auto firstpoint = edgeVertsOnly[i];
-                auto secondpoint = edgeVertsOnly[i + 1];
-                const auto& posArr1 = Mesh.point(firstpoint);
-                tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
-                const auto& posArr2 = Mesh.point(secondpoint);
-                tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
+                auto secondpoint = edgeVertsOnly[i+1];
+                tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y,
+                                   firstpoint->position.z };
+                tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
+                                   secondpoint->position.z };
 
                 // naive method, extend the plane out of the line in 6 directions a little
                 tc::Vector3 dummy1 = (pos1 + pos2) / 2; 
@@ -689,12 +807,9 @@ std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolyl
 
                 GetSceneTreeNode()->GetOwner()->SelectNode();
                 MarkDirty();
-                
-
             }
         }
     }
-        
     
     // std::sort(result.begin(), result.end());
     for (const auto& sel : result)
@@ -719,17 +834,17 @@ CMeshInstance::PickEdges(const tc::Ray& localRay)
     if (meshClass == "CPolyline")
     {
         auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-        std::vector<CMeshImpl::VertexHandle> edgeVertsOnly;
+        std::vector<Vertex*> edgeVertsOnly;
         for (const auto& pair : VertToName)
             edgeVertsOnly.push_back(pair.first);
         std::vector<float> hitdistances;
         std::map<float, std::vector<std::string>> distToNames;
         auto firstpoint = edgeVertsOnly[0];
         auto secondpoint = edgeVertsOnly[1];
-        const auto& posArr1 = Mesh.point(firstpoint);
-        tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
-        const auto& posArr2 = Mesh.point(secondpoint);
-        tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
+        tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y, firstpoint->position.z };
+        tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
+                           secondpoint->position.z };
+
              
         // naive method, extend the plane out of the line in 6 directions a little
         tc::Vector3 dummy1 = (pos1 + pos2) / 2; 
@@ -775,7 +890,7 @@ CMeshInstance::PickEdges(const tc::Ray& localRay)
         
     }
 
-    // Else, for entities other than Polyline or BSpline...
+    // Else, if it's not an already selected polyline
     auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
 
     for (const auto& pair :
@@ -798,11 +913,10 @@ CMeshInstance::PickEdges(const tc::Ray& localRay)
             { // if at the last point, the last edge is last point connected to first point
                 auto firstpoint = points[i];
                 auto secondpoint = points[0];
-                const auto& posArr1 = Mesh.point(firstpoint);
-                const auto& posArr2 = Mesh.point(secondpoint);
-                tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
-                tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
-
+                tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y,
+                                   firstpoint->position.z };
+                tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
+                                   secondpoint->position.z };
                 // TODO: Fix this naive method. Naive method extend the plane out of the line in 6
                 // directions
                 tc::Vector3 dummy1 = (pos1 + pos2) / 2;
@@ -826,10 +940,11 @@ CMeshInstance::PickEdges(const tc::Ray& localRay)
             {
                 auto firstpoint = points[i];
                 auto secondpoint = points[i+1];
-                const auto& posArr1 = Mesh.point(firstpoint);
-                tc::Vector3 pos1 { posArr1[0], posArr1[1], posArr1[2] };
-                const auto& posArr2 = Mesh.point(secondpoint);
-                tc::Vector3 pos2 { posArr2[0], posArr2[1], posArr2[2] };
+                tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y,
+                                   firstpoint->position.z };
+                tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
+                                   secondpoint->position.z };
+
 
                 // TODO: Fix \this naive method. Naive method extend the plane out of the line in 6
                 // directions
@@ -883,9 +998,9 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc:
     auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
     for (const auto& pair : NameToVert)
     {
-        const auto& posArr = Mesh.point(pair.second);
-        assert(posArr.size() == 3);
-        tc::Vector3 pos { posArr[0], posArr[1], posArr[2] };
+        const auto& posArr = pair.second->position; // Mesh.point(pair.second);
+        assert(posArr.Length() == 3);
+        tc::Vector3 pos { posArr.x, posArr.y, posArr.z };
         tc::Vector3 projected = localRay.Project(pos);
         auto dist = (pos - projected).Length();
         auto t = (localRay.Origin - projected).Length();
@@ -903,7 +1018,7 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc:
     return result;
 }
 
-std::vector<CMeshImpl::FaceHandle>
+std::vector<Face*>
 CMeshInstance::GetSelectedFaceHandles() // Randy added on 10/11 to assist with face coloring after
                                         // selection
 {
@@ -942,159 +1057,160 @@ std::vector<std::string> CMeshInstance::GetFaceVertexNames(
 
 void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, bool bSel)
 {
+    //auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+    //size_t prefixLen = instPrefix.length();
+    //for (const auto& name : faceNames)
+    //{
+    //    auto iter = NameToFace.find(name.substr(prefixLen));
+    //    if (iter == NameToFace.end())
+    //        continue;
 
-    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-    size_t prefixLen = instPrefix.length();
-    for (const auto& name : faceNames)
-    {
-        auto iter = NameToFace.find(name.substr(prefixLen));
-        if (iter == NameToFace.end())
-            continue;
+    //    auto handle = iter->second;
+    //    const auto& original = Mesh.color(handle);
+    //    printf("Before: %d %d %d\n", original[0], original[1], original[2]);
+    //    auto iter0 = std::find(CurrSelectedFaceNamesWithPrefix.begin(),
+    //                           CurrSelectedFaceNamesWithPrefix.end(), name);
+    //    if (iter0 == CurrSelectedFaceNamesWithPrefix.end())
+    //    {
 
-        auto handle = iter->second;
-        const auto& original = Mesh.color(handle);
-        printf("Before: %d %d %d\n", original[0], original[1], original[2]);
-        auto iter0 = std::find(CurrSelectedFaceNamesWithPrefix.begin(),
-                               CurrSelectedFaceNamesWithPrefix.end(), name);
-        if (iter0 == CurrSelectedFaceNamesWithPrefix.end())
-        {
-
-            CurrSelectedFaceNames.push_back(name.substr(prefixLen));
-            CurrSelectedFaceNamesWithPrefix.push_back(name);
-            CurrSelectedFaceHandles.push_back(handle); // Randy added on 10/11 for face selection
-        }
-        else // it has already been selected, then deselect
-        {
-            auto iter1 = std::find(CurrSelectedFaceNames.begin(), CurrSelectedFaceNames.end(),
-                                   name.substr(prefixLen));
-            CurrSelectedFaceNames.erase(iter1); // Randy added this on 10/15
-            auto iter2 = std::find(CurrSelectedFaceNamesWithPrefix.begin(),
-                                   CurrSelectedFaceNamesWithPrefix.end(), name);
-            CurrSelectedFaceNamesWithPrefix.erase(iter2);
-            auto iter3 =
-                std::find(CurrSelectedFaceHandles.begin(), CurrSelectedFaceHandles.end(), handle);
-            CurrSelectedFaceHandles.erase(iter3); // Randy added on 10/11 for face selection
-        }
-    }
-    GetSceneTreeNode()->SetEntityUpdated(true);
+    //        CurrSelectedFaceNames.push_back(name.substr(prefixLen));
+    //        CurrSelectedFaceNamesWithPrefix.push_back(name);
+    //        CurrSelectedFaceHandles.push_back(handle); // Randy added on 10/11 for face selection
+    //    }
+    //    else // it has already been selected, then deselect
+    //    {
+    //        auto iter1 = std::find(CurrSelectedFaceNames.begin(), CurrSelectedFaceNames.end(),
+    //                               name.substr(prefixLen));
+    //        CurrSelectedFaceNames.erase(iter1); // Randy added this on 10/15
+    //        auto iter2 = std::find(CurrSelectedFaceNamesWithPrefix.begin(),
+    //                               CurrSelectedFaceNamesWithPrefix.end(), name);
+    //        CurrSelectedFaceNamesWithPrefix.erase(iter2);
+    //        auto iter3 =
+    //            std::find(CurrSelectedFaceHandles.begin(), CurrSelectedFaceHandles.end(), handle);
+    //        CurrSelectedFaceHandles.erase(iter3); // Randy added on 10/11 for face selection
+    //    }
+    //}
+    //GetSceneTreeNode()->SetEntityUpdated(true);
 }
 
 // TODO: Edge selection. Create Edge Handle data structures later.
 void CMeshInstance::MarkEdgeAsSelected(const std::set<std::string>& vertNames, bool bSel)
 {
-    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-
-    // TODO 11/5 work on this, make sure the currselected stuff is actually working . also, fix
-    // Nome3DView edge deselection
-    std::vector<std::string> forEdge(vertNames.begin(), vertNames.end());
-    auto name1withoutinstprefix = forEdge[0].substr(instPrefix.length());
-    auto name2withoutinstprefix = forEdge[1].substr(instPrefix.length());
-    auto point1 = NameToVert.at(name1withoutinstprefix);
-    auto point2 = NameToVert.at(name2withoutinstprefix);
-    // https://stackoverflow.com/questions/64243444/openmesh-find-edge-connecting-two-vertices
-    CurrSelectedHalfEdgeHandles.push_back(
-        Mesh.find_halfedge(point1, point2)); // not used yet, but can be used for sharpening edges
-    ///////////////////////////////////////////////////////////////////
-
-    size_t prefixLen = instPrefix.length();
-    for (const auto& name : vertNames)
-    {
-        auto iter = NameToVert.find(name.substr(prefixLen));
-        if (iter == NameToVert.end())
-            continue;
-
-        auto handle = iter->second;
-        const auto& original = Mesh.color(handle);
-        printf("Before: %d %d %d\n", original[0], original[1], original[2]);
-        auto iter0 = std::find(CurrSelectedEdgeVertNamesWithPrefix.begin(),
-                               CurrSelectedEdgeVertNamesWithPrefix.end(), name);
-        if (iter0 == CurrSelectedEdgeVertNamesWithPrefix.end())
-        {
-            CurrSelectedEdgeVertNames.push_back(name.substr(prefixLen));
-            CurrSelectedEdgeVertNamesWithPrefix.push_back(name);
-            CurrSelectedEdgeVertHandles.push_back(handle);
-        }
-        else // it has already been selected, then deselect
-        {
-            auto iter1 = std::find(CurrSelectedEdgeVertNames.begin(),
-                                   CurrSelectedEdgeVertNames.end(), name.substr(prefixLen));
-            if (iter1 != CurrSelectedEdgeVertNames.end())
-            { // erase once
-                CurrSelectedEdgeVertNames.erase(iter1);
-            }
-            auto iter2 = std::find(CurrSelectedEdgeVertNamesWithPrefix.begin(),
-                                   CurrSelectedEdgeVertNamesWithPrefix.end(), name);
-            CurrSelectedEdgeVertNamesWithPrefix.erase(iter2);
-            auto iter3 = std::find(CurrSelectedEdgeVertHandles.begin(),
-                                   CurrSelectedEdgeVertHandles.end(), handle);
-            CurrSelectedEdgeVertHandles.erase(iter3);
-        }
-    }
-    GetSceneTreeNode()->SetEntityUpdated(true);
+//    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+//
+//    // TODO 11/5 work on this, make sure the currselected stuff is actually working . also, fix
+//    // Nome3DView edge deselection
+//    std::vector<std::string> forEdge(vertNames.begin(), vertNames.end());
+//    auto name1withoutinstprefix = forEdge[0].substr(instPrefix.length());
+//    auto name2withoutinstprefix = forEdge[1].substr(instPrefix.length());
+//    auto point1 = NameToVert.at(name1withoutinstprefix);
+//    auto point2 = NameToVert.at(name2withoutinstprefix);
+//    // https://stackoverflow.com/questions/64243444/openmesh-find-edge-connecting-two-vertices
+//    CurrSelectedHalfEdgeHandles.push_back(
+//        Mesh.find_halfedge(point1, point2)); // not used yet, but can be used for sharpening edges
+//    ///////////////////////////////////////////////////////////////////
+//
+//    size_t prefixLen = instPrefix.length();
+//    for (const auto& name : vertNames)
+//    {
+//        auto iter = NameToVert.find(name.substr(prefixLen));
+//        if (iter == NameToVert.end())
+//            continue;
+//
+//        auto handle = iter->second;
+//        const auto& original = Mesh.color(handle);
+//        printf("Before: %d %d %d\n", original[0], original[1], original[2]);
+//        auto iter0 = std::find(CurrSelectedEdgeVertNamesWithPrefix.begin(),
+//                               CurrSelectedEdgeVertNamesWithPrefix.end(), name);
+//        if (iter0 == CurrSelectedEdgeVertNamesWithPrefix.end())
+//        {
+//            CurrSelectedEdgeVertNames.push_back(name.substr(prefixLen));
+//            CurrSelectedEdgeVertNamesWithPrefix.push_back(name);
+//            CurrSelectedEdgeVertHandles.push_back(handle);
+//        }
+//        else // it has already been selected, then deselect
+//        {
+//            auto iter1 = std::find(CurrSelectedEdgeVertNames.begin(),
+//                                   CurrSelectedEdgeVertNames.end(), name.substr(prefixLen));
+//            if (iter1 != CurrSelectedEdgeVertNames.end())
+//            { // erase once
+//                CurrSelectedEdgeVertNames.erase(iter1);
+//            }
+//            auto iter2 = std::find(CurrSelectedEdgeVertNamesWithPrefix.begin(),
+//                                   CurrSelectedEdgeVertNamesWithPrefix.end(), name);
+//            CurrSelectedEdgeVertNamesWithPrefix.erase(iter2);
+//            auto iter3 = std::find(CurrSelectedEdgeVertHandles.begin(),
+//                                   CurrSelectedEdgeVertHandles.end(), handle);
+//            CurrSelectedEdgeVertHandles.erase(iter3);
+//        }
+//    }
+//    GetSceneTreeNode()->SetEntityUpdated(true);
 }
 
-// Vertex selection
+//// Vertex selection
 void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames, bool bSel)
 {
-    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-    size_t prefixLen = instPrefix.length();
-    for (const auto& name : vertNames)
-    {
-        auto iter = NameToVert.find(name.substr(prefixLen));
-        if (iter == NameToVert.end())
-            continue;
-
-        auto handle = iter->second;
-        const auto& original = Mesh.color(handle);
-        printf("Before: %d %d %d\n", original[0], original[1], original[2]);
-        if (std::find(CurrSelectedVertNamesWithPrefix.begin(),
-                      CurrSelectedVertNamesWithPrefix.end(), name)
-            == CurrSelectedVertNamesWithPrefix.end())
-        { // if hasn't been selected before
-            if (bSel)
-                Mesh.set_color(handle, { VERT_SEL_COLOR });
-            else
-                Mesh.set_color(handle, { VERT_COLOR });
-            CurrSelectedVertNames.push_back(name.substr(prefixLen));
-            CurrSelectedVertNamesWithPrefix.push_back(name);
-            CurrSelectedVertHandles.push_back(handle);
-        }
-        else // it has already been selected, then deselect
-        {
-            Mesh.set_color(handle, { VERT_COLOR });
-            auto iter1 = std::find(CurrSelectedVertNames.begin(), CurrSelectedVertNames.end(),
-                                   name.substr(prefixLen));
-            if (iter1 != CurrSelectedVertNames.end())
-            { // erase once
-                CurrSelectedVertNames.erase(iter1);
-            }
-            auto iter2 = std::find(CurrSelectedVertNamesWithPrefix.begin(),
-                                   CurrSelectedVertNamesWithPrefix.end(), name);
-            CurrSelectedVertNamesWithPrefix.erase(iter2);
-            auto iter3 =
-                std::find(CurrSelectedVertHandles.begin(), CurrSelectedVertHandles.end(), handle);
-            CurrSelectedVertHandles.erase(iter3);
-        }
-    }
-    GetSceneTreeNode()->SetEntityUpdated(true);
+    std::cout << "switch DS" << std::endl;
+    //    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+    //    size_t prefixLen = instPrefix.length();
+    //    for (const auto& name : vertNames)
+    //    {
+    //        auto iter = NameToVert.find(name.substr(prefixLen));
+    //        if (iter == NameToVert.end())
+    //            continue;
+    //
+    //        auto handle = iter->second;
+    //        const auto& original = Mesh.color(handle);
+    //        printf("Before: %d %d %d\n", original[0], original[1], original[2]);
+    //        if (std::find(CurrSelectedVertNamesWithPrefix.begin(),
+    //                      CurrSelectedVertNamesWithPrefix.end(), name)
+    //            == CurrSelectedVertNamesWithPrefix.end())
+    //        { // if hasn't been selected before
+    //            if (bSel)
+    //                Mesh.set_color(handle, { VERT_SEL_COLOR });
+    //            else
+    //                Mesh.set_color(handle, { VERT_COLOR });
+    //            CurrSelectedVertNames.push_back(name.substr(prefixLen));
+    //            CurrSelectedVertNamesWithPrefix.push_back(name);
+    //            CurrSelectedVertHandles.push_back(handle);
+    //        }
+    //        else // it has already been selected, then deselect
+    //        {
+    //            Mesh.set_color(handle, { VERT_COLOR });
+    //            auto iter1 = std::find(CurrSelectedVertNames.begin(), CurrSelectedVertNames.end(),
+    //                                   name.substr(prefixLen));
+    //            if (iter1 != CurrSelectedVertNames.end())
+    //            { // erase once
+    //                CurrSelectedVertNames.erase(iter1);
+    //            }
+    //            auto iter2 = std::find(CurrSelectedVertNamesWithPrefix.begin(),
+    //                                   CurrSelectedVertNamesWithPrefix.end(), name);
+    //            CurrSelectedVertNamesWithPrefix.erase(iter2);
+    //            auto iter3 =
+    //                std::find(CurrSelectedVertHandles.begin(), CurrSelectedVertHandles.end(), handle);
+    //            CurrSelectedVertHandles.erase(iter3);
+    //        }
+    //    }
+    //    GetSceneTreeNode()->SetEntityUpdated(true);
 }
 
 void CMeshInstance::DeselectAll()
 {
-    for (const auto& name : CurrSelectedVertNames)
-    {
-        auto handle = NameToVert[name];
-        Mesh.set_color(handle, { VERT_COLOR });
-        GetSceneTreeNode()->SetEntityUpdated(true);
-    }
-    CurrSelectedVertNames.clear();
-    CurrSelectedVertNamesWithPrefix.clear(); // added 10/3
-
-    // added below on 10/10 for face deselection
-
-    CurrSelectedFaceNames.clear();
-    CurrSelectedFaceNamesWithPrefix.clear();
+//    for (const auto& name : CurrSelectedVertNames)
+//    {
+//        auto handle = NameToVert[name];
+//        Mesh.set_color(handle, { VERT_COLOR });
+//        GetSceneTreeNode()->SetEntityUpdated(true);
+//    }
+//    CurrSelectedVertNames.clear();
+//    CurrSelectedVertNamesWithPrefix.clear(); // added 10/3
+//
+//    // added below on 10/10 for face deselection
+//
+//    CurrSelectedFaceNames.clear();
+//    CurrSelectedFaceNamesWithPrefix.clear();
 }
+
 
 void CVertexSelector::PointUpdate()
 {
@@ -1106,6 +1222,7 @@ void CVertexSelector::PointUpdate()
         return;
     }
     auto iter = mi->NameToVert.find(TargetName);
+
     if (iter == mi->NameToVert.end())
     {
         printf("Vertex %s does not exist in entity %s\n", TargetName.c_str(),
@@ -1113,8 +1230,10 @@ void CVertexSelector::PointUpdate()
         return;
     }
     auto vertHandle = iter->second;
-    const auto& p = mi->Mesh.point(vertHandle);
-    VI.Position = { p[0], p[1], p[2] };
+
+    const auto& p = mi->currMesh.findVertexInThisMesh(TargetName); // mi->Mesh.point(vertHandle);
+    std::cout << p->position.x << p->position.y << p->position.x << std::endl;
+    VI.Position = { p->position.x, p->position.y, p->position.z }; // Project SwitchDS
     VI.Position = mi->GetSceneTreeNode()->L2WTransform.GetValue(Matrix3x4::IDENTITY) * VI.Position;
     Point.UpdateValue(&VI);
 }
@@ -1122,6 +1241,7 @@ void CVertexSelector::PointUpdate()
 std::string CVertexSelector::GetPath() const
 {
     auto* mi = MeshInstance.GetValue(nullptr);
+
     if (!mi)
         throw std::runtime_error("Vertex selector cannot find its mesh instance");
     return mi->GetSceneTreeNode()->GetPath() + "." + TargetName;

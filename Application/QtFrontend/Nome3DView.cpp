@@ -587,7 +587,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
             GFrtCtx->MainWindow->statusBar()->showMessage(
                 QString::fromStdString("Deselected " + vertName));
         }
-        meshInst->MarkVertAsSelected({ vertName }, true);
+        meshInst->MarkVertAsSelected({ vertName }, true); 
     }
     else if (!hits.empty())
     {
@@ -655,7 +655,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
                     const auto& [dist, meshInst, overlapvertName] = hits[i];
                     if (round(dist * 100) == selected_dist)
                     {
-                        meshInst->MarkVertAsSelected({ overlapvertName }, true);
+                        meshInst->MarkVertAsSelected({ overlapvertName }, true); 
                     }
                 }
             }

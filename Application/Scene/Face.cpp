@@ -53,7 +53,6 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
     for (size_t i = 0; i < Points.GetSize(); i++)
     {
         auto* point = Points.GetValue(i, nullptr);
-
         // point update failed etc
         if (!point)
         {

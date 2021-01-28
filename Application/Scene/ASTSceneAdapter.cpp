@@ -2,6 +2,9 @@
 #include "BSpline.h"
 #include "BezierSpline.h"
 #include "Circle.h"
+#include "Spiral.h"
+#include "Sphere.h"
+#include "Ellipsoid.h"
 #include "Cylinder.h"
 #include "Dupin.h"
 #include "Ellipsoid.h"
@@ -57,7 +60,8 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
     { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy },
     { "mobiusstrip", ECommandKind::Entity }, { "helix", ECommandKind::Entity },
-    { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit }
+    { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
+    { "spiral", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -109,6 +113,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CHyperboloid(name);
     else if (cmd == "dupin")
         return new CDupin(name);
+    else if (cmd == "spiral")
+        return new SSpiral(name);
     return nullptr;
 }
 

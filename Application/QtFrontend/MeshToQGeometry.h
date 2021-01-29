@@ -119,7 +119,7 @@ class CMeshToQGeometry
 public:
     explicit CMeshToQGeometry(const CMeshImpl& fromMesh,
                               std::vector<CMeshImpl::FaceHandle> selectedFaceHandles,
-                              std::map<CMeshImpl::FaceHandle, std::array<float, 3>> fHWithColorVector, 
+                              std::map<CMeshImpl::FaceHandle, std::array<float, 3>> DSFaceWithColorVector, 
                               bool bGenPointGeometry = false);
 
     ~CMeshToQGeometry();

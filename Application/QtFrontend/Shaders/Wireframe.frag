@@ -124,7 +124,7 @@ void main()
     vec4 color;
     const float eps = 0.01; // Needed for floating point error
 
-    // if this face doesn't have a special faceColor (999.0 is default)
+    // if this face has a special faceColor (999.0 is default, so if facecolor is not 999, we know it's not default)
     if (abs(fs_in.faceColor[1] - 999.0) > eps) {
       color =  vec4( customadsModel( fs_in.position, normalize( fs_in.normal ), fs_in.faceColor ), 1.0 );
     }

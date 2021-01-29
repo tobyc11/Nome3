@@ -13,8 +13,6 @@ DEFINE_META_OBJECT(CMesh)
     // `object` is currently unhandled
 }
 
-#define VERT_COLOR 255, 255, 255
-#define VERT_SEL_COLOR 0, 255, 0
 
 CMesh::CMesh() = default;
 
@@ -68,6 +66,7 @@ void CMesh::UpdateEntity()
 
 
     currMesh.buildBoundary();
+    currMesh.computeNormals(); // Randy added on 1/28. Need this for face normals
 
     vector<Face*>::iterator fIt;
     int counter = 0;
@@ -372,47 +371,33 @@ Vector3 CMesh::GetVertexPos(const std::string& name) const
     return Vector3(pos.x, pos.y, pos.z);
 }
 
-void CMesh::AddFace(const std::string& name, const std::vector<std::string>& facePoints,
+// Called from AddFaceIntoMesh
+void CMesh::AddFace(const std::string& name, const std::vector<std::string>& facePointNames,
                     std::string faceSurfaceIdent)
 {
-    std::vector<Vertex *> faceVHandles;
-    for (const std::string& pointName : facePoints)
+    std::vector<Vertex *> faceVertices;
+    for (const std::string& pointName : facePointNames)
     {
-        faceVHandles.push_back(NameToVert[pointName]);
+        faceVertices.push_back(NameToVert[pointName]);
     }
 
-    AddFace(name, faceVHandles, faceSurfaceIdent);
+    AddFace(name, faceVertices, faceSurfaceIdent);
 }
 
-void CMesh::AddFace(const std::string& name, const std::vector<Vertex*>& facePoints,
+void CMesh::AddFace(const std::string& name, const std::vector<Vertex*>& faceDSVerts,
                     std::string faceSurfaceIdent)
 {
-    //auto faceHandle = Mesh.add_face(facePoints);
+    Face * newFace = currMesh.addPolygonFace(faceDSVerts, false); // Project SwitchDS . Check if need to reverseOrder = true or false?
     
-    std::vector<Vertex *> newVerts; // Project SwitchDS
-    for (auto point : facePoints) { // Project SwitchDS
-        newVerts.push_back(point);
-    }
-
-    Face * newFace = currMesh.addPolygonFace(newVerts, false); // Project SwitchDS . Check if need to reverseOrder = true or false?
-    //currMesh.buildBoundary(); Project SwitchDS
-   
-    
-    // Project SwitchDS. Temp comment out below lines
     //// Randy added this on 12/12 for face entity coloring
-    //if (faceSurfaceIdent != "")
-    //    fHWithColor.emplace(faceHandle, faceSurfaceIdent);
-
-    //if (!faceHandle.is_valid())
-    //    printf("Could not add face %s into mesh %s\n", name.c_str(), GetName().c_str());
+     if (faceSurfaceIdent != "") // if the face has a surface color associated with it
+        DSFaceWithColor.emplace(newFace, faceSurfaceIdent);   
    
-    //Project SwitchDS . ID = the size currently. This is problematic when we delete stuff I think
-    FaceVertsToFace.emplace(facePoints,
-                            newFace); // Key: vertex handle, Value: faceHandle. Randy added
-    FaceToFaceVerts.emplace(newFace,
-                            facePoints); // Key: vertex handle, Value: faceHandle. Randy added
-    NameToFace.emplace(name, newFace );
-    FaceToName.emplace(newFace, name); // Randy added
+    //Project SwitchDS 
+    FaceVertsToFace.emplace(faceDSVerts,newFace); 
+    FaceToFaceVerts.emplace(newFace,faceDSVerts); 
+    NameToFace.emplace(name, newFace);
+    FaceToName.emplace(newFace, name); 
 }
 
 void CMesh::AddLineStrip(const std::string& name,
@@ -596,11 +581,11 @@ void CMeshInstance::CopyFromGenerator()
     CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();
 
     // Randy added on 12/12
-    for (auto& pair : MeshGenerator->fHWithColor)
+    for (auto& pair : MeshGenerator->DSFaceWithColor)
     {
-        if (pair.second != "")
+        auto surfaceIdentifier = pair.second;
+        if (surfaceIdentifier != "")
         {
-            auto surfaceIdentifier = pair.second;
             auto surfaceEntity = scene->FindEntity(surfaceIdentifier);
             if (surfaceEntity)
             {
@@ -608,7 +593,7 @@ void CMeshInstance::CopyFromGenerator()
                 std::array<float, 3> color = { surfaceObject->ColorR.GetValue(1.0f),
                                                surfaceObject->ColorG.GetValue(1.0f),
                                                surfaceObject->ColorB.GetValue(1.0f) };
-                fHWithColorVector.emplace(pair.first, color);
+                DSFaceWithColorVector.emplace(pair.first, color);
             }
             else
             {
@@ -998,9 +983,7 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc:
     auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
     for (const auto& pair : NameToVert)
     {
-        const auto& posArr = pair.second->position; // Mesh.point(pair.second);
-        assert(posArr.Length() == 3);
-        tc::Vector3 pos { posArr.x, posArr.y, posArr.z };
+        tc::Vector3 pos = pair.second->position;
         tc::Vector3 projected = localRay.Project(pos);
         auto dist = (pos - projected).Length();
         auto t = (localRay.Origin - projected).Length();
@@ -1148,50 +1131,44 @@ void CMeshInstance::MarkEdgeAsSelected(const std::set<std::string>& vertNames, b
 }
 
 //// Vertex selection
-void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames, bool bSel)
+void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames)
 {
     std::cout << "switch DS" << std::endl;
-    //    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-    //    size_t prefixLen = instPrefix.length();
-    //    for (const auto& name : vertNames)
-    //    {
-    //        auto iter = NameToVert.find(name.substr(prefixLen));
-    //        if (iter == NameToVert.end())
-    //            continue;
-    //
-    //        auto handle = iter->second;
-    //        const auto& original = Mesh.color(handle);
-    //        printf("Before: %d %d %d\n", original[0], original[1], original[2]);
-    //        if (std::find(CurrSelectedVertNamesWithPrefix.begin(),
-    //                      CurrSelectedVertNamesWithPrefix.end(), name)
-    //            == CurrSelectedVertNamesWithPrefix.end())
-    //        { // if hasn't been selected before
-    //            if (bSel)
-    //                Mesh.set_color(handle, { VERT_SEL_COLOR });
-    //            else
-    //                Mesh.set_color(handle, { VERT_COLOR });
-    //            CurrSelectedVertNames.push_back(name.substr(prefixLen));
-    //            CurrSelectedVertNamesWithPrefix.push_back(name);
-    //            CurrSelectedVertHandles.push_back(handle);
-    //        }
-    //        else // it has already been selected, then deselect
-    //        {
-    //            Mesh.set_color(handle, { VERT_COLOR });
-    //            auto iter1 = std::find(CurrSelectedVertNames.begin(), CurrSelectedVertNames.end(),
-    //                                   name.substr(prefixLen));
-    //            if (iter1 != CurrSelectedVertNames.end())
-    //            { // erase once
-    //                CurrSelectedVertNames.erase(iter1);
-    //            }
-    //            auto iter2 = std::find(CurrSelectedVertNamesWithPrefix.begin(),
-    //                                   CurrSelectedVertNamesWithPrefix.end(), name);
-    //            CurrSelectedVertNamesWithPrefix.erase(iter2);
-    //            auto iter3 =
-    //                std::find(CurrSelectedVertHandles.begin(), CurrSelectedVertHandles.end(), handle);
-    //            CurrSelectedVertHandles.erase(iter3);
-    //        }
-    //    }
-    //    GetSceneTreeNode()->SetEntityUpdated(true);
+    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+    size_t prefixLen = instPrefix.length();
+    for (const auto& name : vertNames)
+    {
+        auto iter = NameToVert.find(name.substr(prefixLen));
+        if (iter == NameToVert.end())
+            continue;
+        auto DSvert = iter->second;
+        if (std::find(CurrSelectedVertNamesWithPrefix.begin(),
+                        CurrSelectedVertNamesWithPrefix.end(), name)
+            == CurrSelectedVertNamesWithPrefix.end())
+        { // if hasn't been selected before
+            DSvert->selected = true;
+            CurrSelectedVertNames.push_back(name.substr(prefixLen));
+            CurrSelectedVertNamesWithPrefix.push_back(name);
+            CurrSelectedDSVerts.push_back(DSvert);
+        }
+        else // it has already been selected, then reset to default color
+        {
+            DSvert->selected = false;
+            auto iter1 = std::find(CurrSelectedVertNames.begin(), CurrSelectedVertNames.end(),
+                                    name.substr(prefixLen));
+            if (iter1 != CurrSelectedVertNames.end())
+            { // erase once
+                CurrSelectedVertNames.erase(iter1);
+            }
+            auto iter2 = std::find(CurrSelectedVertNamesWithPrefix.begin(),
+                                    CurrSelectedVertNamesWithPrefix.end(), name);
+            CurrSelectedVertNamesWithPrefix.erase(iter2);
+            auto iter3 =
+                std::find(CurrSelectedDSVerts.begin(), CurrSelectedDSVerts.end(), DSvert);
+            CurrSelectedDSVerts.erase(iter3);
+        }
+    }
+    GetSceneTreeNode()->SetEntityUpdated(true);
 }
 
 void CMeshInstance::DeselectAll()

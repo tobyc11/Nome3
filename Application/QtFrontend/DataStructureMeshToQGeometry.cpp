@@ -3,11 +3,13 @@
 #include <iostream>
 namespace Nome
 {
+#define VERT_COLOR 1.0f, 1.0f, 1.0f // normalized: 255 pixel value coresponds to 1
+#define VERT_SEL_COLOR 0, 1.0f, 0
 
     // Project SwitchDS
 CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
     const DSMesh& fromMesh, std::vector<Face*> selectedFaceHandles,
-    std::map<Face*, std::array<float, 3>> fHWithColorVector, bool bGenPointGeometry)
+    std::map<Face*, std::array<float, 3>> DSFaceWithColorVector, bool bGenPointGeometry)
 {
     // Per face normal, thus no shared vertices between faces
     struct CVertexData
@@ -61,13 +63,12 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
         //}
 
         // Randy added on 12/12
-        std::array<float, 3> color = { 999.0, 999.0, 999.0 }; // dummy default values
+        std::array<float, 3> potentialFaceColor = { 999.0, 999.0, 999.0 }; // dummy default values
 
-        //if (fHWithColorVector.find(fIter.handle()) != fHWithColorVector.end())
-        //    color = fHWithColorVector.at(fIter.handle());
-
-        // Project ChangeDS
         Face* currFace = (*fIt);
+        if (DSFaceWithColorVector.find(currFace) != DSFaceWithColorVector.end())
+            potentialFaceColor = DSFaceWithColorVector.at(currFace);
+
         Edge* firstEdge = currFace->oneEdge;
         Edge* currEdge = firstEdge;
         Vertex* currVert;
@@ -101,11 +102,12 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
             {
                 const auto& posVec = currVert->position;
                 v0.Pos = { posVec.x, posVec.y, posVec.z };
-                const auto& fnVec = currFace->normal; // fromMesh.normal(*fIter);
+                const auto& fnVec = currFace->normal; // 1/28 i think currFace->normal is not set: currFace->normal; //
+                               // fromMesh.normal(*fIter);
                 v0.Normal = { fnVec.x, fnVec.y, fnVec.z };
                 v0.colorSelected =
-                    selected; // Randy added this to handle marking which things are selected.
-                v0.faceColor = color;
+selected; // Randy added this to handle marking which faces are selected.
+                v0.faceColor = potentialFaceColor; //
             }
             else if (faceVCount == 1) // second vert
             {
@@ -114,7 +116,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
                 const auto& fnVec = currFace->normal; // fromMesh.normal(*fIter);
                 vPrev.Normal = { fnVec.x, fnVec.y, fnVec.z };
                 vPrev.colorSelected = selected;
-                vPrev.faceColor = color;
+                vPrev.faceColor = potentialFaceColor;
             }
             else // remaining 3rd, 4th (if a quad face), and any additional polygon vertices. For
                  // the 4th vert and beyond, we send to builder again, creating another triangle.
@@ -127,7 +129,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
                 const auto& fnVec = currFace->normal; // fromMesh.normal(*fIter);
                 vCurr.Normal = { fnVec.x, fnVec.y, fnVec.z };
                 vCurr.colorSelected = selected;
-                vCurr.faceColor = color;
+                vCurr.faceColor = potentialFaceColor;
                 v0.SendToBuilder(builder);
                 vPrev.SendToBuilder(builder);
                 vCurr.SendToBuilder(builder);
@@ -194,23 +196,26 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
         vector<Vertex*>::iterator vIt;
         for (auto vIt = fromMesh.vertList.begin(); vIt < fromMesh.vertList.end(); vIt++)
         {
-            const auto& point = (*vIt)->position; // fromMesh.point(v);
-          //  const auto& color = fromMesh.color(v);
-            pointBufferData.push_back(point.x);
-            pointBufferData.push_back(point.y);
-            pointBufferData.push_back(point.z);
+            auto currVert = *vIt;
+            const auto& pos = currVert->position; 
 
-            pointBufferData.push_back(255.0f / 255.0f); // TODO: Fix this later, make it custom color
-            pointBufferData.push_back(255.0f / 255.0f);
-            pointBufferData.push_back(255.0f / 255.0f);
+            pointBufferData.push_back(pos.x);
+            pointBufferData.push_back(pos.y);
+            pointBufferData.push_back(pos.z);
+            
+            tc::Vector3 pointColor;
+            if (currVert->selected) {
+                pointColor = { VERT_SEL_COLOR };
+            }
+            else
+            {
+                pointColor = { VERT_COLOR };
+            }
 
-            //         pointBufferData.push_back(color[0] / 255.0f);
-            //pointBufferData.push_back(color[1] / 255.0f);
-            //pointBufferData.push_back(color[2] / 255.0f);
-            // printf("v%d: %d %d %d\n", vertexCount, color[0], color[1], color[2]); // Randy
-            // commented this out on 11/26. Printing coordinates more useful
+            pointBufferData.push_back(pointColor.x);
+            pointBufferData.push_back(pointColor.y);
+            pointBufferData.push_back(pointColor.z);
 
-            printf("v%d: %f %f %f\n", (*vIt)->ID, point.x, point.y, point.z);
             vertexCount++;
         }
         QByteArray copyOfBuffer { reinterpret_cast<const char*>(pointBufferData.data()),

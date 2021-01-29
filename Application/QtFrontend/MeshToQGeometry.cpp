@@ -6,7 +6,7 @@ namespace Nome
 
 CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
                                    std::vector<CMeshImpl::FaceHandle> selectedFaceHandles,
-                                   std::map<CMeshImpl::FaceHandle, std::array<float, 3>> fHWithColorVector, 
+                                   std::map<CMeshImpl::FaceHandle, std::array<float, 3>> DSFaceWithColorVector, 
                                    bool bGenPointGeometry)
 {
     // Per face normal, thus no shared vertices between faces
@@ -61,8 +61,8 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
         // Randy added on 12/12
         std::array<float, 3> color = {999.0,999.0,999.0}; // dummy default values
 
-        if (fHWithColorVector.find(fIter.handle()) != fHWithColorVector.end()) 
-            color = fHWithColorVector.at(fIter.handle());
+        if (DSFaceWithColorVector.find(fIter.handle()) != DSFaceWithColorVector.end()) 
+            color = DSFaceWithColorVector.at(fIter.handle());
 
         for (; fvIter.is_valid(); ++fvIter)
         {

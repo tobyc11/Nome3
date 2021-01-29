@@ -51,8 +51,8 @@ public:
     }
 
     Vector3 GetVertexPos(const std::string& name) const;
-    void AddFace(const std::string& name, const std::vector<std::string>& facePoints, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
-    void AddFace(const std::string& name, const std::vector<Vertex*>& facePoints, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
+    void AddFace(const std::string& name, const std::vector<std::string>& facePointNames, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
+    void AddFace(const std::string& name, const std::vector<Vertex*>& faceDSVerts, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
     void AddLineStrip(const std::string& name, const std::vector<Vertex*>& points);
     void ClearMesh();
 
@@ -81,7 +81,7 @@ private:
     std::map<std::vector<Vertex*>, Face* > FaceVertsToFace; // Randy added. used in PickFaces
     std::map<Face* , std::vector<Vertex*>> FaceToFaceVerts; // Randy added on 10/11 . Used in FacesToDelete and GetFaceVertexNames
     std::vector<std::vector<Vertex*>> LineStrips; // Randy changed this to LineStrips on 12/25
-    std::map<Face* , std::string> fHWithColor; // Randy added on 12/12 for face entity coloring
+    std::map<Face* , std::string> DSFaceWithColor; // Randy added on 12/12 for face entity coloring
 };
 
 class CMeshInstancePoint : public CInteractivePoint
@@ -152,7 +152,7 @@ public:
     std::vector<std::pair<float, std::vector<std::string>>> PickPolylines(const tc::Ray& localRay); // Randy added on 12/22 for polyline selection
     std::vector<std::pair<float, std::vector<std::string>>>
     PickEdges(const tc::Ray& localRay); // Randy added on 10/29 for edge selection
-    void MarkVertAsSelected(const std::set<std::string>& vertNames, bool bSel);
+    void MarkVertAsSelected(const std::set<std::string>& vertNames);
     void MarkFaceAsSelected(const std::set<std::string>& faceNames,
                             bool bSel); // Randy added on 10/10 for face selection
     void MarkEdgeAsSelected(const std::set<std::string>& vertNames,
@@ -162,7 +162,7 @@ public:
     std::vector<Face* >
     GetSelectedFaceHandles(); // Get selected face handles. Used in InteractiveMesh.cpp.
 
-    std::map<Face* , std::array<float,3> > GetfHWithColorVector() { return fHWithColorVector;}; // Randy added on 12/12 
+    std::map<Face* , std::array<float,3> > GetDSFaceWithColorVector() { return DSFaceWithColorVector;}; // Randy added on 12/12 
 
     std::vector<std::string> GetFaceVertexNames(
         std::vector<std::string> facenames); // Randy added on 10/19 to return face vert names
@@ -186,7 +186,7 @@ private:
     std::map<std::vector<Vertex*>, Face* > FaceVertsToFace; // Randy added
     std::map<Face* , std::vector<Vertex*>> FaceToFaceVerts; // Randy added
 
-    std::map<Face* , std::array<float, 3>> fHWithColorVector; // Randy added on 12/12 for face entity coloring
+    std::map<Face* , std::array<float, 3>> DSFaceWithColorVector; // Randy added on 12/12 for face entity coloring
     std::set<std::string> FacesToDelete;
 
     // std::map<std::string, std::pair<CMeshInstancePoint*, uint32_t>> PickingVerts; Randy commented
@@ -195,7 +195,7 @@ private:
     // Store selected vertex handles and names
     std::vector<std::string> CurrSelectedVertNames;
     std::vector<std::string> CurrSelectedVertNamesWithPrefix;
-    std::vector<Vertex*> CurrSelectedVertHandles; // Randy added on 11/4
+    std::vector<Vertex*> CurrSelectedDSVerts; // Randy added on 11/4
 
     // Store selected edge handles TODO: Create edge names
     //std::vector<CMeshImpl::HalfedgeHandle> CurrSelectedHalfEdgeHandles; // Randy added on 11/4. TODO: Should I use HalfedgeHandle or

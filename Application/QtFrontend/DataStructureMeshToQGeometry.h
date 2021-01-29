@@ -122,7 +122,7 @@ class CDataStructureMeshToQGeometry
 public:
     explicit CDataStructureMeshToQGeometry(
         const DSMesh& fromMesh, std::vector<Face*> selectedFaceHandles,
-        std::map<Face*, std::array<float, 3>> fHWithColorVector, // Project SwitchDS
+        std::map<Face*, std::array<float, 3>> DSFaceWithColorVector, // Project SwitchDS
         bool bGenPointGeometry = false);
 
     ~CDataStructureMeshToQGeometry();

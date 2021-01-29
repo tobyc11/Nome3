@@ -40,7 +40,7 @@ public:
     /* The name of this face.*/
     string name;
     /* The color of this face. */
-    tc::Vector3 color; // QColor color; 1/28 randy updated this
+    tc::Vector3 color;  // QColor color;
     std::vector<Vertex> vertices;
     /* Indicate if this face has user defined color. */
     bool user_defined_color;

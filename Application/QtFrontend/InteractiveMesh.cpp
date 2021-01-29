@@ -63,13 +63,13 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             auto selectedfacehandles =
                 meshInstance->GetSelectedFaceHandles(); // Randy added on 12/3
 
-            auto fHWithColorVector = meshInstance->GetfHWithColorVector();
+            auto DSFaceWithColorVector = meshInstance->GetDSFaceWithColorVector();
             //CMeshToQGeometry meshToQGeometry(meshInstance->GetMeshImpl(), selectedfacehandles,
-            //                                 fHWithColorVector,
+            //                                 DSFaceWithColorVector,
             //                                 true); // Randy added 2nd argument on 12/3
             auto test = meshInstance->GetDSMesh();
             CDataStructureMeshToQGeometry DSmeshToQGeometry(meshInstance->GetDSMesh(), selectedfacehandles,
-                                    fHWithColorVector,
+                                    DSFaceWithColorVector,
                                     true); // Project SwitchDS
 
             //Geometry = meshToQGeometry.GetGeometry();
@@ -136,8 +136,9 @@ void CInteractiveMesh::UpdateMaterial(bool showFacets)
         }
     }
     else // else, the scenetreenode is within a group, and we keep bubbling up from where we are
-         // (going up the tree) until we get to an instance scene node that has a surface color
-        // By convention (suggested by Prof Carlo Sequin), the parent nodes have color priority.
+         // (going up the tree) UNTIL we get to an instance scene node that has a surface color
+        // To clarify, from a hierarchical standpoint, the color that is in the lowest node in the hierarchical tree representing the NOME file
+           // will color the object in the scene.
     {
         bool setColor = false;
         auto currNode = SceneTreeNode;

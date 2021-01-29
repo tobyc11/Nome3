@@ -105,8 +105,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
                 const auto& fnVec = currFace->normal; // 1/28 i think currFace->normal is not set: currFace->normal; //
                                // fromMesh.normal(*fIter);
                 v0.Normal = { fnVec.x, fnVec.y, fnVec.z };
-                v0.colorSelected =
-selected; // Randy added this to handle marking which faces are selected.
+                v0.colorSelected = selected; // Randy added this to handle marking which faces are selected.
                 v0.faceColor = potentialFaceColor; //
             }
             else if (faceVCount == 1) // second vert
@@ -204,13 +203,12 @@ selected; // Randy added this to handle marking which faces are selected.
             pointBufferData.push_back(pos.z);
             
             tc::Vector3 pointColor;
-            if (currVert->selected) {
+            if (currVert->selected)
+            {
                 pointColor = { VERT_SEL_COLOR };
             }
             else
-            {
                 pointColor = { VERT_COLOR };
-            }
 
             pointBufferData.push_back(pointColor.x);
             pointBufferData.push_back(pointColor.y);

@@ -25,6 +25,6 @@ Face::Face(std::vector<Vertex> vertices)
     id = -1;
     name = "";
     user_defined_color = false;
-    vertices = vertices;
+    this->vertices = vertices;
 }
 

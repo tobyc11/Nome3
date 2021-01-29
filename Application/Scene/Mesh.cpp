@@ -148,7 +148,7 @@ void CMesh::UpdateEntity()
                 }
                 else
                 {
-                 //   cout << "here3.20" << endl;
+
                     Vertex* faceVert1 = currEdge->fa->facePoint;
                    // cout << "here3.21" << endl;
                     Vertex* edgeVert1 = currEdge->va;
@@ -558,6 +558,7 @@ CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name,
     return selector;
 }
 
+// Conceptually, we are copying from the CMesh object
 void CMeshInstance::CopyFromGenerator()
 {
     //Mesh.clear(); Project SwitchDS
@@ -989,6 +990,11 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc:
         auto t = (localRay.Origin - projected).Length();
         if (dist < std::min(0.01f * t, 0.25f))
         {
+            //std::cout << pos.x << "  " <<  pos.y << "  " << pos.z << std::endl;
+            //std::cout << projected.x << "  " << projected.y << "  " << projected.z << std::endl;
+            //std::cout << dist << std::endl;
+            //std::cout << t << std::endl;
+            //std::cout << instPrefix + pair.first  + " DEBUG PICK VERTICVES " << std::endl;
             result.emplace_back(t, instPrefix + pair.first);
         }
     }
@@ -1133,7 +1139,10 @@ void CMeshInstance::MarkEdgeAsSelected(const std::set<std::string>& vertNames, b
 //// Vertex selection
 void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames)
 {
-    std::cout << "switch DS" << std::endl;
+    std::cout << "switch DS MarkVertAsSelected" << std::endl;
+    for (auto name : vertNames)
+        std::cout << name << std::endl;
+
     auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
     size_t prefixLen = instPrefix.length();
     for (const auto& name : vertNames)
@@ -1142,10 +1151,9 @@ void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames)
         if (iter == NameToVert.end())
             continue;
         auto DSvert = iter->second;
-        if (std::find(CurrSelectedVertNamesWithPrefix.begin(),
-                        CurrSelectedVertNamesWithPrefix.end(), name)
-            == CurrSelectedVertNamesWithPrefix.end())
+        if (std::find(CurrSelectedVertNamesWithPrefix.begin(), CurrSelectedVertNamesWithPrefix.end(), name) == CurrSelectedVertNamesWithPrefix.end())
         { // if hasn't been selected before
+            std::cout << "setting vert to selected" + iter->first << std::endl;
             DSvert->selected = true;
             CurrSelectedVertNames.push_back(name.substr(prefixLen));
             CurrSelectedVertNamesWithPrefix.push_back(name);
@@ -1153,6 +1161,7 @@ void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames)
         }
         else // it has already been selected, then reset to default color
         {
+            std::cout << "deselecting vert" + iter->first << std::endl;
             DSvert->selected = false;
             auto iter1 = std::find(CurrSelectedVertNames.begin(), CurrSelectedVertNames.end(),
                                     name.substr(prefixLen));

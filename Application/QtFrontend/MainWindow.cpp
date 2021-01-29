@@ -185,8 +185,7 @@ void CMainWindow::on_actionMerge_triggered()
     Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(
         merger)); // Merger now has all the vertices set, so we can add it into the scene as a new
                   // entity
-    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode(
-        "globalMergeNode"); // Add it into the Scene Tree by creating a new node called
+    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); // Add it into the Scene Tree by creating a new node called
                             // globalMergeNode. Notice, this is the same name everytime you Merge.
                             // This means you can only have one merger mesh each time. It will
                             // override previous merger meshes with the new vertices.

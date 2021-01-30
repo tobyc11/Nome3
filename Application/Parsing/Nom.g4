@@ -64,6 +64,7 @@ command
    | open='mesh' name=ident command* end='endmesh' # CmdSubCmds
    | open='group' name=ident command* end='endgroup' # CmdSubCmds
    | open='circle' name=ident LPAREN expression expression RPAREN end='endcircle' # CmdExprListOne
+   | open='spiral' name=ident LPAREN expression expression expression RPAREN end='endspiral' # CmdExprListOne
    | open='sphere' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endsphere' # CmdExprListOne
    | open='ellipsoid' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endellipsoid' # CmdExprListOne
    | open='cylinder' name=ident LPAREN expression expression expression expression RPAREN end='endcylinder' # CmdExprListOne

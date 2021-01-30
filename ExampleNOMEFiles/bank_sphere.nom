@@ -5,10 +5,10 @@ endbank
 
 funnel f ({expr $funnel_slider.num_sides} {expr $funnel_slider.radius} 0 2) endfunnel
 
-group sphere
+group testsphere
   instance f1 f endinstance
   instance f2 f rotate (1 0 0) (90) translate (0 1 1) endinstance
   instance f2 f rotate (0 1 0) (90) translate (-1 0 1) endinstance
 endgroup
 
-instance sphere1 sphere endinstance
+instance sphere1 testsphere endinstance

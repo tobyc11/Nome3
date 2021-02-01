@@ -8,8 +8,7 @@ namespace Nome
 
     // Project SwitchDS
 CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
-    const DSMesh& fromMesh, std::vector<Face*> selectedFaceHandles,
-    std::map<Face*, std::array<float, 3>> DSFaceWithColorVector, bool bGenPointGeometry)
+    const DSMesh& fromMesh, bool bGenPointGeometry)
 {
     // Per face normal, thus no shared vertices between faces
     struct CVertexData
@@ -54,17 +53,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
         int faceVCount = 0;
         //CMeshImpl::FaceVertexIter fvIter = CMeshImpl::FaceVertexIter(fromMesh, *fIter);
 
-        // Check to see if this face handle was selected
-        int selected = 0; // 0 means it hasn't been selected and it will retain original color
-        //auto iter = std::find(selectedFaceHandles.begin(), selectedFaceHandles.end(), fIter);
-        //if (iter != selectedFaceHandles.end())
-        //{
-        //    selected = 1;
-        //}
-
-        // Randy added on 12/12
         std::array<float, 3> potentialFaceColor = { 999.0, 999.0, 999.0 }; // dummy default values
-       
         Face* currFace = (*fIt);
         if (currFace->surfaceName != "")
             potentialFaceColor = currFace->color;
@@ -73,7 +62,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
         Edge* currEdge = firstEdge;
         Vertex* currVert;
         do
-        { // TODO TOMORROW: BUG IS DUE TO NON MANIFOLD FACES MAKE THE ITERATION GET STUCK. 
+        { // TODO: BUG IS DUE TO NON MANIFOLD FACES MAKE THE ITERATION GET STUCK. 
           // TRY COMMENTING OUT TORUS VS COMMENTING OUT TORUS KNOT
             if (currFace == currEdge->fa)
             {
@@ -105,7 +94,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
                 const auto& fnVec = currFace->normal; // 1/28 i think currFace->normal is not set: currFace->normal; //
                                // fromMesh.normal(*fIter);
                 v0.Normal = { fnVec.x, fnVec.y, fnVec.z };
-                v0.colorSelected = selected; // Randy added this to handle marking which faces are selected.
+                v0.colorSelected = currFace->selected; // Randy added this to handle marking which faces are selected.
                 v0.faceColor = potentialFaceColor; //
             }
             else if (faceVCount == 1) // second vert
@@ -114,7 +103,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
                 vPrev.Pos = { posVec.x, posVec.y, posVec.z };
                 const auto& fnVec = currFace->normal; // fromMesh.normal(*fIter);
                 vPrev.Normal = { fnVec.x, fnVec.y, fnVec.z };
-                vPrev.colorSelected = selected;
+                vPrev.colorSelected = currFace->selected;
                 vPrev.faceColor = potentialFaceColor;
             }
             else // remaining 3rd, 4th (if a quad face), and any additional polygon vertices. For
@@ -127,7 +116,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
                 vCurr.Pos = { posVec.x, posVec.y, posVec.z };
                 const auto& fnVec = currFace->normal; // fromMesh.normal(*fIter);
                 vCurr.Normal = { fnVec.x, fnVec.y, fnVec.z };
-                vCurr.colorSelected = selected;
+                vCurr.colorSelected = currFace->selected;
                 vCurr.faceColor = potentialFaceColor;
                 v0.SendToBuilder(builder);
                 vPrev.SendToBuilder(builder);

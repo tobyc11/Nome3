@@ -157,6 +157,7 @@ void Mesh::addTriFace(Vertex* v1, Vertex* v2, Vertex* v3)
     e31->setNextEdge(v3, newFace, e23);
     newFace->id = faceList.size();
     faceList.push_back(newFace);
+    nameToFace[newFace->name] = newFace; // Randy added this
 }
 
 void Mesh::addQuadFace(Vertex* v1, Vertex* v2, Vertex* v3, Vertex* v4)
@@ -233,6 +234,7 @@ void Mesh::addQuadFace(Vertex* v1, Vertex* v2, Vertex* v3, Vertex* v4)
     e41->setNextEdge(v1, newFace, e12);
     newFace->id = faceList.size();
     faceList.push_back(newFace);
+    nameToFace[newFace->name] = newFace; // Randy added this
 }
 
 Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
@@ -272,7 +274,7 @@ Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
             }
             else
             {
-                cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : "
+                cout << "addPolygonFace ERROR: Try to create a Non-Manifold at edge with vertex1 : "
                      << currEdge->va->ID << " and vertex2 :" << currEdge->vb->ID << endl;
                // exit(0);
             }
@@ -378,6 +380,7 @@ Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
     }
     newFace->id = faceList.size();
     faceList.push_back(newFace);
+    nameToFace[newFace->name] = newFace; // Randy added this
     return newFace;
 }
 

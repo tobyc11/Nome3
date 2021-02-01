@@ -57,252 +57,11 @@ void CMesh::UpdateEntity()
         this->AddVertex(point->Name, point->Position);
     }
 
-
-    // TODO: REMOVE BELOW IN THE FUTURE. ALTHOUGH SHOULD PROBABLY KEEP CURRMESH.BUILDBOUNDARY()
-    // Project SwitchDS subdivison debug 
-    // Face
-    std::cout << "right before subdivison debug" << std::endl;
-
-
+    // These two calls below are very important for constructing our mesh DS and hence representing our scene
     currMesh.buildBoundary();
-    currMesh.computeNormals(); // Randy added on 1/28. Need this for face normals
-
-    vector<Face*>::iterator fIt;
-    int counter = 0;
-    for (fIt = currMesh.faceList.begin(); fIt < currMesh.faceList.end(); fIt++)
-    {
-        Vertex* newFacePoint = new Vertex;
-        tc::Vector3 newFacePointPosition = tc::Vector3(0, 0, 0);
-        Face* currFace = (*fIt);
-        Edge* firstEdge = currFace->oneEdge;
-        if (firstEdge == NULL)
-        {
-            cout << "ERROR: This face (with ID) does not have a sideEdge." << endl;
-            exit(1);
-        }
-        Edge* currEdge = firstEdge;
-        uint counter = 0;
-        Vertex* currVert;
-        do
-        {
-            if (currFace == currEdge->fa)
-            {
-                currVert = currEdge->vb;
-                currEdge = currEdge->nextVbFa;
-            }
-            else if (currFace == currEdge->fb)
-            {
-                if (currEdge->mobius)
-                {
-                    currVert = currEdge->vb;
-                    currEdge = currEdge->nextVbFb;
-                }
-                else
-                {
-                    currVert = currEdge->va;
-                    currEdge = currEdge->nextVaFb;
-                }
-            }
-            newFacePointPosition += currVert->position;
-            counter += 1;
-        } while (currEdge != firstEdge);
-
-        newFacePointPosition /= counter;
-        newFacePoint->position = newFacePointPosition;
-        newFacePoint->ID = counter;
-        cout << "New Face Point: ID: " << newFacePoint->ID
-             << " Position: " << (newFacePoint->position).x << " " << (newFacePoint->position).y
-             << " " << (newFacePoint->position).z << endl;
-        currFace->facePoint = newFacePoint;
-        // newVertList.push_back(newFacePoint); temp comment out. this would be the subdivided face
-        // point
-        counter += 1;
-    }
-
-    std::cout << "edge point debug" << std::endl;
-    vector<Face*>::iterator fIt2;
-    int edgecounter = 0;
-    for (fIt2 = currMesh.faceList.begin(); fIt2 < currMesh.faceList.end(); fIt2++)
-    {
-       // cout << "here" << endl;
-        Face* currFace = (*fIt2);
-        Edge* firstEdge = currFace->oneEdge;
-        Edge* currEdge = firstEdge;
-        Vertex* currVert;
-      //  cout << "here1" << endl;
-        do
-        {
-           // cout << "here2" << endl;
-            edgecounter += 1;
-            Vertex* newEdgePoint = new Vertex;
-            if (currEdge->edgePoint == NULL)
-            {
-               // cout << "here3" << endl;
-                if (currEdge->isSharp)
-                {
-                    //cout << "here3.1" << endl;
-                    newEdgePoint->position =
-                        (currEdge->va->position + currEdge->vb->position) / (float)2.0;
-                }
-                else
-                {
-
-                    Vertex* faceVert1 = currEdge->fa->facePoint;
-                   // cout << "here3.21" << endl;
-                    Vertex* edgeVert1 = currEdge->va;
-                    //cout << "here3.22" << endl;
-                    Vertex* edgeVert2 = currEdge->vb;
-                    //cout << "here3.23" << endl;
-                    cout << (currEdge->fb == NULL) << endl;
-                    //cout << " pa" << endl;
-                    //cout << currEdge->fb->id << endl;
-                    //cout << "here3.230" << endl;
-                    Vertex* faceVert2 = currEdge->fb->facePoint; // this causing it to crash
-                    //cout << "here3.24" << endl;
-                    newEdgePoint->position = (faceVert1->position + faceVert2->position
-                                              + edgeVert1->position + edgeVert2->position)
-                        / (float)4.0;
-                   // cout << "here3.25" << endl;
-                }
-               // cout << "here4" << endl;
-                currEdge->edgePoint = newEdgePoint;
-                newEdgePoint->ID = edgecounter;
-               //newVertList.push_back(newEdgePoint); // Randy temp comment this out
-                // cout<<"New Edge Point: ID: "<< newEdgePoint -> ID <<" Position: "<< (newEdgePoint
-                // -> position)[0]<<" "<<(newEdgePoint -> position)[1]<<" "<<(newEdgePoint ->
-                // position)[2]<<endl;
-            }
-            //cout << "here5" << endl;
-            if (currFace == currEdge->fa)
-            {
-                currVert = currEdge->vb;
-                currEdge = currEdge->nextVbFa;
-            }
-            else if (currFace == currEdge->fb)
-            {
-                if (currEdge->mobius)
-                {
-                    currVert = currEdge->vb;
-                    currEdge = currEdge->nextVbFb;
-                }
-                else
-                {
-                    currVert = currEdge->va;
-                    currEdge = currEdge->nextVaFb;
-                }
-            }
-          //  cout << "here6" << endl;
-        } while (currEdge != firstEdge);
-       // cout << "done with edge point" << endl;
-    }
-
-    
-    std::cout << "vert point debug removed cause was causing NOME to crash for hierarchnametest. fix in the future" << std::endl;
-
-    // vector<Vertex*>::iterator vIt2;
-    //Vertex facePointAvg;
-    //Vertex edgePointAvg;
-    //Vertex* currVert;
-    //Vertex* newVertexPoint;
-    //int vertcounter = 0;
-    //for (vIt2 = currMesh.vertList.begin(); vIt2 < currMesh.vertList.end(); vIt2++)
-    //{
-    //    // cout<<"New Vertex!"<<endl;
-    //    currVert = (*vIt2);
-    //    newVertexPoint = new Vertex;
-    //    // cout<<"vertexID: "<<currVert -> ID<<endl;
-    //    Edge* firstEdge = currVert->oneEdge;
-    //    Edge* currEdge = firstEdge;
-    //    Face* currFace = currEdge->fa;
-    //    int sharpEdgeCounter = 0;
-    //    Edge* sharpEdgeI;
-    //    Edge* sharpEdgeK;
-    //    tc::Vector3 facePointAvgPosition = tc::Vector3(0, 0, 0);
-    //    tc::Vector3 midPointAvgPoistion = tc::Vector3(0, 0, 0);
-    //    int n = 0;
-    //    do
-    //    {
-    //        vertcounter += 1;
-    //        // cout<<"Now the sharp edge counter is "<<sharpEdgeCounter<<endl;
-    //        // cout<<"here"<<endl<<nextOutEdge -> end -> ID<<endl;
-    //        midPointAvgPoistion += (currEdge->va->position + currEdge->vb->position) / 2.0f;
-    //        facePointAvgPosition += currFace->facePoint->position;
-    //        n += 1;
-    //        if (currEdge->isSharp)
-    //        {
-    //            // cout<<"A"<<endl;
-    //            sharpEdgeCounter += 1;
-    //            if (sharpEdgeCounter == 1)
-    //            {
-    //                sharpEdgeI = currEdge;
-    //            }
-    //            else if (sharpEdgeCounter == 2)
-    //            {
-    //                sharpEdgeK = currEdge;
-    //            }
-    //            currFace = currEdge->theOtherFace(currFace);
-    //            if (currFace == NULL)
-    //            {
-    //                // cout<<"A1"<<endl;
-    //                currEdge = currEdge->nextEdge(currVert, currFace);
-    //                currFace = currEdge->theOtherFace(currFace);
-    //                midPointAvgPoistion += (currEdge->va->position + currEdge->vb->position) / 2.0f;
-    //                sharpEdgeCounter += 1;
-    //                if (sharpEdgeCounter == 2)
-    //                {
-    //                    sharpEdgeK = currEdge;
-    //                }
-    //            }
-    //            currEdge = currEdge->nextEdge(currVert, currFace);
-    //        }
-    //        else
-    //        {
-    //            currFace = currEdge->theOtherFace(currFace);
-    //            currEdge = currEdge->nextEdge(currVert, currFace);
-    //        }
-    //    } while (currEdge != firstEdge);
-    //    if (sharpEdgeCounter <= 1)
-    //    {
-    //        facePointAvgPosition /= n;
-    //        midPointAvgPoistion /= n;
-    //        newVertexPoint->position = ((float)(n - 3) * currVert->position
-    //                                    + 2.0f * midPointAvgPoistion + facePointAvgPosition)
-    //            / (float)n;
-    //        // cout<<"this is a normal vertex! "<<newVertexPoint -> position[0] << newVertexPoint ->
-    //        // position [1]<< newVertexPoint -> position[2]<<endl;
-    //    }
-    //    else if (sharpEdgeCounter == 2)
-    //    {
-    //        Vertex* pointI = sharpEdgeI->theOtherVertex(currVert);
-    //        Vertex* pointK = sharpEdgeK->theOtherVertex(currVert);
-    //        newVertexPoint->position =
-    //            (pointI->position + pointK->position + 6.0f * currVert->position) / 8.0f;
-    //        // cout<<"this is a crease vertex! "<<newVertexPoint -> position[0] << newVertexPoint ->
-    //        // position [1]<< newVertexPoint -> position[2]<<endl;;
-    //    }
-    //    else
-    //    {
-    //        newVertexPoint->position = currVert->position;
-    //        // cout<<"this is a conner vertex! "<<newVertexPoint -> position[0] << newVertexPoint ->
-    //        // position [1]<< newVertexPoint -> position[2]<<endl;
-    //    }
-    //    newVertexPoint->ID = vertcounter;
-    //    currVert->vertexPoint = newVertexPoint;
-    //    //newVertList.push_back(newVertexPoint); temporary push this back
-    //    // cout<<"New Vertex Point: ID: "<< newVertexPoint -> ID <<" Position: "<< (newVertexPoint
-    //    // -> position)[0]<<" "<<(newVertexPoint -> position)[1]<<" "<<(newVertexPoint ->
-    //    // position)[2]<<endl;
-    //}
-
-    std::cout << "done with subdivision debug" << std::endl;
+    currMesh.computeNormals();
 
 
-    // Randy added below loop on 12/29
-    //for (size_t i = 0; i < Points.GetSize(); i++) {
-    //    auto* polyline = Polylines.GetValue(i, nullptr); 
-
-    //    
-    //}
     Super::UpdateEntity();
     SetValid(isValid);
     std::cout << "doone with mesh updateentity" << std::endl;
@@ -468,8 +227,9 @@ CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name,
 // Conceptually, we are copying from the CMesh object. A mesh instance is basically just a copy plus the scene tree node's transformation matrix
 void CMeshInstance::CopyFromGenerator()
 {
-
-    currMesh = MeshGenerator->currMesh.makeCopy(); // Project SwitchDS CRUCIAL STEP. Randy added makeCopy to copy the contents of the
+    // TODO: Debug makeCopy(). it fixed vertex selection but weird Lonely vertex issue, caused by makecopy
+    currMesh = MeshGenerator->currMesh; //.makeCopy(); // Project SwitchDS CRUCIAL STEP. Randy added
+                                        //makeCopy to copy the contents of the
                  // pointers, not the poiinters themselves
 
     // Bit weird, but we handle face coloring for mesh instances here
@@ -622,7 +382,7 @@ std::vector<Face*>
 CMeshInstance::GetSelectedFaceHandles() // Randy added on 10/11 to assist with face coloring after
                                         // selection
 {
-    return CurrSelectedFaceHandles;
+    return CurrSelectedDSFace;
 }
 
 
@@ -637,40 +397,46 @@ std::vector<std::string> CMeshInstance::GetFaceVertexNames(
 
 void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, bool bSel)
 {
-    //auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-    //size_t prefixLen = instPrefix.length();
-    //for (const auto& name : faceNames)
-    //{
-    //    auto iter = NameToFace.find(name.substr(prefixLen));
-    //    if (iter == NameToFace.end())
-    //        continue;
+    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+    size_t prefixLen = instPrefix.length();
+    for (const auto& name : faceNames)
+    {
+        auto iter = currMesh.nameToFace.find(name.substr(prefixLen));
+        if (iter == currMesh.nameToFace.end())
+            continue;
 
-    //    auto handle = iter->second;
-    //    const auto& original = Mesh.color(handle);
-    //    printf("Before: %d %d %d\n", original[0], original[1], original[2]);
-    //    auto iter0 = std::find(CurrSelectedfaceNamesWithPrefix.begin(),
-    //                           CurrSelectedfaceNamesWithPrefix.end(), name);
-    //    if (iter0 == CurrSelectedfaceNamesWithPrefix.end())
-    //    {
+        Face* currFace = iter->second;
+        if (!currFace->selected)
+            currFace->selected = true;
+        else
+        {
+            currFace->selected = false;   
+        }
 
-    //        CurrSelectedfaceNames.push_back(name.substr(prefixLen));
-    //        CurrSelectedfaceNamesWithPrefix.push_back(name);
-    //        CurrSelectedFaceHandles.push_back(handle); // Randy added on 10/11 for face selection
-    //    }
-    //    else // it has already been selected, then deselect
-    //    {
-    //        auto iter1 = std::find(CurrSelectedfaceNames.begin(), CurrSelectedfaceNames.end(),
-    //                               name.substr(prefixLen));
-    //        CurrSelectedfaceNames.erase(iter1); // Randy added this on 10/15
-    //        auto iter2 = std::find(CurrSelectedfaceNamesWithPrefix.begin(),
-    //                               CurrSelectedfaceNamesWithPrefix.end(), name);
-    //        CurrSelectedfaceNamesWithPrefix.erase(iter2);
-    //        auto iter3 =
-    //            std::find(CurrSelectedFaceHandles.begin(), CurrSelectedFaceHandles.end(), handle);
-    //        CurrSelectedFaceHandles.erase(iter3); // Randy added on 10/11 for face selection
-    //    }
-    //}
-    //GetSceneTreeNode()->SetEntityUpdated(true);
+        ////const auto& original = Mesh.color(handle);
+        ////printf("Before: %d %d %d\n", original[0], original[1], original[2]);
+        //auto iter0 = std::find(CurrSelectedfaceNamesWithPrefix.begin(),
+        //                       CurrSelectedfaceNamesWithPrefix.end(), name);
+        //if (iter0 == CurrSelectedfaceNamesWithPrefix.end()) // select
+        //{
+        //    CurrSelectedfaceNames.push_back(name.substr(prefixLen));
+        //    CurrSelectedfaceNamesWithPrefix.push_back(name);
+        //    CurrSelectedDSFace.push_back(currFace); // Randy added on 10/11 for face selection
+        //}
+        //else // it has already been selected, then deselect
+        //{
+        //    auto iter1 = std::find(CurrSelectedfaceNames.begin(), CurrSelectedfaceNames.end(),
+        //                           name.substr(prefixLen));
+        //    CurrSelectedfaceNames.erase(iter1); // Randy added this on 10/15
+        //    auto iter2 = std::find(CurrSelectedfaceNamesWithPrefix.begin(),
+        //                           CurrSelectedfaceNamesWithPrefix.end(), name);
+        //    CurrSelectedfaceNamesWithPrefix.erase(iter2);
+        //    auto iter3 =
+        //        std::find(CurrSelectedDSFace.begin(), CurrSelectedDSFace.end(), currFace);
+        //    CurrSelectedDSFace.erase(iter3); // Randy added on 10/11 for face selection
+        //}
+    }
+    GetSceneTreeNode()->SetEntityUpdated(true);
 }
 
 // TODO: Edge selection. Create Edge Handle data structures later.

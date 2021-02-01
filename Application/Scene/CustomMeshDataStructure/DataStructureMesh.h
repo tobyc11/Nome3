@@ -30,8 +30,9 @@ public:
     /* A list of all facets in this mesh.*/
     vector<Face*> faceList;
 
-    // Randy added this. Easy way to access Vertex objects in Mesh.cpp. Don't need to traverse vertList
+    // Randy added these two. Easy way to access Vertex objects in Mesh.cpp. Don't need to traverse vertList
     unordered_map<string, Vertex*> nameToVert;
+    unordered_map<string, Face*> nameToFace;
 
     /* This is an auxillary table to build a mesh, matching edge to vertex.*/
     unordered_map<Vertex*, vector<Edge*>> edgeTable;

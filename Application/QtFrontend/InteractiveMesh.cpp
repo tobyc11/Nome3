@@ -68,9 +68,7 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             //                                 DSFaceWithColorVector,
             //                                 true); // Randy added 2nd argument on 12/3
             auto test = meshInstance->GetDSMesh();
-            CDataStructureMeshToQGeometry DSmeshToQGeometry(meshInstance->GetDSMesh(), selectedfacehandles,
-                                    DSFaceWithColorVector,
-                                    true); // Project SwitchDS
+            CDataStructureMeshToQGeometry DSmeshToQGeometry(meshInstance->GetDSMesh(), true); // Project SwitchDS
 
             //Geometry = meshToQGeometry.GetGeometry();
             Geometry = DSmeshToQGeometry.GetGeometry();

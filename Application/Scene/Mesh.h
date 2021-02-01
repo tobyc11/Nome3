@@ -197,7 +197,7 @@ private:
     // Store selected face handles and names
     std::vector<std::string> CurrSelectedfaceNames; // face name only
     std::vector<std::string> CurrSelectedfaceNamesWithPrefix; // includes prefix (path) and face name
-    std::vector<Face* > CurrSelectedFaceHandles; // Randy added on 10/10 for face selection
+    std::vector<Face* > CurrSelectedDSFace; // Randy added on 10/10 for face selection
 };
 
 class CVertexSelector : public Flow::CFlowNode

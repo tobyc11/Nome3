@@ -27,7 +27,7 @@ public:
     std::vector<Vector3> fixEdgeOrientation(std::vector<Vector3> facePositions);
 
 private:
-    std::pair<Vertex*, float> FindClosestVertex(const tc::Vector3& pos);
+    std::pair<Vertex, float> FindClosestVertex(const tc::Vector3& pos);
 
     unsigned int VertCount = 0;
     unsigned int FaceCount = 0;

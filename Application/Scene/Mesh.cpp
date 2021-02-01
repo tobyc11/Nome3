@@ -72,7 +72,6 @@ void CMesh::UpdateEntity()
     int counter = 0;
     for (fIt = currMesh.faceList.begin(); fIt < currMesh.faceList.end(); fIt++)
     {
-
         Vertex* newFacePoint = new Vertex;
         tc::Vector3 newFacePointPosition = tc::Vector3(0, 0, 0);
         Face* currFace = (*fIt);
@@ -334,20 +333,19 @@ void CMesh::Draw(IDebugDraw* draw)
     }
 }
 
-Vertex * CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
+Vertex* CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
 {
     // Silently fail if the name already exists
     auto iter = NameToVert.find(name);
     if (iter != NameToVert.end())
         return iter->second;
 
-    //Vertex vertex;
 
     // Comment out for Project SwitchDS
     //vertex = Mesh.add_vertex(CMeshImpl::Point(pos.x, pos.y, pos.z));
 
 
-    Vertex * currVert = new Vertex(pos.x, pos.y, pos.z, name, NameToVert.size()); // Project SwitchDS // Vertex::Vertex(float x, float y, float z, string assignedName, unsigned long ID)
+    Vertex* currVert = new Vertex(pos.x, pos.y, pos.z, name, NameToVert.size()); // Project SwitchDS // Vertex::Vertex(float x, float y, float z, string assignedName, unsigned long ID)
   //  currVert->position = tc::Vector3(pos.x, pos.y, pos.z); // Project SwitchDS
     //currVert->ID = NameToVert.size(); // Project SwitchDS . hacky implementation
     //currVert->name = name; // ADded this AND FIXED THE BUG AFTER 2 DAYS. THIS WAS IT AND DUE TOCVertexSelector:PointUpdate not finding name match
@@ -365,7 +363,7 @@ Vertex * CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
 Vector3 CMesh::GetVertexPos(const std::string& name) const
 {
     auto iter = NameToVert.find(name);
-    Vertex * vertex = iter->second;
+    Vertex* vertex = iter->second;
     //const auto& pos = Mesh.point(vertex);
     auto pos = vertex->position;
     return Vector3(pos.x, pos.y, pos.z);
@@ -375,7 +373,7 @@ Vector3 CMesh::GetVertexPos(const std::string& name) const
 void CMesh::AddFace(const std::string& name, const std::vector<std::string>& facePointNames,
                     std::string faceSurfaceIdent)
 {
-    std::vector<Vertex *> faceVertices;
+    std::vector<Vertex*> faceVertices;
     for (const std::string& pointName : facePointNames)
     {
         faceVertices.push_back(NameToVert[pointName]);
@@ -569,10 +567,12 @@ void CMeshInstance::CopyFromGenerator()
     FaceToFaceVerts.clear(); // Randy added
 
     //Mesh = MeshGenerator->Mesh; ProjectSwitchDS
-    currMesh = MeshGenerator->currMesh; // Project SwitchDS CRUCIAL STEP
+    currMesh = MeshGenerator->currMesh;
+    //.makeCopy(); // Project SwitchDS CRUCIAL STEP. Randy added makeCopy to copy the contents of the
+                 // pointers, not the poiinters themselves
 
     // Since the handle only contains an index, we can just copy
-    NameToVert = MeshGenerator->NameToVert;
+    NameToVert = MeshGenerator->NameToVert; // NameToVert stores pointers to the CMesh (not CMeshInstance)'s objects
     VertToName = MeshGenerator->VertToName; // Randy added on 10/15
     NameToFace = MeshGenerator->NameToFace;
     FaceToName = MeshGenerator->FaceToName; // Randy added

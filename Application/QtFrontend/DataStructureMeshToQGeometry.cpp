@@ -203,13 +203,15 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
             pointBufferData.push_back(pos.z);
             
             tc::Vector3 pointColor;
+            std::cout << currVert->name << currVert->selected << std::endl;
             if (currVert->selected)
-            {
+            { 
                 pointColor = { VERT_SEL_COLOR };
             }
             else
+            {
                 pointColor = { VERT_COLOR };
-
+            }
             pointBufferData.push_back(pointColor.x);
             pointBufferData.push_back(pointColor.y);
             pointBufferData.push_back(pointColor.z);

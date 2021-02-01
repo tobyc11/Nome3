@@ -604,6 +604,110 @@ void Mesh::clearAndDelete()
 
 //void Mesh::setColor(QColor color) { this->color = color; }
 
+
+
+Mesh Mesh::makeCopy(string copy_mesh_name)
+{
+    // cout<<"Creating a copy of the current map.\n";
+    Mesh newMesh;
+
+    if (copy_mesh_name == "")
+    {
+        newMesh.name = this->name;
+    }
+    else
+    {
+        newMesh.name = copy_mesh_name;
+    }
+    newMesh.clear();
+    vector<Vertex*>::iterator vIt;
+    for (vIt = vertList.begin(); vIt < vertList.end(); vIt++)
+    {
+        Vertex* vertCopy = new Vertex;
+        vertCopy->ID = (*vIt)->ID;
+        vertCopy->name = (*vIt)->name;
+        vertCopy->position = (*vIt)->position;
+        vertCopy->isParametric = (*vIt)->isParametric;
+        if ((*vIt)->isParametric)
+        {
+            vertCopy->x_expr = (*vIt)->x_expr;
+            vertCopy->y_expr = (*vIt)->y_expr;
+            vertCopy->z_expr = (*vIt)->z_expr;
+            //vertCopy->params = (*vIt)->params;
+            //vertCopy->influencingParams = (*vIt)->influencingParams;
+        }
+        newMesh.addVertex(vertCopy);
+    }
+    vector<Face*>::iterator fIt;
+    vector<Vertex*> vertices;
+    for (fIt = faceList.begin(); fIt < faceList.end(); fIt++)
+    {
+        Face* tempFace = *fIt;
+        Edge* firstEdge = tempFace->oneEdge;
+        Edge* currEdge = firstEdge;
+        Edge* nextEdge;
+        Vertex* tempv;
+        vertices.clear();
+        do
+        {
+            if (tempFace == currEdge->fa)
+            {
+                tempv = currEdge->vb;
+                nextEdge = currEdge->nextVbFa;
+            }
+            else
+            {
+                if (currEdge->mobius)
+                {
+                    tempv = currEdge->vb;
+                    nextEdge = currEdge->nextVbFb;
+                }
+                else
+                {
+                    tempv = currEdge->va;
+                    nextEdge = currEdge->nextVaFb;
+                }
+            }
+            vertices.push_back(newMesh.vertList[tempv->ID]);
+            currEdge = nextEdge;
+        } while (currEdge != firstEdge);
+        newMesh.addPolygonFace(vertices);
+        newMesh.faceList[newMesh.faceList.size() - 1]->user_defined_color =
+            (*fIt)->user_defined_color;
+        newMesh.faceList[newMesh.faceList.size() - 1]->color = (*fIt)->color;
+        newMesh.faceList[newMesh.faceList.size() - 1]->name = (*fIt)->name;
+    }
+    newMesh.buildBoundary();
+    newMesh.computeNormals();
+    newMesh.params = params;
+    newMesh.type = type;
+    if (type == 1)
+    {
+        newMesh.n = n;
+        newMesh.ro = ro;
+        newMesh.ratio = ratio;
+        newMesh.h = h;
+        newMesh.n_expr = n_expr;
+        newMesh.ro_expr = ro_expr;
+        newMesh.ratio_expr = ratio_expr;
+        newMesh.h_expr = h_expr;
+        newMesh.influencingParams = influencingParams;
+    }
+    else if (type == 2)
+    {
+        newMesh.n = n;
+        newMesh.ro = ro;
+        newMesh.ratio = ratio;
+        newMesh.h = h;
+        newMesh.n_expr = n_expr;
+        newMesh.ro_expr = ro_expr;
+        newMesh.ratio_expr = ratio_expr;
+        newMesh.h_expr = h_expr;
+        newMesh.influencingParams = influencingParams;
+    }
+    return newMesh;
+}
+
 void Mesh::setGlobalParameter(unordered_map<string, Parameter>* params) { this->params = params; }
 
 void Mesh::addParam(Parameter* param) { influencingParams.push_back(param); }

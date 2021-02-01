@@ -31,7 +31,7 @@ void CMeshMerger::Catmull(const CMeshInstance& meshInstance)
     //auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(
     //    tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
     //// Copy over all the vertices and check for overlapping
-    //std::unordered_map<Vertex*, Vertex*> vertMap;
+    //std::unordered_map<Vertex, Vertex> vertMap;
     //float maxY = -1 * std::numeric_limits<double>::infinity();
     //float minY = std::numeric_limits<double>::infinity();
     //for (auto vi = otherMesh.vertices_begin(); vi != otherMesh.vertices_end(); ++vi)
@@ -77,7 +77,7 @@ void CMeshMerger::Catmull(const CMeshInstance& meshInstance)
     //for (auto fi = otherMesh.faces_begin(); fi != otherMesh.faces_end(); ++fi)
     //{
     //    std::cout << fi->idx() << std::endl;
-    //    std::vector<Vertex*> verts;
+    //    std::vector<Vertex> verts;
     //    for (auto vert : otherMesh.fv_range(*fi))
     //        verts.emplace_back(vertMap[vert]);
 
@@ -106,14 +106,14 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
 //        std::cout << "found Polyline entity" << std::endl;
 //    }
 //
-//    std::vector<Vertex*> polylinevHandles;
+//    std::vector<Vertex> polylinevHandles;
 //
 //
 //    // Copy over all the vertices and check for overlapping
-//    std::unordered_map<Vertex*, Vertex*> vertMap;
+//    std::unordered_map<Vertex, Vertex> vertMap;
 //
 //
-//    std::vector<Vertex*> otherMeshAllvH;
+//    std::vector<Vertex> otherMeshAllvH;
 //
 //    for (auto vi = otherMesh.vertices_begin(); vi != otherMesh.vertices_end(); ++vi) 
 //        otherMeshAllvH.push_back(*vi);
@@ -159,7 +159,7 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
 //                mobiusOffset = 0.001;
 //            }*/
 //
-//            Vertex* vnew = Mesh.add_vertex({ worldPos.x + mobiusOffset, worldPos.y + mobiusOffset, worldPos.z + mobiusOffset});
+//            Vertex vnew = Mesh.add_vertex({ worldPos.x + mobiusOffset, worldPos.y + mobiusOffset, worldPos.z + mobiusOffset});
 //
 //
 //            if (distance < Epsilon
@@ -194,7 +194,7 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
 //        // the future to add faces as entities GEnv.Scene->AddEntity(newface);  // TODO: may be
 //        // useful in the future to add faces as entities Faces.Connect(newface->Face); 
 //
-//        std::vector<Vertex*> verts;
+//        std::vector<Vertex> verts;
 //        for (auto vert : otherMesh.fv_range(*fi)) // iterate through all the vertices on this face
 //        {
 //            verts.emplace_back(vertMap[vert]); // Add the vertex handles
@@ -206,7 +206,7 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
 //       // std::cout << "attempt 1: " <<  fnew << std::endl;
 //        
 //        if (fnew.idx() == -1) {
-//            for (Vertex* vert : verts)
+//            for (Vertex vert : verts)
 //            {
 //                std::cout <<  vert.idx()<< std::endl;
 //                auto test = Mesh.point(vert);
@@ -245,9 +245,9 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
 }
 
 // Find closest vertex in current mesh's vertices
-std::pair<Vertex*, float> CMeshMerger::FindClosestVertex(const tc::Vector3& pos)
+std::pair<Vertex, float> CMeshMerger::FindClosestVertex(const tc::Vector3& pos)
 {
-    Vertex* result;
+    Vertex result;
 //    float minDist = std::numeric_limits<float>::max();
 //    // TODO: linear search for the time being
 //    for (const auto& v : Mesh.vertices())

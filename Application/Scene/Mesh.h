@@ -178,7 +178,7 @@ private:
     unsigned int TransformChangeConnection;
 
     CMeshImpl Mesh;
-    DSMesh currMesh; // Project SwitchDS
+    DSMesh currMesh; // Project SwitchDS. changed to pointer on 1/29
     std::map<std::string, Vertex*> NameToVert;
     std::map<Vertex*, std::string> VertToName; // Randy added
     std::map<std::string, Face* > NameToFace;

@@ -64,10 +64,10 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
 
         // Randy added on 12/12
         std::array<float, 3> potentialFaceColor = { 999.0, 999.0, 999.0 }; // dummy default values
-
+       
         Face* currFace = (*fIt);
-        if (DSFaceWithColorVector.find(currFace) != DSFaceWithColorVector.end())
-            potentialFaceColor = DSFaceWithColorVector.at(currFace);
+        if (currFace->surfaceName != "")
+            potentialFaceColor = currFace->color;
 
         Edge* firstEdge = currFace->oneEdge;
         Edge* currEdge = firstEdge;
@@ -203,7 +203,6 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
             pointBufferData.push_back(pos.z);
             
             tc::Vector3 pointColor;
-            std::cout << currVert->name << currVert->selected << std::endl;
             if (currVert->selected)
             { 
                 pointColor = { VERT_SEL_COLOR };

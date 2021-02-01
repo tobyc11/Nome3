@@ -47,7 +47,10 @@ public:
 
     bool HasVertex(const std::string& name) const
     {
-        return NameToVert.find(name) != NameToVert.end();
+        if (currMesh.nameToVert.count(name) != 0)
+            return true;
+        else
+            return false;   
     }
 
     Vector3 GetVertexPos(const std::string& name) const;
@@ -71,15 +74,8 @@ private:
     CMeshImpl Mesh;
     DSMesh currMesh; // Project SwitchDS
 
+    // Randy removed all the NameToVert, VertToName, etc. data structures on 1/31/2021
 
-    std::map<std::string, Vertex*>
-        NameToVert; // required. For example,  used in AddVertex
-    std::map<Vertex*, std::string>
-        VertToName; // Randy added on 10/11.  used in PickEdges and GetFaceVertexNames
-    std::map<std::string, Face* > NameToFace; // used in FacestoDelete
-    std::map<Face* , std::string> FaceToName; // used in PickFaces
-    std::map<std::vector<Vertex*>, Face* > FaceVertsToFace; // Randy added. used in PickFaces
-    std::map<Face* , std::vector<Vertex*>> FaceToFaceVerts; // Randy added on 10/11 . Used in FacesToDelete and GetFaceVertexNames
     std::vector<std::vector<Vertex*>> LineStrips; // Randy changed this to LineStrips on 12/25
     std::map<Face* , std::string> DSFaceWithColor; // Randy added on 12/12 for face entity coloring
 };
@@ -165,7 +161,7 @@ public:
     std::map<Face* , std::array<float,3> > GetDSFaceWithColorVector() { return DSFaceWithColorVector;}; // Randy added on 12/12 
 
     std::vector<std::string> GetFaceVertexNames(
-        std::vector<std::string> facenames); // Randy added on 10/19 to return face vert names
+        std::vector<std::string> faceNames); // Randy added on 10/19 to return face vert names
 
     void DeselectAll();
 
@@ -179,12 +175,7 @@ private:
 
     CMeshImpl Mesh;
     DSMesh currMesh; // Project SwitchDS. changed to pointer on 1/29
-    std::map<std::string, Vertex*> NameToVert;
-    std::map<Vertex*, std::string> VertToName; // Randy added
-    std::map<std::string, Face* > NameToFace;
-    std::map<Face* , std::string> FaceToName; // Randy added
-    std::map<std::vector<Vertex*>, Face* > FaceVertsToFace; // Randy added
-    std::map<Face* , std::vector<Vertex*>> FaceToFaceVerts; // Randy added
+
 
     std::map<Face* , std::array<float, 3>> DSFaceWithColorVector; // Randy added on 12/12 for face entity coloring
     std::set<std::string> FacesToDelete;
@@ -204,8 +195,8 @@ private:
     std::vector<std::string> CurrSelectedEdgeVertNamesWithPrefix;
     std::vector<Vertex*> CurrSelectedEdgeVertHandles; // Randy added on 11/4
     // Store selected face handles and names
-    std::vector<std::string> CurrSelectedFaceNames; // face name only
-    std::vector<std::string> CurrSelectedFaceNamesWithPrefix; // includes prefix (path) and face name
+    std::vector<std::string> CurrSelectedfaceNames; // face name only
+    std::vector<std::string> CurrSelectedfaceNamesWithPrefix; // includes prefix (path) and face name
     std::vector<Face* > CurrSelectedFaceHandles; // Randy added on 10/10 for face selection
 };
 

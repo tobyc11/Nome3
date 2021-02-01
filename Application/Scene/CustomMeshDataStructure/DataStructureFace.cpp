@@ -6,7 +6,6 @@
  */
 
 #include "DataStructureFace.h"
-
 Face::Face()
 {
     oneEdge = NULL;
@@ -15,9 +14,10 @@ Face::Face()
     id = -1;
     name = "";
     user_defined_color = false;
+    surfaceName = ""; // Randy added this
 }
 
-Face::Face(std::vector<Vertex> vertices)
+Face::Face(std::vector<Vertex*> vertices) // Randy changed Vertex to Vertex* here
 {
     oneEdge = NULL;
     facePoint = NULL;
@@ -26,5 +26,7 @@ Face::Face(std::vector<Vertex> vertices)
     name = "";
     user_defined_color = false;
     this->vertices = vertices;
+    surfaceName = ""; // Randy added this
 }
+
 

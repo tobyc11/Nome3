@@ -37,7 +37,6 @@ void CMesh::UpdateEntity()
     cout << "CMesh's UpdateEntity. Here is Mesh's name: " + GetName() << endl;
     if (!IsDirty())
         return;
-
     ClearMesh();
     bool isValid = true;
     for (size_t i = 0; i < Faces.GetSize(); i++)
@@ -336,37 +335,18 @@ void CMesh::Draw(IDebugDraw* draw)
 Vertex* CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
 {
     // Silently fail if the name already exists
-    auto iter = NameToVert.find(name);
-    if (iter != NameToVert.end())
-        return iter->second;
+    if (HasVertex(name))
+        return currMesh.nameToVert.at(name);
 
-
-    // Comment out for Project SwitchDS
-    //vertex = Mesh.add_vertex(CMeshImpl::Point(pos.x, pos.y, pos.z));
-
-
-    Vertex* currVert = new Vertex(pos.x, pos.y, pos.z, name, NameToVert.size()); // Project SwitchDS // Vertex::Vertex(float x, float y, float z, string assignedName, unsigned long ID)
-  //  currVert->position = tc::Vector3(pos.x, pos.y, pos.z); // Project SwitchDS
-    //currVert->ID = NameToVert.size(); // Project SwitchDS . hacky implementation
-    //currVert->name = name; // ADded this AND FIXED THE BUG AFTER 2 DAYS. THIS WAS IT AND DUE TOCVertexSelector:PointUpdate not finding name match
-   
+    Vertex* currVert = new Vertex(pos.x, pos.y, pos.z, name, currMesh.vertList.size()); // Project SwitchDS // Vertex::Vertex(float x, float y, float z, string assignedName, unsigned long ID)
     currMesh.addVertex(currVert); // Project SwitchDS
-
-    // Project SwitchDS
-    NameToVert.emplace(name, currVert);
-    VertToName.emplace(currVert, name); // Randy added on 10/15
-
-
     return currVert;
 }
 
 Vector3 CMesh::GetVertexPos(const std::string& name) const
 {
-    auto iter = NameToVert.find(name);
-    Vertex* vertex = iter->second;
-    //const auto& pos = Mesh.point(vertex);
-    auto pos = vertex->position;
-    return Vector3(pos.x, pos.y, pos.z);
+    Vertex* vertex = currMesh.nameToVert.find(name)->second;
+    return vertex->position;
 }
 
 // Called from AddFaceIntoMesh
@@ -375,10 +355,7 @@ void CMesh::AddFace(const std::string& name, const std::vector<std::string>& fac
 {
     std::vector<Vertex*> faceVertices;
     for (const std::string& pointName : facePointNames)
-    {
-        faceVertices.push_back(NameToVert[pointName]);
-    }
-
+        faceVertices.push_back(currMesh.nameToVert.at(pointName));
     AddFace(name, faceVertices, faceSurfaceIdent);
 }
 
@@ -386,16 +363,9 @@ void CMesh::AddFace(const std::string& name, const std::vector<Vertex*>& faceDSV
                     std::string faceSurfaceIdent)
 {
     Face * newFace = currMesh.addPolygonFace(faceDSVerts, false); // Project SwitchDS . Check if need to reverseOrder = true or false?
-    
-    //// Randy added this on 12/12 for face entity coloring
-     if (faceSurfaceIdent != "") // if the face has a surface color associated with it
-        DSFaceWithColor.emplace(newFace, faceSurfaceIdent);   
-   
+    newFace->surfaceName = faceSurfaceIdent;
     //Project SwitchDS 
-    FaceVertsToFace.emplace(faceDSVerts,newFace); 
-    FaceToFaceVerts.emplace(newFace,faceDSVerts); 
-    NameToFace.emplace(name, newFace);
-    FaceToName.emplace(newFace, name); 
+
 }
 
 void CMesh::AddLineStrip(const std::string& name,
@@ -407,12 +377,6 @@ void CMesh::AddLineStrip(const std::string& name,
 void CMesh::ClearMesh()
 {
     // Mesh.clear(); Project SwitchDS
-    NameToVert.clear();
-    VertToName.clear();
-    NameToFace.clear();
-    FaceToName.clear(); // Randy added
-    FaceVertsToFace.clear(); // Randy added
-    FaceToFaceVerts.clear(); // Randy added
     LineStrips.clear();
 }
 
@@ -421,8 +385,6 @@ void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, Vertex*> vnames,
                         std::map<std::string, Face*> fnames)
 {
     Mesh = std::move(mesh);
-    NameToVert = std::move(vnames);
-    NameToFace = std::move(fnames);
 }
 
 bool CMesh::IsInstantiable() { return true; }
@@ -488,59 +450,6 @@ void CMeshInstance::UpdateEntity()
         return;
     MeshGenerator->UpdateEntity();
     CopyFromGenerator();
-    //Mesh.request_vertex_status();
-    //Mesh.request_vertex_colors();
-    //Mesh.request_edge_status();
-    //Mesh.request_face_status();
-    //Mesh.request_face_colors(); // Randy added on 10/10 for face selection. May be useful in the
-    //                            // future for flat coloring. Currently doesn't do anything
-    //for (auto vH : Mesh.vertices())
-    //{
-    //    Mesh.set_color(vH, { VERT_COLOR });
-    //}
-    // don't need to set face color because it gets overwritten by material's instancecolor (shader)
-
-    // Add back to delete face later. I think ~100 hundred lines of code deleted here due to incompability with new data structure. 
-    // Please look at previous commits to add back DeleteFace
-    
-
-    //if (!Mesh.faces_empty())
-    //{
-    //    Mesh.request_face_normals();
-    //    Mesh.request_vertex_normals();
-    //    Mesh.update_face_normals();
-    //    Mesh.update_vertex_normals();
-    //    // Update visual layer geometry
-    //}
-    //else
-    //{
-    //    // std::cout << "no faces left in mesh. handle this else condition in the future" <<
-    //    // should probably implement this logic in the future OR else may be further bugs
-    //}
-    FacesToDelete.clear(); // Randy added this on 10/18. Clear it, we have finished deleting them.
-
-    // Randy commented the below section on 10/10. i don't think it does anything ???
-    // Construct interactive points
-    // CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();
-    // for (auto pair : PickingVerts)
-    //{
-    //    scene->GetPickingMgr()->UnregisterObj(pair.second.second);
-    //    delete pair.second.first;
-    //}
-    // PickingVerts.clear();
-
-    // for (const auto& pair : NameToVert)
-    //{
-    //    // Create a picking proxy point for each vertex
-    //    CMeshInstancePoint* ip = new CMeshInstancePoint(this);
-    //    ip->SetName(pair.first);
-    //    const auto& p = Mesh.point(pair.second);
-    //    Vector3 pos = { p[0], p[1], p[2] };
-    //    ip->SetPosition(GetSceneTreeNode()->L2WTransform.GetValue(Matrix3x4::IDENTITY) * pos);
-    //    // Register this picking point with the scene picking mgr
-    //    uint32_t id = scene->GetPickingMgr()->RegisterObj(ip);
-    //    PickingVerts.emplace(pair.first, std::make_pair(ip, id));
-    //}
     Super::UpdateEntity();
     SetValid(MeshGenerator->IsEntityValid());
     std::cout << "DONE with CMeshInstance update entity" << std::endl;
@@ -556,147 +465,64 @@ CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name,
     return selector;
 }
 
-// Conceptually, we are copying from the CMesh object
+// Conceptually, we are copying from the CMesh object. A mesh instance is basically just a copy plus the scene tree node's transformation matrix
 void CMeshInstance::CopyFromGenerator()
 {
-    //Mesh.clear(); Project SwitchDS
-    NameToVert.clear();
-    NameToFace.clear();
-    FaceToName.clear(); // Randy added
-    FaceVertsToFace.clear();
-    FaceToFaceVerts.clear(); // Randy added
 
-    //Mesh = MeshGenerator->Mesh; ProjectSwitchDS
-    currMesh = MeshGenerator->currMesh;
-    //.makeCopy(); // Project SwitchDS CRUCIAL STEP. Randy added makeCopy to copy the contents of the
+    currMesh = MeshGenerator->currMesh.makeCopy(); // Project SwitchDS CRUCIAL STEP. Randy added makeCopy to copy the contents of the
                  // pointers, not the poiinters themselves
 
-    // Since the handle only contains an index, we can just copy
-    NameToVert = MeshGenerator->NameToVert; // NameToVert stores pointers to the CMesh (not CMeshInstance)'s objects
-    VertToName = MeshGenerator->VertToName; // Randy added on 10/15
-    NameToFace = MeshGenerator->NameToFace;
-    FaceToName = MeshGenerator->FaceToName; // Randy added
-    FaceVertsToFace = MeshGenerator->FaceVertsToFace; // Randy added
-    FaceToFaceVerts = MeshGenerator->FaceToFaceVerts; // Randy added
-
+    // Bit weird, but we handle face coloring for mesh instances here
     CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();
-
-    // Randy added on 12/12
-    for (auto& pair : MeshGenerator->DSFaceWithColor)
-    {
-        auto surfaceIdentifier = pair.second;
-        if (surfaceIdentifier != "")
-        {
-            auto surfaceEntity = scene->FindEntity(surfaceIdentifier);
-            if (surfaceEntity)
-            {
-                CSurface* surfaceObject = dynamic_cast<CSurface*>(surfaceEntity.Get());
-                std::array<float, 3> color = { surfaceObject->ColorR.GetValue(1.0f),
-                                               surfaceObject->ColorG.GetValue(1.0f),
-                                               surfaceObject->ColorB.GetValue(1.0f) };
-                DSFaceWithColorVector.emplace(pair.first, color);
-            }
-            else
-            {
-                std::cout << "Invalid surface color name" << std::endl;
-            }
+    for (auto currFace : currMesh.faceList) {
+        if (currFace->surfaceName != "") {
+            CSurface* surface = dynamic_cast<CSurface*>(scene->FindEntity(currFace->surfaceName).Get());
+            currFace->color = {surface->ColorR.GetValue(0.f), surface->ColorG.GetValue(0.f),
+                                surface->ColorB.GetValue(0.f)};
         }
     }
 }
 
-// Warning: Still buggy. Use with caution.
-std::vector<std::string>
-CMeshInstance::RemoveFace(const std::vector<std::string>& faceNames) // Randy added
+// TODO: Randy removed this function's contents on 1/31 to make changing to winged edge easier. Add back asap
+std::vector<std::string> CMeshInstance::RemoveFace(const std::vector<std::string>& faceNames) // Randy added
 {
     std::vector<std::string> removedVertName;
-    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-
-    for (auto faceName : faceNames)
-    {
-        // if faceName contains instPrefix, then the face is a part of this mesh instance
-        if (faceName.find(instPrefix) != std::string::npos)
-        {
-            // the mesh's face name is the faceName - instprefix
-            auto start_position_to_erase = faceName.find(instPrefix);
-            auto meshfaceName = faceName.erase(start_position_to_erase, instPrefix.length());
-
-            // if meshfaceName is actually a face within this mesh
-            if (NameToFace.find(meshfaceName) != NameToFace.end())
-            {
-                std::cout << "found face, adding to faces to delete: " + meshfaceName << std::endl;
-                FacesToDelete.insert(meshfaceName);
-                this->MarkDirty();
-                std::vector<std::string> temp;
-                temp.push_back(meshfaceName);
-                auto temp2 = GetFaceVertexNames(temp);
-                removedVertName.insert(removedVertName.end(), temp2.begin(), temp2.end());
-            }
-        }
-    }
-    GetSceneTreeNode()->SetEntityUpdated(true); // Randy added this on 10/18. Didn't seem to fix bug?
     return removedVertName;
 }
 
 std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ray& localRay)
 {
     std::vector<std::pair<float, std::string>> result;
-    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-    for (const auto& pair : FaceVertsToFace)
+    auto instPrefix = GetSceneTreeNode()->GetPath() + "."; // path Name
+    std::vector<float> hitDistances;
+    for (Face* currFace : currMesh.faceList)
     {
-        auto points = pair.first;
-
-        std::string facename = FaceToName.at(pair.second);
-        auto firstpoint = points[0];
-        auto secondpoint = points[1];
-        auto thirdpoint = points[2];
-
-        tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y, firstpoint->position.z };
-        tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y, secondpoint->position.z };
-        tc::Vector3 pos3 { thirdpoint->position.x, thirdpoint->position.y, thirdpoint->position.z };
-        auto testplane = new tc::Plane(pos1, pos2, pos3);
-
-        // tc::Vector3 projected = localRay.Project(pos);
-        // Randy note: They all have the same position because the local ray is transformed
-        // based on the instance scene node
-
-        auto testdist = localRay.HitDistance(*testplane);
-
         // WARNING: Doesn't give all combinations. Naive method only works with convex polygons
-        // TODO: Optimize this to handle concave polygons
-        std::vector<float> hitdistances;
-
-        for (int i = 0; i < points.size(); i++)
-        {
-            for (int j = i + 1; j < points.size(); j++)
+        for (int i = 0; i < currFace->vertices.size(); i++) {
+            for (int j = i + 1; j < currFace->vertices.size(); j++)
             {
-                for (int k = j + 1; k < points.size(); k++)
-                {
-                    auto firstpoint = points[i];
-                    auto secondpoint = points[j];
-                    auto thirdpoint = points[k];
-                    tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y,
-                                       firstpoint->position.z };
-                    tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
-                                       secondpoint->position.z };
-                    tc::Vector3 pos3 { thirdpoint->position.x, thirdpoint->position.y,
-                                       thirdpoint->position.z };
-                    auto testdist1 = localRay.HitDistance(pos1, pos2, pos3);
-                    hitdistances.push_back(testdist1);
+                for (int k = j + 1; k < currFace->vertices.size(); k++) {
+                    Vertex* firstPoint = currFace->vertices[i];
+                    Vertex* secondPoint = currFace->vertices[j];
+                    Vertex* thirdPoint = currFace->vertices[k];
+                    auto testdist1 = localRay.HitDistance(firstPoint->position, secondPoint->position, thirdPoint->position);
+                    hitDistances.push_back(testdist1);
                 }
             }
         }
-        auto mindist = *std::min_element(hitdistances.begin(), hitdistances.end());
-        std::cout << "Triangle hit distance:  " + std::to_string(mindist) << std::endl;
+        // Now that we're checking intersection with triangulation of the face, see if it intersected any triangle
+        auto minDist = *std::min_element(hitDistances.begin(), hitDistances.end());
+        std::cout << "Triangle hit distance:  " + std::to_string(minDist) << std::endl;
         auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-        if (mindist < 100)
+        if (minDist < 100)
         {
-            result.emplace_back(mindist, instPrefix + facename);
+            result.emplace_back(minDist, instPrefix + currFace->name);
         }
     }
     // std::sort(result.begin(), result.end());
     for (const auto& sel : result)
     {
-        std::cout << "face added to pick list" << std::endl;
+        std::cout << "Face added to pick list" << std::endl;
         printf("t=%.3f v=%s\n", sel.first, sel.second.c_str());
     }
     return result;
@@ -705,34 +531,32 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ra
 std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolylines(const tc::Ray& localRay)
 {
     std::vector<std::pair<float, std::vector<std::string>>> result;
-
     auto meshClass = GetSceneTreeNode()->GetOwner()->GetEntity()->GetMetaObject().ClassName();
     auto meshName = GetSceneTreeNode()->GetOwner()->GetName();
-
     // If it's an already selected edge
     if (meshClass == "CPolyline" || meshClass == "CBSpline")
     {
         auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-
-        std::vector<Vertex*> edgeVertsOnly;
-        for (const auto& pair : VertToName)
-            edgeVertsOnly.push_back(pair.first);
+        std::vector<Vertex*> edgeVertsOnly = currMesh.vertList;
         for (int i = 0; i < edgeVertsOnly.size(); i++) // adjacent elements are the edge verts
         {
             std::vector<float> hitdistances;
             std::map<float, std::vector<std::string>> distToNames;
-
-            if (i == edgeVertsOnly.size() - 1)
-            { // if at the last point, the last edge is last point connected to first point
-                auto firstpoint = edgeVertsOnly[i];
-                auto secondpoint = edgeVertsOnly[0];
-                tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y,
-                                   firstpoint->position.z };
-                tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
-                                   secondpoint->position.z };
-
-
-                // naive method, extend the plane out of the line in 6 directions a little
+            Vertex* firstPoint;
+            Vertex* secondPoint;
+            if (i != edgeVertsOnly.size() - 1)
+            { 
+                firstPoint = edgeVertsOnly[i];
+                secondPoint = edgeVertsOnly[i + 1];
+            }
+            else // else if at the last point, the last edge is last point connected to first point
+            {
+                firstPoint = edgeVertsOnly[i];
+                secondPoint = edgeVertsOnly[0];
+            }
+                tc::Vector3 pos1 = firstPoint->position;
+                tc::Vector3 pos2 = secondPoint->position;
+                // Extremely naive method to do ray-edge intersection, extend the plane out of the line in 6 directions a little
                 tc::Vector3 dummy1 = (pos1 + pos2) / 2;
                 float offset = 0.170; // TODO: Optimize this to vary by scene
                 float testdist1 = std::min(
@@ -743,61 +567,22 @@ std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolyl
                       localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
                       localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }) });
                 hitdistances.push_back(testdist1);
-                std::cout << "testdist1a: " + std::to_string(testdist1) << std::endl;
-                auto vertname1 = instPrefix + VertToName.at(firstpoint);
-                auto vertname2 = instPrefix + VertToName.at(secondpoint);
-                std::vector<std::string> names;
-                names.push_back(vertname1);
-                names.push_back(vertname2);
-                distToNames.insert({ testdist1, names });
-            }
-            else
-            {
-                auto firstpoint = edgeVertsOnly[i];
-                auto secondpoint = edgeVertsOnly[i+1];
-                tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y,
-                                   firstpoint->position.z };
-                tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
-                                   secondpoint->position.z };
-
-                // naive method, extend the plane out of the line in 6 directions a little
-                tc::Vector3 dummy1 = (pos1 + pos2) / 2; 
-                float offset = 0.170; // TODO: Optimize this to vary by scene
-                float testdist1 = std::min(
-                    { localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }) });
-                hitdistances.push_back(testdist1);
-                std::cout << "testdist1b: " + std::to_string(testdist1) << std::endl;
-                auto vertname1 = instPrefix + VertToName.at(firstpoint);
-                auto vertname2 = instPrefix + VertToName.at(secondpoint);
-                std::vector<std::string> names;
-                names.push_back(vertname1);
-                names.push_back(vertname2);
-                distToNames.insert({ testdist1, names });
-            }
+                auto firstPointNameWithPathInfo = instPrefix + firstPoint->name;
+                auto secondPointNameWithPathInfo = instPrefix + secondPoint->name;
+                distToNames.insert({ testdist1, { firstPointNameWithPathInfo,
+                                                   secondPointNameWithPathInfo }});
             auto mindist = *std::min_element(hitdistances.begin(), hitdistances.end());
-            std::cout << "Triangle hit distance for edge:  " + std::to_string(mindist) << std::endl;
-
+                std::cout << "Triangle hit distance for edge:  " + std::to_string(mindist)
+                          << std::endl;
             if (mindist < 100)
             {
-                auto hitpointnames = distToNames.at(mindist); // Guaranteed to be two names
-                auto name1withoutinstprefix = hitpointnames[0].substr(instPrefix.length());
-                auto name2withoutinstprefix = hitpointnames[1].substr(instPrefix.length());
-
-                auto point1 = NameToVert.at(name1withoutinstprefix);
-                auto point2 = NameToVert.at(name2withoutinstprefix);
-
+                //SelectNode will change its color
                 GetSceneTreeNode()->GetOwner()->SelectNode();
                 MarkDirty();
             }
         }
     }
-    
-    // std::sort(result.begin(), result.end());
+
     for (const auto& sel : result)
     {
         printf("t=%.3f v1=%s v2 =%s\n", sel.first, sel.second[0].c_str(), sel.second[1].c_str());
@@ -806,204 +591,30 @@ std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolyl
 }
 
 // Pick edges return a vector containing hit distance and the pair of edge vertex names
-// NOTE: PickEdges is the buggiest among Pick functions
-// Optimize in the future
 std::vector<std::pair<float, std::vector<std::string>>>
 CMeshInstance::PickEdges(const tc::Ray& localRay)
-{
+{ 
+    // Randy deleted this function's contents on 1/31/2021 to simplify the process of changing DS. TODO: add this back asap
     std::vector<std::pair<float, std::vector<std::string>>> result;
-
-    auto meshClass = GetSceneTreeNode()->GetOwner()->GetEntity()->GetMetaObject().ClassName();
-    auto meshName = GetSceneTreeNode()->GetOwner()->GetName();
-
-    // If it's an already selected edge
-    if (meshClass == "CPolyline")
-    {
-        auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-        std::vector<Vertex*> edgeVertsOnly;
-        for (const auto& pair : VertToName)
-            edgeVertsOnly.push_back(pair.first);
-        std::vector<float> hitdistances;
-        std::map<float, std::vector<std::string>> distToNames;
-        auto firstpoint = edgeVertsOnly[0];
-        auto secondpoint = edgeVertsOnly[1];
-        tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y, firstpoint->position.z };
-        tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
-                           secondpoint->position.z };
-
-             
-        // naive method, extend the plane out of the line in 6 directions a little
-        tc::Vector3 dummy1 = (pos1 + pos2) / 2; 
-        float offset = 0.170; // TODO: Optimize this to vary by scene
-        float testdist1 = std::min(
-            { localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
-              localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0,  0 }),
-              localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset}),
-              localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
-                       localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0 , 0}),
-                       localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }) });
-        hitdistances.push_back(testdist1);
-        std::cout << "testdist1b: " + std::to_string(testdist1) << std::endl;
-        auto vertname1 = instPrefix + VertToName.at(firstpoint);
-        auto vertname2 = instPrefix + VertToName.at(secondpoint);
-        std::vector<std::string> names;
-        names.push_back(vertname1);
-        names.push_back(vertname2);
-        distToNames.insert({ testdist1, names });
-            
-        auto mindist = *std::min_element(hitdistances.begin(), hitdistances.end());
-        std::cout << "Triangle hit distance for edge:  " + std::to_string(mindist) << std::endl;
-
-        if (mindist < 100)
-        {
-            auto hitpointnames = distToNames.at(mindist); // Guaranteed to be two names
-            auto name1withoutinstprefix = hitpointnames[0].substr(instPrefix.length());
-            auto name2withoutinstprefix = hitpointnames[1].substr(instPrefix.length());
-
-            auto point1 = NameToVert.at(name1withoutinstprefix);
-            auto point2 = NameToVert.at(name2withoutinstprefix);
-
-            if (meshName.find("SELECTED") == std::string::npos)
-            {
-                GetSceneTreeNode()->GetOwner()->SelectNode();
-                MarkDirty();
-            }
-            else // this is a temp selection polyline, deselect by adding to results
-            {
-                result.emplace_back(mindist, hitpointnames);
-            }
-        }
-        
-    }
-
-    // Else, if it's not an already selected polyline
-    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-
-    for (const auto& pair :
-         FaceVertsToFace) // if CPolyline or CBspline, this will silently get skipped
-    {
-        auto points = pair.first;
-
-        std::string facename = FaceToName.at(pair.second);
-        std::cout << "We are currently in " + GetSceneTreeNode()->GetPath() + "'s Pick Edges. "
-                  << std::endl;
-        std::cout << facename << std::endl;
-
-        // WARNING: Doesn't give all combinations. Naive method only works with convex polygons
-        std::vector<float> hitdistances;
-        std::map<float, std::vector<std::string>> distToNames;
-        // find which edge is intersected
-        for (int i = 0; i < points.size(); i++)
-        {
-            if (i == points.size() - 1)
-            { // if at the last point, the last edge is last point connected to first point
-                auto firstpoint = points[i];
-                auto secondpoint = points[0];
-                tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y,
-                                   firstpoint->position.z };
-                tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
-                                   secondpoint->position.z };
-                // TODO: Fix this naive method. Naive method extend the plane out of the line in 6
-                // directions
-                tc::Vector3 dummy1 = (pos1 + pos2) / 2;
-                float offset = 0.170; // TODO: Optimize this to vary by scene
-                float testdist1 = std::min(
-                    { localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }) });
-                hitdistances.push_back(testdist1);
-                auto vertname1 = instPrefix + VertToName.at(firstpoint);
-                auto vertname2 = instPrefix + VertToName.at(secondpoint);
-                std::vector<std::string> names;
-                names.push_back(vertname1);
-                names.push_back(vertname2);
-                distToNames.insert({ testdist1, names });
-            }
-            else
-            {
-                auto firstpoint = points[i];
-                auto secondpoint = points[i+1];
-                tc::Vector3 pos1 { firstpoint->position.x, firstpoint->position.y,
-                                   firstpoint->position.z };
-                tc::Vector3 pos2 { secondpoint->position.x, secondpoint->position.y,
-                                   secondpoint->position.z };
-
-
-                // TODO: Fix \this naive method. Naive method extend the plane out of the line in 6
-                // directions
-                tc::Vector3 dummy1 = (pos1 + pos2) / 2;
-                float offset = 0.170; // TODO: Optimize this to vary by scene
-                float testdist1 = std::min(
-                    { localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, offset, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { offset, 0, 0 }),
-                      localRay.HitDistance(pos1, pos2, dummy1 + Vector3 { 0, 0, offset }) });
-                hitdistances.push_back(testdist1);
-                auto vertname1 = instPrefix + VertToName.at(firstpoint);
-                auto vertname2 = instPrefix + VertToName.at(secondpoint);
-                std::vector<std::string> names;
-                names.push_back(vertname1);
-                names.push_back(vertname2);
-                distToNames.insert({ testdist1, names });
-            }
-        }
-        auto mindist = *std::min_element(hitdistances.begin(), hitdistances.end());
-        std::cout << "Triangle hit distance for edge:  " + std::to_string(mindist) << std::endl;
-
-        // This is outside of the for loop! incorrect!!
-        if (mindist < 100)
-        {
-            auto hitpointnames = distToNames.at(mindist); // Guaranteed to be two names
-            auto name1withoutinstprefix = hitpointnames[0].substr(instPrefix.length());
-            auto name2withoutinstprefix = hitpointnames[1].substr(instPrefix.length());
-
-            auto point1 = NameToVert.at(name1withoutinstprefix);
-            auto point2 = NameToVert.at(name2withoutinstprefix);
-
-            std::cout << mindist << std::endl;
-            result.emplace_back(mindist, hitpointnames);
-        }
-    }
-    // std::sort(result.begin(), result.end());
-    for (const auto& sel : result)
-    {
-        printf("t=%.3f v1=%s v2 =%s\n", sel.first, sel.second[0].c_str(), sel.second[1].c_str());
-    }
     return result;
 }
 
 std::vector<std::pair<float, std::string>> CMeshInstance::PickVertices(const tc::Ray& localRay)
 {
-    // Randy look at this for delete face
     std::vector<std::pair<float, std::string>> result;
     auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-    for (const auto& pair : NameToVert)
+    for (Vertex * currVert : currMesh.vertList)
     {
-        tc::Vector3 pos = pair.second->position;
+        tc::Vector3 pos = currVert->position;
         tc::Vector3 projected = localRay.Project(pos);
         auto dist = (pos - projected).Length();
         auto t = (localRay.Origin - projected).Length();
         if (dist < std::min(0.01f * t, 0.25f))
-        {
-            //std::cout << pos.x << "  " <<  pos.y << "  " << pos.z << std::endl;
-            //std::cout << projected.x << "  " << projected.y << "  " << projected.z << std::endl;
-            //std::cout << dist << std::endl;
-            //std::cout << t << std::endl;
-            //std::cout << instPrefix + pair.first  + " DEBUG PICK VERTICVES " << std::endl;
-            result.emplace_back(t, instPrefix + pair.first);
-        }
+            result.emplace_back(t, instPrefix + currVert->name);
     }
     std::sort(result.begin(), result.end());
-
     for (const auto& sel : result)
-    {
         printf("t=%.3f v=%s\n", sel.first, sel.second.c_str());
-    }
     return result;
 }
 
@@ -1014,32 +625,12 @@ CMeshInstance::GetSelectedFaceHandles() // Randy added on 10/11 to assist with f
     return CurrSelectedFaceHandles;
 }
 
+
+// Randy removed contents on 1/31/2021 to make changing data structures easier. Add back later
 std::vector<std::string> CMeshInstance::GetFaceVertexNames(
-    std::vector<std::string> facenames) // Randy added on 10/19 to return face vert names
+    std::vector<std::string> faceNames) // Randy added on 10/19 to return face vert names
 {
     std::vector<std::string> vertnames;
-    for (auto facename : facenames)
-    {
-        if (NameToFace.find(facename) != NameToFace.end())
-        {
-            auto tempfh = NameToFace[facename];
-            auto temp1 = FaceToFaceVerts[tempfh];
-            std::vector<std::string> temp2;
-            for (auto vert : temp1)
-            {
-                auto vertname = VertToName[vert];
-                auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-                auto instVertName = instPrefix + vertname;
-                temp2.push_back(instVertName);
-            }
-            vertnames.insert(vertnames.end(), temp2.begin(), temp2.end());
-        }
-        else
-        {
-            vertnames.clear();
-            return vertnames;
-        }
-    }
 
     return vertnames;
 }
@@ -1057,23 +648,23 @@ void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, b
     //    auto handle = iter->second;
     //    const auto& original = Mesh.color(handle);
     //    printf("Before: %d %d %d\n", original[0], original[1], original[2]);
-    //    auto iter0 = std::find(CurrSelectedFaceNamesWithPrefix.begin(),
-    //                           CurrSelectedFaceNamesWithPrefix.end(), name);
-    //    if (iter0 == CurrSelectedFaceNamesWithPrefix.end())
+    //    auto iter0 = std::find(CurrSelectedfaceNamesWithPrefix.begin(),
+    //                           CurrSelectedfaceNamesWithPrefix.end(), name);
+    //    if (iter0 == CurrSelectedfaceNamesWithPrefix.end())
     //    {
 
-    //        CurrSelectedFaceNames.push_back(name.substr(prefixLen));
-    //        CurrSelectedFaceNamesWithPrefix.push_back(name);
+    //        CurrSelectedfaceNames.push_back(name.substr(prefixLen));
+    //        CurrSelectedfaceNamesWithPrefix.push_back(name);
     //        CurrSelectedFaceHandles.push_back(handle); // Randy added on 10/11 for face selection
     //    }
     //    else // it has already been selected, then deselect
     //    {
-    //        auto iter1 = std::find(CurrSelectedFaceNames.begin(), CurrSelectedFaceNames.end(),
+    //        auto iter1 = std::find(CurrSelectedfaceNames.begin(), CurrSelectedfaceNames.end(),
     //                               name.substr(prefixLen));
-    //        CurrSelectedFaceNames.erase(iter1); // Randy added this on 10/15
-    //        auto iter2 = std::find(CurrSelectedFaceNamesWithPrefix.begin(),
-    //                               CurrSelectedFaceNamesWithPrefix.end(), name);
-    //        CurrSelectedFaceNamesWithPrefix.erase(iter2);
+    //        CurrSelectedfaceNames.erase(iter1); // Randy added this on 10/15
+    //        auto iter2 = std::find(CurrSelectedfaceNamesWithPrefix.begin(),
+    //                               CurrSelectedfaceNamesWithPrefix.end(), name);
+    //        CurrSelectedfaceNamesWithPrefix.erase(iter2);
     //        auto iter3 =
     //            std::find(CurrSelectedFaceHandles.begin(), CurrSelectedFaceHandles.end(), handle);
     //        CurrSelectedFaceHandles.erase(iter3); // Randy added on 10/11 for face selection
@@ -1139,16 +730,12 @@ void CMeshInstance::MarkEdgeAsSelected(const std::set<std::string>& vertNames, b
 //// Vertex selection
 void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames)
 {
-    std::cout << "switch DS MarkVertAsSelected" << std::endl;
-    for (auto name : vertNames)
-        std::cout << name << std::endl;
-
     auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
     size_t prefixLen = instPrefix.length();
     for (const auto& name : vertNames)
     {
-        auto iter = NameToVert.find(name.substr(prefixLen));
-        if (iter == NameToVert.end())
+        auto iter = currMesh.nameToVert.find(name.substr(prefixLen));
+        if (iter == currMesh.nameToVert.end())
             continue;
         auto DSvert = iter->second;
         if (std::find(CurrSelectedVertNamesWithPrefix.begin(), CurrSelectedVertNamesWithPrefix.end(), name) == CurrSelectedVertNamesWithPrefix.end())
@@ -1193,8 +780,8 @@ void CMeshInstance::DeselectAll()
 //
 //    // added below on 10/10 for face deselection
 //
-//    CurrSelectedFaceNames.clear();
-//    CurrSelectedFaceNamesWithPrefix.clear();
+//    CurrSelectedfaceNames.clear();
+//    CurrSelectedfaceNamesWithPrefix.clear();
 }
 
 
@@ -1207,9 +794,9 @@ void CVertexSelector::PointUpdate()
         printf("Vertex %s does not have a mesh instance\n", TargetName.c_str());
         return;
     }
-    auto iter = mi->NameToVert.find(TargetName);
+    auto iter = mi->currMesh.nameToVert.find(TargetName);
 
-    if (iter == mi->NameToVert.end())
+    if (iter == mi->currMesh.nameToVert.end())
     {
         printf("Vertex %s does not exist in entity %s\n", TargetName.c_str(),
                mi->GetName().c_str());

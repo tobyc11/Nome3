@@ -28,7 +28,10 @@ Mesh::Mesh(int type)
     }
     isConsolidateMesh = false;
 }
-void Mesh::addVertex(Vertex* v) { vertList.push_back(v); }
+void Mesh::addVertex(Vertex* v) { 
+    vertList.push_back(v); 
+    nameToVert[v->name] = v; // Randy added this
+}
 
 Edge* Mesh::findEdge(Vertex* v1, Vertex* v2)
 {
@@ -98,7 +101,7 @@ Edge* Mesh::createEdge(Vertex* v1, Vertex* v2)
 
 void Mesh::addTriFace(Vertex* v1, Vertex* v2, Vertex* v3)
 {
-    Face* newFace = new Face;
+    Face* newFace = new Face({v1, v2, v3}); // Randy added the (vertices)
     Edge* e12 = createEdge(v1, v2);
     Edge* e23 = createEdge(v2, v3);
     Edge* e31 = createEdge(v3, v1);
@@ -158,7 +161,7 @@ void Mesh::addTriFace(Vertex* v1, Vertex* v2, Vertex* v3)
 
 void Mesh::addQuadFace(Vertex* v1, Vertex* v2, Vertex* v3, Vertex* v4)
 {
-    Face* newFace = new Face;
+    Face* newFace = new Face({v1,v2,v3,v4});// Randy added the (vertices)
     Edge* e12 = createEdge(v1, v2);
     Edge* e23 = createEdge(v2, v3);
     Edge* e34 = createEdge(v3, v4);
@@ -240,7 +243,7 @@ Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
         cout << "A face have at least 3 vertices" << endl;
         return NULL; // Randy added the null
     }
-    Face* newFace = new Face;
+    Face* newFace = new Face(vertices); // Randy added the (vertices)
     vector<Vertex*>::iterator vIt;
     vector<Edge*> edgesInFace;
     vector<Edge*>::iterator eIt;
@@ -676,6 +679,7 @@ Mesh Mesh::makeCopy(string copy_mesh_name)
             (*fIt)->user_defined_color;
         newMesh.faceList[newMesh.faceList.size() - 1]->color = (*fIt)->color;
         newMesh.faceList[newMesh.faceList.size() - 1]->name = (*fIt)->name;
+        newMesh.faceList[newMesh.faceList.size() - 1]->surfaceName = (*fIt)->surfaceName; // Randy added this
     }
     newMesh.buildBoundary();
     newMesh.computeNormals();

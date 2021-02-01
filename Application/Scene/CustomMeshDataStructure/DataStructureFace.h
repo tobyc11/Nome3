@@ -26,7 +26,7 @@ class Face
 {
 public:
     Face();
-    Face(std::vector<Vertex> vertices);
+    Face(std::vector<Vertex*> vertices); // Randy changed Vertex to Vertex*
     /* The face normal.*/
     tc::Vector3 normal;
     /* Pointer to one edge in this face.*/
@@ -40,10 +40,12 @@ public:
     /* The name of this face.*/
     string name;
     /* The color of this face. */
-    tc::Vector3 color; // QColor color; 1/28 randy updated this
-    std::vector<Vertex> vertices;
+    std::array<float, 3> color; // QColor color; 1/28 randy updated this to std::aray<float, 3> so easily usable in DataStructureMeshToQGeometry
+    std::vector<Vertex*> vertices; // Randy noticed this wasn't being used before? Randy changed it from Vertex to Vertex*
     /* Indicate if this face has user defined color. */
     bool user_defined_color;
+
+    string surfaceName; // Randy added this
 };
 
 #endif // __FACE_H__

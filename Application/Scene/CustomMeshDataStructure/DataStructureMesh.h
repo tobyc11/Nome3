@@ -93,6 +93,11 @@ public:
      * @param startIndex: The starting index of drawing polygon name.
      * @param smoothShading: Indicate if we are in smooth shading or flat shading.
      */
+
+    // test for copying instances 
+    Mesh randymakeCopy(string copy_mesh_name = "");
+
+
     /**
      * @brief makeCopy: Make a copy of current mesh.
      * @return The copied mesh.

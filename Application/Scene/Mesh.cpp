@@ -114,7 +114,9 @@ void CMesh::AddFace(const std::string& name, const std::vector<std::string>& fac
 {
     std::vector<Vertex*> faceVertices;
     for (const std::string& pointName : facePointNames)
+    {
         faceVertices.push_back(currMesh.nameToVert.at(pointName));
+    }
     AddFace(name, faceVertices, faceSurfaceIdent);
 }
 
@@ -123,8 +125,6 @@ void CMesh::AddFace(const std::string& name, const std::vector<Vertex*>& faceDSV
 {
     Face * newFace = currMesh.addPolygonFace(faceDSVerts, false); // Project SwitchDS . Check if need to reverseOrder = true or false?
     newFace->surfaceName = faceSurfaceIdent;
-    //Project SwitchDS 
-
 }
 
 void CMesh::AddLineStrip(const std::string& name,
@@ -228,12 +228,16 @@ CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name,
 void CMeshInstance::CopyFromGenerator()
 {
     // TODO: Debug makeCopy(). it fixed vertex selection but weird Lonely vertex issue, caused by makecopy
-    currMesh = MeshGenerator->currMesh; //.makeCopy(); // Project SwitchDS CRUCIAL STEP. Randy added
+    auto newMesh =MeshGenerator->currMesh.randymakeCopy();
+    currMesh = newMesh; // MeshGenerator->currMesh; //.randymakeCopy(); // Project SwitchDS CRUCIAL
+                        // STEP. Randy
+                                        //added
                                         //makeCopy to copy the contents of the
                  // pointers, not the poiinters themselves
 
     // Bit weird, but we handle face coloring for mesh instances here
     CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();
+
     for (auto currFace : currMesh.faceList) {
         if (currFace->surfaceName != "") {
             CSurface* surface = dynamic_cast<CSurface*>(scene->FindEntity(currFace->surfaceName).Get());
@@ -564,6 +568,7 @@ void CVertexSelector::PointUpdate()
 
     if (iter == mi->currMesh.nameToVert.end())
     {
+
         printf("Vertex %s does not exist in entity %s\n", TargetName.c_str(),
                mi->GetName().c_str());
         return;
@@ -571,7 +576,6 @@ void CVertexSelector::PointUpdate()
     auto vertHandle = iter->second;
 
     const auto& p = mi->currMesh.findVertexInThisMesh(TargetName); // mi->Mesh.point(vertHandle);
-    std::cout << p->position.x << p->position.y << p->position.x << std::endl;
     VI.Position = { p->position.x, p->position.y, p->position.z }; // Project SwitchDS
     VI.Position = mi->GetSceneTreeNode()->L2WTransform.GetValue(Matrix3x4::IDENTITY) * VI.Position;
     Point.UpdateValue(&VI);

@@ -1,7 +1,6 @@
 #include "InteractiveMesh.h"
 #include "FrontendContext.h"
 #include "MaterialParser.h"
-#include "MeshToQGeometry.h"
 #include "Nome3DView.h"
 #include "ResourceMgr.h"
 #include <Matrix3x4.h>
@@ -64,9 +63,6 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
                 meshInstance->GetSelectedFaceHandles(); // Randy added on 12/3
 
             auto DSFaceWithColorVector = meshInstance->GetDSFaceWithColorVector();
-            //CMeshToQGeometry meshToQGeometry(meshInstance->GetMeshImpl(), selectedfacehandles,
-            //                                 DSFaceWithColorVector,
-            //                                 true); // Randy added 2nd argument on 12/3
             auto test = meshInstance->GetDSMesh();
             CDataStructureMeshToQGeometry DSmeshToQGeometry(meshInstance->GetDSMesh(), true); // Project SwitchDS
 

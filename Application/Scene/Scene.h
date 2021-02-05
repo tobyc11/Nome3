@@ -48,6 +48,9 @@ public:
     /// Walks the scene tree along a path, return the last matching node and the rest of path
     std::pair<CSceneTreeNode*, std::string> WalkPath(const std::string& path) const;
 
+    // Adds mesh names in the order they are initialized
+    void DoneVisitingMesh(std::string meshName);
+
     void Update();
 
     template <typename TFunc>
@@ -98,8 +101,12 @@ private:
     // The following two maps enable looking up objects by their names
     std::map<std::string, TAutoPtr<CEntity>> EntityLibrary;
     std::map<std::string, TAutoPtr<CSceneNode>> Groups;
+
     std::map<std::string, TAutoPtr<CSceneNode>> Merges;
 
+    // Used to help figure out which scope to use when using points. Useful, for example, for
+    // defining and using points in a mesh
+    std::deque<std::string> orderedMeshNames; // stackoverflow.com/questions/19540074/how-to-retrieve-the-elements-from-map-in-the-order-of-insertion
 
 };
 

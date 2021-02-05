@@ -4,11 +4,11 @@ file : command* EOF;
 
 expression
    :  ident LPAREN expression RPAREN # Call
+   |  op= (PLUS | MINUS) expression # UnaryOp
    |  expression op=POW expression # BinOp
    |  expression op=(TIMES | DIV)  expression # BinOp
    |  expression op=(PLUS | MINUS) expression # BinOp
    |  LPAREN expression RPAREN # SubExpParen
-   |  (PLUS | MINUS) expression # UnaryOp
    |  beg='{' sec='expr' expression end='}' # SubExpCurly
    |  atom # AtomExpr
    ;
@@ -29,14 +29,18 @@ ident
    ;
 
 idList : LPAREN (identList+=ident)* RPAREN ;
+vector3 : LPAREN expression expression expression RPAREN ;
 
 
 argClosed : 'closed' ;
 argSdFlag : 'sd_type' ident;
 argSdLevel : 'sd_level' expression;
 argHidden : 'hidden' ;
+argBeginCap : 'begincap' ;
+argEndCap : 'endcap' ;
 argSurface : 'surface' ident ;
-argSlices : 'slices' expression ;
+argCross : 'cross' ident ;
+argSegs : 'segs' expression ;
 argOrder : 'order' expression ;
 argTransform
    : 'rotate' LPAREN exp1=expression exp2=expression exp3=expression RPAREN LPAREN exp4=expression RPAREN # argTransformTwo
@@ -45,26 +49,39 @@ argTransform
    ;
 argColor : 'color' LPAREN expression expression expression RPAREN ;
 
+argControlRotate : 'rotate' vector3 ;
+argControlScale : 'scale' vector3 ;
+argPoint : 'point' ident ;
+argAzimuth : 'azimuth' expression ;
+argTwist : 'twist' expression ;
+argReverse : 'reverse' ;
+argMintorsion : 'mintorsion' ;
+
 command
-   : open='point' name=ident LPAREN expression expression expression RPAREN idList* end='endpoint' # CmdExprListOne
+   : open='point' name=ident LPAREN expression expression expression RPAREN end='endpoint' # CmdExprListOne
    | open='polyline' name=ident idList argClosed* end='endpolyline' # CmdIdListOne
-   | open='sweep' name=ident LPAREN expression expression expression expression RPAREN end='endsweep' # CmdExprListOne
-   | open='sweepcontrol' name=ident LPAREN expression expression expression expression RPAREN end='endsweepcontrol' # CmdExprListOne
+   | open='sweep' name=ident 'crosssection' crossId=ident (argBeginCap | argEndCap | argReverse)* 'endcrosssection'
+   'path' pathId=ident (argAzimuth | argTwist | argMintorsion)* 'endpath'  end='endsweep' # CmdSweep
+   | open='controlpoint' name=ident argPoint argControlScale argControlRotate (argCross | argReverse)* end='endcontrolpoint' # CmdNamedArgs
    | open='face' name=ident idList argSurface* end='endface' # CmdIdListOne
    | open='object' name=ident idList end='endobject' # CmdIdListOne
    | open='mesh' name=ident command* end='endmesh' # CmdSubCmds
    | open='group' name=ident command* end='endgroup' # CmdSubCmds
    | open='circle' name=ident LPAREN expression expression RPAREN end='endcircle' # CmdExprListOne
+   | open='spiral' name=ident LPAREN expression expression expression RPAREN end='endspiral' # CmdExprListOne
    | open='sphere' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endsphere' # CmdExprListOne
+   | open='ellipsoid' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endellipsoid' # CmdExprListOne
    | open='cylinder' name=ident LPAREN expression expression expression expression RPAREN end='endcylinder' # CmdExprListOne
+   | open='hyperboloid' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endhyperboloid' # CmdExprListOne
+   | open='dupin' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='enddupin' # CmdExprListOne
    | open='mobiusstrip' name=ident LPAREN expression expression expression expression RPAREN end='endmobiusstrip' # CmdExprListOne
    | open='helix' name=ident LPAREN expression expression expression expression RPAREN end='endhelix' # CmdExprListOne
    | open='funnel' name=ident LPAREN expression expression expression expression RPAREN end='endfunnel' # CmdExprListOne
    | open='tunnel' name=ident LPAREN expression expression expression expression RPAREN end='endtunnel' # CmdExprListOne
    | open='torusknot' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorusknot' # CmdExprListOne
    | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
-   | open='beziercurve' name=ident idList argSlices* end='endbeziercurve' # CmdIdListOne
-   | open='bspline' name=ident argOrder* idList argSlices* end='endbspline' # CmdIdListOne
+   | open='beziercurve' name=ident idList argSegs* end='endbeziercurve' # CmdIdListOne
+   | open='bspline' name=ident argOrder* idList argSegs* end='endbspline' # CmdIdListOne
    | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
    | open='surface' name=ident argColor end='endsurface' # CmdSurface
    | open='background' argSurface end='endbackground' # CmdArgSurface
@@ -80,6 +97,7 @@ command
    | open='subdivision' name=ident argSdFlag* argSdLevel* command* end='endsubdivision' # CmdSubdivision
    | open='sharp' expression idList+ end='endsharp' # CmdSharp
    | open='offset' name=ident k1='type' v1=ident k2='min' v2=expression k3='max' v3=expression k4='step' v4=expression end='endoffset' # CmdOffset
+   | open='include' name=ident end='endinclude' # CmdInclude
    ;
 
 set : open='set' ident expression expression expression expression;

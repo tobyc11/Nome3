@@ -12,6 +12,7 @@ class CFace : public CEntity
 {
     // Face points, in order
     DEFINE_INPUT_ARRAY(CVertexInfo*, Points) { MarkDirty(); }
+    //DEFINE_INPUT(std::string, SurfaceIdent) { MarkDirty(); }
 
     DEFINE_OUTPUT_WITH_UPDATE(CFace*, Face) { UpdateEntity(); }
 
@@ -34,6 +35,12 @@ public:
 
     // AST Handling
     AST::ACommand* MakeCommandNode(AST::CASTContext& ctx, AST::ACommand* parent);
+
+
+    std::string faceSurfaceIdent = ""; // Randy added this on 12/12
+//
+//private:
+//    std::string faceSurfaceIdent = "";
 };
 
 }

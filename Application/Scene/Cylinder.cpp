@@ -23,11 +23,11 @@ void CCylinder::UpdateEntity()
     float radius = Radius.GetValue(1.0f);
     float height = Height.GetValue(1.0f);
     int maxTheta = (int)ThetaMax.GetValue(6.0f);
-    int numSegs = (int)ThetaSegs.GetValue(6.0f);
+    int numSegs = (int)ThetaSegs.GetValue(6.0f) + 1;
 
     for (int j = 0; j < 2; j++) {
       for (int i = 0; i < numSegs; i++) {
-          float theta = (float)i / numSegs * ((float) maxTheta / 360.f) * 2.f * (float)tc::M_PI;
+          float theta = (float)i / (float) (numSegs - 1) * ((float) maxTheta / 360.f) * 2.f * (float)tc::M_PI;
           float x = radius * cosf(theta);
           float y = radius * sinf(theta);
           float z = j * height;

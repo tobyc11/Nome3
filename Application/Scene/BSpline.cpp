@@ -4,9 +4,10 @@ namespace Nome::Scene {
 
 DEFINE_META_OBJECT(CBSpline)
 {
-    BindPositionalArgument(&CBSpline::ControlPoints, 1);
-    BindNamedArgument(&CBSpline::Segments, "slices", 0);
     BindNamedArgument(&CBSpline::Order, "order", 0);
+    BindPositionalArgument(&CBSpline::ControlPoints, 1);
+    BindNamedArgument(&CBSpline::Segments, "segs", 0);
+
 }
 
 void CBSpline::MarkDirty()
@@ -92,14 +93,16 @@ void CBSpline::UpdateEntity() {
     std::vector<CMeshImpl::VertexHandle> handles;
     handles.reserve(n + 1);
 
-    std::vector<CVertexInfo> positions;
+    std::vector<CVertexInfo *> positions;
     for (int i = 0; i < n + 1; i++)
     {
         handles.push_back(AddVertex("v" + std::to_string(i), SamplePositions[i]));
         CVertexInfo point;
         point.Position = SamplePositions[i];
-        positions.push_back(point);
+        points.push_back(point);
     }
+    for (int i = 0; i < n + 1; i++)
+        positions.push_back(&points[i]);
 
     SI.Positions = positions;
     SI.Name = GetName();

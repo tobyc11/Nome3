@@ -24,16 +24,38 @@ public:
         return SelectedVertices;
     }
 
+     // Randy added on 10/14 for face selection
+    [[nodiscard]] const std::vector<std::string>& GetSelectedFaces() const { return SelectedFaces; }
+
+    // Randy added on 11/5 for edge selection
+    [[nodiscard]] const std::vector<std::string>& GetSelectedEdgeVertices() const
+    {
+        return SelectedEdgeVertices;
+    }
+
     void ClearSelectedVertices(); // Randy added on 9/27
+    void ClearSelectedFaces(); // Randy added on 10/14 for deselecting faces
+    void ClearSelectedEdges(); // Randy added on 11/5 for deselecting edges
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
     void PickVertexWorldRay(tc::Ray& ray);
     void PickFaceWorldRay(tc::Ray& ray); // Randy added on 10/10
+    void PickEdgeWorldRay(tc::Ray& ray); // Randy added on 10/29
+    void PickPolylineWorldRay(tc::Ray& ray); // Randy added on 12/22
+
+    bool WireFrameMode = false; // Randy added on 10/16 for choose wireframe mode or default mode.
+                                // Changed to false on 11/21
+
     void FreeVertexSelection();
 
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
+
+    bool PickVertexBool = false; // Randy added on 11/5
+    bool PickFaceBool = false; // Randy added on 11/5
+    bool PickEdgeBool = false; // Randy added on 11/5
+    bool PickPolylineBool = false; // Randy added on 12/22
 
 protected:
     // Xinyu added on Oct 8 for rotation
@@ -55,6 +77,9 @@ private:
     std::unordered_set<CInteractiveMesh*> InteractiveMeshes;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> EntityDrawData;
     std::vector<std::string> SelectedVertices;
+    std::vector<std::string> SelectedFaces; // Randy added on 10/10
+    std::vector<std::string> SelectedEdgeVertices; // Randy added on 11/5
+    // std::vector<const & std::vector<std::string>> SelectedEdgeVertPositions; // There are no edge "names" right now TODO: Introduce Edge names and handles
     bool vertexSelectionEnabled;
 
     // Xinyu added on Oct 8 for rotation
@@ -79,19 +104,15 @@ private:
 
     // For the animation
     Qt3DCore::QTransform *sphereTransform;
-    Qt3DCore::QTransform *torusTransformX;
-    Qt3DCore::QTransform *torusTransformY;
-    Qt3DCore::QTransform *torusTransformZ;
+
     QQuaternion quaternionX;
     QQuaternion quaternionY;
     OrbitTransformController *controller;
     QPropertyAnimation *sphereRotateTransformAnimation;
-    Qt3DCore::QEntity *torusX;
-    Qt3DCore::QEntity *torusY;
-    Qt3DCore::QEntity *torusZ;
-    Qt3DExtras::QPhongAlphaMaterial *materialX;
-    Qt3DExtras::QPhongAlphaMaterial *materialY;
-    Qt3DExtras::QPhongAlphaMaterial *materialZ;
+    Qt3DCore::QEntity *torus;
+
+    Qt3DExtras::QPhongAlphaMaterial *material;
+
 
 };
 

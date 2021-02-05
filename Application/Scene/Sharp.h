@@ -1,7 +1,6 @@
 #pragma once
 #include "Entity.h"
 #include <Flow/FlowNodeArray.h>
-#include "ControlPoint.h"
 
 namespace Nome::Scene
 {

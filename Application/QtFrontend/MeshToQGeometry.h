@@ -8,6 +8,7 @@
 #include <QByteArray>
 #include <Qt3DRender/QAttribute>
 #include <Qt3DRender/QGeometry>
+#include <unordered_set>
 #include <vector>
 
 namespace Nome
@@ -74,6 +75,26 @@ public:
         AdvanceIndices();
     }
 
+    void IngestInt(int x)
+    {
+        auto* target = Attributes[CurrAttrIndex];
+
+        // Type check for target
+        assert(target->Type == Qt3DRender::QAttribute::Int);
+        assert(target->Size == 1);
+
+        // Append the buffer pointed to by target
+        const int byteLen = sizeof(int) * 1;
+        int begOffset = target->GetAbsByteOffset(CurrVertexIndex);
+        if (target->Buffer.size() < begOffset + byteLen)
+            target->Buffer.resize(begOffset + byteLen);
+        auto* beg = &*target->Buffer.begin() + begOffset;
+        auto* p = reinterpret_cast<float*>(beg);
+        *p++ = x;
+
+        AdvanceIndices();
+    }
+
     [[nodiscard]] uint32_t GetVertexCount() const { return CurrVertexIndex; }
 
 protected:
@@ -96,7 +117,10 @@ private:
 class CMeshToQGeometry
 {
 public:
-    explicit CMeshToQGeometry(const CMeshImpl& fromMesh, bool bGenPointGeometry = false);
+    explicit CMeshToQGeometry(const CMeshImpl& fromMesh,
+                              std::vector<CMeshImpl::FaceHandle> selectedFaceHandles,
+                              std::map<CMeshImpl::FaceHandle, std::array<float, 3>> fHWithColorVector, 
+                              bool bGenPointGeometry = false);
 
     ~CMeshToQGeometry();
 

@@ -6,6 +6,8 @@ layout( triangle_strip, max_vertices = 3 ) out;
 in EyeSpaceVertex {
     vec3 position;
     vec3 normal;
+    int colorSelected; // Randy added this on 12/3
+    vec3 faceColor; // Randy added this on 12/12
 } gs_in[];
 
 out WireframeVertex {
@@ -14,6 +16,8 @@ out WireframeVertex {
     noperspective vec4 edgeA;
     noperspective vec4 edgeB;
     flat int configuration;
+    flat int colorSelected; // Randy added this on 12/3 Also note that integer types are never interpolated. You must declare them as flat in any case. https://stackoverflow.com/questions/27581271/flat-qualifier-in-glsl
+    vec3 faceColor; // Randy added this on 12/12
 } gs_out;
 
 uniform mat4 viewportMatrix;
@@ -71,13 +75,19 @@ void main()
         gs_out.edgeA = vec4( ha, 0.0, 0.0, 0.0 );
         gs_out.normal = gs_in[0].normal;
         gs_out.position = gs_in[0].position;
+        gs_out.colorSelected = gs_in[0].colorSelected; // Randy added this on 12/3
+        gs_out.faceColor = gs_in[0].faceColor; // Randy added this on 12/12
+
         gl_Position = gl_in[0].gl_Position;
-        EmitVertex();
+        EmitVertex(); // https://learnopengl.com/Advanced-OpenGL/Geometry-Shader
 
         // Vertex 1 (b)
         gs_out.edgeA = vec4( 0.0, hb, 0.0, 0.0 );
         gs_out.normal = gs_in[1].normal;
         gs_out.position = gs_in[1].position;
+        gs_out.colorSelected = gs_in[1].colorSelected; // Randy added this on 12/3
+        gs_out.faceColor = gs_in[1].faceColor; // Randy added this on 12/12
+
         gl_Position = gl_in[1].gl_Position;
         EmitVertex();
 
@@ -85,6 +95,8 @@ void main()
         gs_out.edgeA = vec4( 0.0, 0.0, hc, 0.0 );
         gs_out.normal = gs_in[2].normal;
         gs_out.position = gs_in[2].position;
+        gs_out.colorSelected = gs_in[2].colorSelected; // Randy added this on 12/3
+        gs_out.faceColor = gs_in[2].faceColor; // Randy added this on 12/12
         gl_Position = gl_in[2].gl_Position;
         EmitVertex();
 
@@ -112,16 +124,23 @@ void main()
         // Pass through the other vertex attributes
         gs_out.normal = gs_in[0].normal;
         gs_out.position = gs_in[0].position;
+        gs_out.colorSelected = gs_in[0].colorSelected; // Randy added this on 12/3
+        gs_out.faceColor = gs_in[0].faceColor; // Randy added this on 12/12
+
         gl_Position = gl_in[0].gl_Position;
         EmitVertex();
 
         gs_out.normal = gs_in[1].normal;
         gs_out.position = gs_in[1].position;
+        gs_out.colorSelected = gs_in[1].colorSelected; // Randy added this on 12/3
+        gs_out.faceColor = gs_in[1].faceColor; // Randy added this on 12/12
         gl_Position = gl_in[1].gl_Position;
         EmitVertex();
 
         gs_out.normal = gs_in[2].normal;
         gs_out.position = gs_in[2].position;
+        gs_out.colorSelected = gs_in[2].colorSelected; // Randy added this on 12/3
+        gs_out.faceColor = gs_in[2].faceColor; // Randy added this on 12/12
         gl_Position = gl_in[2].gl_Position;
         EmitVertex();
 
@@ -129,4 +148,3 @@ void main()
         EndPrimitive();
     }
 }
-

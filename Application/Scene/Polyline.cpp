@@ -25,7 +25,7 @@ void CPolyline::UpdateEntity()
     Super::UpdateEntity();
 
     std::vector<CMeshImpl::VertexHandle> vertArray;
-    std::vector<CVertexInfo> positions;
+    std::vector<CVertexInfo *> positions;
 
     auto numPoints = Points.GetSize();
     CMeshImpl::VertexHandle firstVert;
@@ -36,7 +36,7 @@ void CPolyline::UpdateEntity()
         if (i == 0)
             firstVert = vertHandle;
         vertArray.push_back(vertHandle);
-        positions.push_back(*point);
+        positions.push_back(point);
     }
     if (bClosed)
     {
@@ -72,24 +72,21 @@ void CPolyline::SetClosed(bool closed)
     MarkDirty();
 }
 
-
-/* Randy in progress
 AST::ACommand* CPolyline::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
 {
-    if (!createNewNode)
-        throw "unimplemented";
-    auto* node = ctx.Make<AST::ACommand>(ctx.MakeToken("polyline"), ctx.MakeToken("endpolyline"));
-    node->PushPositionalArgument(ctx.MakeIdent(GetName()));
-
-    //size_t numFaces = Faces.GetSize();
-    for (auto & point : PointSource) {
-
-        this->GetName();
-        auto* pFace = Faces.GetValue(i, nullptr);
-
-        node->AddSubCommand(pFace->MakeCommandNode(ctx, node));
-    }
-    return node;
-}*/
+    auto* polylineNode =
+        ctx.Make<AST::ACommand>(ctx.MakeToken("polyline"), ctx.MakeToken("endpolyline"));
+    polylineNode->PushPositionalArgument(ctx.MakeIdent(GetName())); // 1st positional arg is name
+    // 2nd positional arg is point ident vector
+    auto pointNames = Points.MapOutput<std::string>([](const auto& output) {
+        auto* vs = dynamic_cast<CVertexSelector*>(output.GetOwner());
+        return vs->GetPath();
+    });
+    std::vector<AST::AExpr*> identList;
+    for (const auto& pointName : pointNames)
+        identList.push_back(ctx.MakeIdent(pointName));
+    polylineNode->PushPositionalArgument(ctx.MakeVector(identList));
+    return polylineNode;
+}
 
 }

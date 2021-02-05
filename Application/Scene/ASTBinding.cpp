@@ -4,7 +4,10 @@
 #include "SweepPath.h"
 #include "Polyline.h"
 #include "BSpline.h"
-#include "TorusKnot.h" // Check with Zachary
+#include "Circle.h"
+#include "BezierSpline.h"
+#include "TorusKnot.h" // Randy added
+#include "Polyline.h" // Randy added on 12/29
 #include "SweepControlPoint.h"
 #include <Flow/FlowNode.h>
 #include <Flow/FlowNodeArray.h>
@@ -54,6 +57,14 @@ std::any CExprToNodeGraph::VisitUnaryOp(AST::AUnaryOp* unaryOp)
     if (unaryOp->GetOperatorType() == AST::AUnaryOp::EOperator::Neg)
     {
         auto* node = new Flow::CFloatNeg();
+        InputStack.push(&node->Operand0);
+        unaryOp->GetOperand()->Accept(this);
+        InputStack.pop();
+        node->Result.Connect(*InputStack.top());
+    }
+    else if (unaryOp->GetOperatorType() == AST::AUnaryOp::EOperator::Plus)
+    {
+        auto* node = new Flow::CFloatAdd();
         InputStack.push(&node->Operand0);
         unaryOp->GetOperand()->Accept(this);
         InputStack.pop();
@@ -216,6 +227,30 @@ bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command,
 }
 
 
+template <>
+bool TBindingTranslator<Flow::TInput<CVertexInfo*>>::FromASTToValue(
+    AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CVertexInfo*>& value)
+{
+    auto* ident = subpart.GetExpr(command);
+    if (ident == NULL)
+        return false;
+
+    if (ident->GetKind() != AST::EKind::Ident)
+        throw AST::CSemanticError("Identifier required", ident);
+
+    std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
+    Flow::TOutput<CVertexInfo*>* pointOutput = GEnv.Scene->FindPointOutput(identVal);
+    if (!pointOutput)
+    {
+        throw AST::CSemanticError(tc::StringPrintf("Cannot find point %s", identVal.c_str()),
+                                    ident);
+    }
+    value.Connect(*pointOutput);
+
+    return true;
+}
+
+// Uses TInputArray instead of TInput
 
 template <>
 bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
@@ -284,53 +319,26 @@ bool TBindingTranslator<Flow::TInput<CSweepPathInfo*>>::FromASTToValue(
     {
         CBSpline* bspline = dynamic_cast<CBSpline*>(path);
         value.Connect(bspline->BSpline);
-    } 
+    }
+    else if (typeid(e) == typeid(CCircle))
+    {
+        CCircle* circle = dynamic_cast<CCircle*>(path);
+        value.Connect(circle->Circle);
+    }
+    else if (typeid(e) == typeid(CBezierSpline))
+    {
+        CBezierSpline* bezierSpline = dynamic_cast<CBezierSpline*>(path);
+        value.Connect(bezierSpline->BezierSpline);
+    }
     else if (typeid(e) == typeid(CTorusKnot))
     {
         CTorusKnot* torusknot = dynamic_cast<CTorusKnot*>(path);
         value.Connect(torusknot->TorusKnot);
-    } 
+    }
     else
     {
         throw AST::CSemanticError(tc::StringPrintf("Entity %s is not a sweep path", identVal.c_str()),
                                   ident);
-    }
-    return true;
-}
-
-template <>
-bool TBindingTranslator<Flow::TInputArray<CControlPointInfo*>>::FromASTToValue(
-    AST::ACommand* command, const CCommandSubpart& subpart,
-    Flow::TInputArray<CControlPointInfo*>& value)
-{
-    auto* vec = subpart.GetExpr(command);
-    if (vec == NULL)
-    {
-        return false;
-    }
-
-    if (vec->GetKind() != AST::EKind::Vector)
-        throw AST::CSemanticError("TInputArray<CControlPointInfo*> is not matched with a vector",
-                                  command);
-    for (const auto* ident : static_cast<AST::AVector*>(vec)->GetItems())
-    {
-        if (ident->GetKind() != AST::EKind::Ident)
-            throw AST::CSemanticError("Identifier required", ident);
-
-        std::string identVal = static_cast<const AST::AIdent*>(ident)->ToString();
-        TAutoPtr<CEntity> entity = GEnv.Scene->FindEntity(identVal);
-        if (!entity)
-        {
-            throw AST::CSemanticError(tc::StringPrintf("Cannot find entity %s", identVal.c_str()),
-                                      ident);
-        }
-
-        auto& e = *entity.Get();
-        if (typeid(e) == typeid(CSweepControlPoint))
-        {
-            CSweepControlPoint* sweepControlPoint = dynamic_cast<CSweepControlPoint*>(entity.Get());
-            value.Connect(sweepControlPoint->SweepControlPoint);
-        }
     }
     return true;
 }

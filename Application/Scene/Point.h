@@ -1,7 +1,5 @@
 #pragma once
 #include "Entity.h"
-#include <Flow/FlowNodeArray.h>
-#include "ControlPoint.h"
 
 namespace Nome::Scene
 {
@@ -10,8 +8,11 @@ struct CVertexInfo
 {
     Vector3 Position;
     std::string Name;
-    std::vector<CControlPointInfo*> ControlPoints;
+
     float sharpness = 0;
+    virtual ~CVertexInfo() = default;
+
+
 };
 
 class CPoint : public CEntity
@@ -20,8 +21,6 @@ class CPoint : public CEntity
     DEFINE_INPUT(float, Y) { MarkDirty(); }
     DEFINE_INPUT(float, Z) { MarkDirty(); }
 
-
-    DEFINE_INPUT_ARRAY(CControlPointInfo*, ControlPoints) { MarkDirty(); }
 
     DEFINE_OUTPUT_WITH_UPDATE(CVertexInfo*, Point) { UpdateEntity(); }
 

@@ -86,15 +86,17 @@ void CDebugDraw::LineSegment(tc::Vector3 from, tc::Vector3 to)
     *p++ = from.x;
     *p++ = from.y;
     *p++ = from.z;
+
+    // Color the line pink
+    *p++ = 1.0f;
     *p++ = 0.0f;
-    *p++ = 0.0f;
-    *p++ = 0.0f;
+    *p++ = 1.0f;
     *p++ = to.x;
     *p++ = to.y;
     *p++ = to.z;
+    *p++ = 1.0f;
     *p++ = 0.0f;
-    *p++ = 0.0f;
-    *p++ = 0.0f;
+    *p++ = 1.0f;
 }
 
 void CDebugDraw::DrawPoint(tc::Vector3 pos, tc::Color color)

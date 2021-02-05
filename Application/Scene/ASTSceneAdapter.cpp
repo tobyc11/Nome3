@@ -2,6 +2,10 @@
 #include "BSpline.h"
 #include "BezierSpline.h"
 #include "Circle.h"
+#include "Spiral.h"
+#include "Sphere.h"
+#include "Ellipsoid.h"
+
 #include "Cylinder.h"
 #include "Environment.h"
 #include "Face.h"
@@ -11,13 +15,14 @@
 #include "MobiusStrip.h"
 #include "Point.h"
 #include "Polyline.h"
-#include "Sphere.h"
 #include "Surface.h"
 #include "Sweep.h"
 #include "SweepControlPoint.h"
 #include "Torus.h"
 #include "TorusKnot.h"
 #include "Tunnel.h"
+#include "Hyperboloid.h"
+#include "Dupin.h"
 #include <StringPrintf.h>
 #include <unordered_map>
 
@@ -38,11 +43,12 @@ namespace Nome::Scene
 
 static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "point", ECommandKind::Entity },       { "polyline", ECommandKind::Entity },
-    { "sweep", ECommandKind::Entity },       { "sweepcontrol", ECommandKind::Entity },
+    { "sweep", ECommandKind::Entity },       { "controlpoint", ECommandKind::Entity },
     { "face", ECommandKind::Entity },        { "object", ECommandKind::Entity },
     { "mesh", ECommandKind::Entity },        { "group", ECommandKind::Instance },
     { "circle", ECommandKind::Entity },      { "sphere", ECommandKind::Entity },
     { "cylinder", ECommandKind::Entity },    { "funnel", ECommandKind::Entity },
+    { "hyperboloid", ECommandKind::Entity }, { "dupin", ECommandKind::Entity },
     { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
     { "torusknot", ECommandKind::Entity },   { "torus", ECommandKind::Entity },
     { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
@@ -54,7 +60,9 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
     { "subdivision", ECommandKind::Instance },  { "offset", ECommandKind::Dummy },
     { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity },
-    {"sharp", ECommandKind::Entity }
+    {"sharp", ECommandKind::Entity }, { "ellipsoid", ECommandKind::Entity },
+    { "include", ECommandKind::DocEdit }, { "spiral", ECommandKind::Entity }
+
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -72,6 +80,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CCircle(name);
     else if (cmd == "cylinder")
         return new CCylinder(name);
+    else if (cmd == "ellipsoid")
+        return new CEllipsoid(name);
     else if (cmd == "face")
         return new CFace(name);
     else if (cmd == "funnel")
@@ -88,7 +98,7 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CSphere(name);
     else if (cmd == "sweep")
         return new CSweep(name);
-    else if (cmd == "sweepcontrol")
+    else if (cmd == "controlpoint")
         return new CSweepControlPoint(name);
     else if (cmd == "surface")
         return new CSurface(name);
@@ -100,18 +110,56 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CTorus(name);
     else if (cmd == "mobiusstrip")
         return new CMobiusStrip(name);
-
+    else if (cmd == "hyperboloid")
+        return new CHyperboloid(name);
+    else if (cmd == "dupin")
+        return new CDupin(name);
+    else if (cmd == "spiral")
+        return new SSpiral(name);
     return nullptr;
 }
 
+// Randy changed on 11/30. TraverseFile returns list of additional file names that need to be parsed
+std::vector<std::string> CASTSceneAdapter::GetIncludes(AST::AFile* astRoot, CScene& scene) {
+
+    assert(CmdTraverseStack.empty());
+
+    std::vector<std::string> includeFileNames;
+    for (auto* cmd : astRoot->GetCommands())
+    {
+        auto fileName = VisitInclude(cmd, scene);
+        if (fileName != "")
+            includeFileNames.push_back(fileName);
+    }
+    return includeFileNames;
+
+}
+// Randy changed on 11/30. TraverseFile returns list of additional file names that need to be parsed
 void CASTSceneAdapter::TraverseFile(AST::AFile* astRoot, CScene& scene)
 {
     assert(CmdTraverseStack.empty());
+
     for (auto* cmd : astRoot->GetCommands())
+    {
         VisitCommandBankSet(cmd, scene);
+    }
     InstanciateUnder = GEnv.Scene->GetRootNode();
     for (auto* cmd : astRoot->GetCommands())
         VisitCommandSyncScene(cmd, scene, false);
+}
+
+std::string CASTSceneAdapter::VisitInclude(AST::ACommand* cmd, CScene& scene)
+{
+    std::string includeFileName;
+    CmdTraverseStack.push_back(cmd);
+    auto kind = ClassifyCommand(cmd->GetCommand());
+    if (kind == ECommandKind::DocEdit && cmd->GetCommand() == "include")
+    {
+        auto name = cmd->GetName();
+        includeFileName = name;
+    }
+    CmdTraverseStack.pop_back();
+    return includeFileName;
 }
 
 void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
@@ -133,13 +181,14 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
         auto name = bank + "." + cmd->GetName();
         scene.GetBankAndSet().AddSlider(name, cmd, evalArg(1), evalArg(2), evalArg(3), evalArg(4));
     }
-    
+
     for (auto* sub : cmd->GetSubCommands())
         VisitCommandBankSet(sub, scene);
     CmdTraverseStack.pop_back();
 }
 
-void CASTSceneAdapter::IterateSharpness(AST::ACommand* cmd, CScene& scene) {
+
+void CASTSceneAdapter::IterateSharpness(AST::ACommand* cmd, CScene& scene) const {
     TAutoPtr<CEntity> entity = new CSharp();
     entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
     GEnv.Scene->AddEntity(entity);
@@ -161,32 +210,51 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (kind == ECommandKind::Entity)
     {
+
         if (cmd->GetCommand() == "sharp") {
             for (auto* sub : cmd->GetSubCommands())
             {
                 sub->PushPositionalArgument(cmd->GetLevel());
                 IterateSharpness(sub, scene);
             }
-        } else
-        {
-            TAutoPtr<CEntity> entity =
-                MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
+        } else {
+            TAutoPtr<CEntity> entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
             entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
             // All entities are added to the EntityLibrary dictionary
             GEnv.Scene->AddEntity(entity);
             if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
+            {
                 if (auto* face = dynamic_cast<CFace*>(entity.Get()))
+                {
                     mesh->Faces.Connect(face->Face);
+                }
+                else if (auto* point = dynamic_cast<CPoint*>(entity.Get()))
+                {
+                    mesh->Points.Connect(point->Point); // Randy added on 12/5
+                }
+            }
 
-            // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one face).
+            // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one
+            // face).
             if (insubMesh == false)
             {
                 ParentEntity = entity;
                 EntityNamePrefix = cmd->GetName() + ".";
             }
 
-            for (auto* sub : cmd->GetSubCommands())
+            auto subCommands = cmd->GetSubCommands();
+            for (size_t i = 0; i < subCommands.size(); i++)
+            {
+                auto* sub = subCommands[i];
                 VisitCommandSyncScene(sub, scene, true);
+
+                // if done visiting mesh, mark it as visited. Randy added this on 12/9
+                if (i == subCommands.size() - 1)
+                {
+                    auto meshNameNoPeriod = EntityNamePrefix.substr(0, EntityNamePrefix.size() - 1);
+                    GEnv.Scene->DoneVisitingMesh(meshNameNoPeriod);
+                }
+            }
 
             // Added insubMesh bool to allow Meshes to process multiple faces.
             if (insubMesh == false)
@@ -194,35 +262,36 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 EntityNamePrefix = "";
                 ParentEntity = nullptr;
             }
+
         }
     }
     else if (cmd->GetCommand() == "instance")
     {
-        // Instance transformations/surfaces are not handled in here,
         auto* sceneNode = InstanciateUnder->CreateChildNode(cmd->GetName());
         // To perform rotation
         sceneNode->SyncFromAST(cmd, scene);
         // TODO: move the following logic into SyncFromAST
 
-        // Check to see if there is a surface color associated with this instance. If the surface argument exists, then set the scene node's surface to be it.
-        // Surface color for group vs mesh instance logic is handled in InteractiveMesh.cpp (at the rendering stage).
+        // Check to see if there is a surface color associated with this instance. If the surface
+        // argument exists, then set the scene node's surface to be it. Surface color for group vs
+        // mesh instance logic is handled in InteractiveMesh.cpp (at the rendering stage).
         auto surface = cmd->GetNamedArgument("surface");
         if (surface)
         {
             auto surfaceEntityNameExpr = surface->GetArgument(
                 0)[0]; // Returns a casted AExpr that was an AIdent before casting
-            auto surfaceIdentifier = static_cast<AST::AIdent*>(&surfaceEntityNameExpr)->ToString(); // Downcast it back to an AIdent
+            auto surfaceIdentifier = static_cast<AST::AIdent*>(&surfaceEntityNameExpr)
+                                         ->ToString(); // Downcast it back to an AIdent
             auto surfaceEntity = GEnv.Scene->FindEntity(surfaceIdentifier);
             if (surfaceEntity)
                 sceneNode->SetSurface(dynamic_cast<CSurface*>(surfaceEntity.Get()));
-
         }
-
         auto entityName = cmd->GetPositionalIdentAsString(1);
         auto entity = GEnv.Scene->FindEntity(entityName);
         if (entity)
-            sceneNode->SetEntity(entity);
-        else if (auto group = GEnv.Scene->FindGroup(entityName)) // If the entityName is a group identifier
+            sceneNode->SetEntity(entity); // This line is very important. It attaches an entity (e.g. mesh) to the scene node
+        else if (auto group =
+                     GEnv.Scene->FindGroup(entityName)) // If the entityName is a group identifier
             group->AddParent(sceneNode);
         else
             throw AST::CSemanticError(

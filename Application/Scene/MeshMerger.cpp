@@ -1,6 +1,7 @@
 #include "MeshMerger.h"
 #include "Subdivision.h"
 
+
 #include <unordered_map>
 
 namespace Nome::Scene
@@ -34,11 +35,13 @@ void CMeshMerger::UpdateEntity()
 void CMeshMerger::Catmull()
 {
 
+
     if (subdivisionLevel == 0 || MergedMesh.vertices_empty()) {
         return;
     }
     Mesh.clear();
     //OpenMesh::Subdivider::Uniform::CatmullClarkT<CMeshImpl> catmull; // https://www.graphics.rwth-aachen.de/media/openmesh_static/Documentations/OpenMesh-4.0-Documentation/a00020.html
+
     // Execute 2 subdivision steps
     CMeshImpl otherMesh = MergedMesh;
     //catmull.attach(otherMesh);
@@ -46,11 +49,13 @@ void CMeshMerger::Catmull()
 
     subdivide(otherMesh, subdivisionLevel, isSharp);
     std::cout << "Apply catmullclark subdivision, may take a few minutes or so" << std::endl;
+
     //catmull(4);
     //cleanup(otherMesh);
     //catmull.detach();
     //auto tf = dynamic_cast<Scene::CMeshInstance*>(this)->GetSceneTreeNode()->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
     auto tf = tc::Matrix3x4::IDENTITY;
+
     // Copy over all the vertices and check for overlapping
     std::unordered_map<CMeshImpl::VertexHandle, CMeshImpl::VertexHandle> vertMap;
     float maxY = -1 * std::numeric_limits<double>::infinity();
@@ -70,16 +75,19 @@ void CMeshMerger::Catmull()
     {
         std::cout << vi->idx() << std::endl;
         const auto& posArray = otherMesh.point(*vi);
+
         Vector3 localPos = Vector3(posArray[0], posArray[1],
                                    posArray[2]);
         Vector3 worldPos = tf * localPos;
         /* Dont need since merged nodes have no overlapping vertices
+
         auto [closestVert, distance] = FindClosestVertex(
             worldPos);
         if (distance < Epsilon)
         {
             vertMap[*vi] = closestVert;
         }*/
+
         //else
         auto vnew = Mesh.add_vertex({ worldPos.x, worldPos.y + (maxY - minY) + 10, worldPos.z});
         vertMap[*vi] = vnew;
@@ -98,13 +106,13 @@ void CMeshMerger::Catmull()
         for (auto vert : otherMesh.fv_range(*fi))
             verts.emplace_back(vertMap[vert]);
 
-
         auto fnew =
             Mesh.add_face(verts);
         std::string fName = "v" + std::to_string(FaceCount);
         NameToFace.insert(
             { fName,
               fnew });
+
         FaceCount++;
     }
 }
@@ -135,13 +143,17 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
             MergedMesh.data(closestVert).set_sharpness(
                 std::max(MergedMesh.data(closestVert).sharpness(),otherMesh.data(vi).sharpness()));
             printf("set sharpness: %f\n", MergedMesh.data(closestVert).sharpness());
+
         }
-        else // Else, we haven't added a vertex at this location yet. So lets add_vertex to the merger mesh.
+        else // Else, we haven't added a vertex at this location yet. So lets add_vertex to the
+             // merger mesh.
         {
+
             auto vnew = MergedMesh.add_vertex({ worldPos.x, worldPos.y, worldPos.z }); // This adds a new vertex. Notice, we are passing in coordinates here, but it actually returns a vertex handle (essentially, a pointer to this vertex.
             vertMap[vi] = vnew; // Map actual mesh vertex to merged vertex.This dictionary is useful for add face later.
             std::string vName = "v" + std::to_string(VertCount); // we of course need a name for this new vertex handle
             NameToVert.insert({ vName, vnew }); // Add new merged vertex into NameToVert. This is if there wa sa floating point error above so we need to add an entirely new vertex + position ?
+
             ++VertCount; // VertCount is an attribute for this merger mesh. Starts at 0.
             MergedMesh.data(vnew).set_sharpness(otherMesh.data(vi).sharpness());
         }
@@ -149,8 +161,15 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
 
     // Add faces
     for (auto fi : otherMesh.faces()) //Iterate through all the faces in the mesh (that is, the non-merger mesh, aka the one you're trying to copy faces from)
+
     {
+        // TODO: Need to add vertices to scene if want to save changes back into .nom file I think
+        // auto newface = new CFace("placeholder" + fi.handle().idx());  // TODO: may be useful in
+        // the future to add faces as entities GEnv.Scene->AddEntity(newface);  // TODO: may be
+        // useful in the future to add faces as entities Faces.Connect(newface->Face); 
+
         std::vector<CMeshImpl::VertexHandle> verts;
+
         for (auto vert : fi.vertices()) // iterate through all the vertices on this face
             verts.emplace_back(vertMap[vert]); // Add the vertice handles from above. In most cases, it will match the actual mesh's? Unless there is a floating point precision error?
         auto fnew = MergedMesh.add_face(verts); // add_face processes the merger vertex handles and adds the face into the merger mesh (Mesh refers to the merger mesh here)
@@ -174,9 +193,10 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
             std::cerr << "When try to merge in sharpness the edges don't match" << e << '\n';
         }
     }
+
 }
 
-//Find closest vertex in current mesh's vertices
+// Find closest vertex in current mesh's vertices
 std::pair<CMeshImpl::VertexHandle, float> CMeshMerger::FindClosestVertex(const tc::Vector3& pos)
 {
     CMeshImpl::VertexHandle result;
@@ -195,6 +215,7 @@ std::pair<CMeshImpl::VertexHandle, float> CMeshMerger::FindClosestVertex(const t
     }
     return { result, minDist };
 }
+
 
 bool CMeshMerger::subdivide(CMeshImpl& _m, unsigned int n, bool isSharp)
 {
@@ -478,11 +499,5 @@ void CMeshMerger::update_vertex( CMeshImpl& _m, const CMeshImpl::VertexHandle& _
 
     _m.property( vp_pos_, _vh ) = pos;
 }
-
-
-
-
-
-
 
 }

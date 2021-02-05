@@ -1,5 +1,5 @@
 #pragma once
-#include "Mesh.h"
+#include "SweepPath.h"
 #include <Matrix3.h>
 
 namespace Nome::Scene
@@ -30,7 +30,7 @@ public:
     int Segments;
 };
 
-class CBezierSpline : public CMesh
+class CBezierSpline : public CSweepPath
 {
     DEFINE_INPUT(float, Segments) { MarkDirty(); }
     DEFINE_INPUT_ARRAY(CVertexInfo*, ControlPoints) { MarkDirty(); }
@@ -40,12 +40,13 @@ class CBezierSpline : public CMesh
         UpdateEntity();
         Spline.UpdateValue(&Math);
     }
+    DEFINE_OUTPUT_WITH_UPDATE(CSweepPathInfo*, BezierSpline) { UpdateEntity(); }
 
 public:
-    DECLARE_META_CLASS(CBezierSpline, CMesh);
+    DECLARE_META_CLASS(CBezierSpline, CSweepPath);
     CBezierSpline() = default;
     CBezierSpline(const std::string& name)
-        : CMesh(std::move(name))
+        : CSweepPath(std::move(name))
     {
     }
 
@@ -53,6 +54,7 @@ public:
 
 private:
     CBezierCurveMath Math;
+    std::vector<CVertexInfo> points;
 };
 
 }

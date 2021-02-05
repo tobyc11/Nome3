@@ -18,8 +18,8 @@ public:
     [[nodiscard]] Scene::CSceneTreeNode* GetSceneTreeNode() const { return SceneTreeNode; }
 
     void UpdateTransform();
-    void UpdateGeometry();
-    void UpdateMaterial();
+    void UpdateGeometry(bool showVertBox);
+    void UpdateMaterial(bool showFacets);
     void InitInteractions();
     void SetDebugDraw(const CDebugDraw* debugDraw);
 

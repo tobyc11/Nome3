@@ -69,14 +69,38 @@
     <addaction name="separator"/>
     <addaction name="actionAddFace"/>
     <addaction name="actionAddPolyline"/>
-    <!--<addaction name="actionRemoveFace"/>-->
+     <addaction name="actionRemoveFace"/>
+     <!-- <addaction name="actionSharpenFace"/>-->
     <!--<addaction name="actionResetTempMesh"/>-->
      <addaction name="actionCommitChanges"/>
+     <addaction name="actionShowFacets"/>
    </widget>
-   <addaction name="menuFile"/>
+
+
+    <widget class="QMenu" name="menuSelect">
+      <property name="title">
+        <string>&amp;Selection Config</string>
+      </property>
+      <addaction name="actionToggleVertexSelection"/>
+      <addaction name="actionToggleEdgeSelection"/>
+      <addaction name="actionToggleFaceSelection"/>
+	  <addaction name="actionTogglePolylineSelection"/>
+    </widget>
+
+    <widget class="QMenu" name="menuModifySelected">
+      <property name="title">
+        <string>&amp;Modify Selected</string>
+      </property>
+      <addaction name="actionRemoveFace"/>
+    </widget>
+
+
+    <addaction name="menuFile"/>
    <!--<addaction name="menuAdd"/>-->
    <addaction name="menuEdit"/>
-   <addaction name="menuAbout"/>
+    <!--<addaction name="menuAbout"/>-->
+    <addaction name="menuSelect"/>
+    <addaction name="menuModifySelected"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -97,9 +121,11 @@
    <addaction name="actionAddFace"/>
    <addaction name="actionAddPolyline"/>
    <!--<addaction name="actionRemoveFace"/>-->
+    <!--<addaction name="actionSharpenFace"/>-->
    <!--<addaction name="actionResetTempMesh"/>
    <addaction name="separator"/>-->
    <addaction name="actionCommitChanges"/>
+    <!--<addaction name="actionShowFacets"/>-->
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -183,6 +209,11 @@
       <string>Remove Face</string>
     </property>
   </action>
+   <!--   <action name="actionSharpenFace">
+     <property name="text">
+       <string>Set Face as "Sharp"</string>
+     </property>
+   </action>-->
 <!--  <action name="actionResetTempMesh">
    <property name="text">
     <string>Reset Temp Mesh</string>
@@ -193,6 +224,46 @@
     <string>Commit Changes</string>
    </property>
   </action>
+
+   <action name="actionShowFacets">
+     <property name="text">
+       <string>Show Facets</string>
+     </property>
+   </action>
+
+   <action name="actionToggleVertexSelection">
+     <property name="text">
+       <string>Enable Vertex Selection</string>
+     </property>
+     <property name ="checkable">
+       <bool>true</bool>
+     </property>
+   </action>
+   <action name="actionToggleEdgeSelection">
+     <property name="text">
+       <string>Enable Edge Selection</string>
+     </property>
+     <property name ="checkable">
+       <bool>true</bool>
+     </property>
+   </action>
+   <action name="actionToggleFaceSelection">
+     <property name="text">
+       <string>Enable Face Selection</string>
+     </property>
+     <property name ="checkable">
+       <bool>true</bool>
+     </property>
+   </action>
+	 
+	<action name="actionTogglePolylineSelection">
+		<property name="text">
+			<string>Enable Polyline Selection</string>
+		</property>
+		<property name ="checkable">
+			<bool>true</bool>
+		</property>
+	</action>
  </widget>
  <resources/>
  <connections/>

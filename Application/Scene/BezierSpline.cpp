@@ -6,7 +6,7 @@ namespace Nome::Scene
 DEFINE_META_OBJECT(CBezierSpline)
 {
     BindPositionalArgument(&CBezierSpline::ControlPoints, 1);
-    BindNamedArgument(&CBezierSpline::Segments, "slices", 0);
+    BindNamedArgument(&CBezierSpline::Segments, "segs", 0);
 }
 
 Matrix3 CBezierCurveMath::FrenetFrameAt(float t) { return Matrix3(); }
@@ -70,7 +70,17 @@ void CBezierSpline::UpdateEntity()
     for (int i = 0; i < n + 1; i++)
     {
         handles.push_back(AddVertex("v" + std::to_string(i), positions[i]));
+        CVertexInfo point;
+        point.Position = positions[i];
+        points.push_back(point);
     }
+    std::vector<CVertexInfo *> Positions;
+    for (int i = 0; i < n + 1; i++)
+        Positions.push_back(&points[i]);
+    SI.Positions = Positions;
+    SI.Name = GetName();
+    BezierSpline.UpdateValue(&SI);
+
     AddLineStrip("curve", handles);
 }
 

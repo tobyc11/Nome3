@@ -420,29 +420,6 @@ void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, b
         {
             currFace->selected = false;   
         }
-
-        ////const auto& original = Mesh.color(handle);
-        ////printf("Before: %d %d %d\n", original[0], original[1], original[2]);
-        //auto iter0 = std::find(CurrSelectedfaceNamesWithPrefix.begin(),
-        //                       CurrSelectedfaceNamesWithPrefix.end(), name);
-        //if (iter0 == CurrSelectedfaceNamesWithPrefix.end()) // select
-        //{
-        //    CurrSelectedfaceNames.push_back(name.substr(prefixLen));
-        //    CurrSelectedfaceNamesWithPrefix.push_back(name);
-        //    CurrSelectedDSFace.push_back(currFace); // Randy added on 10/11 for face selection
-        //}
-        //else // it has already been selected, then deselect
-        //{
-        //    auto iter1 = std::find(CurrSelectedfaceNames.begin(), CurrSelectedfaceNames.end(),
-        //                           name.substr(prefixLen));
-        //    CurrSelectedfaceNames.erase(iter1); // Randy added this on 10/15
-        //    auto iter2 = std::find(CurrSelectedfaceNamesWithPrefix.begin(),
-        //                           CurrSelectedfaceNamesWithPrefix.end(), name);
-        //    CurrSelectedfaceNamesWithPrefix.erase(iter2);
-        //    auto iter3 =
-        //        std::find(CurrSelectedDSFace.begin(), CurrSelectedDSFace.end(), currFace);
-        //    CurrSelectedDSFace.erase(iter3); // Randy added on 10/11 for face selection
-        //}
     }
     GetSceneTreeNode()->SetEntityUpdated(true);
 }

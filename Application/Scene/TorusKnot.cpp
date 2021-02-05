@@ -111,7 +111,7 @@ void CTorusKnot::UpdateEntity()
         if (tubeRadius != 0)
         {
             // generate points in a circle perpendicular to the curve at the current point
-            for (int j = 0; j <= numPhi; ++j)
+            for (int j = 0; j < numPhi; ++j)
             {
                 float u = j * du;
 

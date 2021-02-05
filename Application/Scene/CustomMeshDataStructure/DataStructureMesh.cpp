@@ -488,8 +488,10 @@ void getVertexNormal(Vertex* currVert)
 {
     Edge* firstEdge = currVert->oneEdge;
     if (firstEdge == NULL)
-    {
-        cout << "Lonely vertex without any adjacent edges. Note this message may be misleading and appear for poorly implemented generators (with non-manifold verts) and for polylines" << endl;
+    {   
+        cout << currVert->name
+         + " is a lonely vertex without any adjacent edges. This error message  also appear for shapes with non-manifold verts and for polylines"
+            << endl;
         return;
     }
     Edge* currEdge = firstEdge;
@@ -532,7 +534,7 @@ void getVertexNormal(Vertex* currVert)
 }
 
 // Iterate over every vertex in the mesh and compute its normal
-void Mesh::computeNormals()
+void Mesh::computeNormals(bool isPolyline)
 {
     vector<Vertex*>::iterator vIt;
     vector<Face*>::iterator fIt;
@@ -543,10 +545,13 @@ void Mesh::computeNormals()
     }
 
     // cout<<"vertTable size: "<<vertList.size()<<endl;
-    for (vIt = vertList.begin(); vIt != vertList.end(); vIt++)
+    if (!isPolyline)
     {
-        // cout<<"Now calculating vertex with ID: "<< vIt -> first <<endl;
-        getVertexNormal(*vIt);
+        for (vIt = vertList.begin(); vIt != vertList.end(); vIt++)
+        {
+            // cout<<"Now calculating vertex with ID: "<< vIt -> first <<endl;
+            getVertexNormal(*vIt);
+        }
     }
 }
 
@@ -611,7 +616,7 @@ void Mesh::clearAndDelete()
 
 
 // test function
-Mesh Mesh::randymakeCopy(string copy_mesh_name)
+Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
 {
     // cout<<"Creating a copy of the current map.\n";
     Mesh newMesh;
@@ -676,7 +681,8 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name)
             (*fIt)->surfaceName; // Randy added this
     }
     newMesh.buildBoundary();
-    newMesh.computeNormals();
+
+    newMesh.computeNormals(isPolyline);
 
     return newMesh;
 }

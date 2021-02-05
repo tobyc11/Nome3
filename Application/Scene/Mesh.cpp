@@ -34,7 +34,6 @@ void CMesh::MarkDirty()
 
 void CMesh::UpdateEntity()
 {
-    cout << "CMesh's UpdateEntity. Here is Mesh's name: " + GetName() << endl;
     if (!IsDirty())
         return;
     ClearMesh();
@@ -59,12 +58,15 @@ void CMesh::UpdateEntity()
 
     // These two calls below are very important for constructing our mesh DS and hence representing our scene
     currMesh.buildBoundary();
-    currMesh.computeNormals();
 
+    auto className = this->GetMetaObject().ClassName();
+    std::set<std::string> polylineClassNames = { "CPolyline", "CBSpline", "CBezierSpline",
+                                                 "CSweepPath" };
+    bool isPolyline = polylineClassNames.count(className) > 0;
+    currMesh.computeNormals(isPolyline); // only compute vert normals for non-polyline classes
 
     Super::UpdateEntity();
     SetValid(isValid);
-    std::cout << "doone with mesh updateentity" << std::endl;
 }
 
 void CMesh::Draw(IDebugDraw* draw)
@@ -211,7 +213,6 @@ void CMeshInstance::UpdateEntity()
     CopyFromGenerator();
     Super::UpdateEntity();
     SetValid(MeshGenerator->IsEntityValid());
-    std::cout << "DONE with CMeshInstance update entity" << std::endl;
 }
 
 void CMeshInstance::Draw(IDebugDraw* draw) { MeshGenerator->Draw(draw); }
@@ -227,8 +228,11 @@ CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name,
 // Conceptually, we are copying from the CMesh object. A mesh instance is basically just a copy plus the scene tree node's transformation matrix
 void CMeshInstance::CopyFromGenerator()
 {
-    // TODO: Debug makeCopy(). it fixed vertex selection but weird Lonely vertex issue, caused by makecopy
-    auto newMesh =MeshGenerator->currMesh.randymakeCopy();
+    auto className = MeshGenerator->GetMetaObject().ClassName();
+    std::set<std::string> polylineClassNames = { "CPolyline", "CBSpline", "CBezierSpline", "CSweepPath"};
+    bool isPolyline = polylineClassNames.count(className) > 0;
+    auto newMesh =MeshGenerator->currMesh.randymakeCopy("", isPolyline); // make DSMesh copy for Instance 
+
     currMesh = newMesh; // MeshGenerator->currMesh; //.randymakeCopy(); // Project SwitchDS CRUCIAL
                         // STEP. Randy
                                         //added

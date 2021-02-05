@@ -121,7 +121,7 @@ CMeshToQGeometry::CMeshToQGeometry(const CMeshImpl& fromMesh,
     Geometry->addAttribute(posAttr);
 
     auto* normAttr = new Qt3DRender::QAttribute(Geometry);
-    std::cout << Qt3DRender::QAttribute::defaultNormalAttributeName().toStdString() << std::endl;
+    //std::cout << Qt3DRender::QAttribute::defaultNormalAttributeName().toStdString() << std::endl;
     normAttr->setName(
         Qt3DRender::QAttribute::defaultNormalAttributeName()); // default is vertexNormal. This is
                                                                // used as input in the .vert shader

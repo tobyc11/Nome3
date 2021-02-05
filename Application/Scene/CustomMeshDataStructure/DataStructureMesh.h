@@ -95,7 +95,8 @@ public:
      */
 
     // test for copying instances 
-    Mesh randymakeCopy(string copy_mesh_name = "");
+
+    Mesh randymakeCopy(string copy_mesh_name = "", bool isPolyline = false);
 
 
     /**
@@ -131,7 +132,7 @@ public:
     // Reverse the effect of buildBoundary function on some vertices. */
     void setBoundaryEdgeToNull(Vertex* v);
     // Compute the vertex normals for every face and vertex of the mesh.
-    void computeNormals();
+    void computeNormals(bool isPolyline = false);
     // Return the list of edges on the boarders
     vector<Edge*> boundaryEdgeList();
     /* The color of this mesh.*/

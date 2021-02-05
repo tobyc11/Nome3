@@ -166,20 +166,18 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
                     meshInstance->CreateVertexSelector(id.substr(charsToIgnore), idTurnedVertName);
                 if (point)
                 {
-                    cout << meshInstance->GetName() << endl;
-                    cout << "congrats, found point: " + idTurnedVertName << endl;
-                    cout << "aka " + id.substr(charsToIgnore) << endl;
+                    //cout << meshInstance->GetName() << endl;
+                    //cout << "congrats, found point: " + idTurnedVertName << endl;
+                    //cout << "aka " + id.substr(charsToIgnore) << endl;
                     return &point->Point;
                 }
                 else
                 {
-                    cout << "return null" << endl;
                     return nullptr;
                 }
             }
             else
             {
-                cout << "return null" << endl;
                 return nullptr;
             }
         }
@@ -193,7 +191,6 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
         }
         charsToIgnore = nextDot + 1;
     }
-    cout << "return null" << endl;
     return nullptr;
 }
 

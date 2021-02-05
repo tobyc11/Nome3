@@ -43,7 +43,6 @@ void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
         const std::string faceName = meshName + "nnew" + std::to_string(FaceCounter);
         TAutoPtr<CFace> face = new CFace(faceName);
         Scene->AddEntity(tc::static_pointer_cast<CEntity>(face)); 
-        std::cout << "add face: added face into the scene!" << std::endl;
         face->SetPointSourceNames(Scene, facePoints); 
         TAutoPtr<CMesh> dummyMesh = new CMesh(meshName);
         dummyMesh->Faces.Connect(face->Face);

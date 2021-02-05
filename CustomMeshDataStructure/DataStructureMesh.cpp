@@ -527,7 +527,7 @@ void getVertexNormal(Vertex* currVert)
 }
 
 // Iterate over every vertex in the mesh and compute its normal
-void Mesh::computeNormals()
+void Mesh::computeNormals(bool isPolyline = false)
 {
     vector<Vertex*>::iterator vIt;
     vector<Face*>::iterator fIt;

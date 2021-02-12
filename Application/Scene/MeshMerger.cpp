@@ -34,7 +34,23 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
     auto& otherMesh = meshInstance.GetDSMesh(); // Getting OpeshMesh implementation of a mesh. This allows us to
                                     // traverse the mesh's vertices/faces
 
-    // Copy over all the vertices and check for overlapping
+     auto meshClass =
+        meshInstance.GetSceneTreeNode()->GetOwner()->GetEntity()->GetMetaObject().ClassName();
+     if (meshClass == "CPolyline")
+    {
+        std::cout << "found Polyline entity" << std::endl;
+        return; // skip for now, dont merge polyline entities
+    }
+    if (meshClass == "CBSpline")
+    {
+        std::cout << "found Bspline entity" << std::endl;
+        return; // skip for now, dont merge polyline entities
+    }
+
+
+
+
+   // Copy over all the vertices and check for overlapping
     std::unordered_map<Vertex*, Vertex*> vertMap;
     for (auto otherVert :  otherMesh.vertList) // Iterate through all the vertices in the mesh (the non-merger mesh, aka the one
                // you're trying copy vertices from)

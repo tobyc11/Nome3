@@ -383,6 +383,7 @@ Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
         }
     }
     newFace->id = faceList.size();
+    newFace->name = "addedFace" + std::to_string(faceList.size()); // Randy added this on 2/12 because realized we weren't naming DS faces anywhere else
     faceList.push_back(newFace);
     nameToFace[newFace->name] = newFace; // Randy added this
     return newFace;

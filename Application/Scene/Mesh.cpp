@@ -228,20 +228,15 @@ CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name,
 // Conceptually, we are copying from the CMesh object. A mesh instance is basically just a copy plus the scene tree node's transformation matrix
 void CMeshInstance::CopyFromGenerator()
 {
-    std::cout << this->GetName() << std::endl;
-    cout << "Inside CopyFromGenerator debug for above name" << endl;
+
     auto className = MeshGenerator->GetMetaObject().ClassName();
     std::set<std::string> polylineClassNames = { "CPolyline", "CBSpline", "CBezierSpline", "CSweepPath"};
     bool isPolyline = polylineClassNames.count(className) > 0;
     auto newMesh =MeshGenerator->currMesh.randymakeCopy("", isPolyline); // make DSMesh copy for Instance 
 
-    currMesh = newMesh; // MeshGenerator->currMesh; //.randymakeCopy(); // Project SwitchDS CRUCIAL
-                        // STEP. Randy
-                                        //added
-                                        //makeCopy to copy the contents of the
-                 // pointers, not the poiinters themselves
+    currMesh = newMesh; 
 
-    // Bit weird, but we handle face coloring for mesh instances here
+    // Bit weird, but we assign face coloring for mesh instances here. These colors are directly used in DSMeshToQGeometry.cpp.
     CScene* scene = GetSceneTreeNode()->GetOwner()->GetScene();
 
     for (auto currFace : currMesh.faceList) {

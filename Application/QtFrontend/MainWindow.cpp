@@ -192,37 +192,30 @@ void CMainWindow::on_actionMerge_triggered()
     sn->SetEntity(merger.Get()); // Set sn, which is the scene node, to point to entity merger
 }
 
-
-/*
-void CMainWindow::on_actionSharpenFace_triggered()
-{
-    const auto& faces = Nome3DView->GetSelectedFaces();
-    std::cout << "Sharpen Face is not implemented yet. " << std::endl;
-    // TODO: Add option to sharpen face
-    // Commented out. I removed the SharpenFace function because it was incorrectly implemented.
-TemporaryMeshManager->SharpenFace(faces); Nome3DView->ClearSelectedFaces();
-}*/
-
-
 // only subdivide merge nodes
 void CMainWindow::on_actionSubdivide_triggered()
 {
     // One shot merging, and add a new entity and its corresponding node
     Scene->Update();
-    tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge");
+    //tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge"); Randy commented out on 2/11. use existing merged mesh
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         if (node->GetOwner()->GetName() == "globalMergeNode")
         {
-            auto* entity = node->GetInstanceEntity();
-            if (!entity)
-                entity = node->GetOwner()->GetEntity();
-            if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
-                merger->Catmull(*mesh);
+
+            auto* entity = node->GetOwner()->GetEntity();
+            if (auto* mesh = dynamic_cast<Scene::CMeshMerger*>(entity))
+            {
+                mesh->Catmull(); // TODO: pass in level argument
+                mesh->MarkDirty(); 
+
+            }
         }
     });
-    Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger));
-    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode");
-    sn->SetEntity(merger.Get());
+
+    // Commented out below lines on 2/11. Because we want to modify original merger mesh, not create a  new subdivided merger mesh
+    //Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger));
+    //auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode");
+    //sn->SetEntity(merger.Get());
 }
 
 /* Randy temporarily commenting out. Point and Instance don't work.

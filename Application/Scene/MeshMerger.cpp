@@ -119,7 +119,6 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
         else // Else, we haven't added a vertex at this location yet. So lets add_vertex to the
              // merger mesh.
         {
-            cout << " SIZE : " << currMesh.nameToVert.size() << endl;
             Vertex* copiedVert = new Vertex(worldPos.x, worldPos.y, worldPos.z, currMesh.nameToVert.size());
             copiedVert->name = "copiedVert" + std::to_string(currMesh.nameToVert.size()); // Randy this was causing the bug!!!!!!! the name was the same. so nameToVert remained size == 1
             currMesh.addVertex(copiedVert);
@@ -134,20 +133,10 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
     for (auto otherFace : otherMesh.faceList) // Iterate through all the faces in the mesh (that is, the non-merger mesh, aka the
                // one you're trying to copy faces from)
     {
-        // TODO: Need to add vertices to scene if want to save changes back into .nom file I think
-        // auto newface = new CFace("placeholder" + fi.handle().idx());  // TODO: may be useful in
-        // the future to add faces as entities GEnv.Scene->AddEntity(newface);  // TODO: may be
-        // useful in the future to add faces as entities Faces.Connect(newface->Face);
-   
         std::vector<Vertex*> verts;
         for (auto vert : otherFace->vertices) //otherMesh vertices
         { // iterate through all the vertices on this face
-  /*          std::cout << "add vertex" << std::endl;
-            std::cout << vert->position.x << " " << vert->position.y << " " << vert->position.z
-                      << std::endl;*/
             auto temp = vertMap[vert];
-            //std::cout << temp->position.x << " " << temp->position.y << " " << temp->position.z
-            //          << std::endl;
             verts.emplace_back(vertMap[vert]);
         } // Add the vertex handles
         //auto fnew =

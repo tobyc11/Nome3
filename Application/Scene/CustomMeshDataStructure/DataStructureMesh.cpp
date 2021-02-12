@@ -239,9 +239,6 @@ void Mesh::addQuadFace(Vertex* v1, Vertex* v2, Vertex* v3, Vertex* v4)
 
 Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
 {
-    for (auto vert : vertices) {
-        cout << "debug " << vert->ID << endl;
-    }
     if (vertices.size() < 3)
     {
         cout << "A face have at least 3 vertices" << endl;
@@ -252,7 +249,7 @@ Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
     vector<Edge*> edgesInFace;
     vector<Edge*>::iterator eIt;
     Edge* currEdge;
-    std::cout << "inside addpolygon face" << endl;
+
     if (!reverseOrder)
     {
         for (vIt = vertices.begin(); vIt < vertices.end(); vIt++)
@@ -680,9 +677,7 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
             vertices.push_back(newMesh.vertList[tempv->ID]);
             currEdge = nextEdge;
         } while (currEdge != firstEdge);
-        cout << "add polygon face in copy" << endl;
         newMesh.addPolygonFace(vertices);
-        cout << "done with add polygon face in copy" << endl;
         newMesh.faceList[newMesh.faceList.size() - 1]->user_defined_color =
             (*fIt)->user_defined_color;
         newMesh.faceList[newMesh.faceList.size() - 1]->color = (*fIt)->color;

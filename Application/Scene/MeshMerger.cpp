@@ -4,7 +4,7 @@
 namespace Nome::Scene
 {
 
-inline static const float Epsilon = 0.00001f; // 0.01f; 0.01f doesnt work with mobiusstrip test (1 1 0 500) endmobiusstrip 
+inline static const float Epsilon = 0.01f; // 0.01f; 0.01f doesnt work with mobiusstrip test (1 1 0 500) endmobiusstrip 
 
 void CMeshMerger::UpdateEntity()
 {
@@ -91,177 +91,102 @@ void CMeshMerger::Catmull(const CMeshInstance& meshInstance)
 
 void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
 {
-//    auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(
-//        tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
-//    const auto& otherMesh =
-//        meshInstance.GetMeshImpl(); // Getting OpeshMesh implementation of a mesh. This allows us to
-//                                    // traverse the mesh's vertices/faces
-//
-//    std::cout << "mesh scene name: " + meshInstance.GetSceneTreeNode()->GetOwner()->GetName()
-//              << std::endl;
-//    auto meshClass =
-//        meshInstance.GetSceneTreeNode()->GetOwner()->GetEntity()->GetMetaObject().ClassName();
-//    if (meshClass == "CPolyline")
-//    {
-//        std::cout << "found Polyline entity" << std::endl;
-//    }
-//
-//    std::vector<Vertex> polylinevHandles;
-//
-//
-//    // Copy over all the vertices and check for overlapping
-//    std::unordered_map<Vertex, Vertex> vertMap;
-//
-//
-//    std::vector<Vertex> otherMeshAllvH;
-//
-//    for (auto vi = otherMesh.vertices_begin(); vi != otherMesh.vertices_end(); ++vi) 
-//        otherMeshAllvH.push_back(*vi);
-//
-//
-//
-//    for (auto vi = otherMesh.vertices_begin(); vi != otherMesh.vertices_end();
-//         ++vi) // Iterate through all the vertices in the mesh (the non-merger mesh, aka the one
-//               // you're trying copy vertices from)
-//    {
-//        const auto& posArray = otherMesh.point(*vi);
-//        Vector3 localPos = Vector3(posArray[0], posArray[1], posArray[2]); // localPos is position before transformations
-//        Vector3 worldPos = tf * localPos; // worldPos is the actual position you see in the grid
-//        auto [closestVert, distance] = FindClosestVertex(
-//            worldPos); // Find closest vertex already IN MERGER mesh, not the actual mesh. This is
-//                       // to prevent adding two merger vertices in the same location!
-//        // As a side note, closestVert is a VertexHandle, which is essentially, a pointer to the
-//        // actual vertex. OpenMesh is great at working with these handles. You can basically treat
-//        // them as the vertex themselves.
-//        if (distance < Epsilon)
-//          // && std::count(otherMeshAllvH.begin(), otherMeshAllvH.end(), closestVert) == 0)
-//        { // this is to check for cases where there is an overlap (two vertices lie in the exact
-//          // same world space coordinate). We only want to create one merger vertex at this
-//          // location so subdivision performs correctly
-//          
-//            vertMap[*vi] =
-//                closestVert; // just set vi to the closestVert (which is a merger vertex
-//                                // in the same location added in a previous iteration)
-//            
-//        }
-//        else // Else, we haven't added a vertex at this location yet. So lets add_vertex to the
-//             // merger mesh.
-//        {
-//            std::cout << " adding merger vetrtex" << std::endl;
-//            std::cout << worldPos.x << worldPos.y << worldPos.z << std::endl;
-//
-//            // TODO: This doesn't work. Revert changes tomorrow randy
-//            float mobiusOffset = 0;
-//            // if it's a Mobius face
-//      /*      if (distance < Epsilon
-//                && std::count(otherMeshAllvH.begin(), otherMeshAllvH.end(), closestVert) != 0)
-//            { 
-//                mobiusOffset = 0.001;
-//            }*/
-//
-//            Vertex vnew = Mesh.add_vertex({ worldPos.x + mobiusOffset, worldPos.y + mobiusOffset, worldPos.z + mobiusOffset});
-//
-//
-//            if (distance < Epsilon
-//                && std::count(otherMeshAllvH.begin(), otherMeshAllvH.end(), closestVert) != 0)
-//            { }
-//            vertMap[*vi] = vnew; // Map actual mesh vertex to merged vertex.This dictionary is
-//                                 // useful for add face later.
-//            std::string vName = "v"+ std::to_string(VertCount); 
-//
-//            NameToVert.insert({ vName, vnew }); // Add new merged vertex into NameToVert.
-//            VertToName.insert({ vnew, vName }); // Randy added on 10/15
-//            ++VertCount; // VertCount is an attribute for this merger mesh. Starts at 0.
-//            
-//        }
-//
-//        if (meshClass == "CPolyline")
-//        {
-//           // AddVertex("test" + std::to_string(VertCount), { worldPos.x , worldPos.y, worldPos.z });
-//            std::cout << "test" + std::to_string(VertCount) << std::endl;
-//            std::cout << "boogle" << std::endl;
-//            polylinevHandles.push_back(vi.handle());
-//        }
-//    }
-//
-//    // Add faces and create a face mesh for each
-//    for (auto fi = otherMesh.faces_begin(); fi != otherMesh.faces_end();
-//         ++fi) // Iterate through all the faces in the mesh (that is, the non-merger mesh, aka the
-//               // one you're trying to copy faces from)
-//    {
-//        // TODO: Need to add vertices to scene if want to save changes back into .nom file I think
-//        // auto newface = new CFace("placeholder" + fi.handle().idx());  // TODO: may be useful in
-//        // the future to add faces as entities GEnv.Scene->AddEntity(newface);  // TODO: may be
-//        // useful in the future to add faces as entities Faces.Connect(newface->Face); 
-//
-//        std::vector<Vertex> verts;
-//        for (auto vert : otherMesh.fv_range(*fi)) // iterate through all the vertices on this face
-//        {
-//            verts.emplace_back(vertMap[vert]); // Add the vertex handles
-//        }
-//        auto fnew =
-//            Mesh.add_face(verts); // add_face processes the merger vertex handles and adds the face
-//                                  // into the merger mesh (Mesh refers to the merger mesh here)
-//       // std::cout << verts[0] << " " << verts[1] << " " << verts[2] << " " << verts[3] << std::endl;
-//       // std::cout << "attempt 1: " <<  fnew << std::endl;
-//        
-//        if (fnew.idx() == -1) {
-//            for (Vertex vert : verts)
-//            {
-//                std::cout <<  vert.idx()<< std::endl;
-//                auto test = Mesh.point(vert);
-//                std::cout << test[0]  << std::endl;
-//                std::cout << test[1] << std::endl;
-//                std::cout << test[2] << std::endl;
-//                std::cout << "invalid face fail " << std::endl;
-//                
-//            }
-//           // Mesh.add_face(verts);
-//        }
-//
-//        std::string fName = "v" + std::to_string(FaceCount);
-//        NameToFace.insert(
-//            { fName,
-//              fnew }); // We add a new face in the same location as the actual mesh's face. This
-//                       // means if we adjust the actual mesh's parameters using a slider, you'll see
-//                       // the merger mesh in the actual mesh's original location
-//        FaceToName.insert({ fnew, fName });
-//        FaceVertsToFace.insert({ verts, fnew }); // This DS is directly used for face selection
-//        FaceToFaceVerts.insert({ fnew, verts });
-//        FaceCount++;
-//    }
-//
-//
-//     for (auto& vHandle : polylinevHandles) {
-//        std::cout << "Mergein vHandle index: " + std::to_string(vHandle.idx()) << std::endl;
-//    }
-//
-//     if (meshClass == "CPolyline")
-//    {
-//         std::cout << "adding line strip" << std::endl;
-//        //AddVertex("test" , )
-//        AddLineStrip("mergedpoly" , polylinevHandles);
-//    }
+    auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(
+        tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
+    auto& otherMesh =
+        meshInstance.GetDSMesh(); // Getting OpeshMesh implementation of a mesh. This allows us to
+                                    // traverse the mesh's vertices/faces
+
+    // Copy over all the vertices and check for overlapping
+    std::unordered_map<Vertex*, Vertex*> vertMap;
+    for (auto otherVert :  otherMesh.vertList) // Iterate through all the vertices in the mesh (the non-merger mesh, aka the one
+               // you're trying copy vertices from)
+    {
+        Vector3 localPos = otherVert->position; // localPos is position before transformations
+        Vector3 worldPos = tf * localPos; // worldPos is the actual position you see in the grid
+        auto [closestVert, distance] = FindClosestVertex(worldPos); // Find closest vertex already IN MERGER mesh, not the actual mesh. This is
+                       // to prevent adding two merger vertices in the same location!
+        // As a side note, closestVert is a VertexHandle, which is essentially, a pointer to the
+        // actual vertex. OpenMesh is great at working with these handles. You can basically treat
+        // them as the vertex themselves.
+        if (distance < Epsilon)
+        { // this is to check for cases where there is an overlap (two vertices lie in the exact
+          // same world space coordinate). We only want to create one merger vertex at this
+          // location!
+            vertMap[otherVert] = closestVert; // just set vi to the closestVert (which is a merger vertex
+                                        // in the same location added in a previous iteration)
+        }
+        else // Else, we haven't added a vertex at this location yet. So lets add_vertex to the
+             // merger mesh.
+        {
+            cout << " SIZE : " << currMesh.nameToVert.size() << endl;
+            Vertex* copiedVert = new Vertex(worldPos.x, worldPos.y, worldPos.z, currMesh.nameToVert.size());
+            copiedVert->name = "copiedVert" + std::to_string(currMesh.nameToVert.size()); // Randy this was causing the bug!!!!!!! the name was the same. so nameToVert remained size == 1
+            currMesh.addVertex(copiedVert);
+            vertMap[otherVert] = copiedVert; // Map actual mesh vertex to merged vertex.This dictionary is
+                                 // useful for add face later.
+            std::string vName = "v" + std::to_string(VertCount);
+            ++VertCount; // VertCount is an attribute for this merger mesh. Starts at 0.
+        }
+    }
+
+    // Add faces and create a face mesh for each
+    for (auto otherFace : otherMesh.faceList) // Iterate through all the faces in the mesh (that is, the non-merger mesh, aka the
+               // one you're trying to copy faces from)
+    {
+        // TODO: Need to add vertices to scene if want to save changes back into .nom file I think
+        // auto newface = new CFace("placeholder" + fi.handle().idx());  // TODO: may be useful in
+        // the future to add faces as entities GEnv.Scene->AddEntity(newface);  // TODO: may be
+        // useful in the future to add faces as entities Faces.Connect(newface->Face);
+   
+        std::vector<Vertex*> verts;
+        std::cout << "OUTSIDE" << std::endl;
+        for (auto vert : otherFace->vertices) //otherMesh vertices
+        { // iterate through all the vertices on this face
+  /*          std::cout << "add vertex" << std::endl;
+            std::cout << vert->position.x << " " << vert->position.y << " " << vert->position.z
+                      << std::endl;*/
+            auto temp = vertMap[vert];
+            //std::cout << temp->position.x << " " << temp->position.y << " " << temp->position.z
+            //          << std::endl;
+            verts.emplace_back(vertMap[vert]);
+        } // Add the vertex handles
+        //auto fnew =
+        //Mesh.add_face(verts); // add_face processes the merger vertex handles and adds the face
+                                  // into the merger mesh (Mesh refers to the merger mesh here)
+        std::cout << "Adding below verts to currMesh via addPolyGonFace" << endl;
+        for (auto vert : verts) {
+            std::cout << vert->position.x << " " << vert->position.y << " " << vert->position.z
+                      << std::endl;
+        }
+        Face* copiedFace = new Face(verts);
+        currMesh.addPolygonFace(verts);
+        std::cout << "done with addpolygon face" << endl;
+        std::string fName = "v" + std::to_string(FaceCount);
+        FaceCount++;
+    }
+    currMesh.buildBoundary();
+    currMesh.computeNormals();
+
 }
 
 // Find closest vertex in current mesh's vertices
-std::pair<Vertex, float> CMeshMerger::FindClosestVertex(const tc::Vector3& pos)
+std::pair<Vertex*, float> CMeshMerger::FindClosestVertex(const tc::Vector3& pos)
 {
-    Vertex result;
-//    float minDist = std::numeric_limits<float>::max();
-//    // TODO: linear search for the time being
-//    for (const auto& v : Mesh.vertices())
-//    {
-//        const auto& point = Mesh.point(v);
-//        Vector3 pp = Vector3(point[0], point[1], point[2]);
-//        float dist = pos.DistanceToPoint(pp);
-//        if (dist < minDist)
-//        {
-//            minDist = dist;
-//            result = v;
-//        }
-//    }
-//    return { result, minDist };
+    Vertex* result;
+    float minDist = std::numeric_limits<float>::max();
+    // TODO: linear search for the time being
+    for (const auto& v : currMesh.vertList)
+    {
+        Vector3 pp = v->position;
+        float dist = pos.DistanceToPoint(pp);
+        if (dist < minDist)
+        {
+            minDist = dist;
+            result = v;
+        }
+    }
+    return { result, minDist };
     return { result, 99999 };
 }
 

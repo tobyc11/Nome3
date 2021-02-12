@@ -228,6 +228,8 @@ CVertexSelector* CMeshInstance::CreateVertexSelector(const std::string& name,
 // Conceptually, we are copying from the CMesh object. A mesh instance is basically just a copy plus the scene tree node's transformation matrix
 void CMeshInstance::CopyFromGenerator()
 {
+    std::cout << this->GetName() << std::endl;
+    cout << "Inside CopyFromGenerator debug for above name" << endl;
     auto className = MeshGenerator->GetMetaObject().ClassName();
     std::set<std::string> polylineClassNames = { "CPolyline", "CBSpline", "CBezierSpline", "CSweepPath"};
     bool isPolyline = polylineClassNames.count(className) > 0;
@@ -427,7 +429,35 @@ void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, b
 // TODO: Edge selection. Create Edge Handle data structures later.
 void CMeshInstance::MarkEdgeAsSelected(const std::set<std::string>& vertNames, bool bSel)
 {
-//    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+    // Work in progress
+    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+    size_t prefixLen = instPrefix.length();
+    std::vector<Vertex*> edgeVerts; 
+
+    // vertName is guaranteed to be of length 2. the start and end points of an edge
+    for (const auto& name : vertNames)
+    {
+        auto iter = currMesh.nameToVert.find(name.substr(prefixLen));
+        if (iter == currMesh.nameToVert.end())
+            continue;
+
+        Vertex* currVert = iter->second;
+        if (!currVert->selected)
+            currVert->selected = true;
+        else
+        {
+            currVert->selected = false;
+        }
+    }
+
+    //if (!currEdge->selected)
+    //    currEdge->selected = true;
+    //else
+    //{
+    //    currEdge->selected = false;
+    //}
+    GetSceneTreeNode()->SetEntityUpdated(true);
+    //    auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
 //
 //    // TODO 11/5 work on this, make sure the currselected stuff is actually working . also, fix
 //    // Nome3DView edge deselection

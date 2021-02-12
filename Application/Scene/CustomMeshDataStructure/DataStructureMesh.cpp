@@ -239,6 +239,9 @@ void Mesh::addQuadFace(Vertex* v1, Vertex* v2, Vertex* v3, Vertex* v4)
 
 Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
 {
+    for (auto vert : vertices) {
+        cout << "debug " << vert->ID << endl;
+    }
     if (vertices.size() < 3)
     {
         cout << "A face have at least 3 vertices" << endl;
@@ -249,6 +252,7 @@ Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
     vector<Edge*> edgesInFace;
     vector<Edge*>::iterator eIt;
     Edge* currEdge;
+    std::cout << "inside addpolygon face" << endl;
     if (!reverseOrder)
     {
         for (vIt = vertices.begin(); vIt < vertices.end(); vIt++)
@@ -274,7 +278,11 @@ Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
             else
             {
                 cout << "addPolygonFace ERROR: Try to create a Non-Manifold at edge with vertex1 : "
-                     << currEdge->va->ID << " and vertex2 :" << currEdge->vb->ID << endl;
+                     << currEdge->va->position.x << " " << currEdge->va->position.y << "  "
+                     << currEdge->va->position.z << " and vertex2 :"
+                    << currEdge->vb->position.x << " " << currEdge->vb->position.y << "  "
+                                                     << currEdge->vb->position.z
+                  << endl;
                // exit(0);
             }
         }
@@ -584,14 +592,14 @@ bool Mesh::isEmpty() { return vertList.size() == 0 && faceList.size() == 0; }
 
 void Mesh::clear()
 {
-    // for(Vertex*& v : vertList)
-    //{
-    //    delete v;
-    //}
-    // for(Face*& f : faceList)
-    //{
-    //    delete f;
-    //}
+     for(Vertex*& v : vertList)
+    {
+        delete v;
+    }
+     for(Face*& f : faceList)
+    {
+        delete f;
+    }
     vertList.clear();
     faceList.clear();
     edgeTable.clear();
@@ -672,7 +680,9 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
             vertices.push_back(newMesh.vertList[tempv->ID]);
             currEdge = nextEdge;
         } while (currEdge != firstEdge);
+        cout << "add polygon face in copy" << endl;
         newMesh.addPolygonFace(vertices);
+        cout << "done with add polygon face in copy" << endl;
         newMesh.faceList[newMesh.faceList.size() - 1]->user_defined_color =
             (*fIt)->user_defined_color;
         newMesh.faceList[newMesh.faceList.size() - 1]->color = (*fIt)->color;

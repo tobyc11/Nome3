@@ -71,7 +71,7 @@ private:
     friend class CMeshMerger;
     std::set<CMeshInstance*> InstanceSet;
 
-    CMeshImpl Mesh;
+    CMeshImpl Mesh; // Deprecated. Remove soon
     DSMesh currMesh; // Project SwitchDS
 
     // Randy removed all the NameToVert, VertToName, etc. data structures on 1/31/2021

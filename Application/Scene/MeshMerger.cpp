@@ -140,7 +140,6 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
         // useful in the future to add faces as entities Faces.Connect(newface->Face);
    
         std::vector<Vertex*> verts;
-        std::cout << "OUTSIDE" << std::endl;
         for (auto vert : otherFace->vertices) //otherMesh vertices
         { // iterate through all the vertices on this face
   /*          std::cout << "add vertex" << std::endl;
@@ -154,14 +153,8 @@ void CMeshMerger::MergeIn(const CMeshInstance& meshInstance)
         //auto fnew =
         //Mesh.add_face(verts); // add_face processes the merger vertex handles and adds the face
                                   // into the merger mesh (Mesh refers to the merger mesh here)
-        std::cout << "Adding below verts to currMesh via addPolyGonFace" << endl;
-        for (auto vert : verts) {
-            std::cout << vert->position.x << " " << vert->position.y << " " << vert->position.z
-                      << std::endl;
-        }
         Face* copiedFace = new Face(verts);
         currMesh.addPolygonFace(verts);
-        std::cout << "done with addpolygon face" << endl;
         std::string fName = "v" + std::to_string(FaceCount);
         FaceCount++;
     }

@@ -138,6 +138,7 @@ void CMesh::AddLineStrip(const std::string& name,
 void CMesh::ClearMesh()
 {
     // Mesh.clear(); Project SwitchDS
+    currMesh.clear();
     LineStrips.clear();
 }
 

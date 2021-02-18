@@ -39,7 +39,7 @@ void CTorusKnot::UpdateEntity()
 {
     if (!IsDirty())
         return;
-
+    ClearMesh();
     // Clear mesh
     Super::UpdateEntity();
 

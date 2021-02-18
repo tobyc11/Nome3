@@ -4,7 +4,42 @@ NOME is a CAD tool that allows users to generate complex shapes via scripts and 
 We have introduced multiple unique language constructs, such as "group" and "mesh", that allow users to piece together shapes and reuse them easily. We also have implemented advanced shape generators (e.g. torus knot) that may make certain modelling tasks easier. Please view our full language reference here: https://docs.google.com/document/d/15c1VIXpGUxIL3daA3pI-iYW4K5ebd3snveDFWXRpa70/edit?ts=5fcb20ad#
 
 # Compilation Preparation
-This section will walk you through the steps for setting up a build environment for Nome 3 on Windows (see below for MacOS). Here is a list of the required dependencies:
+
+# Preparation and Compilation for Mac Users 
+This is a quick setup for new students working on Nome3 on Mac. If the below instructions do not work, please also look at the mini guide Toby Chen recently wrote: https://github.com/cyj0912/Nome3/wiki (which also contains Fedora, Ubuntu, and macOS homebrew commands), or ask an experienced macOS NOME member. 
+
+Go to your desired repository in your terminal and run the following command to add all the Nome3 files and required submodules.
+```
+git clone --recursive https://github.com/randyfan/NOME3
+```
+
+Nome3 requires the most recent version of its dependencies so run:
+```
+brew install qt5
+brew install open-mesh
+brew install pugixml
+brew install cmake
+```
+You'll also need to download: ANTLR parser generator (https://www.antlr.org/download/antlr-4.8-complete.jar). Zachary informed me you can just do brew install antlr, and that should work. Make sure to install Java as well.
+
+Finally, run the following commands:
+```
+cd NOME3
+mkdir build && cd build
+cmake .. && make
+```
+Most likely, CMake is going to complain about `Could NOT find ANTLR (missing: ANTLR_EXECUTABLE)`. If this happens, you just need to manually set `ANTLR_EXECUTABLE=<path to antlr-4.8-complete.jar>`. You can either manually edit the `CMakeCache.txt` file under your build directory, or pass it as a command line argument to CMake. I think the command line argument is just cmake NOME3 -D ANTLR_EXECUTABLE= `path to antlr`.
+
+If you still get an error related to ANTLR, first make sure the file path is correct. Then, copy paste this file https://github.com/randyfan/NOME3/blob/master/CMake/Modules/ExternalAntlr4Cpp.cmake into your ExternalAntlr4Cpp.cmake.
+
+
+The above commands will create a build folder, and compile and make Nome3. This may take a few minutes so wait until the make has completed. Once it has completed, navigate to `build/Application/Binaries`. In the Binaries folder there should be a Nome3 executable. Run this program and it will open up an untitled.nom preview. From the menu bar at the top of your screen run `File/Open` and select the .nom file you would like to run. You will now be able to see your .nom instance in a 3-D display!
+
+Upon your first run of CMake, it may complain about `Foundation does not contain a CMakeLists.txt file.` This is because when you clone the repository, git does not by default clone all the submodules, so the Foundation subfolder is empty by default. You can either reclone the repo with `git clone --recursive` or run `git submodule update --init --recursive`. If you have further questions, read the top portion of this short tutorial on git submodules - https://www.vogella.com/tutorials/GitSubmodules/article.html.
+
+-----------------------------------------------------------------
+
+This section will walk you through the steps for setting up a build environment for Nome 3 on Windows. Here is a list of the required dependencies:
 
 - Visual Studio 2019 (https://visualstudio.microsoft.com/)
 - CMake
@@ -60,38 +95,6 @@ If you get an error involving ANTLR, first make sure the file path is correct. T
 If you run into an issue with windeployqt.exe, make sure CMake was able to find it. Try providing the path manually. 
 
 Upon your first run of CMake, it may complain about Foundation does not contain a CMakeLists.txt file. This is because when you clone the repository, git does not by default clone all the submodules, so the Foundation subfolder is empty by default. You can either reclone the repo with git clone --recursive or run git submodule update --init --recursive. If you have further questions, read the top portion of this short tutorial on git submodules - https://www.vogella.com/tutorials/GitSubmodules/article.html.
-
-# Preparation and Compilation for Mac Users 
-This is a quick setup for new students working on Nome3 on Mac. If the below instructions do not work, please also look at the mini guide Toby Chen recently wrote: https://github.com/cyj0912/Nome3/wiki (which also contains Fedora, Ubuntu, and macOS homebrew commands), or ask an experienced macOS NOME member. 
-
-Go to your desired repository in your terminal and run the following command to add all the Nome3 files and required submodules.
-```
-git clone --recursive https://github.com/randyfan/NOME3
-```
-
-Nome3 requires the most recent version of its dependencies so run:
-```
-brew install qt5
-brew install open-mesh
-brew install pugixml
-brew install cmake
-```
-You'll also need to download: ANTLR parser generator (https://www.antlr.org/download/antlr-4.8-complete.jar). Zachary informed me you can just do brew install antlr, and that should work. Make sure to install Java as well.
-
-Finally, run the following commands:
-```
-cd NOME3
-mkdir build && cd build
-cmake .. && make
-```
-Most likely, CMake is going to complain about `Could NOT find ANTLR (missing: ANTLR_EXECUTABLE)`. If this happens, you just need to manually set `ANTLR_EXECUTABLE=<path to antlr-4.8-complete.jar>`. You can either manually edit the `CMakeCache.txt` file under your build directory, or pass it as a command line argument to CMake. I think the command line argument is just cmake NOME3 -D ANTLR_EXECUTABLE= `path to antlr`.
-
-If you still get an error related to ANTLR, first make sure the file path is correct. Then, copy paste this file https://github.com/randyfan/NOME3/blob/master/CMake/Modules/ExternalAntlr4Cpp.cmake into your ExternalAntlr4Cpp.cmake.
-
-
-The above commands will create a build folder, and compile and make Nome3. This may take a few minutes so wait until the make has completed. Once it has completed, navigate to `build/Application/Binaries`. In the Binaries folder there should be a Nome3 executable. Run this program and it will open up an untitled.nom preview. From the menu bar at the top of your screen run `File/Open` and select the .nom file you would like to run. You will now be able to see your .nom instance in a 3-D display!
-
-Upon your first run of CMake, it may complain about `Foundation does not contain a CMakeLists.txt file.` This is because when you clone the repository, git does not by default clone all the submodules, so the Foundation subfolder is empty by default. You can either reclone the repo with `git clone --recursive` or run `git submodule update --init --recursive`. If you have further questions, read the top portion of this short tutorial on git submodules - https://www.vogella.com/tutorials/GitSubmodules/article.html.
 
 
 This an example of running a simple cube .nom instance after following the steps above:

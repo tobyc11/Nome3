@@ -4,6 +4,8 @@
 #undef min
 #undef max
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+#include "Scene/CustomMeshDataStructure/DataStructureMesh.h" // Project ChangeDS
+
 
 #include <QByteArray>
 #include <Qt3DRender/QAttribute>
@@ -15,8 +17,9 @@ namespace Nome
 {
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
+typedef Mesh DSMesh; // Project SwitchDS
 
-class CAttribute
+class CAttribute2
 {
 public:
     QByteArray& Buffer;
@@ -25,7 +28,7 @@ public:
     Qt3DRender::QAttribute::VertexBaseType Type;
     uint32_t Size;
 
-    CAttribute(QByteArray& buffer, uint32_t byteOffset, uint32_t byteStride,
+    CAttribute2(QByteArray& buffer, uint32_t byteOffset, uint32_t byteStride,
                Qt3DRender::QAttribute::VertexBaseType type, uint32_t size)
         : Buffer(buffer)
         , ByteOffset(byteOffset)
@@ -46,12 +49,12 @@ public:
     }
 };
 
-class CGeometryBuilder
+class CGeometryBuilder2
 {
 public:
-    CGeometryBuilder() = default;
+    CGeometryBuilder2() = default;
 
-    void AddAttribute(const CAttribute* attr) { Attributes.push_back(attr); }
+    void AddAttribute(const CAttribute2* attr) { Attributes.push_back(attr); }
 
     void Ingest(float x, float y, float z)
     {
@@ -109,25 +112,23 @@ protected:
     }
 
 private:
-    std::vector<const CAttribute*> Attributes;
+    std::vector<const CAttribute2*> Attributes;
     uint32_t CurrVertexIndex = 0;
     uint32_t CurrAttrIndex = 0;
 };
 
-class CMeshToQGeometry
+class CDataStructureMeshToQGeometry
 {
 public:
-    explicit CMeshToQGeometry(const CMeshImpl& fromMesh,
-                              std::vector<CMeshImpl::FaceHandle> selectedFaceHandles,
-                              std::map<CMeshImpl::FaceHandle, std::array<float, 3>> fHWithColorVector, 
-                              bool bGenPointGeometry = false);
+    explicit CDataStructureMeshToQGeometry(
+        const DSMesh& fromMesh, bool bGenPointGeometry = false);
 
-    ~CMeshToQGeometry();
+    ~CDataStructureMeshToQGeometry();
 
-    CMeshToQGeometry(const CMeshToQGeometry&) = delete;
-    CMeshToQGeometry(CMeshToQGeometry&&) = delete;
-    CMeshToQGeometry& operator=(const CMeshToQGeometry&) = delete;
-    CMeshToQGeometry& operator=(CMeshToQGeometry&&) = delete;
+    CDataStructureMeshToQGeometry(const CDataStructureMeshToQGeometry&) = delete;
+    CDataStructureMeshToQGeometry(CDataStructureMeshToQGeometry&&) = delete;
+    CDataStructureMeshToQGeometry& operator=(const CDataStructureMeshToQGeometry&) = delete;
+    CDataStructureMeshToQGeometry& operator=(CDataStructureMeshToQGeometry&&) = delete;
 
     [[nodiscard]] Qt3DRender::QGeometry* GetGeometry() const { return Geometry; }
     [[nodiscard]] Qt3DRender::QGeometry* GetPointGeometry() const { return PointGeometry; }

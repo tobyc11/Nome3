@@ -24,7 +24,7 @@ void CHelix::UpdateEntity()
     float c = VerticalSpacing.GetValue(1.0f);
     float max_theta = MaxTheta.GetValue(1.0f);
 
-    std::vector<CMeshImpl::VertexHandle> handles;
+    std::vector<Vertex*> handles;
     for (int i = 0; i < n; i++)
     {
         float theta = (float)i / n * (max_theta / 360.f) * 2.f * (float)tc::M_PI;

@@ -25,7 +25,6 @@ DEFINE_META_OBJECT(CTorus)
 }
 void CTorus::UpdateEntity()
 {
-
     if (!IsDirty())
         return;
 

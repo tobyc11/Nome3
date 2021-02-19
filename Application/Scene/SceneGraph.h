@@ -128,18 +128,20 @@ public:
 
     const std::set<TAutoPtr<CSceneNode>>& GetSceneNodeChildren () {return Children;}
 
-    void SelectNode()
+
+    void SelectNode() { SelectBool = true; } // Randy added this on 11/21 for selection coloring
+    void DoneSelecting()
+
     {
-        SelectBool = true;
-    } // Randy added this on 11/21 for selection coloring
-    void DoneSelecting() { SelectBool = false; // TODO 12/23 THIS MORNING. CHANGE IT SO SELECTBOOL IS JJUST A SINGLE VARIABLE iN MESHCPP. no if else, just toggle on and off
+        SelectBool = false; // TODO 12/23 THIS MORNING. CHANGE IT SO SELECTBOOL IS JJUST A SINGLE
+                            // VARIABLE iN MESHCPP. no if else, just toggle on and off
     }
 
-    void NeedResetColor() {
-        ResetColor = true; } // Randy added this on 11/21 for selection coloring
+    void NeedResetColor() { ResetColor = true; } // Randy added this on 11/21 for selection coloring
 
-    void DoneResettingColor() { 
-        ResetColor = false; // if selected and 
+    void DoneResettingColor()
+    {
+        ResetColor = false; // if selected and
     }
 
     bool isSelected() { return SelectBool; } // Randy added this on 11/21 for selection coloring

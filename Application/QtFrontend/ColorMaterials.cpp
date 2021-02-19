@@ -62,8 +62,9 @@ CWireframeEffect::CWireframeEffect(Qt3DCore::QNode* parent)
     : QEffect(parent)
 {
     using namespace Qt3DRender;
-    /* Randy commented out on 10/11. This code doesn't seem to do anything?? I think logic is stored
-    in MaterialParser.cpp auto* GL3Technique = new QTechnique();
+    //Randy commented out on 10/11. This code doesn't seem to do anything?? I think logic is stored
+    //in MaterialParser.cpp 
+    auto* GL3Technique = new QTechnique();
     GL3Technique->graphicsApiFilter()->setApi(QGraphicsApiFilter::OpenGL);
     GL3Technique->graphicsApiFilter()->setMajorVersion(3);
     GL3Technique->graphicsApiFilter()->setMinorVersion(1);
@@ -84,15 +85,15 @@ CWireframeEffect::CWireframeEffect(Qt3DCore::QNode* parent)
         QShaderProgram::loadSource(QUrl(QStringLiteral("qrc:/Shaders/Wireframe.frag"))));
     GL3RenderPass->setShaderProgram(GL3Shader);
     GL3Technique->addRenderPass(GL3RenderPass);
-    this->addTechnique(GL3Technique);*/
+    this->addTechnique(GL3Technique);
 }
 
 CWireframeMaterial::CWireframeMaterial(Qt3DCore::QNode* parent)
     : QMaterial(parent)
 {
     using namespace Qt3DRender;
-    /*  Randy commented out on 10/11. This code doesn't seem to do anything?? I think logic is
-    stored in MaterialParser.cpp this->addParameter(new QParameter(QStringLiteral("ka"),
+    //Randy commented out on 10/11. This code doesn't seem to do anything?? 
+    this->addParameter(new QParameter(QStringLiteral("ka"),
     QVector3D(0.1f, 0.1f, 0.1f))); this->addParameter(new QParameter(QStringLiteral("kd"),
     QVector3D(0.7f, 0.7f, 0.7f))); this->addParameter(new QParameter(QStringLiteral("ks"),
     QVector3D(0.95f, 0.95f, 0.95f))); this->addParameter(new QParameter(QStringLiteral("shininess"),
@@ -103,7 +104,7 @@ CWireframeMaterial::CWireframeMaterial(Qt3DCore::QNode* parent)
     QParameter(QStringLiteral("line.color"), QVector4D(1.0f, 1.0f, 1.0f, 1.0f)));
 
     this->setEffect(new CWireframeEffect(this));
-       */
+       
 }
 
 }

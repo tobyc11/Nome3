@@ -261,10 +261,7 @@ void CSceneNode::SyncFromAST(AST::ACommand* cmd, CScene& scene)
 
 }
 
-void CSceneNode::SyncToAST(AST::CASTContext& ctx)
-{
-    throw "don't use";
-}
+void CSceneNode::SyncToAST(AST::CASTContext& ctx) { throw "don't use"; }
 
 AST::ACommand* CSceneNode::BuildASTCommand(AST::CASTContext& ctx) const
 {

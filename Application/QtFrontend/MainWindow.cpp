@@ -161,17 +161,15 @@ void CMainWindow::on_actionMerge_triggered()
                         // contain ALL the merged vertices (from various meshes)
 
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        if (node->GetOwner()->GetName()
-            == "globalMergeNode") // If the node owner is a globalMergeNode, skip as that was a
-                                  // previously merger mesh (from a previous Merge process). We only
+        if (node->GetOwner()->GetName() == "globalMergeNode") // If the node owner is a globalMergeNode, skip as that was a
+                                  // previously merger mesh (from a previous Merge iteration). We only
                                   // want to merge vertices from our actual (non-merged) meshes.
             return;
         auto* entity = node->GetInstanceEntity(); // Else, get the instance
-        if (!entity) // Check to see if the an entity is instantiable (e.g., polyline, funnel, mesh,
-                     // etc.), and not just an instance identifier.
+        if (!entity) // Check to see if the an entity is instantiable
+        {
             entity = node->GetOwner()->GetEntity(); // If it's not instantiable, get entity instead
-                                                    // of instance entity
-
+        } 
         if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
         { // set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's
           // vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get
@@ -191,25 +189,12 @@ void CMainWindow::on_actionMerge_triggered()
     Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(
         merger)); // Merger now has all the vertices set, so we can add it into the scene as a new
                   // entity
-    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode(
-        "globalMergeNode"); // Add it into the Scene Tree by creating a new node called
+    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode"); // Add it into the Scene Tree by creating a new node called
                             // globalMergeNode. Notice, this is the same name everytime you Merge.
                             // This means you can only have one merger mesh each time. It will
                             // override previous merger meshes with the new vertices.
     sn->SetEntity(merger.Get()); // Set sn, which is the scene node, to point to entity merger
 }
-
-
-/*
-void CMainWindow::on_actionSharpenFace_triggered()
-{
-    const auto& faces = Nome3DView->GetSelectedFaces();
-    std::cout << "Sharpen Face is not implemented yet. " << std::endl;
-    // TODO: Add option to sharpen face
-    // Commented out. I removed the SharpenFace function because it was incorrectly implemented.
-TemporaryMeshManager->SharpenFace(faces); Nome3DView->ClearSelectedFaces();
-}*/
-
 
 // only subdivide merge nodes
 void CMainWindow::on_actionSubdivide_triggered()
@@ -231,6 +216,7 @@ void CMainWindow::on_actionSubdivide_triggered()
             }
         }
     });
+    // TODO: annotate the following lines?
     Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger));
     auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode");
     sn->SetEntity(merger.Get());

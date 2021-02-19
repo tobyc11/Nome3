@@ -16,32 +16,11 @@
 #include <set>
 #include <utility>
 
-struct CNomeTraits : public OpenMesh::DefaultTraits
-{
-    // store barycenter of neighbors in this member
-    VertexTraits
-    {
-    private:
-        float  sharpness_;
-    public:
-        VertexT() : sharpness_( 0.0f ) { }
-        [[nodiscard]] const float& sharpness() const { return sharpness_; }
-        void set_sharpness(const float& _s) { sharpness_ = _s; }
-    };
-    EdgeTraits
-    {
-        private :
-            float sharpness_;
+#include "./CustomMeshDataStructure/DataStructureMesh.h" // Project SwitchDS
 
-        public:
-            EdgeT() : sharpness_( 0.0f ) {}
-            [[nodiscard]] const float& sharpness() const { return sharpness_; }
-            void set_sharpness(const float& _s) { sharpness_ = _s; }
+typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
+typedef Mesh DSMesh; // Project SwitchDS
 
-    };
-};
-
-typedef OpenMesh::PolyMesh_ArrayKernelT<CNomeTraits> CMeshImpl;
 
 namespace Nome::Scene
 {
@@ -71,29 +50,33 @@ public:
     void UpdateEntity() override;
     void Draw(IDebugDraw* draw) override;
 
-    CMeshImpl::VertexHandle AddVertex(const std::string& name, Vector3 pos, float sharpness = 0.0f);
+    Vertex* AddVertex(const std::string& name, Vector3 pos, float sharpness = 0.0f);
 
     bool HasVertex(const std::string& name) const
     {
-        return NameToVert.find(name) != NameToVert.end();
+        if (currMesh.nameToVert.count(name) != 0)
+            return true;
+        else
+            return false;   
     }
-    CMeshImpl::VertexHandle FindVertex(const std::string& name) const
-    {
-        return NameToVert.find(name)->second;
-    }
+
 
     Vector3 GetVertexPos(const std::string& name) const;
 
-    void AddPointSharpness(const CMeshImpl::VertexHandle& sharpPoint, float sharpness);
-    void AddEdgeSharpness(const CMeshImpl::VertexHandle& e1, const CMeshImpl::VertexHandle& e2, float sharpness);
-    void AddFace(const std::string& name, const std::vector<std::string>& facePoints, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
-    void AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
-    void AddLineStrip(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& points);
+    Vertex* FindVertex(const std::string& name) const
+    {
+        return currMesh.nameToVert.find(name)->second;
+    }
+
+    void AddPointSharpness(Vertex* p, float sharpness);
+    void AddEdgeSharpness(Vertex* e1, Vertex* e2, float sharpness);
+    void AddFace(const std::string& name, const std::vector<std::string>& facePointNames, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
+    void AddFace(const std::string& name, const std::vector<Vertex*>& faceDSVerts, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
+    void AddLineStrip(const std::string& name, const std::vector<Vertex*>& points);
     void ClearMesh();
 
-
-    void SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexHandle> vnames,
-                     std::map<std::string, CMeshImpl::FaceHandle> fnames);
+    void SetFromData(CMeshImpl mesh, std::map<std::string, Vertex*> vnames,
+                     std::map<std::string, Face* > fnames);
 
     bool IsInstantiable() override;
     CEntity* Instantiate(CSceneTreeNode* treeNode) override;
@@ -104,17 +87,13 @@ private:
     friend class CMeshMerger;
     std::set<CMeshInstance*> InstanceSet;
 
-    CMeshImpl Mesh;
-    std::map<std::string, CMeshImpl::VertexHandle>
-        NameToVert; // required. For example,  used in AddVertex
-    std::map<CMeshImpl::VertexHandle, std::string>
-        VertToName; // Randy added on 10/11.  used in PickEdges and GetFaceVertexNames
-    std::map<std::string, CMeshImpl::FaceHandle> NameToFace; // used in FacestoDelete
-    std::map<CMeshImpl::FaceHandle, std::string> FaceToName; // used in PickFaces
-    std::map<std::vector<CMeshImpl::VertexHandle>, CMeshImpl::FaceHandle> FaceVertsToFace; // Randy added. used in PickFaces
-    std::map<CMeshImpl::FaceHandle, std::vector<CMeshImpl::VertexHandle>> FaceToFaceVerts; // Randy added on 10/11 . Used in FacesToDelete and GetFaceVertexNames
-    std::vector<CMeshImpl::VertexHandle> LineStrip;
-    std::map<CMeshImpl::FaceHandle, std::string> fHWithColor; // Randy added on 12/12 for face entity coloring
+    CMeshImpl Mesh; // Deprecated. Remove soon
+    DSMesh currMesh; // Project SwitchDS
+
+    // Randy removed all the NameToVert, VertToName, etc. data structures on 1/31/2021
+
+    std::vector<std::vector<Vertex*>> LineStrips; // Randy changed this to LineStrips on 12/25
+    std::map<Face* , std::string> DSFaceWithColor; // Randy added on 12/12 for face entity coloring
 };
 
 class CMeshInstancePoint : public CInteractivePoint
@@ -176,26 +155,29 @@ public:
     // I am really not sure whether this is a good interface or not
     const CMeshImpl& GetMeshImpl() const { return Mesh; }
 
+    // Project SwitchDS
+    const DSMesh& GetDSMesh() const { return currMesh; }
+
     std::vector<std::pair<float, std::string>> PickVertices(const tc::Ray& localRay);
     std::vector<std::pair<float, std::string>>
     PickFaces(const tc::Ray& localRay); // Randy added on 10/10 for face selection
     std::vector<std::pair<float, std::vector<std::string>>> PickPolylines(const tc::Ray& localRay); // Randy added on 12/22 for polyline selection
     std::vector<std::pair<float, std::vector<std::string>>>
     PickEdges(const tc::Ray& localRay); // Randy added on 10/29 for edge selection
-    void MarkVertAsSelected(const std::set<std::string>& vertNames, bool bSel);
+    void MarkVertAsSelected(const std::set<std::string>& vertNames);
     void MarkFaceAsSelected(const std::set<std::string>& faceNames,
                             bool bSel); // Randy added on 10/10 for face selection
     void MarkEdgeAsSelected(const std::set<std::string>& vertNames,
                             bool bSel); // Randy added on 10/29 for edge selection. TODO: rn it
                                         // takes in the edge's verts as input
 
-    std::vector<CMeshImpl::FaceHandle>
+    std::vector<Face* >
     GetSelectedFaceHandles(); // Get selected face handles. Used in InteractiveMesh.cpp.
 
-    std::map<CMeshImpl::FaceHandle, std::array<float,3> > GetfHWithColorVector() { return fHWithColorVector;}; // Randy added on 12/12 
+    std::map<Face* , std::array<float,3> > GetDSFaceWithColorVector() { return DSFaceWithColorVector;}; // Randy added on 12/12 
 
     std::vector<std::string> GetFaceVertexNames(
-        std::vector<std::string> facenames); // Randy added on 10/19 to return face vert names
+        std::vector<std::string> faceNames); // Randy added on 10/19 to return face vert names
 
     void DeselectAll();
 
@@ -208,14 +190,10 @@ private:
     unsigned int TransformChangeConnection;
 
     CMeshImpl Mesh;
-    std::map<std::string, CMeshImpl::VertexHandle> NameToVert;
-    std::map<CMeshImpl::VertexHandle, std::string> VertToName; // Randy added
-    std::map<std::string, CMeshImpl::FaceHandle> NameToFace;
-    std::map<CMeshImpl::FaceHandle, std::string> FaceToName; // Randy added
-    std::map<std::vector<CMeshImpl::VertexHandle>, CMeshImpl::FaceHandle> FaceVertsToFace; // Randy added
-    std::map<CMeshImpl::FaceHandle, std::vector<CMeshImpl::VertexHandle>> FaceToFaceVerts; // Randy added
+    DSMesh currMesh; // Project SwitchDS. changed to pointer on 1/29
 
-    std::map<CMeshImpl::FaceHandle, std::array<float, 3>> fHWithColorVector; // Randy added on 12/12 for face entity coloring
+
+    std::map<Face* , std::array<float, 3>> DSFaceWithColorVector; // Randy added on 12/12 for face entity coloring
     std::set<std::string> FacesToDelete;
 
     // std::map<std::string, std::pair<CMeshInstancePoint*, uint32_t>> PickingVerts; Randy commented
@@ -224,18 +202,18 @@ private:
     // Store selected vertex handles and names
     std::vector<std::string> CurrSelectedVertNames;
     std::vector<std::string> CurrSelectedVertNamesWithPrefix;
-    std::vector<CMeshImpl::VertexHandle> CurrSelectedVertHandles; // Randy added on 11/4
+    std::vector<Vertex*> CurrSelectedDSVerts; // Randy added on 11/4
 
     // Store selected edge handles TODO: Create edge names
-    std::vector<CMeshImpl::HalfedgeHandle> CurrSelectedHalfEdgeHandles; // Randy added on 11/4. TODO: Should I use HalfedgeHandle or
+    //std::vector<CMeshImpl::HalfedgeHandle> CurrSelectedHalfEdgeHandles; // Randy added on 11/4. TODO: Should I use HalfedgeHandle or
                                      // EdgeHandle? Store selected vertex handles and names
     std::vector<std::string> CurrSelectedEdgeVertNames;
     std::vector<std::string> CurrSelectedEdgeVertNamesWithPrefix;
-    std::vector<CMeshImpl::VertexHandle> CurrSelectedEdgeVertHandles; // Randy added on 11/4
+    std::vector<Vertex*> CurrSelectedEdgeVertHandles; // Randy added on 11/4
     // Store selected face handles and names
-    std::vector<std::string> CurrSelectedFaceNames; // face name only
-    std::vector<std::string> CurrSelectedFaceNamesWithPrefix; // includes prefix (path) and face name
-    std::vector<CMeshImpl::FaceHandle> CurrSelectedFaceHandles; // Randy added on 10/10 for face selection
+    std::vector<std::string> CurrSelectedfaceNames; // face name only
+    std::vector<std::string> CurrSelectedfaceNamesWithPrefix; // includes prefix (path) and face name
+    std::vector<Face* > CurrSelectedDSFace; // Randy added on 10/10 for face selection
 };
 
 class CVertexSelector : public Flow::CFlowNode

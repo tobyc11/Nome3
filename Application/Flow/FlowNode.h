@@ -5,6 +5,7 @@
 #include <functional>
 #include <unordered_set>
 #include <utility>
+#include <iostream>
 
 namespace Flow
 {
@@ -57,7 +58,6 @@ public:
     {
         if (!IsDirty())
             return true;
-
         UpdateRoutine();
         return !IsDirty();
     }

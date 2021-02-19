@@ -66,7 +66,7 @@ void CBezierSpline::UpdateEntity()
     std::vector<Vector3> positions = Math.CalcPositions();
     assert(positions.size() == n + 1);
 
-    std::vector<CMeshImpl::VertexHandle> handles;
+    std::vector<Vertex*> handles;
     for (int i = 0; i < n + 1; i++)
     {
         handles.push_back(AddVertex("v" + std::to_string(i), positions[i]));

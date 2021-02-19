@@ -605,6 +605,8 @@ void Mesh::clear()
     {
         delete f;
     }
+    nameToFace.clear(); // Randy added this 
+    nameToVert.clear(); // Randy added this
     vertList.clear();
     faceList.clear();
     edgeTable.clear();

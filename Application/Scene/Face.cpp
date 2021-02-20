@@ -53,7 +53,6 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
     for (size_t i = 0; i < Points.GetSize(); i++)
     {
         auto* point = Points.GetValue(i, nullptr);
-
         // point update failed etc
         if (!point)
         {
@@ -80,7 +79,6 @@ bool CFace::AddFaceIntoMesh(CMesh* mesh) const
             printf("[Mesh: %s] Vertex %s has been renamed to %s\n", mesh->GetName().c_str(),
                    point->Name.c_str(), newName.c_str());
         }
-
         mesh->AddVertex(newName, point->Position);
         nameList.push_back(newName);
     }

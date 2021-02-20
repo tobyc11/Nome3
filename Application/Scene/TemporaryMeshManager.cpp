@@ -43,7 +43,6 @@ void CTemporaryMeshManager::AddFace(const std::vector<std::string>& facePoints)
         const std::string faceName = meshName + "nnew" + std::to_string(FaceCounter);
         TAutoPtr<CFace> face = new CFace(faceName);
         Scene->AddEntity(tc::static_pointer_cast<CEntity>(face)); 
-        std::cout << "add face: added face into the scene!" << std::endl;
         face->SetPointSourceNames(Scene, facePoints); 
         TAutoPtr<CMesh> dummyMesh = new CMesh(meshName);
         dummyMesh->Faces.Connect(face->Face);
@@ -95,8 +94,6 @@ void CTemporaryMeshManager::SelectOrDeselectPolyline(const std::vector<std::stri
 {
     auto searchpoint0 = points[0].substr(0, points[0].find("._"));
     auto searchpoint1 = points[0].substr(0, points[0].find("._"));
-    std::cout << searchpoint0 << std::endl;
-    std::cout << searchpoint1 << std::endl;
     bool alreadySelected = false;
     std::string removeName;
     for (auto name : AddedTempPolylineNodeNames)

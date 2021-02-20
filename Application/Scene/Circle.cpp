@@ -20,7 +20,7 @@ void CCircle::UpdateEntity()
     int n = (int)Segments.GetValue(6.0f);
     float radius = Radius.GetValue(1.0f);
 
-    std::vector<CMeshImpl::VertexHandle> handles;
+    std::vector<Vertex*> handles;
     for (int i = 0; i < n; i++)
     {
         float theta = (float)i / n * 2.f * (float)tc::M_PI;

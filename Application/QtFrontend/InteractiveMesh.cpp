@@ -1,11 +1,12 @@
 #include "InteractiveMesh.h"
 #include "FrontendContext.h"
 #include "MaterialParser.h"
-#include "MeshToQGeometry.h"
 #include "Nome3DView.h"
 #include "ResourceMgr.h"
 #include <Matrix3x4.h>
 #include <Scene/Mesh.h>
+
+#include "DataStructureMeshToQGeometry.h" // Project ChangeDS
 
 #include <Qt3DExtras/QSphereMesh>
 #include <Qt3DRender/QGeometryRenderer>
@@ -23,8 +24,8 @@ CInteractiveMesh::CInteractiveMesh(Scene::CSceneTreeNode* node)
     , PointRenderer {}
 {
     UpdateTransform();
-    UpdateGeometry(false); // don't show vert boxes by default
-    UpdateMaterial(false); // don't show facets by default
+    UpdateGeometry(false); // false = don't show vert boxes by default
+    UpdateMaterial(false); // false = don't show facets by default
     InitInteractions();
 }
 
@@ -61,10 +62,12 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             auto selectedfacehandles =
                 meshInstance->GetSelectedFaceHandles(); // Randy added on 12/3
 
-            auto fHWithColorVector = meshInstance->GetfHWithColorVector();
-            CMeshToQGeometry meshToQGeometry(meshInstance->GetMeshImpl(), selectedfacehandles, fHWithColorVector,
-                                             true); // Randy added 2nd argument on 12/3
-            Geometry = meshToQGeometry.GetGeometry();
+            auto DSFaceWithColorVector = meshInstance->GetDSFaceWithColorVector();
+            auto test = meshInstance->GetDSMesh();
+            CDataStructureMeshToQGeometry DSmeshToQGeometry(meshInstance->GetDSMesh(), true); // Project SwitchDS
+
+            //Geometry = meshToQGeometry.GetGeometry();
+            Geometry = DSmeshToQGeometry.GetGeometry();
             Geometry->setParent(this);
             GeometryRenderer = new Qt3DRender::QGeometryRenderer(this);
             GeometryRenderer->setGeometry(Geometry);
@@ -89,7 +92,8 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             delete PointRenderer;
             delete PointGeometry;
 
-            PointGeometry = meshToQGeometry.GetPointGeometry();
+            //PointGeometry = meshToQGeometry.GetPointGeometry();
+            PointGeometry = DSmeshToQGeometry.GetPointGeometry();
             PointGeometry->setParent(PointEntity);
             PointRenderer = new Qt3DRender::QGeometryRenderer(PointEntity);
             PointRenderer->setGeometry(PointGeometry);
@@ -115,7 +119,7 @@ void CInteractiveMesh::UpdateMaterial(bool showFacets)
 {
     QVector3D instanceColor { 1.0f, 0.5f, 0.1f }; // orange color
 
-    // If the scene tree node is not within a group, then we can directly use its surface color
+    // If the scene tree node is not within a group, then we can directly use its surface color, if it has one
     if (!SceneTreeNode->GetParent()->GetOwner()->IsGroup())
     {
         if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
@@ -126,7 +130,9 @@ void CInteractiveMesh::UpdateMaterial(bool showFacets)
         }
     }
     else // else, the scenetreenode is within a group, and we keep bubbling up from where we are
-         // (going up the tree) until we get to an instance scene node that has a surface color
+         // (going up the tree) UNTIL we get to an instance scene node that has a surface color
+        // To clarify, from a hierarchical standpoint, the color that is in the lowest node in the hierarchical tree representing the NOME file
+           // will color the object in the scene.
     {
         bool setColor = false;
         auto currNode = SceneTreeNode;
@@ -147,14 +153,14 @@ void CInteractiveMesh::UpdateMaterial(bool showFacets)
         if (!setColor) // If the surface color hasn't been set yet
         {
             currNode = currNode->GetParent(); // here, currNode's parent is guaranteed to be a
-// instance scene tree node due to previous while loop
+            // instance scene tree node due to previous while loop
 
-if (auto surface = currNode->GetOwner()->GetSurface())
-{
-    instanceColor.setX(surface->ColorR.GetValue(1.0f));
-    instanceColor.setY(surface->ColorG.GetValue(1.0f));
-    instanceColor.setZ(surface->ColorB.GetValue(1.0f));
-}
+            if (auto surface = currNode->GetOwner()->GetSurface())
+            {
+                instanceColor.setX(surface->ColorR.GetValue(1.0f));
+                instanceColor.setY(surface->ColorG.GetValue(1.0f));
+                instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+            }
         }
     }
 
@@ -212,7 +218,7 @@ void CInteractiveMesh::InitInteractions()
             if (GFrtCtx->NomeView->PickPolylineBool)
                 GFrtCtx->NomeView->PickPolylineWorldRay(ray);
         }
-        });
+    });
     this->addComponent(picker);
 }
 
@@ -233,8 +239,10 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
 
     auto* lineEntity = new Qt3DCore::QEntity(this);
     lineEntity->setObjectName(QStringLiteral("lineEntity"));
-    QVector3D instanceColor{ 1.0f, 0.0f, 1.0f }; // Magenta color is default
-    if (!LineMaterial || SceneTreeNode->GetOwner()->isSelected()) // Randy added the second boolean on 11/21 to color polyline/bspline
+    QVector3D instanceColor { 1.0f, 0.0f, 1.0f }; // Magenta color is default
+    if (!LineMaterial
+        || SceneTreeNode->GetOwner()
+               ->isSelected()) // Randy added the second boolean on 11/21 to color polyline/bspline
     {
         auto xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
         auto* lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
@@ -252,9 +260,12 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
             instanceColor.setY(color.y);
             instanceColor.setZ(color.z);
             SceneTreeNode->GetOwner()->DoneSelecting(); // set SelectBool to false
-            SceneTreeNode->GetOwner()->NeedResetColor(); // next selection will reset 
+            SceneTreeNode->GetOwner()->NeedResetColor(); // next selection will reset
         }
-        else if (!SceneTreeNode->GetParent()->GetOwner()->IsGroup() )     // If the scene tree node is not within a group, then we can directly use its surface color
+        else if (!SceneTreeNode->GetParent()
+                      ->GetOwner()
+                      ->IsGroup()) // If the scene tree node is not within a group, then we can
+                                   // directly use its surface color
         {
             if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
             {
@@ -267,8 +278,9 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
                 SceneTreeNode->GetOwner()->DoneSelecting(); // set SelectBool to false
                 SceneTreeNode->GetOwner()->DoneResettingColor();
             }
-        } 
-        else // else, the scenetreenode is within a group, and we keep bubbling up from where we are (going up the tree) until we get to an instance scene node that has a surface color
+        }
+        else // else, the scenetreenode is within a group, and we keep bubbling up from where we are
+             // (going up the tree) until we get to an instance scene node that has a surface color
         {
             bool setColor = false;
             auto currNode = SceneTreeNode;
@@ -282,14 +294,14 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
                     instanceColor.setZ(surface->ColorB.GetValue(1.0f));
                     setColor = true;
                     break;
-                    
                 }
                 currNode = currNode->GetParent();
             }
 
             if (!setColor) // If the surface color hasn't been set yet
             {
-                currNode = currNode->GetParent(); // then, here, currNode's parent is guaranteed to be a
+                currNode =
+                    currNode->GetParent(); // then, here, currNode's parent is guaranteed to be a
                                            // instance scene tree node due to previous while loop
                 if (auto surface = currNode->GetOwner()->GetSurface())
                 {

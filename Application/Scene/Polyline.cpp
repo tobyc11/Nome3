@@ -24,11 +24,11 @@ void CPolyline::UpdateEntity()
         return;
     Super::UpdateEntity();
 
-    std::vector<CMeshImpl::VertexHandle> vertArray;
+    std::vector<Vertex*> vertArray;
     std::vector<CVertexInfo *> positions;
 
     auto numPoints = Points.GetSize();
-    CMeshImpl::VertexHandle firstVert;
+    Vertex* firstVert;
     for (size_t i = 0; i < numPoints; i++)
     {
         CVertexInfo* point = Points.GetValue(i, nullptr);

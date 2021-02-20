@@ -35,7 +35,7 @@ void CMobiusStrip::UpdateEntity()
     for (float u = 0.0f; u < 2.f * (float)tc::M_PI + uIncrement/3; u += uIncrement)
     { // uIncrement/3 allows n+1 total vertices, accounting for rounding error (n+1th vertex == 0th vertex)
         int vCounter = 0;
-        for (float v = -1*radius; v <= radius + bandwidth/3; v += bandwidth)
+        for (float v = -1*radius; v <= radius + bandwidth/3; v += bandwidth) // Randy added the - 1 on 1/22 to make it so there's no n+1th vertex
         { // bandwidth/3 accounts for rounding error
             float x = (1+(v/2.0f)*cosf((numTwists*u)/2.0f))*cosf(u);
             float y = (1+(v/2.0f)*cosf((numTwists*u)/2.0f))*sinf(u);

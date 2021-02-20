@@ -22,6 +22,7 @@ file(GLOB PG2_SOURCES
     Parsing/*.h Parsing/*.cpp Parsing/*.l Parsing/*.y
     QtFrontend/*.h QtFrontend/*.cpp QtFrontend/*.ui QtFrontend/*.qrc
     Scene/*.h Scene/*.cpp
+    Scene/CustomMeshDataStructure/*.h Scene/CustomMeshDataStructure/*.cpp
 )
 
 file(GLOB PG2_TEST_SOURCES

@@ -39,7 +39,7 @@ void CTorusKnot::UpdateEntity()
 {
     if (!IsDirty())
         return;
-
+    ClearMesh();
     // Clear mesh
     Super::UpdateEntity();
 
@@ -51,13 +51,12 @@ void CTorusKnot::UpdateEntity()
     float majorRadius = MajorRadius.GetValue(1.0f);
     float tubeRadius = TubeRadius.GetValue(1.0f);
     int numSegments = Segments.GetValue(0.0f); // number of circles basically
-
     const float epsilon = 1e-4;
     const float dt = (2.0f * (float)tc::M_PI) / (numSegments);
     const float du = (2.0f * (float)tc::M_PI) / numPhi;
 
     // Special case where tubeRadius == 0, create a polyline that can be used for Sweeps
-    std::vector<CMeshImpl::VertexHandle> vertArray;
+    std::vector<Vertex*> vertArray;
     std::vector<CVertexInfo*> positions;
 
     // https://mathworld.wolfram.com/Torus.html and
@@ -112,7 +111,7 @@ void CTorusKnot::UpdateEntity()
         if (tubeRadius != 0)
         {
             // generate points in a circle perpendicular to the curve at the current point
-            for (int j = 0; j <= numPhi; ++j)
+            for (int j = 0; j < numPhi; ++j)
             {
                 float u = j * du;
 

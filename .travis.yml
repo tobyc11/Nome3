@@ -13,6 +13,7 @@ addons:
       - flex
       - cmake
       - antlr
+      - opensubdiv
     update: True
 
 script:

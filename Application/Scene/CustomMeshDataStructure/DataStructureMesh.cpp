@@ -31,6 +31,7 @@ Mesh::Mesh(int type)
 void Mesh::addVertex(Vertex* v) { 
     vertList.push_back(v); 
     nameToVert[v->name] = v; // Randy added this
+    idToVert[v->ID] = v; // Randy added this on 2/19. Doesn't make sense to have a nameToVert but no idToVert.
 }
 
 Edge* Mesh::findEdge(Vertex* v1, Vertex* v2)
@@ -600,6 +601,7 @@ void Mesh::clear()
     }
     nameToFace.clear(); // Randy added this 
     nameToVert.clear(); // Randy added this
+    idToVert.clear(); // Randy added this on 2/19
     vertList.clear();
     faceList.clear();
     edgeTable.clear();

@@ -32,6 +32,7 @@ public:
 
     // Randy added these two. Easy way to access Vertex objects in Mesh.cpp. Don't need to traverse vertList
     unordered_map<string, Vertex*> nameToVert;
+    unordered_map<int, Vertex*> idToVert; // Randy added this on 2/19
     unordered_map<string, Face*> nameToFace;
 
     /* This is an auxillary table to build a mesh, matching edge to vertex.*/

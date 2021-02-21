@@ -105,7 +105,7 @@ void CSceneNode::TransformMarkedDirty()
     }
 }
 
-CSceneNode::CSceneNode(CScene* owningScene, std::string name, bool isRoot, bool isGroup)
+CSceneNode::CSceneNode(CScene* owningScene, std::string name, bool isRoot, bool isGroup, bool isSubdivision) // Project AddOffset
     : Scene(owningScene)
     , Name(std::move(name))
     , bIsGroup(isGroup)

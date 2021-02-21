@@ -34,6 +34,11 @@ public:
     antlrcpp::Any visitArgTwist(NomParser::ArgTwistContext* context) override;
     antlrcpp::Any visitArgReverse(NomParser::ArgReverseContext* context) override;
     antlrcpp::Any visitArgMintorsion(NomParser::ArgMintorsionContext* context) override;
+    antlrcpp::Any visitArgSdLevel(NomParser::ArgSdLevelContext* ctx) override;
+    antlrcpp::Any visitArgSdFlag(NomParser::ArgSdFlagContext* ctx) override;
+    antlrcpp::Any visitArgOffsetFlag(NomParser::ArgOffsetFlagContext* ctx) override;
+    antlrcpp::Any visitArgHeight(NomParser::ArgHeightContext* ctx) override;
+    antlrcpp::Any visitArgWidth(NomParser::ArgWidthContext* ctx) override;
 
     antlrcpp::Any visitCmdExprListOne(NomParser::CmdExprListOneContext* context) override;
     antlrcpp::Any visitCmdIdListOne(NomParser::CmdIdListOneContext* context) override;
@@ -44,8 +49,6 @@ public:
     antlrcpp::Any visitCmdArgSurface(NomParser::CmdArgSurfaceContext* context) override;
     antlrcpp::Any visitCmdBank(NomParser::CmdBankContext* context) override;
     antlrcpp::Any visitCmdDelete(NomParser::CmdDeleteContext* context) override;
-    antlrcpp::Any visitCmdSubdivision(NomParser::CmdSubdivisionContext* context) override;
-    antlrcpp::Any visitCmdOffset(NomParser::CmdOffsetContext* context) override;
     antlrcpp::Any visitCmdSweep(NomParser::CmdSweepContext* context) override;
     antlrcpp::Any visitSet(NomParser::SetContext* context) override;
     antlrcpp::Any visitDeleteFace(NomParser::DeleteFaceContext* context) override;
@@ -64,6 +67,9 @@ public:
     antlrcpp::Any visitIdent(NomParser::IdentContext* context) override;
     antlrcpp::Any visitAtomExpr(NomParser::AtomExprContext* context) override;
     antlrcpp::Any visitIdList(NomParser::IdListContext *context) override;
+    antlrcpp::Any visitCmdSubdivision(NomParser::CmdSubdivisionContext* context) override;
+    antlrcpp::Any visitCmdSharp(NomParser::CmdSharpContext* ctx) override;
+    antlrcpp::Any visitCmdOffset(NomParser::CmdOffsetContext* context) override;
     antlrcpp::Any visitVector3(NomParser::Vector3Context *context) override;
 
 private:

@@ -34,10 +34,8 @@ void CLineMesh::UpdateEntity()
     double xSegs = (double)x_segs.GetValue(0.0f);
     double ySegs = (double)y_segs.GetValue(0.0f);
 
-    std::string funcZ = this->GetName(); // ex. funcZ := z(x,y)=(4*x)+(3*sin(y))
+    std::string funcZ = this->GetName(); // ex. funcZ := z(x,y) = "(4*x)+(3*sin(y))"
     funcZ.erase(std::remove(funcZ.begin(), funcZ.end(), '"'), funcZ.end());
-    std::replace(funcZ.begin(), funcZ.end(), '[', '(');
-    std::replace(funcZ.begin(), funcZ.end(), ']', ')');
 
     typedef exprtk::symbol_table<double> symbol_table_t;
     typedef exprtk::expression<double>     expression_t;
@@ -46,7 +44,7 @@ void CLineMesh::UpdateEntity()
     double x = 0.0;
     double y = 0.0;
 
-    // Register x with the symbol_table
+    // Register symbols with the symbol_table
     symbol_table_t symbol_table;
     symbol_table.add_variable("x",x);
     symbol_table.add_variable("y",y);
@@ -72,9 +70,7 @@ void CLineMesh::UpdateEntity()
         yCounter = 0;
         for (double yi = yStart; yi <= yEnd + (yIncrement/5); yi += yIncrement) { // dividing by 5 for rounding error
             y = yi;
-//            printf("\n%f", yi);
             zi = expression_z.value();
-            printf("\n%f", zi);
             AddVertex("v_" + std::to_string(xCounter) + "_" + std::to_string(yCounter), // name ex. "v_0_5"
                       { (float)xi, (float)yi, (float)zi } );
             yCounter++;

@@ -22,6 +22,7 @@
 #include "Hyperboloid.h"
 #include "Dupin.h"
 #include "LineMesh.h"
+#include "LineMeshParametric.h"
 #include <StringPrintf.h>
 #include <unordered_map>
 
@@ -60,7 +61,8 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy },
     { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity },
     { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
-    { "spiral", ECommandKind::Entity },      { "linemesh", ECommandKind::Entity }
+    { "spiral", ECommandKind::Entity },      { "linemesh", ECommandKind::Entity },
+    { "linemeshparametric", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -116,6 +118,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new SSpiral(name);
     else if (cmd == "linemesh")
         return new CLineMesh(name);
+    else if (cmd == "linemeshparametric")
+        return new CLineMeshParametric(name);
     return nullptr;
 }
 

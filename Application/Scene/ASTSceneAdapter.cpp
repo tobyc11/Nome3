@@ -2,22 +2,22 @@
 #include "BSpline.h"
 #include "BezierSpline.h"
 #include "Circle.h"
-#include "Spiral.h"
-#include "Sphere.h"
-#include "Ellipsoid.h"
 #include "Cylinder.h"
 #include "Dupin.h"
 #include "Ellipsoid.h"
 #include "Environment.h"
 #include "Face.h"
 #include "Funnel.h"
+#include "GenCartesianSurf.h"
+#include "GenParametricSurf.h"
 #include "Helix.h"
-#include "MeshMerger.h"
 #include "Hyperboloid.h"
+#include "MeshMerger.h"
 #include "MobiusStrip.h"
 #include "Point.h"
 #include "Polyline.h"
 #include "Sphere.h"
+#include "Spiral.h"
 #include "Surface.h"
 #include "Sweep.h"
 #include "SweepControlPoint.h"
@@ -62,7 +62,8 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Instance },
     { "mobiusstrip", ECommandKind::Entity }, { "helix", ECommandKind::Entity },
     { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
-    { "spiral", ECommandKind::Entity },      { "sharp", ECommandKind::Entity }
+    { "spiral", ECommandKind::Entity },      { "sharp", ECommandKind::Entity },
+    { "gencartesiansurf", ECommandKind::Entity },    { "genparametricsurf", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -116,6 +117,10 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CDupin(name);
     else if (cmd == "spiral")
         return new SSpiral(name);
+    else if (cmd == "gencartesiansurf")
+        return new CGenCartesianSurf(name);
+    else if (cmd == "genparametricsurf")
+        return new CGenParametricSurf(name);
     return nullptr;
 }
 
@@ -212,7 +217,6 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (kind == ECommandKind::Entity)
     {
-
         TAutoPtr<CEntity> entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
         entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
         // All entities are added to the EntityLibrary dictionary

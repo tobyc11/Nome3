@@ -42,6 +42,11 @@ void CMobiusStrip::UpdateEntity()
             float z = (v/2.0f)*sinf((numTwists*u)/2.0f);
             AddVertex("v_" + std::to_string(uCounter) + "_" + std::to_string(vCounter), // name ex. "v_0_5"
                       { x, y, z } );
+
+
+            AddVertex("vt_" + std::to_string(uCounter) + "_" + std::to_string(vCounter), // name ex. "vt_0_5"
+                      { x, y, z + (radius/10) } );
+
             vCounter++;
         }
         uCounter++;
@@ -53,13 +58,32 @@ void CMobiusStrip::UpdateEntity()
         for (int cut = 0; cut <= numCuts; cut++)
         {
             std::vector<std::string> face;
-
             face.push_back("v_" + std::to_string(uFaceCounter) + "_" + std::to_string(2*cut)); //2*cut
             face.push_back("v_" + std::to_string(uFaceCounter + 1) + "_" + std::to_string(2*cut));
             face.push_back("v_" + std::to_string(uFaceCounter + 1) + "_" + std::to_string(2*cut+1)); //2*cut+1
             face.push_back("v_" + std::to_string(uFaceCounter) + "_" + std::to_string(2*cut+1));
-
             AddFace("f1_" + std::to_string(uFaceCounter) + "_" + std::to_string(cut), face);
+
+            std::vector<std::string> facet;
+            facet.push_back("vt_" + std::to_string(uFaceCounter) + "_" + std::to_string(2*cut)); //2*cut
+            facet.push_back("vt_" + std::to_string(uFaceCounter + 1) + "_" + std::to_string(2*cut));
+            facet.push_back("vt_" + std::to_string(uFaceCounter + 1) + "_" + std::to_string(2*cut+1)); //2*cut+1
+            facet.push_back("vt_" + std::to_string(uFaceCounter) + "_" + std::to_string(2*cut+1));
+            AddFace("ft1_" + std::to_string(uFaceCounter) + "_" + std::to_string(cut), facet);
+
+            std::vector<std::string> faceconnect1;
+            faceconnect1.push_back("v_" + std::to_string(uFaceCounter) + "_" + std::to_string(2*cut));
+            faceconnect1.push_back("v_" + std::to_string(uFaceCounter + 1) + "_" + std::to_string(2*cut));
+            faceconnect1.push_back("vt_" + std::to_string(uFaceCounter + 1) + "_" + std::to_string(2*cut));
+            faceconnect1.push_back("vt_" + std::to_string(uFaceCounter) + "_" + std::to_string(2*cut));
+            AddFace("fc1_" + std::to_string(uFaceCounter) + "_" + std::to_string(cut), faceconnect1);
+
+            std::vector<std::string> faceconnect2;
+            faceconnect2.push_back("v_" + std::to_string(uFaceCounter) + "_" + std::to_string(2*cut+1));
+            faceconnect2.push_back("v_" + std::to_string(uFaceCounter + 1) + "_" + std::to_string(2*cut+1));
+            faceconnect2.push_back("vt_" + std::to_string(uFaceCounter + 1) + "_" + std::to_string(2*cut+1));
+            faceconnect2.push_back("vt_" + std::to_string(uFaceCounter) + "_" + std::to_string(2*cut+1));
+            AddFace("fcc1_" + std::to_string(uFaceCounter) + "_" + std::to_string(cut), faceconnect2);
         }
     }
 }

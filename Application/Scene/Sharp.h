@@ -21,16 +21,6 @@ public:
     DECLARE_META_CLASS(CSharp, CEntity);
 
     CSharp() = default;
-    /*
-    explicit CPoint(std::string name)
-        : CEntity(std::move(name))
-    {
-    }
-     */
-/*
-private:
-    CVertexInfo VI;
-    */
 
     bool AddSharpnessIntoMesh(CMesh* mesh) const;
 };

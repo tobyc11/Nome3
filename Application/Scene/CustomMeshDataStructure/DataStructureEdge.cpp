@@ -15,6 +15,7 @@ Edge::Edge()
     edgePoint = NULL;
     mobius = false;
     firstHalf = secondHalf = NULL;
+    sharpness = 0;
 }
 
 Edge::Edge(Vertex* v1, Vertex* v2)
@@ -26,6 +27,7 @@ Edge::Edge(Vertex* v1, Vertex* v2)
     edgePoint = NULL;
     mobius = false;
     firstHalf = secondHalf = NULL;
+    sharpness = 0;
 }
 
 Edge* Edge::nextEdge(Vertex* v, Face* f)

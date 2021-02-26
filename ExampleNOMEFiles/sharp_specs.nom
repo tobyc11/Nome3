@@ -32,15 +32,12 @@ mesh cube
   face fy   (xyz xyc ayc ayz) endface
   face fa   (ayc abc abz ayz) endface
   face fb   (abz abc xbc xbz) endface
-  sharp {expr $slider.upper_sharpness} (xyz ayz abz xbz xyz) endsharp         ## a very sharp top contour (closed)
-  sharp {expr $slider.lower_sharpness} (xbc abc ayc xyc) (xyc xbc) endsharp   ## a softly rounded bootm contour (specified in 2 pieces)
 endmesh
 ###  >>>  The software should check that the specified edges are indeed valid edges in the mesh; if not -> report an error.
 
 
 
-
-subdivision cubeSharp 
+subdivision cubeSharp
   sd_type NOME_SD_CC_sharp
   sd_level {expr $slider.sublevel}
 

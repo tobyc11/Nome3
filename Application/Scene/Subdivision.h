@@ -42,7 +42,7 @@ Far::TopologyRefiner * GetRefiner(DSMesh& _m, bool isSharp) {
                 i++;
                 count++;
             }
-            faceVerts[face->id] = i;
+            faceVerts[face->id] = i; // TODO
         }
         int *faceVertsIndices = new int[count];
         int i = 0;

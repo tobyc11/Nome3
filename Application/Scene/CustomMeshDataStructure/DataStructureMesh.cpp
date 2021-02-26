@@ -107,145 +107,7 @@ Edge* Mesh::createEdge(Vertex* v1, Vertex* v2)
     return edge;
 }
 
-void Mesh::addTriFace(Vertex* v1, Vertex* v2, Vertex* v3)
-{
-    Face* newFace = new Face({v1, v2, v3}); // Randy added the (vertices)
-    Edge* e12 = createEdge(v1, v2);
-    Edge* e23 = createEdge(v2, v3);
-    Edge* e31 = createEdge(v3, v1);
-    if (e12->fa == NULL)
-    {
-        e12->fa = newFace;
-    }
-    else if (e12->fb == NULL)
-    {
-        e12->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v1->ID
-             << " and vertex2 :" << v2->ID << endl;
-        exit(0);
-    }
-    if (e23->fa == NULL)
-    {
-        e23->fa = newFace;
-    }
-    else if (e23->fb == NULL)
-    {
-        e23->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v2->ID
-             << " and vertex2 :" << v3->ID << endl;
-        exit(0);
-    }
-    if (e31->fa == NULL)
-    {
-        e31->fa = newFace;
-    }
-    else if (e31->fb == NULL)
-    {
-        e31->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v3->ID
-             << " and vertex2 :" << v1->ID << endl;
-        exit(0);
-    }
-    newFace->oneEdge = e12;
-    // cout<<"Testing: "<<newFace -> oneEdge -> va -> ID<<endl;
-    e12->setNextEdge(v1, newFace, e31);
-    e12->setNextEdge(v2, newFace, e23);
-    e23->setNextEdge(v2, newFace, e12);
-    e23->setNextEdge(v3, newFace, e31);
-    e31->setNextEdge(v1, newFace, e12);
-    e31->setNextEdge(v3, newFace, e23);
-    newFace->id = faceList.size();
-    faceList.push_back(newFace);
-    nameToFace[newFace->name] = newFace; // Randy added this
-}
-
-void Mesh::addQuadFace(Vertex* v1, Vertex* v2, Vertex* v3, Vertex* v4)
-{
-    Face* newFace = new Face({v1,v2,v3,v4});// Randy added the (vertices)
-    Edge* e12 = createEdge(v1, v2);
-    Edge* e23 = createEdge(v2, v3);
-    Edge* e34 = createEdge(v3, v4);
-    Edge* e41 = createEdge(v4, v1);
-    if (e12->fa == NULL)
-    {
-        e12->fa = newFace;
-    }
-    else if (e12->fb == NULL)
-    {
-        e12->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v1->ID
-             << " and vertex2 :" << v2->ID << endl;
-        exit(0);
-    }
-    if (e23->fa == NULL)
-    {
-        e23->fa = newFace;
-    }
-    else if (e23->fb == NULL)
-    {
-        e23->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v2->ID
-             << " and vertex2 :" << v3->ID << endl;
-        exit(0);
-    }
-    if (e34->fa == NULL)
-    {
-        e34->fa = newFace;
-    }
-    else if (e34->fb == NULL)
-    {
-        e34->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v3->ID
-             << " and vertex2 :" << v4->ID << endl;
-        exit(0);
-    }
-    if (e41->fa == NULL)
-    {
-        e41->fa = newFace;
-    }
-    else if (e41->fb == NULL)
-    {
-        e41->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v4->ID
-             << " and vertex2 :" << v1->ID << endl;
-        exit(0);
-    }
-    newFace->oneEdge = e12;
-    e12->setNextEdge(v1, newFace, e41);
-    e12->setNextEdge(v2, newFace, e23);
-    e23->setNextEdge(v2, newFace, e12);
-    e23->setNextEdge(v3, newFace, e34);
-    e34->setNextEdge(v3, newFace, e23);
-    e34->setNextEdge(v4, newFace, e41);
-    e41->setNextEdge(v4, newFace, e34);
-    e41->setNextEdge(v1, newFace, e12);
-    newFace->id = faceList.size();
-    faceList.push_back(newFace);
-    nameToFace[newFace->name] = newFace; // Randy added this
-}
-
-Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
+Face * Mesh::addFace(vector<Vertex*> vertices, bool reverseOrder)
 {
     if (vertices.size() < 3)
     {
@@ -282,7 +144,7 @@ Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
             }
             else
             {
-                cout << "addPolygonFace ERROR: Try to create a Non-Manifold at edge with vertex1 : "
+                cout << "addFace ERROR: Try to create a Non-Manifold at edge with vertex1 : "
                      << currEdge->va->position.x << " " << currEdge->va->position.y << "  "
                      << currEdge->va->position.z << " and vertex2 :"
                     << currEdge->vb->position.x << " " << currEdge->vb->position.y << "  "
@@ -687,7 +549,7 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
             vertices.push_back(newMesh.vertList[tempv->ID]);
             currEdge = nextEdge;
         } while (currEdge != firstEdge);
-        newMesh.addPolygonFace(vertices);
+        newMesh.addFace(vertices);
         newMesh.faceList[newMesh.faceList.size() - 1]->user_defined_color =
             (*fIt)->user_defined_color;
         newMesh.faceList[newMesh.faceList.size() - 1]->color = (*fIt)->color;
@@ -767,7 +629,7 @@ Mesh Mesh::makeCopy(string copy_mesh_name)
             vertices.push_back(newMesh.vertList[tempv->ID]);
             currEdge = nextEdge;
         } while (currEdge != firstEdge);
-        newMesh.addPolygonFace(vertices);
+        newMesh.addFace(vertices);
         newMesh.faceList[newMesh.faceList.size() - 1]->user_defined_color =
             (*fIt)->user_defined_color;
         newMesh.faceList[newMesh.faceList.size() - 1]->color = (*fIt)->color;

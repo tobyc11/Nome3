@@ -141,7 +141,7 @@ void CMesh::AddFace(const std::string& name, const std::vector<std::string>& fac
 void CMesh::AddFace(const std::string& name, const std::vector<Vertex*>& faceDSVerts,
                     std::string faceSurfaceIdent)
 {
-    Face * newFace = currMesh.addPolygonFace(faceDSVerts, false); // Project SwitchDS . Check if need to reverseOrder = true or false?
+    Face * newFace = currMesh.addFace(faceDSVerts, false); // Project SwitchDS . Check if need to reverseOrder = true or false?
     newFace->surfaceName = faceSurfaceIdent;
 }
 
@@ -167,8 +167,12 @@ void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, Vertex*> vnames,
 
 void CMesh::AddEdgeSharpness(Vertex* e1, Vertex* e2, float sharpness)
 {
-    e1->sharpness = sharpness;
-    e2->sharpness = sharpness;
+    Edge* edge = currMesh.findEdge(e1, e2);
+    if (edge) {
+        edge->sharpness = sharpness;
+    } else {
+        std::cout << "can't find edge with vertex " << e1->ID << ", " << e2->ID << std::endl;
+    }
 }
 
 void CMesh::AddPointSharpness(Vertex* p, float sharpness)

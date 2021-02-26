@@ -22,26 +22,18 @@ void CMeshMerger::UpdateEntity()
     if (!IsDirty())
         return;
     subdivisionLevel = Level.GetValue(0);
-
-
     Super::UpdateEntity();
-
     // Update is manual, so this entity has a dummy update method
-
-
     SetValid(true);
 }
 
 void CMeshMerger::Catmull()
 {
-    if (subdivisionLevel == 0 || MergedMesh.isEmpty()) {
+    if (subdivisionLevel == 0 || currMesh.isEmpty()) {
         return;
     }
-    currMesh.clear();
-    subdivide(MergedMesh, subdivisionLevel);
+    subdivide(currMesh, subdivisionLevel);
     cout << "done with subdiv" << endl;
-    currMesh = MergedMesh.randymakeCopy("", false); // Randy added this. Better copying than currMesh = newMesh
-    MergedMesh.clear();
     currMesh.buildBoundary();
     currMesh.computeNormals();
     //above is new stuff   
@@ -70,9 +62,6 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
         return; // skip for now, dont merge polyline entities
     }
 
-
-
-
    // Copy over all the vertices and check for overlapping
     std::unordered_map<Vertex*, Vertex*> vertMap;
     for (auto otherVert :  otherMesh.vertList) // Iterate through all the vertices in the mesh (the non-merger mesh, aka the one
@@ -97,9 +86,9 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
              // merger mesh.
         {
 
-            Vertex* copiedVert = new Vertex(worldPos.x, worldPos.y, worldPos.z, currMesh.nameToVert.size());
+            auto* copiedVert = new Vertex(worldPos.x, worldPos.y, worldPos.z, currMesh.nameToVert.size());
             copiedVert->name = "copiedVert" + std::to_string(currMesh.nameToVert.size()); // Randy this was causing the bug!!!!!!! the name was the same. so nameToVert remained size == 1
-            currMesh.addVertex(copiedVert);
+            MergedMesh.addVertex(copiedVert);
             vertMap[otherVert] = copiedVert; // Map actual mesh vertex to merged vertex.This dictionary is
                                  // useful for add face later.
             std::string vName = "v" + std::to_string(VertCount);
@@ -116,19 +105,21 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
         std::vector<Vertex*> verts;
         for (auto vert : otherFace->vertices) //otherMesh vertices
         { // iterate through all the vertices on this face
-            auto temp = vertMap[vert];
             verts.emplace_back(vertMap[vert]);
         } // Add the vertex handles
         //auto fnew =
         //Mesh.add_face(verts); // add_face processes the merger vertex handles and adds the face
                                   // into the merger mesh (Mesh refers to the merger mesh here)
         Face* copiedFace = new Face(verts);
-        currMesh.addPolygonFace(verts);
+        MergedMesh.addFace(verts);
         std::string fName = "v" + std::to_string(FaceCount);
         FaceCount++;
     }
-    currMesh.buildBoundary();
-    currMesh.computeNormals();
+
+    MergedMesh.buildBoundary();
+    MergedMesh.computeNormals();
+    currMesh.clear();
+    currMesh = MergedMesh;
 
 }
 
@@ -154,20 +145,18 @@ std::pair<Vertex*, float> CMeshMerger::FindClosestVertex(const tc::Vector3& pos)
         }
     }
     return { result, minDist };
-    return { result, 99999 };
 }
 
 
 void CMeshMerger::MergeClear() {
+    currMesh.clear();
     MergedMesh.clear();
-    Mesh.clear();
 }
-//CMeshMerger::Subdivision(Mesh mesh) { currMesh = mesh; }
 
 
 
 
-bool CMeshMerger::subdivide(DSMesh& _m, unsigned int n)
+bool CMeshMerger::subdivide(DSMesh& _m, unsigned int n) const
 {
 
     // Instantiate a Far::TopologyRefiner from the descriptor
@@ -225,7 +214,12 @@ bool CMeshMerger::subdivide(DSMesh& _m, unsigned int n)
 
             // all refined Catmark faces should be quads
             assert(fverts.size()==4);
-            _m.addQuadFace(_m.vertList.at(fverts[0]), _m.vertList.at(fverts[1]), _m.vertList.at(fverts[2]), _m.vertList.at(fverts[3]));
+            vector<Vertex*> vertices;
+            for (int i = 0; i < 4; ++i)
+            {
+                vertices.push_back(_m.vertList.at(fverts[i]));
+            }
+            _m.addFace(vertices);
 
             printf("f ");
             for (int vert=0; vert<fverts.size(); ++vert) {

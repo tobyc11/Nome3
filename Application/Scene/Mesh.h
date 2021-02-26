@@ -68,7 +68,7 @@ public:
         return currMesh.nameToVert.find(name)->second;
     }
 
-    void AddPointSharpness(Vertex* p, float sharpness);
+    static void AddPointSharpness(Vertex* p, float sharpness);
     void AddEdgeSharpness(Vertex* e1, Vertex* e2, float sharpness);
     void AddFace(const std::string& name, const std::vector<std::string>& facePointNames, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
     void AddFace(const std::string& name, const std::vector<Vertex*>& faceDSVerts, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
@@ -156,7 +156,7 @@ public:
     const CMeshImpl& GetMeshImpl() const { return Mesh; }
 
     // Project SwitchDS
-    const DSMesh& GetDSMesh() const { return currMesh; }
+    DSMesh& GetDSMesh() { return currMesh; }
 
     std::vector<std::pair<float, std::string>> PickVertices(const tc::Ray& localRay);
     std::vector<std::pair<float, std::string>>

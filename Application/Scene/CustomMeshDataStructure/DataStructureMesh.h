@@ -92,13 +92,7 @@ public:
      * @brief Add a triangle face to a mesh, with three vertices.
      * @param v1, v2, v3 are the three vertices of the face.
      */
-    void addTriFace(Vertex* v1, Vertex* v2, Vertex* v3);
-    // Add a quad face to a mesh, with three vertices.
-    // @param v1, v2, v3, v4 are the four vertices of the face.
-    void addQuadFace(Vertex* v1, Vertex* v2, Vertex* v3, Vertex* v4);
-    // Add a arbitrary polygon face to a mesh, with three vertices.
-    // @param vertices is a list of consequtive vertices of the face.
-    Face* addPolygonFace(vector<Vertex*> vertices, bool reverseOrder = false); // Randy changed this on 1/22
+    Face* addFace(vector<Vertex*> vertices, bool reverseOrder = false); // Randy changed this on 1/22
     /**
      * @brief delelteFace: Delete a face from this mesh.
      * @param face: the face to be deleted.

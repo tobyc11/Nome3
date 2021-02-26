@@ -33,7 +33,7 @@ public:
     // sd_flag can be set to sharp and plain cc to have different types of subdivision
     void Catmull();
 
-    bool subdivide(DSMesh& _m, unsigned int n);
+    bool subdivide(DSMesh& _m, unsigned int n) const;
 
 
 

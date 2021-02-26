@@ -201,25 +201,20 @@ void CMainWindow::on_actionSubdivide_triggered()
 {
     // One shot merging, and add a new entity and its corresponding node
     Scene->Update();
-
-    tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge");
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         if (node->GetOwner()->GetName() == "globalMergeNode")
         {
-            auto* entity = node->GetInstanceEntity();
-            if (!entity)
-                entity = node->GetOwner()->GetEntity();
-            if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+
+            auto* entity = node->GetOwner()->GetEntity();
+            if (auto* mesh = dynamic_cast<Scene::CMeshMerger*>(entity))
             {
-                merger->setSubLevel(3);
-                merger->Catmull();
+                mesh->setSubLevel(3);
+                mesh->Catmull(); // TODO: pass in level argument
+                mesh->MarkDirty();
+
             }
         }
     });
-    // TODO: annotate the following lines?
-    Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger));
-    auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode");
-    sn->SetEntity(merger.Get());
 
 }
 

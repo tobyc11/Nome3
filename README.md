@@ -19,6 +19,7 @@ brew install qt5
 brew install open-mesh
 brew install pugixml
 brew install cmake
+brew install opensubdiv
 ```
 You'll also need to download: ANTLR parser generator (https://www.antlr.org/download/antlr-4.8-complete.jar). Zachary informed me you can just do brew install antlr, and that should work. Make sure to install Java as well.
 
@@ -60,6 +61,7 @@ Now hopefully you are familiar with those package managers. Run the following co
 ```
 scoop install cmake
 vcpkg --triplet x64-windows install openmesh 
+vcpkg --triplet x64-windows install opensubdiv
 vcpkg --triplet x64-windows install pugixml instructions to install Qt on Windows)
 git clone --recursive https://github.com/randyfan/NOME3
 ```

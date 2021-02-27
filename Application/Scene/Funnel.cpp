@@ -8,10 +8,10 @@ namespace Nome::Scene
 
 DEFINE_META_OBJECT(CFunnel)
 {
-    BindPositionalArgument(&CFunnel::VerticesPerRing, 1, 0);
-    BindPositionalArgument(&CFunnel::Radius, 1, 1);
-    BindPositionalArgument(&CFunnel::Ratio, 1, 2);
-    BindPositionalArgument(&CFunnel::Height, 1, 3);
+    BindPositionalArgument(&CFunnel::Radius, 1, 0);
+    BindPositionalArgument(&CFunnel::Ratio, 1, 1);
+    BindPositionalArgument(&CFunnel::Height, 1, 2);
+    BindPositionalArgument(&CFunnel::VerticesPerRing, 1, 3);
 }
 
 void CFunnel::UpdateEntity()

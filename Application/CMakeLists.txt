@@ -45,6 +45,10 @@ macro(config_playground2 target)
     target_link_libraries(${target} PRIVATE pugixml)
 
     target_link_libraries(${target} PRIVATE NomParsing)
+
+    find_package(OpenSubdiv REQUIRED)
+    target_include_directories(${target} PRIVATE ${OPENSUBDIV_INCLUDE_DIR})
+    target_link_libraries(${target} PRIVATE ${OPENSUBDIV_LIBRARIES})
 endmacro()
 
 add_executable(Nome3 ${PG2_SOURCES})

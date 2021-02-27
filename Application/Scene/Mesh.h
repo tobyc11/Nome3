@@ -1,5 +1,6 @@
 #pragma once
 #include "Face.h"
+#include "Sharp.h" 
 #include "InteractivePoint.h"
 
 #include <Plane.h> // Randy added on 10/10 for pick face
@@ -13,6 +14,38 @@
 #include <map>
 #include <set>
 #include <utility>
+
+// Randy note, we need to change this to winged edge asap. Project AddOfset
+struct CNomeTraits : public OpenMesh::DefaultTraits
+{
+    // store barycenter of neighbors in this member
+    VertexTraits
+    {
+    private:
+        float sharpness_;
+
+    public:
+        VertexT()
+            : sharpness_(0.0f)
+        {
+        }
+        [[nodiscard]] const float& sharpness() const { return sharpness_; }
+        void set_sharpness(const float& _s) { sharpness_ = _s; }
+    };
+    EdgeTraits
+    {
+    private:
+        float sharpness_;
+
+    public:
+        EdgeT()
+            : sharpness_(0.0f)
+        {
+        }
+        [[nodiscard]] const float& sharpness() const { return sharpness_; }
+        void set_sharpness(const float& _s) { sharpness_ = _s; }
+    };
+};
 
 #include "./CustomMeshDataStructure/DataStructureMesh.h" // Project SwitchDS
 

@@ -2,21 +2,22 @@
 #include "BSpline.h"
 #include "BezierSpline.h"
 #include "Circle.h"
-#include "Spiral.h"
-#include "Sphere.h"
-#include "Ellipsoid.h"
 #include "Cylinder.h"
 #include "Dupin.h"
 #include "Ellipsoid.h"
 #include "Environment.h"
 #include "Face.h"
 #include "Funnel.h"
+#include "GenCartesianSurf.h"
+#include "GenParametricSurf.h"
 #include "Helix.h"
 #include "Hyperboloid.h"
+#include "MeshMerger.h"
 #include "MobiusStrip.h"
 #include "Point.h"
 #include "Polyline.h"
 #include "Sphere.h"
+#include "Spiral.h"
 #include "Surface.h"
 #include "Sweep.h"
 #include "SweepControlPoint.h"
@@ -58,10 +59,11 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
     { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
     { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
-    { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Dummy },
+    { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Instance },
     { "mobiusstrip", ECommandKind::Entity }, { "helix", ECommandKind::Entity },
     { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
-    { "spiral", ECommandKind::Entity }
+    { "spiral", ECommandKind::Entity },      { "sharp", ECommandKind::Entity },
+    { "gencartesiansurf", ECommandKind::Entity },    { "genparametricsurf", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -115,6 +117,10 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CDupin(name);
     else if (cmd == "spiral")
         return new SSpiral(name);
+    else if (cmd == "gencartesiansurf")
+        return new CGenCartesianSurf(name);
+    else if (cmd == "genparametricsurf")
+        return new CGenParametricSurf(name);
     return nullptr;
 }
 
@@ -186,6 +192,20 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
     CmdTraverseStack.pop_back();
 }
 
+// Project AddOffset
+// Project AddOffset
+//void CASTSceneAdapter::IterateSharpness(AST::ACommand* cmd, CScene& scene)
+//{
+//    TAutoPtr<CEntity> entity = new CSharp();
+//    entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
+//    GEnv.Scene->AddEntity(entity);
+//
+//    if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
+//        if (auto* points = dynamic_cast<CSharp*>(entity.Get()))
+//            mesh->SharpPoints.Connect(points->SharpPoints);
+//}
+
+
 void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, bool insubMesh)
 {
     CmdTraverseStack.push_back(cmd);
@@ -197,7 +217,6 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (kind == ECommandKind::Entity)
     {
-
         TAutoPtr<CEntity> entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
         entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
         // All entities are added to the EntityLibrary dictionary
@@ -277,6 +296,57 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         for (auto* sub : cmd->GetSubCommands())
             VisitCommandSyncScene(sub, scene, false);
         InstanciateUnder = GEnv.Scene->GetRootNode();
+    }
+
+    else if (cmd->GetCommand() == "subdivision" || cmd->GetCommand() == "offset")
+    {
+        // 1.read all instances to a merged mesh
+        InstanciateUnder = GEnv.Scene->CreateMerge(cmd->GetName());
+        InstanciateUnder->SyncFromAST(cmd, scene);
+        // cmd->GetLevel();
+
+        for (auto* sub : cmd->GetSubCommands())
+            VisitCommandSyncScene(sub, scene, false);
+        // auto node = InstanciateUnder;
+        InstanciateUnder->AddParent(GEnv.Scene->GetRootNode());
+        InstanciateUnder = GEnv.Scene->GetRootNode();
+        // 2. merge all instances
+        tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger(cmd->GetName());
+        merger->GetMetaObject().DeserializeFromAST(*cmd, *merger);
+        if (cmd->GetCommand() == "subdivision")
+        {
+            auto flag = cmd->GetNamedArgument("sd_type");
+            if (flag)
+            {
+                auto flagName = flag->GetArgument( 0)[0]; 
+                auto flagIdentifier = static_cast<AST::AIdent*>(&flagName)
+                                          ->ToString(); // Downcast it back to an AIdent
+                if (flagIdentifier == "NOME_SD_CC_sharp")
+                    merger->SetSharp(true);
+                else
+                    merger->SetSharp(false);
+            }
+        }
+        else
+        {
+            auto flag = cmd->GetNamedArgument("offset_type");
+            if (flag)
+            {
+                auto flagName = flag->GetArgument(0)[0]; // Returns a casted AExpr that was an AIdent before casting
+                auto flagIdentifier = static_cast<AST::AIdent*>(&flagName)
+                                          ->ToString(); // Downcast it back to an AIdent
+                if (flagIdentifier == "NOME_OFFSET_DEFAULT")
+                    merger->SetOffsetFlag(true);
+                else
+                    merger->SetOffsetFlag(false);
+            }
+        }
+
+        scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(
+            merger));
+        auto* sn = scene.GetRootNode()->FindOrCreateChildNode(
+            cmd->GetName()); 
+        sn->SetEntity(merger.Get()); 
     }
     CmdTraverseStack.pop_back();
 }

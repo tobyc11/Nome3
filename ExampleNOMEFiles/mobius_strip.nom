@@ -1,5 +1,5 @@
 bank mob_slider
-  set radius 1 0.1 10 0.1
+  set radius 1 0.1 1.5 0.1
   set numTwists 1 0 10 1
   set numCuts 0 0 20 1
   set N 100 5 500 5

@@ -105,6 +105,42 @@ antlrcpp::Any CFileBuilder::visitArgSegs(NomParser::ArgSegsContext* context)
     return result;
 }
 
+antlrcpp::Any CFileBuilder::visitArgSdLevel(NomParser::ArgSdLevelContext* ctx)
+{
+    auto* result = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
+    result->AddChild(visit(ctx->expression()).as<AST::AExpr*>());
+    return result;
+}
+
+antlrcpp::Any CFileBuilder::visitArgSdFlag(NomParser::ArgSdFlagContext* ctx)
+{
+    auto* result = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
+    result->AddChild(visit(ctx->ident()).as<AST::AExpr*>());
+    return result;
+}
+
+
+antlrcpp::Any CFileBuilder::visitArgOffsetFlag(NomParser::ArgOffsetFlagContext* ctx)
+{
+    auto* result = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
+    result->AddChild(visit(ctx->ident()).as<AST::AExpr*>());
+    return result;
+}
+
+antlrcpp::Any CFileBuilder::visitArgHeight(NomParser::ArgHeightContext* ctx)
+{
+    auto* result = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
+    result->AddChild(visit(ctx->expression()).as<AST::AExpr*>());
+    return result;
+}
+
+antlrcpp::Any CFileBuilder::visitArgWidth(NomParser::ArgWidthContext* ctx)
+{
+    auto* result = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
+    result->AddChild(visit(ctx->expression()).as<AST::AExpr*>());
+    return result;
+}
+
 antlrcpp::Any CFileBuilder::visitArgOrder(NomParser::ArgOrderContext* context)
 {
     auto* result = new AST::ANamedArgument(ConvertToken(context->getStart()));
@@ -222,6 +258,50 @@ antlrcpp::Any CFileBuilder::visitCmdSubCmds(NomParser::CmdSubCmdsContext* contex
     return cmd;
 }
 
+antlrcpp::Any CFileBuilder::visitCmdSubdivision(NomParser::CmdSubdivisionContext* context)
+{
+    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
+    cmd->PushPositionalArgument(visit(context->name));
+    for (auto* arg : context->argSdFlag())
+        cmd->AddNamedArgument(visit(arg));
+    for (auto* arg : context->argSdLevel())
+        cmd->AddNamedArgument(visit(arg));
+
+    for (auto* subCmd : context->command())
+        cmd->AddSubCommand(visit(subCmd));
+    return cmd;
+}
+
+antlrcpp::Any CFileBuilder::visitCmdSharp(NomParser::CmdSharpContext* context)
+{
+    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
+    cmd->PushPositionalArgument(visit(context->expression()));
+    for (auto* arg : context->idList())
+    {
+        auto* subCmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
+        subCmd->PushPositionalArgument(visit(arg));
+        cmd->AddSubCommand(subCmd);
+    }
+    return cmd;
+}
+
+antlrcpp::Any CFileBuilder::visitCmdOffset(NomParser::CmdOffsetContext* context)
+{
+    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
+    cmd->PushPositionalArgument(visit(context->name));
+    for (auto* arg : context->argOffsetFlag())
+        cmd->AddNamedArgument(visit(arg));
+    for (auto* arg : context->argHeight())
+        cmd->AddNamedArgument(visit(arg));
+    for (auto* arg : context->argWidth())
+        cmd->AddNamedArgument(visit(arg));
+
+    for (auto* subCmd : context->command())
+        cmd->AddSubCommand(visit(subCmd));
+
+    return cmd;
+}
+
 antlrcpp::Any CFileBuilder::visitCmdInstance(NomParser::CmdInstanceContext* context)
 {
     auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
@@ -265,42 +345,6 @@ antlrcpp::Any CFileBuilder::visitCmdDelete(NomParser::CmdDeleteContext* context)
     auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
     for (auto* deleteFace : context->deleteFace())
         cmd->AddSubCommand(visit(deleteFace));
-    return cmd;
-}
-
-antlrcpp::Any CFileBuilder::visitCmdSubdivision(NomParser::CmdSubdivisionContext* context)
-{
-    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
-    cmd->PushPositionalArgument(visit(context->name));
-    auto* namedArg = new AST::ANamedArgument(ConvertToken(context->k1));
-    namedArg->AddChild(visit(context->v1).as<AST::AExpr*>());
-    cmd->AddNamedArgument(namedArg);
-
-    namedArg = new AST::ANamedArgument(ConvertToken(context->k2));
-    namedArg->AddChild(visit(context->v2).as<AST::AExpr*>());
-    cmd->AddNamedArgument(namedArg);
-    return cmd;
-}
-
-antlrcpp::Any CFileBuilder::visitCmdOffset(NomParser::CmdOffsetContext* context)
-{
-    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
-    cmd->PushPositionalArgument(visit(context->name));
-    auto* namedArg = new AST::ANamedArgument(ConvertToken(context->k1));
-    namedArg->AddChild(visit(context->v1).as<AST::AExpr*>());
-    cmd->AddNamedArgument(namedArg);
-
-    namedArg = new AST::ANamedArgument(ConvertToken(context->k2));
-    namedArg->AddChild(visit(context->v2).as<AST::AExpr*>());
-    cmd->AddNamedArgument(namedArg);
-
-    namedArg = new AST::ANamedArgument(ConvertToken(context->k3));
-    namedArg->AddChild(visit(context->v3).as<AST::AExpr*>());
-    cmd->AddNamedArgument(namedArg);
-
-    namedArg = new AST::ANamedArgument(ConvertToken(context->k4));
-    namedArg->AddChild(visit(context->v4).as<AST::AExpr*>());
-    cmd->AddNamedArgument(namedArg);
     return cmd;
 }
 

@@ -35,6 +35,8 @@ public:
 
     // Creates a group that is represented by a scene node with the specified name
     TAutoPtr<CSceneNode> CreateGroup(const std::string& name);
+    // Creates a merge that is represented by a scene node with the specified name
+    TAutoPtr<CSceneNode> CreateMerge(const std::string& name);
     // Finds a group by its name
     TAutoPtr<CSceneNode> FindGroup(const std::string& name) const;
 
@@ -92,6 +94,7 @@ private:
     // The following two maps enable looking up objects by their names
     std::map<std::string, TAutoPtr<CEntity>> EntityLibrary;
     std::map<std::string, TAutoPtr<CSceneNode>> Groups;
+    std::map<std::string, TAutoPtr<CSceneNode>> Merges;
 
     // Used to help figure out which scope to use when using points. Useful, for example, for
     // defining and using points in a mesh

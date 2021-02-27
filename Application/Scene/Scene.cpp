@@ -85,6 +85,16 @@ TAutoPtr<CSceneNode> CScene::CreateGroup(const std::string& name)
     return node;
 }
 
+TAutoPtr<CSceneNode> CScene::CreateMerge(const std::string& name)
+{
+    if (Merges.find(name) != Merges.end())
+        return {};
+
+    auto* node = new CSceneNode(this, name, false, true, true);
+    Merges[name] = node;
+    return node;
+}
+
 TAutoPtr<CSceneNode> CScene::FindGroup(const std::string& name) const
 {
     auto iter = Groups.find(name);
@@ -240,6 +250,42 @@ void CScene::Update()
 {
     // Called every frame to make sure everything is up to date
     DFSTreeNodeUpdate(GetRootTreeNode());
+
+    //// Project AddOffset ask Xinyu to fix this later
+    //if (markedDirty && !Merges.empty())
+    //{
+    //    for (auto itr = Merges.begin(); itr != Merges.end(); itr++)
+    //    {
+    //        auto* ent = dynamic_cast<Scene::CMeshMerger*>(itr->second->GetEntity());
+    //        if (ent != nullptr)
+    //        {
+    //            ent->MarkDirty();
+    //            ent->MergeClear();
+    //            for (auto& child : itr->second->GetSceneNodeChildren())
+    //            {
+    //                child->ForEachTreeNode([&](Scene::CSceneTreeNode* node) {
+    //                    auto* entity = node->GetInstanceEntity(); // Else, get the instance
+    //                    if (!entity) // Check to see if the an entity is instantiable (e.g.,
+    //                                 // polyline, funnel, mesh, etc.), and not just an instance
+    //                                 // identifier.
+    //                        entity =
+    //                            node->GetOwner()->GetEntity(); // If it's not instantiable, get
+    //                                                           // entity instead of instance entity
+
+    //                    if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(
+    //                            entity)) // set "auto * mesh" to this entity. Call MergeIn to set
+    //                                     // merger's vertices based on mesh's vertices. Reminder: an
+    //                                     // instance identifier is NOT a Mesh, so only real entities
+    //                                     // get merged.
+    //                        ent->MergeIn(*mesh);
+    //                });
+    //            }
+    //            ent->Catmull();
+    //        }
+    //    }
+
+    //    DFSTreeNodeUpdate(GetRootTreeNode(), false);
+    //}
 }
 
 std::vector<CSceneTreeNode*> CScene::GetSelectedNodes() const

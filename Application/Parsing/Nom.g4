@@ -31,6 +31,11 @@ idList : LPAREN (identList+=ident)* RPAREN ;
 vector3 : LPAREN expression expression expression RPAREN ;
 
 argClosed : 'closed' ;
+argSdFlag : 'sd_type' ident;
+argSdLevel : 'sd_level' expression;
+argOffsetFlag : 'offset_type' ident;
+argHeight : 'height' expression;
+argWidth : 'width' expression;
 argHidden : 'hidden' ;
 argBeginCap : 'begincap' ;
 argEndCap : 'endcap' ;
@@ -76,6 +81,8 @@ command
    | open='tunnel' name=ident LPAREN expression expression expression expression RPAREN end='endtunnel' # CmdExprListOne
    | open='torusknot' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorusknot' # CmdExprListOne
    | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
+   | open='gencartesiansurf' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endgencartesiansurf' # CmdExprListOne
+   | open='genparametricsurf' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endgenparametricsurf' # CmdExprListOne
    | open='beziercurve' name=ident idList argSegs* end='endbeziercurve' # CmdIdListOne
    | open='bspline' name=ident argOrder* idList argSegs* end='endbspline' # CmdIdListOne
    | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
@@ -90,8 +97,9 @@ command
    | open='rimfaces' argSurface end='endrimfaces' # CmdArgSurface
    | open='bank' name=ident set* end='endbank' # CmdBank
    | open='delete' deleteFace* end='enddelete' # CmdDelete
-   | open='subdivision' name=ident k1='type' v1=ident k2='subdivisions' v2=expression end='endsubdivision' # CmdSubdivision
-   | open='offset' name=ident k1='type' v1=ident k2='min' v2=expression k3='max' v3=expression k4='step' v4=expression end='endoffset' # CmdOffset
+   | open='subdivision' name=ident argSdFlag* argSdLevel* command* end='endsubdivision' # CmdSubdivision
+   | open='sharp' expression idList+ end='endsharp' # CmdSharp
+   | open='offset' name=ident argOffsetFlag* argHeight* argWidth* command* end='endoffset' # CmdOffset
    | open='include' name=ident end='endinclude' # CmdInclude
    ;
 
@@ -99,10 +107,11 @@ set : open='set' ident expression expression expression expression;
 
 deleteFace : open='face' ident end='endface' ;
 
-
-IDENT : VALID_ID_START VALID_ID_CHAR* ;
+IDENT : VALID_ID_START VALID_ID_CHAR* | QUOTE VALID_ID_FUNC* QUOTE ;
 fragment VALID_ID_START : ('a' .. 'z') | ('A' .. 'Z') | '_' | '.' ;
 fragment VALID_ID_CHAR : VALID_ID_START | ('0' .. '9') ;
+fragment VALID_ID_FUNC : VALID_ID_CHAR | '(' | ')' | '*' | '/' | '+' | '!' | '%' | '=' | '^' | '-' | '|' ;
+fragment QUOTE : '"' ;
 
 //The NUMBER part gets its potential sign from "(PLUS | MINUS)* atom" in the expression rule
 SCIENTIFIC_NUMBER : NUMBER (E SIGN? UNSIGNED_INTEGER)? ;

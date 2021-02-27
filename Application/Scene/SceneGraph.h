@@ -70,7 +70,7 @@ class CSceneNode : public Flow::CFlowNode
 
 public:
     explicit CSceneNode(CScene* owningScene, std::string name, bool isRoot = false,
-                        bool isGroup = false);
+                        bool isGroup = false, bool isSubdivision = false); // Project AddOffset
     ~CSceneNode() override;
 
     const std::string& GetName() const { return Name; }

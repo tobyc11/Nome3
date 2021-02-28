@@ -343,6 +343,8 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
             AST::ANumber(AST::CToken::Create(SourceMgr->GetASTContext(), loc, valueStr.length()));
         argValue->ClearChildren();
         argValue->AddChild(expr);
+
+        this->setWindowModified(true);
     });
 
     SliderLayout->addRow(sliderName, sliderLayout);

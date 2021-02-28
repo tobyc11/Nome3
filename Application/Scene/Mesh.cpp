@@ -58,6 +58,24 @@ void CMesh::UpdateEntity()
 
 void CMesh::Draw(IDebugDraw* draw) { }
 
+Vector3 CMesh::GetVertexPos(const std::string& name) const
+{
+    auto iter = NameToVert.find(name);
+    CMeshImpl::VertexHandle vertex = iter->second;
+    const auto& pos = Mesh.point(vertex);
+    return Vector3(pos[0], pos[1], pos[2]);
+}
+
+bool CMesh::IsInstantiable() { return true; }
+
+CEntity* CMesh::Instantiate(CSceneTreeNode* treeNode)
+{
+    auto* meshInst = new CMeshInstance(this, treeNode);
+    auto renderComp = std::make_shared<CMeshRenderComponent>();
+    meshInst->AttachComponent(std::move(renderComp));
+    return meshInst;
+}
+
 CMeshImpl::VertexHandle CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
 {
     // Silently fail if the name already exists
@@ -69,14 +87,6 @@ CMeshImpl::VertexHandle CMesh::AddVertex(const std::string& name, tc::Vector3 po
     vertex = Mesh.add_vertex(CMeshImpl::Point(pos.x, pos.y, pos.z));
     NameToVert.emplace(name, vertex);
     return vertex;
-}
-
-Vector3 CMesh::GetVertexPos(const std::string& name) const
-{
-    auto iter = NameToVert.find(name);
-    CMeshImpl::VertexHandle vertex = iter->second;
-    const auto& pos = Mesh.point(vertex);
-    return Vector3(pos[0], pos[1], pos[2]);
 }
 
 void CMesh::AddFace(const std::string& name, const std::vector<std::string>& facePoints)
@@ -108,24 +118,6 @@ void CMesh::ClearMesh()
     NameToVert.clear();
     NameToFace.clear();
     LineStrip.clear();
-}
-
-void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexHandle> vnames,
-                        std::map<std::string, CMeshImpl::FaceHandle> fnames)
-{
-    Mesh = std::move(mesh);
-    NameToVert = std::move(vnames);
-    NameToFace = std::move(fnames);
-}
-
-bool CMesh::IsInstantiable() { return true; }
-
-CEntity* CMesh::Instantiate(CSceneTreeNode* treeNode)
-{
-    auto* meshInst = new CMeshInstance(this, treeNode);
-    auto renderComp = std::make_shared<CMeshRenderComponent>();
-    meshInst->AttachComponent(std::move(renderComp));
-    return meshInst;
 }
 
 std::string CMeshInstancePoint::GetPointPath() const { return Owner->GetSceneTreeNode()->GetPath() + "." + GetName(); }

@@ -36,24 +36,26 @@ public:
     void UpdateEntity() override;
     void Draw(IDebugDraw* draw) override;
 
-    CMeshImpl::VertexHandle AddVertex(const std::string& name, Vector3 pos);
-
     bool HasVertex(const std::string& name) const
     {
         return NameToVert.find(name) != NameToVert.end();
     }
 
     Vector3 GetVertexPos(const std::string& name) const;
+
+    bool IsInstantiable() override;
+    CEntity* Instantiate(CSceneTreeNode* treeNode) override;
+
+protected:
+    // The following mesh mutating methods are called during UpdateEntity
+    CMeshImpl::VertexHandle AddVertex(const std::string& name, Vector3 pos);
     void AddFace(const std::string& name, const std::vector<std::string>& facePoints);
     void AddFace(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& facePoints);
     void AddLineStrip(const std::string& name, const std::vector<CMeshImpl::VertexHandle>& points);
     void ClearMesh();
 
-    void SetFromData(CMeshImpl mesh, std::map<std::string, CMeshImpl::VertexHandle> vnames,
-                     std::map<std::string, CMeshImpl::FaceHandle> fnames);
-
-    bool IsInstantiable() override;
-    CEntity* Instantiate(CSceneTreeNode* treeNode) override;
+    // Friended so that above methods are available
+    friend class CFace;
 
 private:
     friend class CMeshInstance;

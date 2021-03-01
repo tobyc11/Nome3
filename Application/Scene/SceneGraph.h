@@ -38,6 +38,7 @@ public:
     CSceneTreeNode* FindChildOfOwner(CSceneNode* owner) const;
     CSceneTreeNode* FindChild(const std::string& name) const;
 
+    CSceneTreeNode* GetParent() const { return Parent; }
     const std::set<CSceneTreeNode*>& GetChildren() const { return Children; }
     std::string GetPath() const;
 
@@ -69,8 +70,7 @@ class CSceneNode : public Flow::CFlowNode
     DEFINE_INPUT(Matrix3x4, Transform);
 
 public:
-    explicit CSceneNode(CScene* owningScene, std::string name, bool isRoot = false,
-                        bool isGroup = false);
+    explicit CSceneNode(CScene* owningScene, std::string name, bool isRoot = false, bool isGroup = false);
     ~CSceneNode() override;
 
     const std::string& GetName() const { return Name; }

@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QTimer>
+#include <QTreeView>
 #include <string>
 #include <unordered_map>
 
@@ -71,13 +72,15 @@ private:
     std::shared_ptr<CSourceManager> SourceMgr;
     bool bIsBlankFile;
 
-    // Nome Context
+    // Nome Context (mostly saved, persistent states)
     tc::TAutoPtr<Scene::CScene> Scene;
     QTimer* SceneUpdateClock = nullptr;
 
+    // Below are runtime states (not saved of course)
     std::unique_ptr<QWidget> SliderWidget;
     QFormLayout* SliderLayout = nullptr;
     std::unordered_map<std::string, QLayout*> SliderNameToWidget;
+    QTreeView* SceneTreeView = nullptr;
 
     std::unique_ptr<Scene::CTemporaryMeshManager> TemporaryMeshManager;
 };

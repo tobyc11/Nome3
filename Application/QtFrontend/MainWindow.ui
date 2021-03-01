@@ -55,9 +55,15 @@
     <addaction name="actionResetTempMesh"/>
     <addaction name="actionCommitTempMesh"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAdd"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -145,9 +151,9 @@
    </property>
   </action>
   <action name="actionAddPolyline">
-    <property name="text">
-      <string>Add Polyline</string>
-    </property>
+   <property name="text">
+    <string>Add Polyline</string>
+   </property>
   </action>
   <action name="actionResetTempMesh">
    <property name="text">

@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "CodeWindow.h"
+#include "SceneTreeModel.h"
 #include "ui_MainWindow.h"
 
 #include <Scene/ASTSceneAdapter.h>
@@ -212,6 +213,13 @@ void CMainWindow::SetupUI()
     ui->toolBar->insertWidget(ui->actionCommitTempMesh, MeshName);
     ui->toolBar->insertWidget(ui->actionCommitTempMesh, InstName);
 
+    // this -p> treeDock -p> sceneTreeView
+    auto* treeDock = new QDockWidget("Scene Tree", this);
+    SceneTreeView = new QTreeView(treeDock);
+    treeDock->setWidget(SceneTreeView);
+    this->addDockWidget(Qt::LeftDockWidgetArea, treeDock);
+    ui->menuView->addAction(treeDock->toggleViewAction());
+
     // Connect signals that are not otherwise auto-connected
     connect(ui->actionExit, &QAction::triggered, this, &CMainWindow::close);
     connect(ui->actionAboutQt, &QAction::triggered, this, &QApplication::aboutQt);
@@ -281,6 +289,13 @@ void CMainWindow::PostloadSetup()
     SceneUpdateClock->start();
 
     TemporaryMeshManager = std::make_unique<Scene::CTemporaryMeshManager>(Scene, SourceMgr);
+
+    auto* treeDock = dynamic_cast<QDockWidget*>(SceneTreeView->parent());
+    delete SceneTreeView;
+    SceneTreeView = new QTreeView(treeDock);
+    auto* treeModel = new CSceneTreeModel(Scene.Get(), SceneTreeView);
+    SceneTreeView->setModel(treeModel);
+    treeDock->setWidget(SceneTreeView);
 }
 
 void CMainWindow::UnloadNomeFile()
@@ -302,7 +317,7 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
         SliderLayout = new QFormLayout(SliderWidget.get());
         sliderDock->setWidget(SliderWidget.get());
         this->addDockWidget(Qt::LeftDockWidgetArea, sliderDock);
-        ui->menubar->addAction(sliderDock->toggleViewAction());
+        ui->menuView->addAction(sliderDock->toggleViewAction());
     }
 
     auto* sliderName = new QLabel();

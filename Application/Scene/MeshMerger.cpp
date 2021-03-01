@@ -44,85 +44,97 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
 {
     auto tf = meshInstance.GetSceneTreeNode()->L2WTransform.GetValue(
         tc::Matrix3x4::IDENTITY); // The transformation matrix is the identity matrix by default
-    auto& otherMesh = meshInstance.GetDSMesh(); // Getting OpeshMesh implementation of a mesh. This allows us to
-                                    // traverse the mesh's vertices/faces
+    auto& otherMesh = meshInstance.GetDSMesh(); // Getting OpeshMesh implementation of a mesh. This
+    // allows us to traverse the mesh's vertices/faces
 
-     auto meshClass =
+    auto meshClass =
         meshInstance.GetSceneTreeNode()->GetOwner()->GetEntity()->GetMetaObject().ClassName();
-     if (meshClass == "CPolyline")
-
+    if (meshClass == "CPolyline")
     {
         std::cout << "found Polyline entity" << std::endl;
         return; // skip for now, dont merge polyline entities
     }
-
     if (meshClass == "CBSpline")
     {
         std::cout << "found Bspline entity" << std::endl;
-        return; // skip for now, dont merge polyline entities
+        return; // skip for now, dont merge polyline related entities
     }
 
-   // Copy over all the vertices and check for overlapping
+    // Copy over all the vertices and check for overlapping
     std::unordered_map<Vertex*, Vertex*> vertMap;
-    for (auto otherVert :  otherMesh.vertList) // Iterate through all the vertices in the mesh (the non-merger mesh, aka the one
-               // you're trying copy vertices from)
+    for (auto otherVert :
+        otherMesh.vertList) // Iterate through all the vertices in the mesh (the non-merger mesh,
+        // aka the one you're trying copy vertices from)
     {
         Vector3 localPos = otherVert->position; // localPos is position before transformations
         Vector3 worldPos = tf * localPos; // worldPos is the actual position you see in the grid
-        auto [closestVert, distance] = FindClosestVertex(worldPos); // Find closest vertex already IN MERGER mesh, not the actual mesh. This is
-                       // to prevent adding two merger vertices in the same location!
-        // As a side note, closestVert is a VertexHandle, which is essentially, a pointer to the
-        // actual vertex. OpenMesh is great at working with these handles. You can basically treat
-        // them as the vertex themselves.
+        auto [closestVert, distance] = FindClosestVertex(
+            worldPos); // Find closest vertex already IN MERGER mesh, not the actual mesh. This is
+        // to prevent adding two merger vertices in the same location!
+
         if (distance < Epsilon)
         { // this is to check for cases where there is an overlap (two vertices lie in the exact
-          // same world space coordinate). We only want to create one merger vertex at this
-          // location!
-            vertMap[otherVert] = closestVert; // just set vi to the closestVert (which is a merger vertex
-                                        // in the same location added in a previous iteration)
-
+            // same world space coordinate). We only want to create one merger vertex at this
+            // location!
+            vertMap[otherVert] =
+                closestVert; // just set vi to the closestVert (which is a merger vertex
+            // in the same location added in a previous iteration)
+            closestVert->sharpness =
+                std::max(closestVert->sharpness, otherVert->sharpness);
+            printf("set sharpness: %f\n", closestVert->sharpness);
         }
         else // Else, we haven't added a vertex at this location yet. So lets add_vertex to the
-             // merger mesh.
+            // merger mesh.
         {
-
-            auto* copiedVert = new Vertex(worldPos.x, worldPos.y, worldPos.z, currMesh.nameToVert.size());
-            copiedVert->name = "copiedVert" + std::to_string(currMesh.nameToVert.size()); // Randy this was causing the bug!!!!!!! the name was the same. so nameToVert remained size == 1
-            MergedMesh.addVertex(copiedVert);
-            vertMap[otherVert] = copiedVert; // Map actual mesh vertex to merged vertex.This dictionary is
-                                 // useful for add face later.
+            Vertex* copiedVert =
+                new Vertex(worldPos.x, worldPos.y, worldPos.z, MergedMesh.nameToVert.size()); // project add offset
+            copiedVert->name = "copiedVert" + std::to_string(MergedMesh.nameToVert.size()); // Randy this was causing the bug!!!!!!! the name
+            // was the same. so nameToVert remained size == 1
+            MergedMesh.addVertex(copiedVert); // Project AddOffset
+            vertMap[otherVert] = copiedVert; // Map actual mesh vertex to merged vertex.This
+            // dictionary is useful for add face later.
             std::string vName = "v" + std::to_string(VertCount);
-
             ++VertCount; // VertCount is an attribute for this merger mesh. Starts at 0.
+            copiedVert->sharpness = otherVert->sharpness;
         }
     }
 
-
     // Add faces and create a face mesh for each
-    for (auto otherFace : otherMesh.faceList) // Iterate through all the faces in the mesh (that is, the non-merger mesh, aka the
-               // one you're trying to copy faces from)
+    for (auto otherFace :
+        otherMesh.faceList) // Iterate through all the faces in the mesh (that is, the non-merger
+        // mesh, aka the one you're trying to copy faces from)
     {
         std::vector<Vertex*> verts;
-        for (auto vert : otherFace->vertices) //otherMesh vertices
+        for (auto vert : otherFace->vertices) // otherMesh vertices
         { // iterate through all the vertices on this face
             verts.emplace_back(vertMap[vert]);
         } // Add the vertex handles
-        //auto fnew =
-        //Mesh.add_face(verts); // add_face processes the merger vertex handles and adds the face
-                                  // into the merger mesh (Mesh refers to the merger mesh here)
-        Face* copiedFace = new Face(verts);
-        MergedMesh.addFace(verts);
+        MergedMesh.addFace(verts); // Project AddOffset
         std::string fName = "v" + std::to_string(FaceCount);
         FaceCount++;
     }
 
+
+    for (auto edge : otherMesh.edges()) //Iterate through all the faces in the mesh (that is, the non-merger mesh, aka the one you're trying to copy faces from)
+    {
+
+        auto* mergedEdge = MergedMesh.findEdge(vertMap[edge->v0()], vertMap[edge->v1()]);
+        try
+        {
+            mergedEdge->sharpness =
+                std::max(edge->sharpness, mergedEdge->sharpness);
+        }
+        catch (int e)
+        {
+            std::cerr << "When try to merge in sharpness the edges don't match" << e << '\n';
+        }
+    }
+    otherMesh.visible = false;
     MergedMesh.buildBoundary();
     MergedMesh.computeNormals();
-    currMesh.clear();
-    currMesh = MergedMesh;
+    currMesh = MergedMesh.randymakeCopy();
 
 }
-
 
 
 
@@ -132,11 +144,9 @@ std::pair<Vertex*, float> CMeshMerger::FindClosestVertex(const tc::Vector3& pos)
     Vertex* result;
     float minDist = std::numeric_limits<float>::max();
     // TODO: linear search for the time being
-
-    for (const auto& v : currMesh.vertList)
+    for (const auto& v : MergedMesh.vertList) // Project AddOffset
     {
         Vector3 pp = v->position;
-
         float dist = pos.DistanceToPoint(pp);
         if (dist < minDist)
         {
@@ -146,6 +156,10 @@ std::pair<Vertex*, float> CMeshMerger::FindClosestVertex(const tc::Vector3& pos)
     }
     return { result, minDist };
 }
+
+
+
+
 
 
 void CMeshMerger::MergeClear() {

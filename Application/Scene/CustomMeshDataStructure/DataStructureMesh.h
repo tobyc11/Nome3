@@ -46,6 +46,7 @@ public:
     vector<Face*> faces();
     vector<Edge*> edges();
 
+    bool visible = true;
 
     /* This keeps count of the number of vertices in the mesh. */
     /* This keeps count of the number of edges in the mesh. */
@@ -77,6 +78,12 @@ public:
      * If it already exists, then return the existing edge.
      */
     Edge* createEdge(Vertex* v1, Vertex* v2);
+    /**
+     * @brief Find one edge v1-v2 in this Mesh.
+     * @param v1, v2: the two vertices of this edge.
+     * If it does not exists, then return NULL.
+     */
+    Edge* findEdge(const string& v1, string v2);
     /**
      * @brief Find one edge v1-v2 in this Mesh.
      * @param v1, v2: the two vertices of this edge.

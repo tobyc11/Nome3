@@ -260,14 +260,14 @@ void CScene::Update()
 
     if (markedDirty && !Merges.empty())
     {
-        for (auto itr = Merges.begin(); itr != Merges.end(); itr++)
+        for (auto & Merge : Merges)
         {
-            auto* ent = dynamic_cast<Scene::CMeshMerger*>(itr->second->GetEntity());
+            auto* ent = dynamic_cast<Scene::CMeshMerger*>(Merge.second->GetEntity());
             if (ent != nullptr)
             {
                 ent->MarkDirty();
                 ent->MergeClear();
-                for (auto &child : itr->second->GetSceneNodeChildren())
+                for (auto &child : Merge.second->GetSceneNodeChildren())
                 {
                     child->ForEachTreeNode([&](Scene::CSceneTreeNode* node) {
                         auto* entity = node->GetInstanceEntity(); // Else, get the instance

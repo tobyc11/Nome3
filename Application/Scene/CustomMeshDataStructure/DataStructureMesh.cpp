@@ -39,6 +39,9 @@ void Mesh::addVertex(float x, float y, float z) {
     addVertex(vertCopy);
 }
 
+Edge* Mesh::findEdge(const string& v1, string v2) {
+    return findEdge(nameToVert.at(v1), nameToVert.at(v2));
+}
 Edge* Mesh::findEdge(Vertex* v1, Vertex* v2)
 {
     unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
@@ -63,9 +66,10 @@ Edge* Mesh::findEdge(Vertex* v1, Vertex* v2)
             if ((*eIt)->vb == v2)
             {
                 // cout<<"Find M Edge from vertex "<<v1 -> ID<<" to vertex "<<v2 -> ID<<"."<<endl;
-                (*eIt)->mobius = true;
-                (*eIt)->va->onMobius = true;
-                (*eIt)->vb->onMobius = true;
+                // why is this happening
+                // (*eIt)->mobius = true;
+                // (*eIt)->va->onMobius = true;
+                // (*eIt)->vb->onMobius = true;
                 return (*eIt);
             }
         }
@@ -320,11 +324,8 @@ void getFaceNormal(Face* currFace)
     tc::Vector3 p1;
     tc::Vector3 p2;
     tc::Vector3 p3;
-    do
+
     {
-        // cout<<"New Edge!"<<endl;
-        // cout<<"ID: "<<currEdge -> va -> ID<<endl;
-        // cout<<"ID: "<<currEdge -> vb -> ID<<endl;
         if (currFace == currEdge->fa)
         {
             nextEdge = currEdge->nextVbFa;
@@ -332,7 +333,7 @@ void getFaceNormal(Face* currFace)
             p2 = currEdge->vb->position;
             p3 = nextEdge->theOtherVertex(currEdge->vb)->position;
         }
-        else if (currFace == currEdge->fb)
+        if (currFace == currEdge->fb)
         {
             if (currEdge->mobius)
             {
@@ -350,9 +351,7 @@ void getFaceNormal(Face* currFace)
             }
         }
         avgNorm += getNormal3Vertex(p1, p2, p3);
-        currEdge = nextEdge;
-    } while (currEdge != firstEdge);
-    // cout<<"The new Face normal is: "<<result[0]<<" "<<result[1]<<" "<<result[2]<<endl;
+    }
     currFace->normal = avgNorm.Normalized();
 
 }
@@ -514,12 +513,14 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
         vertCopy->ID = (*vIt)->ID;
         vertCopy->name = (*vIt)->name;
         vertCopy->position = (*vIt)->position;
+        vertCopy->sharpness = (*vIt)->sharpness;
         newMesh.addVertex(vertCopy);
     }
     vector<Face*>::iterator fIt;
     vector<Vertex*> vertices;
     for (fIt = faceList.begin(); fIt < faceList.end(); fIt++)
     {
+
         Face* tempFace = *fIt;
         Edge* firstEdge = tempFace->oneEdge;
         Edge* currEdge = firstEdge;
@@ -528,6 +529,7 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
         vertices.clear();
         do
         {
+
             if (tempFace == currEdge->fa)
             {
                 tempv = currEdge->vb;
@@ -556,6 +558,10 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
         newMesh.faceList[newMesh.faceList.size() - 1]->name = (*fIt)->name;
         newMesh.faceList[newMesh.faceList.size() - 1]->surfaceName =
             (*fIt)->surfaceName; // Randy added this
+    }
+    vector<Edge*>::iterator eItr;
+    for (eItr = newMesh.edgeList.begin(); eItr != newMesh.edgeList.end(); eItr++) {
+        (*eItr)->sharpness = findEdge((*eItr)->v0()->name, (*eItr)->v1()->name)->sharpness;
     }
     newMesh.buildBoundary();
 

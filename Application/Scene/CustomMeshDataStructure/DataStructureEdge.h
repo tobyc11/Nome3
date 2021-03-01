@@ -69,7 +69,7 @@ public:
     // The next edge in a face traversal of f.
     Edge* nextEdgeOfFace(Face* f);
     int idx() const;
-    float sharpness;
+    float sharpness = 0.0;
     Vertex* v0() const;
     Vertex* v1() const;
 };

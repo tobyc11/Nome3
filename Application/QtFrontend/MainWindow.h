@@ -115,9 +115,6 @@ private:
     std::unordered_map<std::string, QLayout*> SliderNameToWidget;
 
     std::unique_ptr<Scene::CTemporaryMeshManager> TemporaryMeshManager;
-
-    tc::TAutoPtr<Scene::CMeshMerger> merger;
-
 };
 
 }

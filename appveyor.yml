@@ -18,6 +18,7 @@ install:
   - vcpkg --triplet x64-windows install opensubdiv
   - vcpkg --triplet x64-windows install pugixml
 
+
 build_script:
 - cmd: >-
     cd %APPVEYOR_BUILD_FOLDER%

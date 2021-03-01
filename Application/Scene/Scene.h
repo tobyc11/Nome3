@@ -7,6 +7,7 @@
 #include <queue>
 #include <utility>
 
+
 namespace Nome
 {
 class CPickingManager;
@@ -17,6 +18,7 @@ namespace Nome::Scene
 
 class CScene : public tc::FRefCounted
 {
+
 public:
     CScene();
 
@@ -51,7 +53,8 @@ public:
 
     void Update();
 
-    template <typename TFunc> void ForEachSceneTreeNode(const TFunc& func) const
+    template <typename TFunc>
+    void ForEachSceneTreeNode(const TFunc& func) const
     {
         std::queue<CSceneTreeNode*> q;
         q.push(GetRootTreeNode());
@@ -81,6 +84,10 @@ public:
 
 
 private:
+    void DFSTreeNodeUpdate(CSceneTreeNode* treeNode, bool markDirty);
+
+private:
+    bool markedDirty = true;
     CBankAndSet BankAndSet;
 
     // This is the root node of the scene tree
@@ -99,6 +106,7 @@ private:
     // Used to help figure out which scope to use when using points. Useful, for example, for
     // defining and using points in a mesh
     std::deque<std::string> orderedMeshNames; // stackoverflow.com/questions/19540074/how-to-retrieve-the-elements-from-map-in-the-order-of-insertion
+
 };
 
 }

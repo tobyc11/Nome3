@@ -3,6 +3,8 @@
 #include "SceneGraph.h"
 #include <StringPrintf.h>
 #include <StringUtils.h>
+#include <QInputDialog>
+#include <QObject>
 
 namespace Nome::Scene
 {
@@ -38,6 +40,7 @@ void CMesh::UpdateEntity()
         return;
     ClearMesh();
     bool isValid = true;
+
     for (size_t i = 0; i < Faces.GetSize(); i++)
     {
         // We assume the nullptr value is never returned, of course
@@ -49,11 +52,22 @@ void CMesh::UpdateEntity()
         }
     }
 
+
+    for (int i = 0; i < SharpPoints.GetSize(); ++i)
+    {
+        auto* sharp = SharpPoints.GetValue(i, nullptr);
+        if (!sharp->AddSharpnessIntoMesh(this))
+        {
+            isValid = false;
+        }
+    }
+
     // Randy added below loop on 12/5. Do I need to add point->AddPointIntoMesh(this)?
     for (size_t i = 0; i < Points.GetSize(); i++)
     {
         auto* point = Points.GetValue(i, nullptr);
         this->AddVertex(point->Name, point->Position);
+
     }
 
     // These two calls below are very important for constructing our mesh DS and hence representing our scene
@@ -93,15 +107,19 @@ void CMesh::Draw(IDebugDraw* draw)
     }
 }
 
-Vertex* CMesh::AddVertex(const std::string& name, tc::Vector3 pos)
+
+Vertex* CMesh::AddVertex(const std::string& name, tc::Vector3 pos, float sharpness)
 {
     // Silently fail if the name already exists
     if (HasVertex(name))
         return currMesh.nameToVert.at(name);
 
     Vertex* currVert = new Vertex(pos.x, pos.y, pos.z, name, currMesh.vertList.size()); // Project SwitchDS // Vertex::Vertex(float x, float y, float z, string assignedName, unsigned long ID)
+    currVert->sharpness = sharpness;
     currMesh.addVertex(currVert); // Project SwitchDS
+
     return currVert;
+
 }
 
 Vector3 CMesh::GetVertexPos(const std::string& name) const
@@ -125,7 +143,7 @@ void CMesh::AddFace(const std::string& name, const std::vector<std::string>& fac
 void CMesh::AddFace(const std::string& name, const std::vector<Vertex*>& faceDSVerts,
                     std::string faceSurfaceIdent)
 {
-    Face * newFace = currMesh.addPolygonFace(faceDSVerts, false); // Project SwitchDS . Check if need to reverseOrder = true or false?
+    Face * newFace = currMesh.addFace(faceDSVerts, false); // Project SwitchDS . Check if need to reverseOrder = true or false?
     newFace->surfaceName = faceSurfaceIdent;
 }
 
@@ -147,6 +165,23 @@ void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, Vertex*> vnames,
 {
     Mesh = std::move(mesh);
 }
+
+void CMesh::AddEdgeSharpness(Vertex* e1, Vertex* e2, float sharpness)
+{
+    Edge* edge = currMesh.findEdge(e1, e2);
+    if (edge) {
+        edge->sharpness = sharpness;
+    } else {
+        std::cout << "can't find edge with vertex " << e1->ID << ", " << e2->ID << std::endl;
+    }
+}
+
+void CMesh::AddPointSharpness(Vertex* p, float sharpness)
+{
+    p->sharpness = sharpness;
+}
+
+
 
 bool CMesh::IsInstantiable() { return true; }
 
@@ -172,6 +207,8 @@ AST::ACommand* CMesh::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
     }
     return node;
 }
+
+
 
 std::string CMeshInstancePoint::GetPointPath() const
 {
@@ -400,7 +437,7 @@ std::vector<std::string> CMeshInstance::GetFaceVertexNames(
     return vertnames;
 }
 
-void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, bool bSel)
+void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, bool bSel, float sharpness)
 {
     auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
     size_t prefixLen = instPrefix.length();
@@ -412,7 +449,37 @@ void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, b
 
         Face* currFace = iter->second;
         if (!currFace->selected)
+        {
             currFace->selected = true;
+            if (sharpness >= 0) {
+
+                Edge* firstEdge = currFace->oneEdge;
+                Edge* currEdge = firstEdge;
+                Edge* nextEdge;
+                do
+                {
+
+                    if (currFace == currEdge->fa)
+                    {
+                        nextEdge = currEdge->nextVbFa;
+                    }
+                    else
+                    {
+                        if (currEdge->mobius)
+                        {
+                            nextEdge = currEdge->nextVbFb;
+                        }
+                        else
+                        {
+                            nextEdge = currEdge->nextVaFb;
+                        }
+                    }
+                    currEdge->sharpness = sharpness;
+                    currEdge = nextEdge;
+                } while (currEdge != firstEdge);
+            }
+        }
+
         else
         {
             currFace->selected = false;   
@@ -422,7 +489,7 @@ void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, b
 }
 
 // TODO: Edge selection. Create Edge Handle data structures later.
-void CMeshInstance::MarkEdgeAsSelected(const std::set<std::string>& vertNames, bool bSel)
+void CMeshInstance::MarkEdgeAsSelected(const std::set<std::string>& vertNames, bool bSel, float sharpness)
 {
     // Work in progress
     auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
@@ -438,7 +505,12 @@ void CMeshInstance::MarkEdgeAsSelected(const std::set<std::string>& vertNames, b
 
         Vertex* currVert = iter->second;
         if (!currVert->selected)
+        {
             currVert->selected = true;
+            if (sharpness >= 0)
+                currVert->sharpness = sharpness;
+        }
+
         else
         {
             currVert->selected = false;
@@ -504,7 +576,7 @@ void CMeshInstance::MarkEdgeAsSelected(const std::set<std::string>& vertNames, b
 }
 
 //// Vertex selection
-void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames)
+void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames, float sharpness)
 {
     auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
     size_t prefixLen = instPrefix.length();
@@ -517,6 +589,9 @@ void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames)
         if (std::find(CurrSelectedVertNamesWithPrefix.begin(), CurrSelectedVertNamesWithPrefix.end(), name) == CurrSelectedVertNamesWithPrefix.end())
         { // if hasn't been selected before
             std::cout << "setting vert to selected" + iter->first << std::endl;
+
+            if (sharpness >= 0)
+                DSvert->sharpness = sharpness;
             DSvert->selected = true;
             CurrSelectedVertNames.push_back(name.substr(prefixLen));
             CurrSelectedVertNamesWithPrefix.push_back(name);

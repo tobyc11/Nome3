@@ -40,6 +40,7 @@ public:
     /* The name of this face.*/
     string name;
     /* The color of this face. */
+    std::vector<int> v_ids;
     std::array<float, 3> color; // QColor color; 1/28 randy updated this to std::aray<float, 3> so easily usable in DataStructureMeshToQGeometry
     std::vector<Vertex*> vertices; // Randy noticed this wasn't being used before? Randy changed it from Vertex to Vertex*
     /* Indicate if this face has user defined color. */

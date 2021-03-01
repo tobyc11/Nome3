@@ -347,13 +347,17 @@ public:
     // The arguments are stored separately as private fields
     //     Named arguments and transforms are both ANamedArgument, but transforms are ordered
     void PushPositionalArgument(AExpr* expr) { PositionalArguments.push_back(expr); }
+
     void SetPositionalArgument(size_t i, AExpr* expr) { PositionalArguments[i] = expr; }
     void AddNamedArgument(ANamedArgument* argument);
     void AddTransform(ANamedArgument* subCommand) { Transforms.push_back(subCommand); }
 
+
     std::string GetCommand() const { return Token->ToString(); }
     std::string GetName() const { return GetPositionalIdentAsString(0); }
+    Nome::AST::AExpr * GetLevel() const { return GetPositionalArgument(0); }
     std::string GetPositionalIdentAsString(size_t index) const;
+    int GetPositionalNumber(size_t index) const;
     AExpr* GetPositionalArgument(size_t index) const;
     ANamedArgument* GetNamedArgument(const std::string& name) const;
     const std::vector<ANamedArgument*>& GetTransforms() const { return Transforms; }
@@ -368,6 +372,7 @@ public:
 
 private:
     std::vector<AExpr*> PositionalArguments;
+
     std::map<std::string, ANamedArgument*> NamedArguments;
     std::vector<ANamedArgument*> Transforms;
     bool bPendingSave = false;

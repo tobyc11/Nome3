@@ -13,6 +13,7 @@ expression
    |  atom # AtomExpr
    ;
 
+
 atom
    : scientific
    | ident
@@ -29,6 +30,7 @@ ident
 
 idList : LPAREN (identList+=ident)* RPAREN ;
 vector3 : LPAREN expression expression expression RPAREN ;
+
 
 argClosed : 'closed' ;
 argSdFlag : 'sd_type' ident;
@@ -116,9 +118,10 @@ fragment QUOTE : '"' ;
 //The NUMBER part gets its potential sign from "(PLUS | MINUS)* atom" in the expression rule
 SCIENTIFIC_NUMBER : NUMBER (E SIGN? UNSIGNED_INTEGER)? ;
 fragment NUMBER : ('0' .. '9') + ('.' ('0' .. '9') +)? ;
-fragment UNSIGNED_INTEGER : ('0' .. '9')+ ;
 fragment E : 'E' | 'e' ;
 fragment SIGN : ('+' | '-') ;
+fragment UNSIGNED_INTEGER : ('0' .. '9')+ ;
+
 
 LPAREN : '(' ;
 RPAREN : ')' ;

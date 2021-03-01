@@ -13,9 +13,9 @@ Edge::Edge()
     nextVaFa = nextVaFb = nextVbFa = nextVbFb = NULL;
     fa = fb = NULL;
     edgePoint = NULL;
-    isSharp = false;
     mobius = false;
     firstHalf = secondHalf = NULL;
+    sharpness = 0;
 }
 
 Edge::Edge(Vertex* v1, Vertex* v2)
@@ -25,9 +25,9 @@ Edge::Edge(Vertex* v1, Vertex* v2)
     nextVaFa = nextVaFb = nextVbFa = nextVbFb = NULL;
     fa = fb = NULL;
     edgePoint = NULL;
-    isSharp = false;
     mobius = false;
     firstHalf = secondHalf = NULL;
+    sharpness = 0;
 }
 
 Edge* Edge::nextEdge(Vertex* v, Face* f)
@@ -107,7 +107,7 @@ Vertex* Edge::theOtherVertex(Vertex* v)
     }
 }
 
-Face* Edge::theOtherFace(Face* f)
+Face* Edge::theOtherFace(Face* f) const
 {
     if (f == fa)
     {
@@ -146,4 +146,13 @@ Edge* Edge::nextEdgeOfFace(Face* f)
         cout << "ERROR: f is not adjacent to this edge" << endl;
         exit(0);
     }
+}
+int Edge::idx() const {
+    return edge_ID;
+}
+Vertex* Edge::v0() const {
+    return va;
+}
+Vertex* Edge::v1() const {
+    return vb;
 }

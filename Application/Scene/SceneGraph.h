@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <queue>
 
 namespace Nome::Scene
 {
@@ -71,11 +72,13 @@ class CSceneNode : public Flow::CFlowNode
 public:
     explicit CSceneNode(CScene* owningScene, std::string name, bool isRoot = false,
                         bool isGroup = false, bool isSubdivision = false); // Project AddOffset
+
     ~CSceneNode() override;
 
     const std::string& GetName() const { return Name; }
     bool SetName(std::string newName);
     bool IsGroup() const { return bIsGroup; }
+
 
     // Hierarchy management
     void AddParent(CSceneNode* newParent);
@@ -83,6 +86,24 @@ public:
     CSceneNode* CreateChildNode(const std::string& name);
     CSceneNode* FindChildNode(const std::string& name);
     CSceneNode* FindOrCreateChildNode(const std::string& name);
+    // For subdivision merge
+    template <typename TFunc>
+    void ForEachTreeNode(const TFunc& func) const
+    {
+        for (auto treeNode : TreeNodes)
+        {
+            std::queue<CSceneTreeNode*> q;
+            q.push(treeNode);
+            while (!q.empty())
+            {
+                func(q.front());
+                const auto& childNodes = q.front()->GetChildren();
+                for (CSceneTreeNode* child : childNodes)
+                    q.push(child);
+                q.pop();
+            }
+        }
+    }
 
     // Returns the number of associated tree nodes, i.e. the number of ways from the root to this
     // graph node
@@ -105,8 +126,13 @@ public:
     AST::ACommand* BuildASTCommand(Nome::AST::CASTContext& ctx) const;
     void SyncToAST(AST::CASTContext& ctx);
 
+
+    const std::set<TAutoPtr<CSceneNode>>& GetSceneNodeChildren () {return Children;}
+
+
     void SelectNode() { SelectBool = true; } // Randy added this on 11/21 for selection coloring
     void DoneSelecting()
+
     {
         SelectBool = false; // TODO 12/23 THIS MORNING. CHANGE IT SO SELECTBOOL IS JJUST A SINGLE
                             // VARIABLE iN MESHCPP. no if else, just toggle on and off
@@ -127,6 +153,7 @@ private:
     std::string Name;
     /// Denotes whether this node is a group. Group names can be skipped in a path
     bool bIsGroup = false;
+
     CScene* Scene;
 
     friend class CSceneTreeNode;

@@ -117,6 +117,8 @@ CSceneNode::CSceneNode(CScene* owningScene, std::string name, bool isRoot, bool 
     }
 }
 
+
+
 CSceneNode::~CSceneNode() { }
 
 bool CSceneNode::SetName(std::string newName)
@@ -173,6 +175,8 @@ CSceneNode* CSceneNode::CreateChildNode(const std::string& name)
     child->AddParent(this);
     return child;
 }
+
+
 
 CSceneNode* CSceneNode::FindChildNode(const std::string& name)
 {
@@ -254,6 +258,7 @@ void CSceneNode::SyncFromAST(AST::ACommand* cmd, CScene& scene)
     }
     if (lastTransform)
         Transform.Connect(lastTransform->Output);
+
 }
 
 void CSceneNode::SyncToAST(AST::CASTContext& ctx) { throw "don't use"; }

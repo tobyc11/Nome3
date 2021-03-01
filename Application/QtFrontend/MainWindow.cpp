@@ -208,7 +208,13 @@ void CMainWindow::on_actionSubdivide_triggered()
             auto* entity = node->GetOwner()->GetEntity();
             if (auto* mesh = dynamic_cast<Scene::CMeshMerger*>(entity))
             {
-                mesh->setSubLevel(3);
+                bool ok;
+                int sub_level = QInputDialog::getInt(this, tr("Please enter the level of subdivision"),
+                                                     tr("Subdivision Level:"), 3, 0, 10, 1, &ok);
+                if (ok && sub_level > 0 && sub_level < 10)
+                    mesh->setSubLevel(sub_level);
+                else
+                    mesh->setSubLevel(3);
                 mesh->Catmull(); // TODO: pass in level argument
                 mesh->MarkDirty();
 

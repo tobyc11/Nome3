@@ -4,6 +4,7 @@
 #include <Scene/Mesh.h>
 
 #include <QDialog>
+#include <QInputDialog>
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QStatusBar>
@@ -317,7 +318,7 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
             GFrtCtx->MainWindow->statusBar()->showMessage(
                 QString::fromStdString("Deselected " + faceName));
         }
-        meshInst->MarkFaceAsSelected({ faceName }, true);
+        meshInst->MarkFaceAsSelected({ faceName }, true, InputSharpness());
     }
     else if (!hits.empty())
     {
@@ -362,7 +363,7 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
             {
                 int row = sel[0]->row();
                 const auto& [dist, meshInst, faceName] = hits[row];
-                std::vector<std::string>::iterator position =
+                auto position =
                     std::find(SelectedFaces.begin(), SelectedFaces.end(), faceName);
                 if (position == SelectedFaces.end())
                 { // if this face has not been selected before
@@ -384,7 +385,7 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
                     const auto& [dist, meshInst, overlapfaceName] = hits[i];
                     if (round(dist * 100) == selected_dist)
                     {
-                        meshInst->MarkFaceAsSelected({ overlapfaceName }, true);
+                        meshInst->MarkFaceAsSelected({ overlapfaceName }, true, InputSharpness());
                     }
                 }
             }
@@ -434,7 +435,7 @@ void CNome3DView::PickEdgeWorldRay(tc::Ray& ray)
 
     // TODO 11/21, If it contains a temp SELECT EDGE polyline, then immediately return that one
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::vector<std::string>>> temp;
-    for (auto hit : hits)
+    for (const auto& hit : hits)
     {
         auto [dist, meshInst, edgeVertNames] = hit;
         if (edgeVertNames[0].find("SELECTED") != std::string::npos)
@@ -449,9 +450,9 @@ void CNome3DView::PickEdgeWorldRay(tc::Ray& ray)
     {
         const auto& [dist, meshInst, edgeVertNames] =
             hits[0]; // where the edgeVertNames is defined to a vector of two vertex names
-        std::vector<std::string>::iterator position1 =
+        auto position1 =
             std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[0]);
-        std::vector<std::string>::iterator position2 =
+        auto position2 =
             std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[1]);
         SelectedEdgeVertices.push_back(edgeVertNames[0]);
         SelectedEdgeVertices.push_back(edgeVertNames[1]);
@@ -465,7 +466,7 @@ void CNome3DView::PickEdgeWorldRay(tc::Ray& ray)
             GFrtCtx->MainWindow->statusBar()->showMessage("Deselected edge");
         }
         std::set<std::string> edgeVertNamesSet(edgeVertNames.begin(), edgeVertNames.end());
-        meshInst->MarkEdgeAsSelected(edgeVertNamesSet, true); // here
+        meshInst->MarkEdgeAsSelected(edgeVertNamesSet, true, InputSharpness()); // here
     }
     // If you need to implement multiple edge intersection, please see the below line at:
     // https://github.com/randyfan/NOME3/commit/55ab6d81140d09f1725e261ed810c1a15646ab5c
@@ -521,7 +522,7 @@ void CNome3DView::PickPolylineWorldRay(tc::Ray& ray)
     {
         const auto& [dist, meshInst, edgeVertNames] =
             hits[0]; // where the edgeVertNames is defined to a vector of two vertex names
-        std::vector<std::string>::iterator position1 =
+        auto position1 =
             std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[0]);
         std::vector<std::string>::iterator position2 =
             std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[1]);
@@ -537,7 +538,7 @@ void CNome3DView::PickPolylineWorldRay(tc::Ray& ray)
             GFrtCtx->MainWindow->statusBar()->showMessage("Deselected edge");
         }
         std::set<std::string> edgeVertNamesSet(edgeVertNames.begin(), edgeVertNames.end());
-        meshInst->MarkEdgeAsSelected(edgeVertNamesSet, true); // here
+        meshInst->MarkEdgeAsSelected(edgeVertNamesSet, true, InputSharpness()); // here
     }
     // If you need to implement multiple edge intersection, please see the below line at:
     // https://github.com/randyfan/NOME3/commit/55ab6d81140d09f1725e261ed810c1a15646ab5c
@@ -574,7 +575,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
     if (hits.size() == 1)
     {
         const auto& [dist, meshInst, vertName] = hits[0];
-        std::vector<std::string>::iterator position =
+        auto position =
             std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
         if (position == SelectedVertices.end()) // if this vertex has not been selected before
         {
@@ -588,7 +589,8 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
             GFrtCtx->MainWindow->statusBar()->showMessage(
                 QString::fromStdString("Deselected " + vertName));
         }
-        meshInst->MarkVertAsSelected({ vertName }); 
+
+        meshInst->MarkVertAsSelected({ vertName }, InputSharpness());
     }
     else if (!hits.empty())
     {
@@ -658,7 +660,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
                     {
                         std::cout << "about to call markvertaselected on below name" << std::endl;
                         std::cout << overlapvertName << std::endl;
-                        meshInst->MarkVertAsSelected({ overlapvertName }); 
+                        meshInst->MarkVertAsSelected({ overlapvertName }, InputSharpness());
                     }
                 }
             }
@@ -742,16 +744,13 @@ Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
 // Xinyu add on Oct 8 for rotation
 void CNome3DView::mousePressEvent(QMouseEvent* e)
 {
-    if (!vertexSelectionEnabled)
-    {
-        material->setAlpha(0.7f);
+    material->setAlpha(0.7f);
 
-        rotationEnabled = e->button() == Qt::RightButton ? false : true;
-        zPos = cameraset->position().z();
-        // Save mouse press position
-        firstPosition = QVector2D(e->localPos());
-        mousePressEnabled = true;
-    }
+    rotationEnabled = e->button() == Qt::RightButton ? false : true;
+    zPos = cameraset->position().z();
+    // Save mouse press position
+    firstPosition = QVector2D(e->localPos());
+    mousePressEnabled = true;
 }
 
 
@@ -903,6 +902,18 @@ void CNome3DView::rotateRay(tc::Ray& ray) {
 }
 void CNome3DView::FreeVertexSelection() {
     vertexSelectionEnabled = false;
+}
+float CNome3DView::InputSharpness() {
+    bool ok;
+
+    float sharpness = QInputDialog::getDouble(GFrtCtx->MainWindow, tr("Set the sharpness"),
+                                                         tr("Sharpness:"), 0, 0, 10, 1, &ok,
+                                                         Qt::WindowFlags(), 1);
+    if (ok)
+        return sharpness;
+    else
+        return -1;
+
 }
 
 }

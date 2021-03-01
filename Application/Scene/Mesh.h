@@ -18,6 +18,7 @@
 
 #include "./CustomMeshDataStructure/DataStructureMesh.h" // Project SwitchDS
 
+
 typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
 typedef Mesh DSMesh; // Project SwitchDS
 
@@ -164,11 +165,11 @@ public:
     std::vector<std::pair<float, std::vector<std::string>>> PickPolylines(const tc::Ray& localRay); // Randy added on 12/22 for polyline selection
     std::vector<std::pair<float, std::vector<std::string>>>
     PickEdges(const tc::Ray& localRay); // Randy added on 10/29 for edge selection
-    void MarkVertAsSelected(const std::set<std::string>& vertNames);
+    void MarkVertAsSelected(const std::set<std::string>& vertNames, float sharpness = -1);
     void MarkFaceAsSelected(const std::set<std::string>& faceNames,
-                            bool bSel); // Randy added on 10/10 for face selection
+                            bool bSel, float sharpness = -1); // Randy added on 10/10 for face selection
     void MarkEdgeAsSelected(const std::set<std::string>& vertNames,
-                            bool bSel); // Randy added on 10/29 for edge selection. TODO: rn it
+                            bool bSel, float sharpness = -1); // Randy added on 10/29 for edge selection. TODO: rn it
                                         // takes in the edge's verts as input
 
     std::vector<Face* >

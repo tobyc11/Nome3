@@ -24,6 +24,7 @@
 #include "Torus.h"
 #include "TorusKnot.h"
 #include "Tunnel.h"
+#include "Light.h"
 #include <StringPrintf.h>
 #include <unordered_map>
 
@@ -63,7 +64,8 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "mobiusstrip", ECommandKind::Entity }, { "helix", ECommandKind::Entity },
     { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
     { "spiral", ECommandKind::Entity },      { "sharp", ECommandKind::Entity },
-    { "gencartesiansurf", ECommandKind::Entity },    { "genparametricsurf", ECommandKind::Entity }
+    { "gencartesiansurf", ECommandKind::Entity },    { "genparametricsurf", ECommandKind::Entity },
+    { "light", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -121,6 +123,11 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CGenCartesianSurf(name);
     else if (cmd == "genparametricsurf")
         return new CGenParametricSurf(name);
+    else if (cmd == "light") {
+        return new CLight(name);
+
+    }
+
     return nullptr;
 }
 

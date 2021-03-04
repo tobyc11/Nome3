@@ -168,7 +168,7 @@ void CMesh::SetFromData(CMeshImpl mesh, std::map<std::string, Vertex*> vnames,
 
 void CMesh::AddEdgeSharpness(Vertex* e1, Vertex* e2, float sharpness)
 {
-    Edge* edge = currMesh.findEdge(e1, e2);
+    Edge* edge = currMesh.findEdge(e1, e2, false);
     if (edge) {
         edge->sharpness = sharpness;
     } else {

@@ -142,7 +142,7 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
     for (auto edge : otherMesh.edges()) //Iterate through all the faces in the mesh (that is, the non-merger mesh, aka the one you're trying to copy faces from)
     {
 
-        auto* mergedEdge = MergedMesh.findEdge(vertMap[edge->v0()], vertMap[edge->v1()]);
+        auto* mergedEdge = MergedMesh.findEdge(vertMap[edge->v0()], vertMap[edge->v1()], false);
         try
         {
             mergedEdge->sharpness =

@@ -40,10 +40,10 @@ void Mesh::addVertex(float x, float y, float z) {
     addVertex(vertCopy);
 }
 
-Edge* Mesh::findEdge(const string& v1, string v2) {
-    return findEdge(nameToVert.at(v1), nameToVert.at(v2));
+Edge* Mesh::findEdge(const string& v1, const string& v2, bool setmobius) {
+    return findEdge(nameToVert.at(v1), nameToVert.at(v2), setmobius);
 }
-Edge* Mesh::findEdge(Vertex* v1, Vertex* v2)
+Edge* Mesh::findEdge(Vertex* v1, Vertex* v2, bool setmobius)
 {
     unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
     vector<Edge*>::iterator eIt;
@@ -66,11 +66,13 @@ Edge* Mesh::findEdge(Vertex* v1, Vertex* v2)
         {
             if ((*eIt)->vb == v2)
             {
-                // cout<<"Find M Edge from vertex "<<v1 -> ID<<" to vertex "<<v2 -> ID<<"."<<endl;
-                // why is this happening
-                // (*eIt)->mobius = true;
-                // (*eIt)->va->onMobius = true;
-                // (*eIt)->vb->onMobius = true;
+                if (setmobius)
+                {
+                    // cout<<"Find M Edge from vertex "<<v1 -> ID<<" to vertex "<<v2 -> ID<<"."<<endl; why is this happening
+                    (*eIt)->mobius = true;
+                    (*eIt)->va->onMobius = true;
+                    (*eIt)->vb->onMobius = true;
+                }
                 return (*eIt);
             }
         }
@@ -563,7 +565,7 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
     }
     vector<Edge*>::iterator eItr;
     for (eItr = newMesh.edgeList.begin(); eItr != newMesh.edgeList.end(); eItr++) {
-        (*eItr)->sharpness = findEdge((*eItr)->v0()->name, (*eItr)->v1()->name)->sharpness;
+        (*eItr)->sharpness = findEdge((*eItr)->v0()->name, (*eItr)->v1()->name, false)->sharpness;
     }
     newMesh.buildBoundary();
 

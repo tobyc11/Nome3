@@ -84,13 +84,13 @@ public:
      * @param v1, v2: the two vertices of this edge.
      * If it does not exists, then return NULL.
      */
-    Edge* findEdge(const string& v1, string v2);
+    Edge* findEdge(const string& v1, const string& v2, bool setmobius = true);
     /**
      * @brief Find one edge v1-v2 in this Mesh.
      * @param v1, v2: the two vertices of this edge.
      * If it does not exists, then return NULL.
      */
-    Edge* findEdge(Vertex* v1, Vertex* v2);
+    Edge* findEdge(Vertex* v1, Vertex* v2, bool setmobius = true);
     /**
      * @brief deleteEdge Delete edge v1-v2 in this Mesh.
      * @param v1, v2: the two vertices of this edge.

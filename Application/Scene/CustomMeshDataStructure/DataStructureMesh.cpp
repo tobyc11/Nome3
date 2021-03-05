@@ -34,7 +34,16 @@ void Mesh::addVertex(Vertex* v) {
     idToVert[v->ID] = v; // Randy added this on 2/19. Doesn't make sense to have a nameToVert but no idToVert.
 }
 
-Edge* Mesh::findEdge(Vertex* v1, Vertex* v2)
+void Mesh::addVertex(float x, float y, float z) {
+    Vertex* vertCopy = new Vertex(x, y, z, vertList.size());
+    vertCopy->name = "SubdivVert" + std::to_string(vertList.size());
+    addVertex(vertCopy);
+}
+
+Edge* Mesh::findEdge(const string& v1, const string& v2, bool setmobius) {
+    return findEdge(nameToVert.at(v1), nameToVert.at(v2), setmobius);
+}
+Edge* Mesh::findEdge(Vertex* v1, Vertex* v2, bool setmobius)
 {
     unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
     vector<Edge*>::iterator eIt;
@@ -57,10 +66,13 @@ Edge* Mesh::findEdge(Vertex* v1, Vertex* v2)
         {
             if ((*eIt)->vb == v2)
             {
-                // cout<<"Find M Edge from vertex "<<v1 -> ID<<" to vertex "<<v2 -> ID<<"."<<endl;
-                (*eIt)->mobius = true;
-                (*eIt)->va->onMobius = true;
-                (*eIt)->vb->onMobius = true;
+                if (setmobius)
+                {
+                    // cout<<"Find M Edge from vertex "<<v1 -> ID<<" to vertex "<<v2 -> ID<<"."<<endl; why is this happening
+                    (*eIt)->mobius = true;
+                    (*eIt)->va->onMobius = true;
+                    (*eIt)->vb->onMobius = true;
+                }
                 return (*eIt);
             }
         }
@@ -75,6 +87,8 @@ Edge* Mesh::createEdge(Vertex* v1, Vertex* v2)
     {
         // cout<<"Creating new Edge from vertex "<<v1 -> ID<<" to vertex "<<v2 -> ID<<"."<<endl;
         edge = new Edge(v1, v2);
+        edge->edge_ID = edgeList.size();
+        edgeList.push_back(edge);
         if (v1->oneEdge == NULL)
         {
             v1->oneEdge = edge;
@@ -100,145 +114,7 @@ Edge* Mesh::createEdge(Vertex* v1, Vertex* v2)
     return edge;
 }
 
-void Mesh::addTriFace(Vertex* v1, Vertex* v2, Vertex* v3)
-{
-    Face* newFace = new Face({v1, v2, v3}); // Randy added the (vertices)
-    Edge* e12 = createEdge(v1, v2);
-    Edge* e23 = createEdge(v2, v3);
-    Edge* e31 = createEdge(v3, v1);
-    if (e12->fa == NULL)
-    {
-        e12->fa = newFace;
-    }
-    else if (e12->fb == NULL)
-    {
-        e12->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v1->ID
-             << " and vertex2 :" << v2->ID << endl;
-        exit(0);
-    }
-    if (e23->fa == NULL)
-    {
-        e23->fa = newFace;
-    }
-    else if (e23->fb == NULL)
-    {
-        e23->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v2->ID
-             << " and vertex2 :" << v3->ID << endl;
-        exit(0);
-    }
-    if (e31->fa == NULL)
-    {
-        e31->fa = newFace;
-    }
-    else if (e31->fb == NULL)
-    {
-        e31->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v3->ID
-             << " and vertex2 :" << v1->ID << endl;
-        exit(0);
-    }
-    newFace->oneEdge = e12;
-    // cout<<"Testing: "<<newFace -> oneEdge -> va -> ID<<endl;
-    e12->setNextEdge(v1, newFace, e31);
-    e12->setNextEdge(v2, newFace, e23);
-    e23->setNextEdge(v2, newFace, e12);
-    e23->setNextEdge(v3, newFace, e31);
-    e31->setNextEdge(v1, newFace, e12);
-    e31->setNextEdge(v3, newFace, e23);
-    newFace->id = faceList.size();
-    faceList.push_back(newFace);
-    nameToFace[newFace->name] = newFace; // Randy added this
-}
-
-void Mesh::addQuadFace(Vertex* v1, Vertex* v2, Vertex* v3, Vertex* v4)
-{
-    Face* newFace = new Face({v1,v2,v3,v4});// Randy added the (vertices)
-    Edge* e12 = createEdge(v1, v2);
-    Edge* e23 = createEdge(v2, v3);
-    Edge* e34 = createEdge(v3, v4);
-    Edge* e41 = createEdge(v4, v1);
-    if (e12->fa == NULL)
-    {
-        e12->fa = newFace;
-    }
-    else if (e12->fb == NULL)
-    {
-        e12->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v1->ID
-             << " and vertex2 :" << v2->ID << endl;
-        exit(0);
-    }
-    if (e23->fa == NULL)
-    {
-        e23->fa = newFace;
-    }
-    else if (e23->fb == NULL)
-    {
-        e23->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v2->ID
-             << " and vertex2 :" << v3->ID << endl;
-        exit(0);
-    }
-    if (e34->fa == NULL)
-    {
-        e34->fa = newFace;
-    }
-    else if (e34->fb == NULL)
-    {
-        e34->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v3->ID
-             << " and vertex2 :" << v4->ID << endl;
-        exit(0);
-    }
-    if (e41->fa == NULL)
-    {
-        e41->fa = newFace;
-    }
-    else if (e41->fb == NULL)
-    {
-        e41->fb = newFace;
-    }
-    else
-    {
-        cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : " << v4->ID
-             << " and vertex2 :" << v1->ID << endl;
-        exit(0);
-    }
-    newFace->oneEdge = e12;
-    e12->setNextEdge(v1, newFace, e41);
-    e12->setNextEdge(v2, newFace, e23);
-    e23->setNextEdge(v2, newFace, e12);
-    e23->setNextEdge(v3, newFace, e34);
-    e34->setNextEdge(v3, newFace, e23);
-    e34->setNextEdge(v4, newFace, e41);
-    e41->setNextEdge(v4, newFace, e34);
-    e41->setNextEdge(v1, newFace, e12);
-    newFace->id = faceList.size();
-    faceList.push_back(newFace);
-    nameToFace[newFace->name] = newFace; // Randy added this
-}
-
-Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
+Face * Mesh::addFace(vector<Vertex*> vertices, bool reverseOrder)
 {
     if (vertices.size() < 3)
     {
@@ -275,7 +151,7 @@ Face * Mesh::addPolygonFace(vector<Vertex*> vertices, bool reverseOrder)
             }
             else
             {
-                cout << "addPolygonFace ERROR: Try to create a Non-Manifold at edge with vertex1 : "
+                cout << "addFace ERROR: Try to create a Non-Manifold at edge with vertex1 : "
                      << currEdge->va->position.x << " " << currEdge->va->position.y << "  "
                      << currEdge->va->position.z << " and vertex2 :"
                     << currEdge->vb->position.x << " " << currEdge->vb->position.y << "  "
@@ -414,7 +290,6 @@ void Mesh::buildBoundary()
                     // cout<<"first: "<<currEdge -> va -> ID<<" "<<currEdge -> vb -> ID<<endl;
                     do
                     {
-                        currEdge->isSharp = true;
                         // cout<<"Now building boundary at vertex: "<<endl;
                         // cout<<currVert -> ID<<endl;
                         Face* currFace = currEdge->fa;
@@ -452,11 +327,8 @@ void getFaceNormal(Face* currFace)
     tc::Vector3 p1;
     tc::Vector3 p2;
     tc::Vector3 p3;
-    do
+
     {
-        // cout<<"New Edge!"<<endl;
-        // cout<<"ID: "<<currEdge -> va -> ID<<endl;
-        // cout<<"ID: "<<currEdge -> vb -> ID<<endl;
         if (currFace == currEdge->fa)
         {
             nextEdge = currEdge->nextVbFa;
@@ -464,7 +336,7 @@ void getFaceNormal(Face* currFace)
             p2 = currEdge->vb->position;
             p3 = nextEdge->theOtherVertex(currEdge->vb)->position;
         }
-        else if (currFace == currEdge->fb)
+        if (currFace == currEdge->fb)
         {
             if (currEdge->mobius)
             {
@@ -482,9 +354,7 @@ void getFaceNormal(Face* currFace)
             }
         }
         avgNorm += getNormal3Vertex(p1, p2, p3);
-        currEdge = nextEdge;
-    } while (currEdge != firstEdge);
-    // cout<<"The new Face normal is: "<<result[0]<<" "<<result[1]<<" "<<result[2]<<endl;
+    }
     currFace->normal = avgNorm.Normalized();
 
 }
@@ -647,12 +517,14 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
         vertCopy->ID = (*vIt)->ID;
         vertCopy->name = (*vIt)->name;
         vertCopy->position = (*vIt)->position;
+        vertCopy->sharpness = (*vIt)->sharpness;
         newMesh.addVertex(vertCopy);
     }
     vector<Face*>::iterator fIt;
     vector<Vertex*> vertices;
     for (fIt = faceList.begin(); fIt < faceList.end(); fIt++)
     {
+
         Face* tempFace = *fIt;
         Edge* firstEdge = tempFace->oneEdge;
         Edge* currEdge = firstEdge;
@@ -661,6 +533,7 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
         vertices.clear();
         do
         {
+
             if (tempFace == currEdge->fa)
             {
                 tempv = currEdge->vb;
@@ -682,13 +555,17 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
             vertices.push_back(newMesh.vertList[tempv->ID]);
             currEdge = nextEdge;
         } while (currEdge != firstEdge);
-        newMesh.addPolygonFace(vertices);
+        newMesh.addFace(vertices);
         newMesh.faceList[newMesh.faceList.size() - 1]->user_defined_color =
             (*fIt)->user_defined_color;
         newMesh.faceList[newMesh.faceList.size() - 1]->color = (*fIt)->color;
         newMesh.faceList[newMesh.faceList.size() - 1]->name = (*fIt)->name;
         newMesh.faceList[newMesh.faceList.size() - 1]->surfaceName =
             (*fIt)->surfaceName; // Randy added this
+    }
+    vector<Edge*>::iterator eItr;
+    for (eItr = newMesh.edgeList.begin(); eItr != newMesh.edgeList.end(); eItr++) {
+        (*eItr)->sharpness = findEdge((*eItr)->v0()->name, (*eItr)->v1()->name, false)->sharpness;
     }
     newMesh.buildBoundary();
 
@@ -762,7 +639,7 @@ Mesh Mesh::makeCopy(string copy_mesh_name)
             vertices.push_back(newMesh.vertList[tempv->ID]);
             currEdge = nextEdge;
         } while (currEdge != firstEdge);
-        newMesh.addPolygonFace(vertices);
+        newMesh.addFace(vertices);
         newMesh.faceList[newMesh.faceList.size() - 1]->user_defined_color =
             (*fIt)->user_defined_color;
         newMesh.faceList[newMesh.faceList.size() - 1]->color = (*fIt)->color;
@@ -978,8 +855,12 @@ void Mesh::deleteFace(Face* face)
 
 void Mesh::deleteEdge(Edge* edge)
 {
-    unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
     vector<Edge*>::iterator eIt;
+    for (eIt = edgeList.begin(); eIt != edgeList.end(); eIt++) {
+        if (*eIt == edge)
+            edgeList.erase(eIt);
+    }
+    unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
     vIt = edgeTable.find(edge->va);
     bool foundEdge = false;
     if (vIt != edgeTable.end())
@@ -1122,7 +1003,6 @@ void Mesh::setBoundaryEdgeToNull(Vertex* v)
         edgeAtThisPoint = vIt->second;
         for (Edge* e : edgeAtThisPoint)
         {
-            e->isSharp = false;
             if ((e->fb) == NULL)
             {
                 e->nextVaFb = NULL;
@@ -1135,3 +1015,19 @@ void Mesh::setBoundaryEdgeToNull(Vertex* v)
         cout << "Error: The Vertex doesn't belongs to this Mesh. Debug here." << endl;
     }
 }
+int Mesh::n_faces() {
+    return faceList.size();
+}
+int Mesh::n_vertices() {
+    return vertList.size();
+}
+vector<Face*> Mesh::faces() {
+    return faceList;
+}
+int Mesh::n_edges() {
+    return edgeList.size();
+}
+vector<Edge*> Mesh::edges() {
+    return edgeList;
+}
+

@@ -184,8 +184,8 @@ void COffsetRefiner::generateNewFaces(Face * face, bool needGrid,
         offsetFaces.push_back(indexList1);
         offsetFaces.push_back(indexList2);
 
-        currMesh.addPolygonFace(vertices1);
-        currMesh.addPolygonFace(vertices2);
+        currMesh.addFace(vertices1);
+        currMesh.addFace(vertices2);
 
         return; 
     }
@@ -216,7 +216,7 @@ void COffsetRefiner::generateNewFaces(Face * face, bool needGrid,
         };
         offsetFaces.push_back(faceIndexList);
 
-        currMesh.addPolygonFace(
+        currMesh.addFace(
             { newVertexHandleList[vertex1TopInsideIndex], newVertexHandleList[vertex1TopIndex],
               newVertexHandleList[vertex2TopIndex], newVertexHandleList[vertex2TopInsideIndex] });
 
@@ -235,7 +235,7 @@ void COffsetRefiner::generateNewFaces(Face * face, bool needGrid,
                               vertex2TopInsideIndex, vertex2BottomInsideIndex };
             offsetFaces.push_back(faceIndexList);
 
-            currMesh.addPolygonFace({ newVertexHandleList[vertex1BottomInsideIndex],
+            currMesh.addFace({ newVertexHandleList[vertex1BottomInsideIndex],
                                       newVertexHandleList[vertex1TopInsideIndex],
                                       newVertexHandleList[vertex2TopInsideIndex],
                                       newVertexHandleList[vertex2BottomInsideIndex] });
@@ -247,7 +247,7 @@ void COffsetRefiner::generateNewFaces(Face * face, bool needGrid,
             faceIndexList = { vertex1BottomIndex, vertex1BottomInsideIndex,
                               vertex2BottomInsideIndex, vertex2BottomIndex };
             offsetFaces.push_back(faceIndexList);
-            currMesh.addPolygonFace({ newVertexHandleList[vertex1BottomIndex],
+            currMesh.addFace({ newVertexHandleList[vertex1BottomIndex],
                                 newVertexHandleList[vertex1BottomInsideIndex],
                                 newVertexHandleList[vertex2BottomInsideIndex],
                                 newVertexHandleList[vertex2BottomInsideIndex] });
@@ -306,7 +306,7 @@ void COffsetRefiner::closeFace(Face* face)
             }
         }
         if (onBoundary) {
-            currMesh.addPolygonFace({ vertex1Top, vertex1Bottom, vertex2Bottom, vertex2Top });
+            currMesh.addFace({ vertex1Top, vertex1Bottom, vertex2Bottom, vertex2Top });
         
             std::vector<int> faceIndexList = { vertex1TopIndex, vertex1BottomIndex,
                                                 vertex2BottomIndex, vertex2TopIndex };

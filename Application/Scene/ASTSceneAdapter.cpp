@@ -2,15 +2,21 @@
 #include "BSpline.h"
 #include "BezierSpline.h"
 #include "Circle.h"
+#include "Spiral.h"
+#include "Sphere.h"
+#include "Ellipsoid.h"
+
 #include "Cylinder.h"
 #include "Dupin.h"
 #include "Ellipsoid.h"
+
 #include "Environment.h"
 #include "Face.h"
 #include "Funnel.h"
 #include "GenCartesianSurf.h"
 #include "GenParametricSurf.h"
 #include "Helix.h"
+#include "MeshMerger.h"
 #include "Hyperboloid.h"
 #include "MeshMerger.h"
 #include "MobiusStrip.h"
@@ -60,7 +66,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
     { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
     { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
-    { "subdivision", ECommandKind::Dummy },  { "offset", ECommandKind::Instance },
+    { "subdivision", ECommandKind::Instance },  { "offset", ECommandKind::Instance },
     { "mobiusstrip", ECommandKind::Entity }, { "helix", ECommandKind::Entity },
     { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
     { "spiral", ECommandKind::Entity },      { "sharp", ECommandKind::Entity },
@@ -162,7 +168,7 @@ void CASTSceneAdapter::TraverseFile(AST::AFile* astRoot, CScene& scene)
 
 std::string CASTSceneAdapter::VisitInclude(AST::ACommand* cmd, CScene& scene)
 {
-    std::string includeFileName = "";
+    std::string includeFileName;
     CmdTraverseStack.push_back(cmd);
     auto kind = ClassifyCommand(cmd->GetCommand());
     if (kind == ECommandKind::DocEdit && cmd->GetCommand() == "include")
@@ -199,18 +205,18 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
     CmdTraverseStack.pop_back();
 }
 
-// Project AddOffset
-// Project AddOffset
-//void CASTSceneAdapter::IterateSharpness(AST::ACommand* cmd, CScene& scene)
-//{
-//    TAutoPtr<CEntity> entity = new CSharp();
-//    entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
-//    GEnv.Scene->AddEntity(entity);
-//
-//    if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
-//        if (auto* points = dynamic_cast<CSharp*>(entity.Get()))
-//            mesh->SharpPoints.Connect(points->SharpPoints);
-//}
+
+
+void CASTSceneAdapter::IterateSharpness(AST::ACommand* cmd, CScene& scene) const {
+    TAutoPtr<CEntity> entity = new CSharp();
+    entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
+    GEnv.Scene->AddEntity(entity);
+
+    if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
+        if (auto* points = dynamic_cast<CSharp*>(entity.Get()))
+            mesh->SharpPoints.Connect(points->SharpPoints);
+}
+
 
 
 void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, bool insubMesh)
@@ -224,43 +230,54 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (kind == ECommandKind::Entity)
     {
-        TAutoPtr<CEntity> entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
-        entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
-        // All entities are added to the EntityLibrary dictionary
-        GEnv.Scene->AddEntity(entity);
-        if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
-            if (auto* face = dynamic_cast<CFace*>(entity.Get()))
-                mesh->Faces.Connect(face->Face);
-            else if (auto* point = dynamic_cast<CPoint*>(entity.Get()))
-                mesh->Points.Connect(point->Point); // Randy added on 12/5
-
-        // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one
-        // face) recursively via VisitCommandSyncScene.
-        if (insubMesh == false)
-        {
-            ParentEntity = entity;
-            EntityNamePrefix = cmd->GetName() + ".";
-        }
-
-        auto subCommands = cmd->GetSubCommands();
-        for (size_t i = 0; i < subCommands.size(); i++)
-        {
-            auto* sub = subCommands[i];
-            VisitCommandSyncScene(sub, scene, true);
-
-            // if done visiting mesh, mark it as visited. Randy added this on 12/9
-            if (i == subCommands.size() - 1)
+        if (cmd->GetCommand() == "sharp") {
+            for (auto* sub : cmd->GetSubCommands())
             {
-                auto meshNameNoPeriod = EntityNamePrefix.substr(0, EntityNamePrefix.size() - 1);
-                GEnv.Scene->DoneVisitingMesh(meshNameNoPeriod);
+                sub->PushPositionalArgument(cmd->GetLevel());
+                IterateSharpness(sub, scene);
             }
         }
+        else {
+            TAutoPtr<CEntity> entity =
+                MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
 
-        // Added insubMesh bool to allow Meshes to process multiple faces.
-        if (insubMesh == false)
-        {
-            EntityNamePrefix = "";
-            ParentEntity = nullptr;
+            entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
+            // All entities are added to the EntityLibrary dictionary
+            GEnv.Scene->AddEntity(entity);
+            if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
+                if (auto* face = dynamic_cast<CFace*>(entity.Get()))
+                    mesh->Faces.Connect(face->Face);
+                else if (auto* point = dynamic_cast<CPoint*>(entity.Get()))
+                    mesh->Points.Connect(point->Point); // Randy added on 12/5
+
+            // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one
+            // face) recursively via VisitCommandSyncScene.
+            if (insubMesh == false)
+            {
+                ParentEntity = entity;
+                EntityNamePrefix = cmd->GetName() + ".";
+            }
+
+            auto subCommands = cmd->GetSubCommands();
+            for (size_t i = 0; i < subCommands.size(); i++)
+            {
+                auto* sub = subCommands[i];
+                VisitCommandSyncScene(sub, scene, true);
+
+                // if done visiting mesh, mark it as visited. Randy added this on 12/9
+                if (i == subCommands.size() - 1)
+                {
+                    auto meshNameNoPeriod = EntityNamePrefix.substr(0, EntityNamePrefix.size() - 1);
+                    GEnv.Scene->DoneVisitingMesh(meshNameNoPeriod);
+                }
+            }
+
+            // Added insubMesh bool to allow Meshes to process multiple faces.
+            if (insubMesh == false)
+            {
+                EntityNamePrefix = "";
+                ParentEntity = nullptr;
+            }
         }
     }
     else if (cmd->GetCommand() == "instance")
@@ -268,6 +285,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         // CreateChildNode() adds a node to the scene graph IF it hasn't been added already, and always adds a node to the scene tree
         // This means ONE sceneNode could correspond to multiple scene tree nodes, which is how we want to represent the scene
         auto* sceneNode = InstanciateUnder->CreateChildNode(cmd->GetName());
+        // To perform rotation
         sceneNode->SyncFromAST(cmd, scene);
         // TODO: move the following logic into SyncFromAST
 
@@ -305,12 +323,11 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         InstanciateUnder = GEnv.Scene->GetRootNode();
     }
 
-    else if (cmd->GetCommand() == "subdivision" || cmd->GetCommand() == "offset")
-    {
+    else if (cmd->GetCommand() == "subdivision") {
         // 1.read all instances to a merged mesh
         InstanciateUnder = GEnv.Scene->CreateMerge(cmd->GetName());
         InstanciateUnder->SyncFromAST(cmd, scene);
-        // cmd->GetLevel();
+
 
         for (auto* sub : cmd->GetSubCommands())
             VisitCommandSyncScene(sub, scene, false);
@@ -320,40 +337,22 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         // 2. merge all instances
         tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger(cmd->GetName());
         merger->GetMetaObject().DeserializeFromAST(*cmd, *merger);
-        if (cmd->GetCommand() == "subdivision")
+
+        auto flag = cmd->GetNamedArgument("sd_type");
+        if (flag)
         {
-            auto flag = cmd->GetNamedArgument("sd_type");
-            if (flag)
-            {
-                auto flagName = flag->GetArgument( 0)[0]; 
-                auto flagIdentifier = static_cast<AST::AIdent*>(&flagName)
-                                          ->ToString(); // Downcast it back to an AIdent
-                if (flagIdentifier == "NOME_SD_CC_sharp")
-                    merger->SetSharp(true);
-                else
-                    merger->SetSharp(false);
-            }
-        }
-        else
-        {
-            auto flag = cmd->GetNamedArgument("offset_type");
-            if (flag)
-            {
-                auto flagName = flag->GetArgument(0)[0]; // Returns a casted AExpr that was an AIdent before casting
-                auto flagIdentifier = static_cast<AST::AIdent*>(&flagName)
-                                          ->ToString(); // Downcast it back to an AIdent
-                if (flagIdentifier == "NOME_OFFSET_DEFAULT")
-                    merger->SetOffsetFlag(true);
-                else
-                    merger->SetOffsetFlag(false);
-            }
+            auto flagName = flag->GetArgument(
+                0)[0]; // Returns a casted AExpr that was an AIdent before casting
+            auto flagIdentifier = static_cast<AST::AIdent*>(&flagName)->ToString(); // Downcast it back to an AIdent
+            if (flagIdentifier == "NOME_SD_CC_sharp")
+                merger->SetSharp(true);
+            else
+                merger->SetSharp(false);
         }
 
-        scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(
-            merger));
-        auto* sn = scene.GetRootNode()->FindOrCreateChildNode(
-            cmd->GetName()); 
-        sn->SetEntity(merger.Get()); 
+        scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
+        auto* sn = scene.GetRootNode()->FindOrCreateChildNode(cmd->GetName()); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices.
+        sn->SetEntity(merger.Get()); // Set sn, which is the scene node, to point to entity merger
     }
     CmdTraverseStack.pop_back();
 }

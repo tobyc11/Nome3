@@ -53,6 +53,7 @@ endmacro()
 
 add_executable(Nome3 ${PG2_SOURCES})
 # Xinyu add on Oct 8 for mac users
+
 if (APPLE)
     set_target_properties(Nome3
             PROPERTIES

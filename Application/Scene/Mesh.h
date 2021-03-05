@@ -1,6 +1,6 @@
 #pragma once
 #include "Face.h"
-#include "Sharp.h" 
+#include "Sharp.h"
 #include "InteractivePoint.h"
 
 #include <Plane.h> // Randy added on 10/10 for pick face
@@ -10,6 +10,7 @@
 #undef min
 #undef max
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+#include <OpenMesh/Core/Mesh/Traits.hh>
 
 #include <map>
 #include <set>
@@ -49,8 +50,10 @@ struct CNomeTraits : public OpenMesh::DefaultTraits
 
 #include "./CustomMeshDataStructure/DataStructureMesh.h" // Project SwitchDS
 
+
 typedef OpenMesh::PolyMesh_ArrayKernelT<> CMeshImpl;
 typedef Mesh DSMesh; // Project SwitchDS
+
 
 namespace Nome::Scene
 {
@@ -62,10 +65,14 @@ class CVertexSelector;
 class CMesh : public CEntity
 {
     DEFINE_INPUT_ARRAY(CFace*, Faces) { MarkDirty(); }
+
+    DEFINE_INPUT_ARRAY(CSharp*, SharpPoints) { MarkDirty(); }
+
     DEFINE_INPUT_ARRAY(CVertexInfo*, Points)
     {
         MarkDirty();
     } // Randy added this on 12/5. CVertexInfo completely specifies a vertex.
+
 
 public:
     DECLARE_META_CLASS(CMesh, CEntity);
@@ -76,7 +83,7 @@ public:
     void UpdateEntity() override;
     void Draw(IDebugDraw* draw) override;
 
-    Vertex* AddVertex(const std::string& name, Vector3 pos);
+    Vertex* AddVertex(const std::string& name, Vector3 pos, float sharpness = 0.0f);
 
     bool HasVertex(const std::string& name) const
     {
@@ -86,7 +93,16 @@ public:
             return false;   
     }
 
+
     Vector3 GetVertexPos(const std::string& name) const;
+
+    Vertex* FindVertex(const std::string& name) const
+    {
+        return currMesh.nameToVert.find(name)->second;
+    }
+
+    static void AddPointSharpness(Vertex* p, float sharpness);
+    void AddEdgeSharpness(Vertex* e1, Vertex* e2, float sharpness);
     void AddFace(const std::string& name, const std::vector<std::string>& facePointNames, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
     void AddFace(const std::string& name, const std::vector<Vertex*>& faceDSVerts, std::string faceSurfaceIdent = ""); // Randy added faceSurfaceIdent on 12/12
     void AddLineStrip(const std::string& name, const std::vector<Vertex*>& points);
@@ -173,7 +189,7 @@ public:
     const CMeshImpl& GetMeshImpl() const { return Mesh; }
 
     // Project SwitchDS
-    const DSMesh& GetDSMesh() const { return currMesh; }
+    DSMesh& GetDSMesh() { return currMesh; }
 
     std::vector<std::pair<float, std::string>> PickVertices(const tc::Ray& localRay);
     std::vector<std::pair<float, std::string>>
@@ -181,11 +197,11 @@ public:
     std::vector<std::pair<float, std::vector<std::string>>> PickPolylines(const tc::Ray& localRay); // Randy added on 12/22 for polyline selection
     std::vector<std::pair<float, std::vector<std::string>>>
     PickEdges(const tc::Ray& localRay); // Randy added on 10/29 for edge selection
-    void MarkVertAsSelected(const std::set<std::string>& vertNames);
+    void MarkVertAsSelected(const std::set<std::string>& vertNames, float sharpness = -1);
     void MarkFaceAsSelected(const std::set<std::string>& faceNames,
-                            bool bSel); // Randy added on 10/10 for face selection
+                            bool bSel, float sharpness = -1); // Randy added on 10/10 for face selection
     void MarkEdgeAsSelected(const std::set<std::string>& vertNames,
-                            bool bSel); // Randy added on 10/29 for edge selection. TODO: rn it
+                            bool bSel, float sharpness = -1); // Randy added on 10/29 for edge selection. TODO: rn it
                                         // takes in the edge's verts as input
 
     std::vector<Face* >

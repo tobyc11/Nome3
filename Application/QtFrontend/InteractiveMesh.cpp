@@ -43,6 +43,7 @@ void CInteractiveMesh::UpdateTransform()
 
 void CInteractiveMesh::UpdateGeometry(bool showVertBox)
 {
+
     auto* entity = SceneTreeNode->GetInstanceEntity();
     if (!entity)
     {
@@ -56,49 +57,53 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
         {
             delete GeometryRenderer;
             delete Geometry;
+            delete PointRenderer;
+            delete PointGeometry;
             // A Qt3DRender::QGeometry class is used to group a list of Qt3DRender::QAttribute
             // objects together to form a geometric shape Qt3D is able to render using
             // Qt3DRender::QGeometryRenderer.
-            auto selectedfacehandles =
-                meshInstance->GetSelectedFaceHandles(); // Randy added on 12/3
-
-            auto DSFaceWithColorVector = meshInstance->GetDSFaceWithColorVector();
             auto test = meshInstance->GetDSMesh();
-            CDataStructureMeshToQGeometry DSmeshToQGeometry(meshInstance->GetDSMesh(), true); // Project SwitchDS
+            if (test.visible)
+            {
 
-            //Geometry = meshToQGeometry.GetGeometry();
-            Geometry = DSmeshToQGeometry.GetGeometry();
-            Geometry->setParent(this);
-            GeometryRenderer = new Qt3DRender::QGeometryRenderer(this);
-            GeometryRenderer->setGeometry(Geometry);
-            GeometryRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
-            this->addComponent(GeometryRenderer); // adding geometry data to interactive mesh
+                auto selectedfacehandles =
+                    meshInstance->GetSelectedFaceHandles(); // Randy added on 12/3
 
-            std::string xmlPath = "";
-            if (!showVertBox)
-                xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
-            else
-                xmlPath = CResourceMgr::Get().Find("DebugDrawLineWITHVERTBOX.xml");
+                auto DSFaceWithColorVector = meshInstance->GetDSFaceWithColorVector();
 
-            // May need to optimize this in the future. Cause we're parsing the file everytime the
-            // node is marked dirty, even though we could keep the material the same if that was not
-            // changed
-            PointEntity = new Qt3DCore::QEntity(this);
-            auto* lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
-            PointMaterial = lineMat;
-            PointMaterial->setParent(this);
-            PointEntity->addComponent(PointMaterial);
+                CDataStructureMeshToQGeometry DSmeshToQGeometry(meshInstance->GetDSMesh(),
+                                                                true); // Project SwitchDS
 
-            delete PointRenderer;
-            delete PointGeometry;
+                // Geometry = meshToQGeometry.GetGeometry();
+                Geometry = DSmeshToQGeometry.GetGeometry();
+                Geometry->setParent(this);
+                GeometryRenderer = new Qt3DRender::QGeometryRenderer(this);
+                GeometryRenderer->setGeometry(Geometry);
+                GeometryRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
+                this->addComponent(GeometryRenderer); // adding geometry data to interactive mesh
 
-            //PointGeometry = meshToQGeometry.GetPointGeometry();
-            PointGeometry = DSmeshToQGeometry.GetPointGeometry();
-            PointGeometry->setParent(PointEntity);
-            PointRenderer = new Qt3DRender::QGeometryRenderer(PointEntity);
-            PointRenderer->setGeometry(PointGeometry);
-            PointRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
-            PointEntity->addComponent(PointRenderer);
+                std::string xmlPath = "";
+                if (!showVertBox)
+                    xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
+                else
+                    xmlPath = CResourceMgr::Get().Find("DebugDrawLineWITHVERTBOX.xml");
+
+                // May need to optimize this in the future. Cause we're parsing the file everytime the node is marked dirty, even though we could keep the material the same if that was not changed
+                PointEntity = new Qt3DCore::QEntity(this);
+                auto* lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
+                PointMaterial = lineMat;
+                PointMaterial->setParent(this);
+                PointEntity->addComponent(PointMaterial);
+
+                // PointGeometry = meshToQGeometry.GetPointGeometry();
+                PointGeometry = DSmeshToQGeometry.GetPointGeometry();
+                PointGeometry->setParent(PointEntity);
+                PointRenderer = new Qt3DRender::QGeometryRenderer(PointEntity);
+                PointRenderer->setGeometry(PointGeometry);
+                PointRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
+                PointEntity->addComponent(PointRenderer);
+            }
+
         }
         else
         {
@@ -113,6 +118,7 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             this->addComponent(vPlaceholder);
         }
     }
+
 }
 
 void CInteractiveMesh::UpdateMaterial(bool showFacets)

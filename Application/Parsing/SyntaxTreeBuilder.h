@@ -9,7 +9,7 @@ class CFileBuilder : public NomBaseVisitor
 {
 public:
     // The CStringBuffer is used to generate source location references
-    CFileBuilder(CStringBuffer& srcStringBuffer)
+    explicit CFileBuilder(CStringBuffer& srcStringBuffer)
         : SrcStringBuffer(srcStringBuffer)
     {
     }
@@ -70,16 +70,19 @@ public:
     antlrcpp::Any visitIdent(NomParser::IdentContext* context) override;
     antlrcpp::Any visitAtomExpr(NomParser::AtomExprContext* context) override;
     antlrcpp::Any visitIdList(NomParser::IdListContext *context) override;
-    antlrcpp::Any visitCmdSubdivision(NomParser::CmdSubdivisionContext* context) override;
-    antlrcpp::Any visitCmdSharp(NomParser::CmdSharpContext* ctx) override;
     antlrcpp::Any visitCmdOffset(NomParser::CmdOffsetContext* context) override;
+    antlrcpp::Any visitCmdSubdivision(NomParser::CmdSubdivisionContext* context) override;
+
     antlrcpp::Any visitVector3(NomParser::Vector3Context *context) override;
+
 
 private:
     AST::CToken* ConvertToken(antlr4::Token* token);
     AST::CToken* ConvertToken(antlr4::tree::TerminalNode* token);
 
     CStringBuffer& SrcStringBuffer;
+
+    antlrcpp::Any visitCmdSharp(NomParser::CmdSharpContext* ctx) override;
 };
 
 }

@@ -208,6 +208,19 @@ bool TBindingTranslator<Flow::TInput<float>>::FromASTToValue(AST::ACommand* comm
 }
 
 template <>
+bool TBindingTranslator<Flow::TInput<std::string>>::FromASTToValue(AST::ACommand* command,
+                                                             const CCommandSubpart& subpart,
+                                                             Flow::TInput<std::string>& value)
+{
+    auto* expr = subpart.GetExpr(command);
+    // Just return if the corresponding element is not found in the AST
+    if (!expr)
+        return false;
+    value.GetValue(static_cast<const AST::AIdent*>(expr)->ToString());
+    return true;
+}
+
+template <>
 bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command,
                                                      const CCommandSubpart& subpart,
                                                      std::string& value)

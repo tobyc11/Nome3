@@ -45,11 +45,6 @@ CNome3DView::CNome3DView()
     torus->addComponent(torusMesh);
     torus->addComponent(material);
 
-
-
-
-    // MakeGridEntity(Root); Removing grid entity per Professor Sequin's request
-
     // Make a point light
     auto* lightEntity = new Qt3DCore::QEntity(Base);
     auto* light = new Qt3DRender::QPointLight(lightEntity);
@@ -302,7 +297,7 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
     if (hits.size() == 1)
     {
         const auto& [dist, meshInst, faceName] = hits[0];
-        std::vector<std::string>::iterator position =
+        auto position =
             std::find(SelectedFaces.begin(), SelectedFaces.end(), faceName);
         if (position == SelectedFaces.end())
         { // if this face has not been selected before
@@ -361,7 +356,7 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
             {
                 int row = sel[0]->row();
                 const auto& [dist, meshInst, faceName] = hits[row];
-                std::vector<std::string>::iterator position =
+                auto position =
                     std::find(SelectedFaces.begin(), SelectedFaces.end(), faceName);
                 if (position == SelectedFaces.end())
                 { // if this face has not been selected before
@@ -448,9 +443,9 @@ void CNome3DView::PickEdgeWorldRay(tc::Ray& ray)
     {
         const auto& [dist, meshInst, edgeVertNames] =
             hits[0]; // where the edgeVertNames is defined to a vector of two vertex names
-        std::vector<std::string>::iterator position1 =
+        auto position1 =
             std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[0]);
-        std::vector<std::string>::iterator position2 =
+        auto position2 =
             std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[1]);
         SelectedEdgeVertices.push_back(edgeVertNames[0]);
         SelectedEdgeVertices.push_back(edgeVertNames[1]);
@@ -520,9 +515,9 @@ void CNome3DView::PickPolylineWorldRay(tc::Ray& ray)
     {
         const auto& [dist, meshInst, edgeVertNames] =
             hits[0]; // where the edgeVertNames is defined to a vector of two vertex names
-        std::vector<std::string>::iterator position1 =
+        auto position1 =
             std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[0]);
-        std::vector<std::string>::iterator position2 =
+        auto position2 =
             std::find(SelectedEdgeVertices.begin(), SelectedEdgeVertices.end(), edgeVertNames[1]);
         SelectedEdgeVertices.push_back(edgeVertNames[0]);
         SelectedEdgeVertices.push_back(edgeVertNames[1]);

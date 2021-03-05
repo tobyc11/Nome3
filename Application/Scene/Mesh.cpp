@@ -187,7 +187,7 @@ CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)
 
     // We listen to the transformation changes of the associated tree node
     TransformChangeConnection = SceneTreeNode->OnTransformChange.Connect(
-        std::bind(&CMeshInstance::MarkOnlyDownstreamDirty, this));
+        [this] { MarkOnlyDownstreamDirty(); });
 }
 
 CMeshInstance::~CMeshInstance()

@@ -1,8 +1,4 @@
-// Project AddOffset . Need to adapt this code to new data structure
-
 #pragma once
-//#include "ControlPoint.h"
-//#include "SweepPath.h" // Randy replaced ControlPoint.h with Zachary's SweepPath
 #include "Entity.h"
 #include <Flow/FlowNodeArray.h>
 
@@ -23,18 +19,10 @@ public:
     DECLARE_META_CLASS(CSharp, CEntity);
 
     CSharp() = default;
-    /*
-    explicit CPoint(std::string name)
-        : CEntity(std::move(name))
-    {
-    }
-     */
-    /*
-    private:
-        CVertexInfo VI;
-        */
+
 
     bool AddSharpnessIntoMesh(CMesh* mesh) const;
 };
 
 }
+

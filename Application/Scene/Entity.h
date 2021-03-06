@@ -6,6 +6,7 @@
 #include <Parsing/ASTContext.h>
 #include <string>
 
+
 /*
  * The meta class provides basic reflection support for entities
  * Things we need:

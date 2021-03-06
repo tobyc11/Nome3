@@ -46,16 +46,12 @@ bool CSharp::AddSharpnessIntoMesh(CMesh* mesh) const
         }
     }
 
-    if (nameList.size() == 1)
-    {
-      //  mesh->AddPointSharpness(mesh->FindVertex(nameList.at(0)), Sharpness.GetValue(0.0f)); Project AddOffset - fix this later
-    }
-    else if (nameList.size() > 1)
-    {
+    if (nameList.size() == 1) {
+        mesh->AddPointSharpness(mesh->FindVertex(nameList.at(0)), Sharpness.GetValue(0.0f));
+    } else if (nameList.size() > 1){
         for (int i = 0; i < nameList.size() - 1; ++i)
         {
-           // mesh->AddEdgeSharpness(mesh->FindVertex(nameList.at(i)),
-                            //       mesh->FindVertex(nameList.at(i + 1)), Sharpness.GetValue(0.0f)); - fix this later
+            mesh->AddEdgeSharpness(mesh->FindVertex(nameList.at(i)), mesh->FindVertex(nameList.at(i + 1)), Sharpness.GetValue(0.0f));
         }
     }
     return true;

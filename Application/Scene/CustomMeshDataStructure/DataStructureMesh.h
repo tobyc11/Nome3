@@ -30,6 +30,8 @@ public:
     /* A list of all facets in this mesh.*/
     vector<Face*> faceList;
 
+    vector<Edge*> edgeList;
+
     // Randy added these two. Easy way to access Vertex objects in Mesh.cpp. Don't need to traverse vertList
     unordered_map<string, Vertex*> nameToVert;
     unordered_map<int, Vertex*> idToVert; // Randy added this on 2/19
@@ -37,6 +39,19 @@ public:
 
     /* This is an auxillary table to build a mesh, matching edge to vertex.*/
     unordered_map<Vertex*, vector<Edge*>> edgeTable;
+
+
+    int n_vertices();
+    int n_faces();
+    int n_edges();
+    vector<Face*> faces();
+    vector<Edge*> edges();
+
+    bool visible = true;
+
+    /* This keeps count of the number of vertices in the mesh. */
+    /* This keeps count of the number of edges in the mesh. */
+    /* This keeps count of the number of faces in the mesh. */
     Mesh(int type = 0);
     /**
      * @brief addVertex: Add one vertex to this Mesh.
@@ -49,6 +64,8 @@ public:
      * @param v, the vertex to be added in.
      * @param expr, the expresssions for the vertex.
      */
+
+     void addVertex(float x, float y, float z);
 //    void addVertex(Vertex* v, vector<string>& expr);
     /**
      * @brief deleteVertex: Delete one vertex from this Mesh.
@@ -67,7 +84,13 @@ public:
      * @param v1, v2: the two vertices of this edge.
      * If it does not exists, then return NULL.
      */
-    Edge* findEdge(Vertex* v1, Vertex* v2);
+    Edge* findEdge(const string& v1, const string& v2, bool setmobius = true);
+    /**
+     * @brief Find one edge v1-v2 in this Mesh.
+     * @param v1, v2: the two vertices of this edge.
+     * If it does not exists, then return NULL.
+     */
+    Edge* findEdge(Vertex* v1, Vertex* v2, bool setmobius = true);
     /**
      * @brief deleteEdge Delete edge v1-v2 in this Mesh.
      * @param v1, v2: the two vertices of this edge.
@@ -77,13 +100,7 @@ public:
      * @brief Add a triangle face to a mesh, with three vertices.
      * @param v1, v2, v3 are the three vertices of the face.
      */
-    void addTriFace(Vertex* v1, Vertex* v2, Vertex* v3);
-    // Add a quad face to a mesh, with three vertices.
-    // @param v1, v2, v3, v4 are the four vertices of the face.
-    void addQuadFace(Vertex* v1, Vertex* v2, Vertex* v3, Vertex* v4);
-    // Add a arbitrary polygon face to a mesh, with three vertices.
-    // @param vertices is a list of consequtive vertices of the face.
-    Face* addPolygonFace(vector<Vertex*> vertices, bool reverseOrder = false); // Randy changed this on 1/22
+    Face* addFace(vector<Vertex*> vertices, bool reverseOrder = false); // Randy changed this on 1/22
     /**
      * @brief delelteFace: Delete a face from this mesh.
      * @param face: the face to be deleted.
@@ -165,7 +182,7 @@ public:
     /* A map of vertex ID to its position expression. */
     unordered_map<int, vector<string>> idToExprs;
     /* A pointer to the global parameter. */
-    unordered_map<string, Parameter>* params;
+    unordered_map<string, Parameter>* params{};
     /* Set the global parameter pointer for this mesh. */
     void setGlobalParameter(unordered_map<string, Parameter>* params);
     /* The paraent group of this mesh. */
@@ -203,7 +220,7 @@ public:
     /* Add a parameter that influence this funnel. */
     void addParam(Parameter*);
     /* The pointer to the copied mesh before transformation. */
-    Mesh* before_transform_mesh;
+    Mesh* before_transform_mesh{};
     /* Find a vertex in this mesh given its name. */
     Vertex* findVertexInThisMesh(string name);
     /* Find a face in this mesh given its name. And delete this face.

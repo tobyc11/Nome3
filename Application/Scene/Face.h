@@ -28,7 +28,7 @@ public:
     void UpdateEntity() override;
 
     size_t CountVertices() const;
-    void SetPointSourceNames(const TAutoPtr<CScene>& scene, std::vector<std::string> points);
+    void SetPointSourceNames(const TAutoPtr<CScene>& scene, const std::vector<std::string>& points);
 
     // Returns whether successful
     bool AddFaceIntoMesh(CMesh* mesh) const;

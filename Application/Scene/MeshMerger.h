@@ -16,6 +16,7 @@ class CMeshMerger : public CMesh
     void UpdateEntity() override;
     // void MarkDirty() override;
 
+
 public:
     DECLARE_META_CLASS(CMeshMerger, CEntity);
 
@@ -26,43 +27,45 @@ public:
     }
 
     // No update yet, please just use one time
-    void MergeIn(const CMeshInstance& meshInstance);
+    void MergeIn(CMeshInstance& meshInstance);
 
     void MergeClear();
+
+
+    bool offset(DSMesh& _m);
+
 
     // sd_flag can be set to sharp and plain cc to have different types of subdivision
     void Catmull();
 
-    bool offset(DSMesh& _m);
-    bool subdivide(CMeshImpl& _m, unsigned int n, bool isSharp);
+    bool subdivide(DSMesh& _m, unsigned int n) const;
 
-    void split_face(CMeshImpl& _m, const CMeshImpl::FaceHandle& _fh);
 
-    void split_edge(CMeshImpl& _m, const CMeshImpl::EdgeHandle& _eh);
+    void setSubLevel(int level) {
+        subdivisionLevel = level;
+    }
 
-    void compute_midpoint(CMeshImpl& _m, const CMeshImpl::EdgeHandle& _eh, bool _update_points);
-
-    void update_vertex(CMeshImpl& _m, const CMeshImpl::VertexHandle& _vh);
 
     void SetSharp(bool setSharp) { isSharp = setSharp; }
 
     void SetOffsetFlag(bool flag) { offsetFlag = flag; }
 
-    void setSubLevel(int level) { subdivisionLevel = level; }
+
 
 private:
+    DSMesh MergedMesh;
     std::pair<Vertex*, float> FindClosestVertex(const tc::Vector3& pos);
 
     unsigned int VertCount = 0;
     unsigned int FaceCount = 0;
+
 
     OpenMesh::VPropHandleT<CMeshImpl::Point> vp_pos_; // next vertex pos
     OpenMesh::EPropHandleT<CMeshImpl::Point> ep_pos_; // new edge pts
     OpenMesh::FPropHandleT<CMeshImpl::Point> fp_pos_; // new face pts
 
     //CMeshImpl MergedMesh;
-    DSMesh MergedMesh; // Randy changed it to DSMesh on 2/19
-    
+
     unsigned int subdivisionLevel = 0;
     bool isSharp = true;
     // true == NOME_OFFSET_DEFAULT, false == NOME_OFFSET_GRID
@@ -70,3 +73,4 @@ private:
 };
 
 }
+

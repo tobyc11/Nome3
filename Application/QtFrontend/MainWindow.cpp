@@ -5,7 +5,7 @@
 #include "ui_MainWindow.h"
 #include <Scene/ASTSceneAdapter.h>
 #include <Scene/Environment.h>
-#include <Scene/MeshMerger.h>
+
 
 #include <QDockWidget>
 #include <QScrollArea> // Randy added
@@ -154,10 +154,12 @@ void CMainWindow::on_actionSceneAsStl_triggered()
 void CMainWindow::on_actionMerge_triggered()
 {
     // One shot merging, and add a new entity and its corresponding node
+
     Scene->Update();
     tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger(
         "globalMerge"); // CmeshMerger is basically a CMesh, but with a MergeIn method. Merger will
                         // contain ALL the merged vertices (from various meshes)
+
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         if (node->GetOwner()->GetName() == "globalMergeNode") // If the node owner is a globalMergeNode, skip as that was a
                                   // previously merger mesh (from a previous Merge iteration). We only
@@ -176,11 +178,13 @@ void CMainWindow::on_actionMerge_triggered()
         }
     });
 
+    Scene->Update();
     // TODO: 10/22 added.  These lines work to reset the scene
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         if (node->GetOwner()->GetName() != "globalMergeNode")
             node->GetOwner()->SetEntity(nullptr);
     });
+
 
     Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(
         merger)); // Merger now has all the vertices set, so we can add it into the scene as a new
@@ -197,7 +201,6 @@ void CMainWindow::on_actionSubdivide_triggered()
 {
     // One shot merging, and add a new entity and its corresponding node
     Scene->Update();
-    //tc::TAutoPtr<Scene::CMeshMerger> merger = new Scene::CMeshMerger("globalMerge"); Randy commented out on 2/11. use existing merged mesh
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         if (node->GetOwner()->GetName() == "globalMergeNode")
         {
@@ -205,17 +208,20 @@ void CMainWindow::on_actionSubdivide_triggered()
             auto* entity = node->GetOwner()->GetEntity();
             if (auto* mesh = dynamic_cast<Scene::CMeshMerger*>(entity))
             {
+                bool ok;
+                int sub_level = QInputDialog::getInt(this, tr("Please enter the level of subdivision"),
+                                                     tr("Subdivision Level:"), 3, 0, 10, 1, &ok);
+                if (ok && sub_level > 0 && sub_level < 10)
+                    mesh->setSubLevel(sub_level);
+                else
+                    mesh->setSubLevel(3);
                 mesh->Catmull(); // TODO: pass in level argument
-                mesh->MarkDirty(); 
+                mesh->MarkDirty();
 
             }
         }
     });
 
-    // Commented out below lines on 2/11. Because we want to modify original merger mesh, not create a  new subdivided merger mesh
-    //Scene->AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger));
-    //auto* sn = Scene->GetRootNode()->FindOrCreateChildNode("globalMergeNode");
-    //sn->SetEntity(merger.Get());
 }
 
 /* Randy temporarily commenting out. Point and Instance don't work.
@@ -482,9 +488,7 @@ void CMainWindow::PostloadSetup()
         }
         Scene->SetTime((float) elapsedRender->elapsed() / 1000);
         Scene->SetFrame(1);
-        // randy commented this out for now. It is conflicting with debug messages.
-        // std::cout << "time" << Scene->GetTime()->GetNumber() << std::endl;
-        // std::cout << "frame" << Scene->GetFrame()->GetNumber() << std::endl;
+
     });
     SceneUpdateClock->start();
 

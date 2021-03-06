@@ -25,6 +25,9 @@ class Parameter;
  * @brief The Vertex class. Build for vertex in winged-
  * edge data structure.
  */
+
+
+
 class Vertex
 {
 public:
@@ -45,9 +48,11 @@ public:
     /* One out-going halfedge of this vertex.*/
     Edge* oneEdge;
     /* A tracking identifier. Generally the index from global vertex list.*/
-    unsigned long ID;
+    unsigned int ID;
     /* True if it is the end of any Mobius edge.*/
     bool onMobius;
+    /* The sharpness pertaining to the vertex when subdivided.*/
+    float sharpness = 0.0;
     /* A pointer to the vertex point in subdivision.*/
     Vertex* vertexPoint;
     /* A pointer to the positive offset vertex in offsetting. */
@@ -83,6 +88,34 @@ public:
     //void setGlobalParameter(unordered_map<string, Parameter>* params);
     /* Update the current position of this vertex.*/
     void update();
+
+
+    Vertex(Vertex const & src) {
+        position.x+= src.position.x;
+        position.y+= src.position.y;
+        position.z+= src.position.z;
+    }
+
+    void Clear( void * =0 ) {
+        position.x=position.y=position.z=0.0f;
+    }
+
+    void AddWithWeight(Vertex const & src, float weight) {
+        position.x+=weight*src.position.x;
+        position.y+=weight*src.position.y;
+        position.z+=weight*src.position.z;
+    }
+
+    // Public interface ------------------------------------
+    void SetPosition(float x, float y, float z) {
+        position.x = x;
+        position.y = y;
+        position.z = z;
+    }
+
+    const float * GetPosition() const {
+        return position.Data();
+    }
 };
 
 #endif // __VERTEX_H__

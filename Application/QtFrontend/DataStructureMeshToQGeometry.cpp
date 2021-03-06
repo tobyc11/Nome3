@@ -46,23 +46,23 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
 
     //CMeshImpl::FaceIter fIter, fEnd = fromMesh.faces_end();
 
-    vector<Face*>::iterator fIt;
+
     for (auto fIt = fromMesh.faceList.begin(); fIt < fromMesh.faceList.end(); fIt++)
     {
-        CVertexData v0, vPrev, vCurr;
+        CVertexData v0{}, vPrev{}, vCurr{};
         int faceVCount = 0;
         //CMeshImpl::FaceVertexIter fvIter = CMeshImpl::FaceVertexIter(fromMesh, *fIter);
 
         std::array<float, 3> potentialFaceColor = { 999.0, 999.0, 999.0 }; // dummy default values
         Face* currFace = (*fIt);
-        if (currFace->surfaceName != "")
+        if (!currFace->surfaceName.empty())
             potentialFaceColor = currFace->color;
 
         Edge* firstEdge = currFace->oneEdge;
         Edge* currEdge = firstEdge;
         Vertex* currVert;
         do
-        { // TODO: BUG IS DUE TO NON MANIFOLD FACES MAKE THE ITERATION GET STUCK. 
+        { // TODO: BUG IS DUE TO NON MANIFOLD FACES MAKE THE ITERATION GET STUCK.
           // TRY COMMENTING OUT TORUS VS COMMENTING OUT TORUS KNOT
             if (currFace == currEdge->fa)
             {
@@ -126,7 +126,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
             faceVCount++;
 
         } while (currEdge != firstEdge);
-       
+
     }
 
     Geometry = new Qt3DRender::QGeometry();
@@ -185,15 +185,15 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
         for (auto vIt = fromMesh.vertList.begin(); vIt < fromMesh.vertList.end(); vIt++)
         {
             auto currVert = *vIt;
-            const auto& pos = currVert->position; 
+            const auto& pos = currVert->position;
 
             pointBufferData.push_back(pos.x);
             pointBufferData.push_back(pos.y);
             pointBufferData.push_back(pos.z);
-            
+
             tc::Vector3 pointColor;
             if (currVert->selected)
-            { 
+            {
                 pointColor = { VERT_SEL_COLOR };
             }
             else

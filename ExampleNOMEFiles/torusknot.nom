@@ -8,5 +8,7 @@ bank knot_slider
   set sweep_segs 30 10 100 5
 endbank
 
+
 torusknot knot ({expr $knot_slider.symm} {expr $knot_slider.turns} {expr $knot_slider.maj_rad} {expr $knot_slider.min_rad} {expr $knot_slider.tube_rad} {expr $knot_slider.circ_segs} {expr $knot_slider.sweep_segs}) endtorusknot
+
 instance knot1 knot scale (10 10 10) endinstance

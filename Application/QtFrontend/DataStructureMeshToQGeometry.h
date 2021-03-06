@@ -133,6 +133,7 @@ public:
     [[nodiscard]] Qt3DRender::QGeometry* GetGeometry() const { return Geometry; }
     [[nodiscard]] Qt3DRender::QGeometry* GetPointGeometry() const { return PointGeometry; }
 
+
 private:
     Qt3DRender::QGeometry* Geometry = nullptr;
     Qt3DRender::QGeometry* PointGeometry = nullptr;

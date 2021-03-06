@@ -226,6 +226,7 @@ bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command,
     return true;
 }
 
+
 template <>
 bool TBindingTranslator<Flow::TInput<CVertexInfo*>>::FromASTToValue(
     AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CVertexInfo*>& value)
@@ -250,12 +251,13 @@ bool TBindingTranslator<Flow::TInput<CVertexInfo*>>::FromASTToValue(
 }
 
 // Uses TInputArray instead of TInput
+
 template <>
 bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
     AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInputArray<CVertexInfo*>& value)
 {
     auto* vec = subpart.GetExpr(command);
-    if (vec == NULL)
+    if (vec == nullptr)
     {
         return false;
     }

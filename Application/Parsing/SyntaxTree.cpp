@@ -220,6 +220,16 @@ std::string ACommand::GetPositionalIdentAsString(size_t index) const
     return {};
 }
 
+int ACommand::GetPositionalNumber(size_t index) const
+{
+    if (!PositionalArguments.empty() && PositionalArguments.at(index)->GetKind() == EKind::Number
+        && PositionalArguments.size() > index)
+    {
+        return static_cast<ANumber*>(PositionalArguments.at(index))->AsFloat();
+    }
+    return {};
+}
+
 AExpr* ACommand::GetPositionalArgument(size_t index) const
 {
     if (index >= PositionalArguments.size())

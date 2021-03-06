@@ -24,6 +24,7 @@ class Face;
 class Edge
 {
 public:
+    int edge_ID = 0;
     // Pointer to Vertex A of this edge.
     Vertex* va;
     // Pointer to Vertex B of this edge.
@@ -48,8 +49,6 @@ public:
     Edge* secondHalf;
     // A flag of mobius. If two faces are with same orientation, false. Otherwise, true.
     bool mobius;
-    // True if this edge is sharp in subdivision.
-    bool isSharp;
     // Constructor.
     Edge();
     // Constructor with start and end vertex.
@@ -66,9 +65,13 @@ public:
     Vertex* theOtherVertex(Vertex* v);
     // Find the other face of this edge
     // @param f, the known face
-    Face* theOtherFace(Face* f);
+    Face* theOtherFace(Face* f) const;
     // The next edge in a face traversal of f.
     Edge* nextEdgeOfFace(Face* f);
+    int idx() const;
+    float sharpness = 0.0;
+    Vertex* v0() const;
+    Vertex* v1() const;
 };
 
 #endif // __EDGE_H__

@@ -1,0 +1,196 @@
+### Stauble_Column.nom
+
+##  inspired by his 6 columns im  Haus Konstrucktive in Zuerich
+  
+## CHS 2020/12/10
+
+#################################################################
+
+##############  SURFACES   ########################### 
+
+surface M  color  (0.9 0   1  ) endsurface   # Magenta
+surface Z  color  (1   0   0.6) endsurface   # Zinnober
+surface R  color  (1   0.1 0  ) endsurface   # Red
+surface O  color  (1   0.6 0  ) endsurface   # Orange
+surface Y  color  (1   1   0  ) endsurface   # Yellow
+surface L  color  (0.5 1   0  ) endsurface   # Lime
+surface G  color  (0   0.9 0  ) endsurface   # Green
+surface A  color  (0   0.9 0.7) endsurface   # Aqua
+surface C  color  (0   1   1  ) endsurface   # Cyan
+surface U  color  (0   0.6 1  ) endsurface   # Uniform
+surface B  color  (0   0.3 1  ) endsurface   # Blue
+surface V  color  (0.3 0   1  ) endsurface   # Violet
+surface P  color  (0.6 0   1  ) endsurface   # Purple
+
+surface W  color  (0.9 0.9 0.9) endsurface   # White
+surface D  color  (0.4 0.4 0.4) endsurface   # Dark
+surface K  color  (0   0   0  ) endsurface   # blacK
+
+################  Coordinate axes  ##################
+
+point ooo (0 0 0) endpoint
+point xoo (1 0 0) endpoint
+point oyo (0 1 0) endpoint
+point ooz (0 0 1) endpoint
+
+polyline xax ( ooo xoo ) endpolyline
+polyline yax ( ooo oyo ) endpolyline
+polyline zax ( ooo ooz ) endpolyline
+
+group coord_axes
+    instance ixax xax  surface R  endinstance
+    instance iyax yax  surface B  endinstance
+    instance izax zax  surface G  endinstance
+endgroup
+
+########################################################
+
+
+
+############  Some Parameters  ##########################
+bank p
+    set step      1     0.2     4     0.1   
+    set rotZ    -90   -90     360    30    
+endbank
+
+#################  basic column element  ####################################
+
+mesh column  
+
+point xy0  ( 0.4  1.6 0 ) endpoint 
+point ya0  (-1.6  1.6 0 ) endpoint 
+point ab0  (-1.6 -1.6 0 ) endpoint 
+point bx0  ( 0.4 -1.6 0 ) endpoint 
+
+point xy1  ( 1.0  0.6 {expr $p.step} ) endpoint 
+point ya1  (-1.3  0.6 {expr $p.step} ) endpoint 
+point ab1  (-1.3 -1.2 {expr $p.step} ) endpoint 
+point bx1  ( 1.0 -1.2 {expr $p.step} ) endpoint 
+
+point xy2  ( 1.6  1.6 {expr 2*$p.step} ) endpoint 
+point ya2  (-1.0  1.6 {expr 2*$p.step} ) endpoint 
+point ab2  (-1.0 -0.8 {expr 2*$p.step} ) endpoint 
+point bx2  ( 1.6 -0.8 {expr 2*$p.step} ) endpoint 
+
+point xy3  ( 1.0  0.6 {expr 3*$p.step} ) endpoint 
+point ya3  (-0.7  0.6 {expr 3*$p.step} ) endpoint 
+point ab3  (-0.7 -0.4 {expr 3*$p.step} ) endpoint 
+point bx3  ( 1.0 -0.4 {expr 3*$p.step} ) endpoint 
+
+point xy4  ( 0.4  1.6 {expr 4*$p.step} ) endpoint 
+point ya4  (-0.4  1.6 {expr 4*$p.step} ) endpoint 
+point ab4  (-0.4 -0.8 {expr 4*$p.step} ) endpoint 
+point bx4  ( 0.4 -0.8 {expr 4*$p.step} ) endpoint 
+
+point xy5  ( 1.0  0.6 {expr 5*$p.step} ) endpoint 
+point ya5  (-0.7  0.6 {expr 5*$p.step} ) endpoint 
+point ab5  (-0.7 -1.2 {expr 5*$p.step} ) endpoint 
+point bx5  ( 1.0 -1.2 {expr 5*$p.step} ) endpoint 
+
+point xy6  ( 1.6  1.6 {expr 6*$p.step} ) endpoint 
+point ya6  (-1.0  1.6 {expr 6*$p.step} ) endpoint 
+point ab6  (-1.0 -1.6 {expr 6*$p.step} ) endpoint 
+point bx6  ( 1.6 -1.6 {expr 6*$p.step} ) endpoint 
+
+point xy7  ( 1.0  0.6 {expr 7*$p.step} ) endpoint 
+point ya7  (-1.3  0.6 {expr 7*$p.step} ) endpoint 
+point ab7  (-1.3 -1.2 {expr 7*$p.step} ) endpoint 
+point bx7  ( 1.0 -1.2 {expr 7*$p.step} ) endpoint 
+
+point xy8  ( 0.4  1.6 {expr 8*$p.step} ) endpoint 
+point ya8  (-1.6  1.6 {expr 8*$p.step} ) endpoint 
+point ab8  (-1.6 -0.8 {expr 8*$p.step} ) endpoint 
+point bx8  ( 0.4 -0.8 {expr 8*$p.step} ) endpoint 
+
+point xy9  ( 1.0  0.6 {expr 9*$p.step} ) endpoint 
+point ya9  (-1.3  0.6 {expr 9*$p.step} ) endpoint 
+point ab9  (-1.3 -0.4 {expr 9*$p.step} ) endpoint 
+point bx9  ( 1.0 -0.4 {expr 9*$p.step} ) endpoint 
+
+point xy10  ( 1.6  1.6 {expr 10*$p.step} ) endpoint 
+point ya10  (-1.0  1.6 {expr 10*$p.step} ) endpoint 
+point ab10  (-1.0 -0.8 {expr 10*$p.step} ) endpoint 
+point bx10  ( 1.6 -0.8 {expr 10*$p.step} ) endpoint 
+
+point xy11  ( 1.0  0.6 {expr 11*$p.step} ) endpoint 
+point ya11  (-0.7  0.6 {expr 11*$p.step} ) endpoint 
+point ab11  (-0.7 -1.2 {expr 11*$p.step} ) endpoint 
+point bx11  ( 1.0 -1.2 {expr 11*$p.step} ) endpoint 
+
+point xy12  ( 0.4  1.6 {expr 12*$p.step} ) endpoint 
+point ya12  (-0.4  1.6 {expr 12*$p.step} ) endpoint 
+point ab12  (-0.4 -1.6 {expr 12*$p.step} ) endpoint 
+point bx12  ( 0.4 -1.6 {expr 12*$p.step} ) endpoint 
+
+
+face y0 (xy0 ya0 ya1 xy1)  endface
+face a0 (ya0 ab0 ab1 ya1)  endface
+face b0 (ab0 bx0 bx1 ab1)  endface
+face x0 (bx0 xy0 xy1 bx1) surface Y  endface
+
+face y1 (xy1 ya1 ya2 xy2)  endface
+face a1 (ya1 ab1 ab2 ya2)  endface
+face b1 (ab1 bx1 bx2 ab2)  endface
+face x1 (bx1 xy1 xy2 bx2) surface Y  endface
+
+face y2 (xy2 ya2 ya3 xy3)  endface
+face a2 (ya2 ab2 ab3 ya3)  endface
+face b2 (ab2 bx2 bx3 ab3)  endface
+face x2 (bx2 xy2 xy3 bx3) surface Y  endface
+
+face y3 (xy3 ya3 ya4 xy4)  endface
+face a3 (ya3 ab3 ab4 ya4)  endface
+face b3 (ab3 bx3 bx4 ab4)  endface
+face x3 (bx3 xy3 xy4 bx4) surface Y  endface
+
+face y4 (xy4 ya4 ya5 xy5)  endface
+face a4 (ya4 ab4 ab5 ya5)  endface
+face b4 (ab4 bx4 bx5 ab5)  endface
+face x4 (bx4 xy4 xy5 bx5) surface Y  endface
+
+face y5 (xy5 ya5 ya6 xy6)  endface
+face a5 (ya5 ab5 ab6 ya6)  endface
+face b5 (ab5 bx5 bx6 ab6)  endface
+face x5 (bx5 xy5 xy6 bx6) surface Y  endface
+
+face y6 (xy6 ya6 ya7 xy7)  endface
+face a6 (ya6 ab6 ab7 ya7)  endface
+face b6 (ab6 bx6 bx7 ab7)  endface
+face x6 (bx6 xy6 xy7 bx7) surface Y  endface
+
+face y7 (xy7 ya7 ya8 xy8)  endface
+face a7 (ya7 ab7 ab8 ya8)  endface
+face b7 (ab7 bx7 bx8 ab8)  endface
+face x7 (bx7 xy7 xy8 bx8) surface Y  endface
+
+face y8 (xy8 ya8 ya9 xy9)  endface
+face a8 (ya8 ab8 ab9 ya9)  endface
+face b8 (ab8 bx8 bx9 ab9)  endface
+face x8 (bx8 xy8 xy9 bx9) surface Y  endface
+
+face y9 (xy9 ya9 ya10 xy10)  endface
+face a9 (ya9 ab9 ab10 ya10)  endface
+face b9 (ab9 bx9 bx10 ab10)  endface
+face x9 (bx9 xy9 xy10 bx10) surface Y  endface
+
+face y10 (xy10 ya10 ya11 xy11)  endface
+face a10 (ya10 ab10 ab11 ya11)  endface
+face b10 (ab10 bx10 bx11 ab11)  endface
+face x10 (bx10 xy10 xy11 bx11) surface Y  endface
+
+face y11 (xy11 ya11 ya12 xy12)  endface
+face a11 (ya11 ab11 ab12 ya12)  endface
+face b11 (ab11 bx11 bx12 ab12)  endface
+face x11 (bx11 xy11 xy12 bx12) surface Y  endface
+
+sharp 9  ( xy0 xy1 xy2 xy3 xy4 xy5 xy6 xy7 xy8 xy9 xy10 xy11 xy12 ) endsharp   ##<<<
+sharp 9  ( ya0 ya1 ya2 ya3 ya4 ya5 ya6 ya7 ya8 ya9 ya10 ya11 ya12 ) endsharp   ##<<<
+sharp 9  ( ab0 ab1 ab2 ab3 ab4 ab5 ab6 ab7 ab8 ab9 ab10 ab11 ab12 ) endsharp   ##<<<
+sharp 9  ( bx0 bx1 bx2 bx3 bx4 bx5 bx6 bx7 bx8 bx9 bx10 bx11 bx12 ) endsharp   ##<<<
+
+endmesh   # column #
+
+instance  icolumn   column  surface O  scale( 0.02 0.02 0.02 )  rotate(0 0 1)({expr $p.rotZ})  translate(0 0 {expr -6*$p.step})   endinstance 
+
+#################  RENDER  ############################################################
+

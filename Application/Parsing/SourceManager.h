@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <unordered_map>
 
 namespace Nome
 {
@@ -27,6 +28,12 @@ public:
 
     void InsertText(size_t globalOffset, const std::string& text);
     void RemoveText(size_t globalOffset, size_t length);
+    void ReportErros(std::string code); 
+    std::vector<std::string> CheckStatement(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> idmap, std::string endstatement, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckInstance(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckGroup(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string>& idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckBank(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &referencemap, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    int checkcount(std::string str, char letter);
     [[nodiscard]] std::string CollectText() const;
     [[nodiscard]] std::pair<size_t, size_t> FindPieceIndexAndOffset(size_t globalOffset) const;
 

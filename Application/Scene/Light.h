@@ -40,6 +40,7 @@ public:
     void MarkDirty() override;
     void UpdateEntity() override;
     bool IsInstantiable() override;
+    bool IsMesh() override;
     CEntity* Instantiate(CSceneTreeNode* treeNode) override;
     AST::ACommand* SyncToAST(AST::CASTContext& ctx, bool createNewNode) override;
 

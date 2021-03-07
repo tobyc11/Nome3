@@ -110,7 +110,8 @@ public:
     void SetValid(bool value) { bIsValid = value; }
 
     virtual void Draw(IDebugDraw*) {};
-
+    // To identify if the entity is instantiated as mesh, if not, it's rendering info
+    virtual bool IsMesh() { return true; }
     // Some entities(generators) allow actual instance objects for each scene tree node
     //  so that each instance can be customized, like delete face
     virtual bool IsInstantiable() { return false; }

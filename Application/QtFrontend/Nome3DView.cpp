@@ -103,12 +103,19 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
 
         if (entity)
         {
-            printf("    %s\n", entity->GetName().c_str());
-
-            // Create an InteractiveMesh from the scene node
-            auto* mesh = new CInteractiveMesh(node);
-            mesh->setParent(this->Root);
-            InteractiveMeshes.insert(mesh);
+            printf("Generating the entity    %s\n", entity->GetName().c_str());
+            if (entity->IsMesh())
+            {
+                // Create an InteractiveMesh from the scene node
+                auto* mesh = new CInteractiveMesh(node);
+                mesh->setParent(this->Root);
+                InteractiveMeshes.insert(mesh);
+            } else {
+                // Create an InteractiveLight from the scene node
+                auto* light = new CInteractiveLight(node);
+                light->setParent(this->Root);
+                InteractiveLights.insert(light);
+            }
         }
     });
     PostSceneUpdate();
@@ -119,6 +126,9 @@ void CNome3DView::UnloadScene()
     for (auto* m : InteractiveMeshes)
         delete m;
     InteractiveMeshes.clear();
+    for (auto* l : InteractiveLights)
+        delete l;
+    InteractiveLights.clear();
     Scene = nullptr;
 }
 
@@ -126,11 +136,16 @@ void CNome3DView::UnloadScene()
 void CNome3DView::PostSceneUpdate()
 {
     using namespace Scene;
-    std::unordered_map<CSceneTreeNode*, CInteractiveMesh*> sceneNodeAssoc;
-    std::unordered_set<CInteractiveMesh*> aliveSet;
+    std::unordered_map<CSceneTreeNode*, CInteractiveMesh*> sceneMeshAssoc;
+    std::unordered_map<CSceneTreeNode*, CInteractiveLight*> sceneLightAssoc;
+
+    std::unordered_set<CInteractiveMesh*> aliveSetMesh;
+    std::unordered_set<CInteractiveLight*> aliveSetLight;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> aliveEntityDrawData;
     for (auto* m : InteractiveMeshes)
-        sceneNodeAssoc.emplace(m->GetSceneTreeNode(), m);
+        sceneMeshAssoc.emplace(m->GetSceneTreeNode(), m);
+    for (auto* l : InteractiveLights)
+        sceneLightAssoc.emplace(l->GetSceneTreeNode(), l);
 
     Scene->ForEachSceneTreeNode([&](CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
@@ -142,61 +157,101 @@ void CNome3DView::PostSceneUpdate()
 
         if (entity)
         {
-            CInteractiveMesh* mesh = nullptr;
-            // Check for existing InteractiveMesh
-            auto iter = sceneNodeAssoc.find(node);
-            if (iter != sceneNodeAssoc.end())
+            if (entity->IsMesh())
             {
-                // Found existing InteractiveMesh, mark as alive
-                mesh = iter->second;
-                aliveSet.insert(mesh);
-                mesh->UpdateTransform();
-                if (node->WasEntityUpdated())
+                CInteractiveMesh* mesh = nullptr;
+                // Check for existing InteractiveMesh
+                auto iter = sceneMeshAssoc.find(node);
+                if (iter != sceneMeshAssoc.end())
                 {
+                    // Found existing InteractiveMesh, mark as alive
+                    mesh = iter->second;
+                    aliveSetMesh.insert(mesh);
+                    mesh->UpdateTransform();
+                    if (node->WasEntityUpdated())
+                    {
 
-                    printf("Geom regen for %s\n", node->GetPath().c_str());
-                    mesh->UpdateGeometry(PickVertexBool);
-                    mesh->UpdateMaterial(WireFrameMode);
-                    node->SetEntityUpdated(false);
+                        printf("Geom regen for %s\n", node->GetPath().c_str());
+                        mesh->UpdateGeometry(PickVertexBool);
+                        mesh->UpdateMaterial(WireFrameMode);
+                        node->SetEntityUpdated(false);
+                    }
                 }
-            }
-            else
-            {
-                mesh = new CInteractiveMesh(node);
-                mesh->setParent(this->Root);
-                aliveSet.insert(mesh);
-                InteractiveMeshes.insert(mesh);
-            }
+                else
+                {
+                    mesh = new CInteractiveMesh(node);
+                    mesh->setParent(this->Root);
+                    aliveSetMesh.insert(mesh);
+                    InteractiveMeshes.insert(mesh);
+                }
 
-            // Create a DebugDraw for the CEntity if not already
-            auto eIter = EntityDrawData.find(entity);
-            if (eIter == EntityDrawData.end())
-            {
-                auto* debugDraw = new CDebugDraw(Root);
-                aliveEntityDrawData[entity] = debugDraw;
-                // TODO: somehow uncommenting this line leads to a crash in Qt3D
-                // mesh->SetDebugDraw(debugDraw);
-            }
-            else
-            {
-                aliveEntityDrawData[entity] = eIter->second;
-                mesh->SetDebugDraw(eIter->second);
+                // Create a DebugDraw for the CEntity if not already
+                auto eIter = EntityDrawData.find(entity);
+                if (eIter == EntityDrawData.end())
+                {
+                    auto* debugDraw = new CDebugDraw(Root);
+                    aliveEntityDrawData[entity] = debugDraw;
+                    // TODO: somehow uncommenting this line leads to a crash in Qt3D
+                    // mesh->SetDebugDraw(debugDraw);
+                }
+                else
+                {
+                    aliveEntityDrawData[entity] = eIter->second;
+                    mesh->SetDebugDraw(eIter->second);
+                }
+            } else {
+                /// TODO: add light
+                CInteractiveLight* light = nullptr;
+                // Check for existing InteractiveMesh
+                auto iter = sceneLightAssoc.find(node);
+                if (iter != sceneLightAssoc.end())
+                {
+                    // Found existing InteractiveMesh, mark as alive
+                    light = iter->second;
+                    aliveSetLight.insert(light);
+                    light->UpdateTransform();
+                    if (node->WasEntityUpdated())
+                    {
+                        printf("Delivering the rendering light of the scene %s\n", node->GetPath().c_str());
+                        light->UpdateLight();
+                        node->SetEntityUpdated(false);
+                    }
+                }
+                else
+                {
+                    light = new CInteractiveLight(node);
+                    light->setParent(this->Root);
+                    aliveSetLight.insert(light);
+                    InteractiveLights.insert(light);
+                }
             }
         }
     });
 
     // Now kill all the dead objects, i.e., not longer in the scene graph. If it wasn't added to
-    // aliveset above, then it is dead.
+    // aliveSetMesh above, then it is dead.
     for (auto* m : InteractiveMeshes)
     {
-        auto iter = aliveSet.find(m);
-        if (iter == aliveSet.end())
+        auto iter = aliveSetMesh.find(m);
+        if (iter == aliveSetMesh.end())
         {
-            // Not in aliveSet
+            // Not in aliveSetMesh
             delete m;
         }
     }
-    InteractiveMeshes = std::move(aliveSet);
+    InteractiveMeshes = std::move(aliveSetMesh);
+
+    // Take the same method as the mesh
+    for (auto* l : InteractiveLights)
+    {
+        auto iter = aliveSetLight.find(l);
+        if (iter == aliveSetLight.end())
+        {
+            // Not in aliveSetMesh
+            delete l;
+        }
+    }
+    InteractiveLights = std::move(aliveSetLight);
 
     // Kill all entity debug draws that are not alive
     for (auto& iter : EntityDrawData)

@@ -21,6 +21,8 @@ void CLight::MarkDirty()
 
 bool CLight::IsInstantiable() { return true; }
 
+bool CLight::IsMesh() { return false; }
+
 CEntity* CLight::Instantiate(CSceneTreeNode* treeNode) { return new CLightInstance(this, treeNode); }
 
 

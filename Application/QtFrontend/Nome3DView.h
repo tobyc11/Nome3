@@ -1,6 +1,7 @@
 #pragma once
 #include "DebugDraw.h"
 #include "InteractiveMesh.h"
+#include "InteractiveLight.h"
 #include "OrbitTransformController.h"
 #include <Ray.h>
 #include <Scene/Scene.h>
@@ -76,6 +77,7 @@ private:
     Qt3DCore::QEntity* Base;
     tc::TAutoPtr<Scene::CScene> Scene;
     std::unordered_set<CInteractiveMesh*> InteractiveMeshes;
+    std::unordered_set<CInteractiveLight*> InteractiveLights;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> EntityDrawData;
     std::vector<std::string> SelectedVertices;
     std::vector<std::string> SelectedFaces; // Randy added on 10/10

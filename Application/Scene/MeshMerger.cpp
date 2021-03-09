@@ -57,7 +57,7 @@ void CMeshMerger::Catmull()
     }
 
     subdivide(currMesh, subdivisionLevel);
-    cout << "done with subdiv" << endl;
+    std::cout << "done with subdiv" << std::endl;
     currMesh.buildBoundary();
     currMesh.computeNormals();
 }
@@ -312,7 +312,7 @@ bool CMeshMerger::subdivide(DSMesh& _m, unsigned int n) const
 
             // all refined Catmark faces should be quads
             assert(fverts.size()==4);
-            vector<Vertex*> vertices;
+            std::vector<Vertex*> vertices;
             for (int i = 0; i < 4; ++i)
             {
                 vertices.push_back(_m.vertList.at(fverts[i]));

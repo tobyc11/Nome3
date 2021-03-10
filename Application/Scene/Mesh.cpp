@@ -269,7 +269,7 @@ void CMeshInstance::CopyFromGenerator()
     auto className = MeshGenerator->GetMetaObject().ClassName();
     std::set<std::string> polylineClassNames = { "CPolyline", "CBSpline", "CBezierSpline", "CSweepPath"};
     bool isPolyline = polylineClassNames.count(className) > 0;
-    auto newMesh =MeshGenerator->currMesh.randymakeCopy("", isPolyline); // make DSMesh copy for Instance 
+    auto newMesh =MeshGenerator->currMesh.newMakeCopy("", isPolyline); // make DSMesh copy for Instance 
 
     currMesh = newMesh; 
 

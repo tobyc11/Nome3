@@ -658,8 +658,6 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
                     const auto& [dist, meshInst, overlapvertName] = hits[i];
                     if (round(dist * 100) == selected_dist)
                     {
-                        std::cout << "about to call markvertaselected on below name" << std::endl;
-                        std::cout << overlapvertName << std::endl;
                         meshInst->MarkVertAsSelected({ overlapvertName }, InputSharpness());
                     }
                 }

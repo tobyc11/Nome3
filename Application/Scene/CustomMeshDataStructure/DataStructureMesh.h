@@ -17,7 +17,6 @@
 class Parameter;
 class Group;
 
-//using namespace std;
 //using namespace glm;
 
 //////////////////////////////////////////////////////////////////////
@@ -39,6 +38,11 @@ public:
 
     /* This is an auxillary table to build a mesh, matching edge to vertex.*/
     std::unordered_map<Vertex*, std::vector<Edge*>> edgeTable;
+
+    /*  the above edgeTable one from Nome2 is buggy. for some reason one vertex
+                        // always maps to only one edge. Was that intended? */
+    std::unordered_map<Vertex*, std::vector<Edge*>> randyedgeTable; 
+
 
 
     int n_vertices();
@@ -114,15 +118,8 @@ public:
      */
 
     // test for copying instances 
+    Mesh newMakeCopy(std::string copy_mesh_name = "", bool isPolyline = false);
 
-    Mesh randymakeCopy(std::string copy_mesh_name = "", bool isPolyline = false);
-
-
-    /**
-     * @brief makeCopy: Make a copy of current mesh.
-     * @return The copied mesh.
-     */
-    Mesh makeCopy(std::string copy_mesh_name = "");
     /**
      * @brief makeCopyForTransform: Make a copy of current mesh.
      * It is used for future transformation.

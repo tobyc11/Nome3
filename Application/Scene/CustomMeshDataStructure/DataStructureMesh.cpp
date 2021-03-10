@@ -109,6 +109,28 @@ Edge* Mesh::createEdge(Vertex* v1, Vertex* v2)
             currEdges.push_back(edge);
             edgeTable[v1] = currEdges;
         }
+
+        if (randyedgeTable.count(v1) > 0)
+        {
+            randyedgeTable[v1].push_back(edge);
+        }
+        else
+        {
+            std::vector<Edge*> currEdges;
+            currEdges.push_back(edge);
+            randyedgeTable[v1] = currEdges;
+        }
+
+        if (randyedgeTable.count(v2) > 0)
+        {
+            randyedgeTable[v2].push_back(edge);
+        }
+        else
+        {
+            std::vector<Edge*> currEdges;
+            currEdges.push_back(edge);
+            randyedgeTable[v2] = currEdges;
+        }
     }
     // cout<<"The va of edge is "<<edge -> va -> ID<<" . The vb is "<< edge -> vb -> ID<<" ."<<endl;
     return edge;
@@ -496,11 +518,10 @@ void Mesh::clearAndDelete()
 
 
 // test function
-Mesh Mesh::randymakeCopy(std::string copy_mesh_name, bool isPolyline)
+Mesh Mesh::newMakeCopy(std::string copy_mesh_name, bool isPolyline)
 {
     // cout<<"Creating a copy of the current map.\n";
     Mesh newMesh;
-
     if (copy_mesh_name == "")
     {
         newMesh.name = this->name;
@@ -513,6 +534,7 @@ Mesh Mesh::randymakeCopy(std::string copy_mesh_name, bool isPolyline)
     std::vector<Vertex*>::iterator vIt;
     for (vIt = vertList.begin(); vIt < vertList.end(); vIt++)
     {
+      
         Vertex* vertCopy = new Vertex;
         vertCopy->ID = (*vIt)->ID;
         vertCopy->name = (*vIt)->name;
@@ -524,7 +546,6 @@ Mesh Mesh::randymakeCopy(std::string copy_mesh_name, bool isPolyline)
     std::vector<Vertex*> vertices;
     for (fIt = faceList.begin(); fIt < faceList.end(); fIt++)
     {
-
         Face* tempFace = *fIt;
         Edge* firstEdge = tempFace->oneEdge;
         Edge* currEdge = firstEdge;
@@ -533,7 +554,6 @@ Mesh Mesh::randymakeCopy(std::string copy_mesh_name, bool isPolyline)
         vertices.clear();
         do
         {
-
             if (tempFace == currEdge->fa)
             {
                 tempv = currEdge->vb;
@@ -563,117 +583,13 @@ Mesh Mesh::randymakeCopy(std::string copy_mesh_name, bool isPolyline)
         newMesh.faceList[newMesh.faceList.size() - 1]->surfaceName =
             (*fIt)->surfaceName; // Randy added this
     }
+
     std::vector<Edge*>::iterator eItr;
     for (eItr = newMesh.edgeList.begin(); eItr != newMesh.edgeList.end(); eItr++) {
         (*eItr)->sharpness = findEdge((*eItr)->v0()->name, (*eItr)->v1()->name, false)->sharpness;
     }
     newMesh.buildBoundary();
-
     newMesh.computeNormals(isPolyline);
-
-    return newMesh;
-}
-
-Mesh Mesh::makeCopy(std::string copy_mesh_name)
-{
-    // cout<<"Creating a copy of the current map.\n";
-    Mesh newMesh;
-
-    if (copy_mesh_name == "")
-    {
-        newMesh.name = this->name;
-    }
-    else
-    {
-        newMesh.name = copy_mesh_name;
-    }
-    newMesh.clear();
-    std::vector<Vertex*>::iterator vIt;
-    for (vIt = vertList.begin(); vIt < vertList.end(); vIt++)
-    {
-        Vertex* vertCopy = new Vertex;
-        vertCopy->ID = (*vIt)->ID;
-        vertCopy->name = (*vIt)->name;
-        vertCopy->position = (*vIt)->position;
-        vertCopy->isParametric = (*vIt)->isParametric;
-        if ((*vIt)->isParametric)
-        {
-            vertCopy->x_expr = (*vIt)->x_expr;
-            vertCopy->y_expr = (*vIt)->y_expr;
-            vertCopy->z_expr = (*vIt)->z_expr;
-            //vertCopy->params = (*vIt)->params;
-            //vertCopy->influencingParams = (*vIt)->influencingParams;
-        }
-        newMesh.addVertex(vertCopy);
-    }
-    std::vector<Face*>::iterator fIt;
-    std::vector<Vertex*> vertices;
-    for (fIt = faceList.begin(); fIt < faceList.end(); fIt++)
-    {
-        Face* tempFace = *fIt;
-        Edge* firstEdge = tempFace->oneEdge;
-        Edge* currEdge = firstEdge;
-        Edge* nextEdge;
-        Vertex* tempv;
-        vertices.clear();
-        do
-        {
-            if (tempFace == currEdge->fa)
-            {
-                tempv = currEdge->vb;
-                nextEdge = currEdge->nextVbFa;
-            }
-            else
-            {
-                if (currEdge->mobius)
-                {
-                    tempv = currEdge->vb;
-                    nextEdge = currEdge->nextVbFb;
-                }
-                else
-                {
-                    tempv = currEdge->va;
-                    nextEdge = currEdge->nextVaFb;
-                }
-            }
-            vertices.push_back(newMesh.vertList[tempv->ID]);
-            currEdge = nextEdge;
-        } while (currEdge != firstEdge);
-        newMesh.addFace(vertices);
-        newMesh.faceList[newMesh.faceList.size() - 1]->user_defined_color =
-            (*fIt)->user_defined_color;
-        newMesh.faceList[newMesh.faceList.size() - 1]->color = (*fIt)->color;
-        newMesh.faceList[newMesh.faceList.size() - 1]->name = (*fIt)->name;
-        newMesh.faceList[newMesh.faceList.size() - 1]->surfaceName = (*fIt)->surfaceName; // Randy added this
-    }
-    newMesh.buildBoundary();
-    newMesh.computeNormals();
-    newMesh.params = params;
-    newMesh.type = type;
-    if (type == 1)
-    {
-        newMesh.n = n;
-        newMesh.ro = ro;
-        newMesh.ratio = ratio;
-        newMesh.h = h;
-        newMesh.n_expr = n_expr;
-        newMesh.ro_expr = ro_expr;
-        newMesh.ratio_expr = ratio_expr;
-        newMesh.h_expr = h_expr;
-        newMesh.influencingParams = influencingParams;
-    }
-    else if (type == 2)
-    {
-        newMesh.n = n;
-        newMesh.ro = ro;
-        newMesh.ratio = ratio;
-        newMesh.h = h;
-        newMesh.n_expr = n_expr;
-        newMesh.ro_expr = ro_expr;
-        newMesh.ratio_expr = ratio_expr;
-        newMesh.h_expr = h_expr;
-        newMesh.influencingParams = influencingParams;
-    }
     return newMesh;
 }
 

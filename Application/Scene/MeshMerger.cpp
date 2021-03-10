@@ -36,30 +36,27 @@ void CMeshMerger::Catmull()
         return;
     }
 
-
-
     // OpenMesh::Subdivider::Uniform::CatmullClarkT<CMeshImpl> catmull; //
     // https://www.graphics.rwth-aachen.de/media/openmesh_static/Documentations/OpenMesh-4.0-Documentation/a00020.html
     // Execute 2 subdivision steps
-    DSMesh otherMesh = MergedMesh;
+    DSMesh otherMesh = MergedMesh.newMakeCopy();
     // catmull.attach(otherMesh);
     // prepare(otherMesh);
 
     if (needSubdivision)
     {
-        //subdivide(otherMesh, subdivisionLevel, isSharp); Randy commented this out for now. add back asap 
-        std::cout << "Apply catmullclark subdivision, may take a few minutes or so" << std::endl;
+        //subdivide(otherMesh, subdivisionLevel); //, isSharp); // Randy commented this out for now. add back asap 
+        std::cout << "Apply catmullclark subdivision, may take up to a few minutes" << std::endl;
     }
     if (needOffset)
     {
         offset(otherMesh);
-        std::cout << "Apply offset, may take a few minutes or so" << std::endl;
+        std::cout << "Apply offset, may take up to a few minutes" << std::endl;
     }
 
+    currMesh = otherMesh.newMakeCopy();
     subdivide(currMesh, subdivisionLevel);
     std::cout << "done with subdiv" << std::endl;
-    currMesh.buildBoundary();
-    currMesh.computeNormals();
 }
 
 
@@ -156,7 +153,7 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
     otherMesh.visible = false;
     MergedMesh.buildBoundary();
     MergedMesh.computeNormals();
-    currMesh = MergedMesh.randymakeCopy();
+    currMesh = MergedMesh.newMakeCopy();
 
 }
 
@@ -192,52 +189,34 @@ bool CMeshMerger::offset(DSMesh & _m)
     {
         return true;
     }
-
     COffsetRefiner offsetRefiner(_m, offsetFlag);
     offsetRefiner.Refine(height, width);
-    _m.clear();
+    _m.clear(); // TODO: is this not doing anyhting???
 
-    std::vector<Vector3> vertices = offsetRefiner.GetVertices();
-    std::vector<std::vector<int>> faces = offsetRefiner.GetFaces();
+    std::vector<Vertex*> vertices = offsetRefiner.GetVertices();
+    std::vector<Face*> faces = offsetRefiner.GetFaces();
 
-    // Print vertices
-    printf("============ output vertices ======\n");
-    for (int index = 0; index < vertices.size(); index++)
+
+    // Offset verts and faces
+    printf("============ output verts and faces ======\n"); // TODO: debug below...
+    // for (int index = 0; index < faces.size(); index++)
+    for (auto face : faces)
     {
-        Vector3 point = vertices[index];
-        //_m.add_vertex(CMeshImpl::Point(point.x, point.y, point.z));
-        
-        // Randy replaced above line with below two lines;
-        Vertex* newVert = new Vertex(point.x, point.y, point.z, currMesh.vertList.size());
-        _m.addVertex(newVert);
-        
-        printf("v%d: %f %f %f\n", index, point.x, point.y, point.z);
-    }
-
-    // Print faces
-    printf("============ output faces ======\n");
-    for (int index = 0; index < faces.size(); index++)
-    {
-        std::vector<int> indexList = faces[index];
-        
-        //auto face = _m.add_face(_m.vertex_handle(indexList[0]), _m.vertex_handle(indexList[1]),
-        //                        _m.vertex_handle(indexList[2]), _m.vertex_handle(indexList[3]));
-        
-        // Randy replaced above line with below line
-        auto face = _m.addFace({_m.idToVert[indexList[0]], _m.idToVert[indexList[1]],  _m.idToVert[indexList[2]], _m.idToVert[indexList[3]]});
-
-
-
-        // Randy replaced above line with below two lines
-
-        printf("f%d: ", index);
-        for (int id : indexList)
+        std::vector<Vertex*> newVerts;
+        for (int i = 0; i < face->vertices.size(); i++)
         {
-            printf("%d ", id); // OBJ uses 1-based arrays...
+            auto vert = face->vertices[i];
+            Vertex* newVert = new Vertex(vert->position.x, vert->position.y, vert->position.z,
+                                         _m.vertList.size());
+            newVert->name = "offsetVert" + std::to_string(i); // Randy this was the bug. Need to name the Vert before adding it! Fix this logic.
+            _m.addVertex(newVert);
+            newVerts.push_back(newVert);
         }
-        printf("\n");
+        _m.addFace(newVerts);
     }
 
+    _m.buildBoundary(); // Randy added this on 2/26
+    _m.computeNormals();
     return true;
 }
 

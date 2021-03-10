@@ -16,6 +16,8 @@
 namespace Nome
 {
 
+    using namespace Qt3DRender;
+
 CInteractiveMesh::CInteractiveMesh(Scene::CSceneTreeNode* node)
     : SceneTreeNode(node)
     , PointEntity {}
@@ -191,7 +193,6 @@ void CInteractiveMesh::UpdateMaterial(bool showFacets)
             InstanceColor[2] = light->Color.blueF();
         }
     }
-
 
     // Use non-default line color only if the instance has a surface
     auto surface = SceneTreeNode->GetOwner()->GetSurface();

@@ -37,7 +37,7 @@ private:
     Qt3DRender::QGeometry* PointGeometry;
     Qt3DRender::QGeometryRenderer* PointRenderer;
 
-    std::array<float, 3> InstanceColor;
+    std::array<float, 3> InstanceColor{};
 };
 
 }

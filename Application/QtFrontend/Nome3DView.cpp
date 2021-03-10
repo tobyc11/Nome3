@@ -42,19 +42,8 @@ CNome3DView::CNome3DView()
     material->setAmbient(QColor(0, 255, 0));
     material->setShininess(5);
 
-
     torus->addComponent(torusMesh);
     torus->addComponent(material);
-
-    // Make a point light
-    auto* lightEntity = new Qt3DCore::QEntity(Base);
-    auto* light = new Qt3DRender::QPointLight(lightEntity);
-    light->setColor("white");
-    light->setIntensity(1);
-    lightEntity->addComponent(light);
-    auto* lightTransform = new Qt3DCore::QTransform(lightEntity);
-    lightTransform->setTranslation({ 100.0f, 100.0f, 100.0f });
-    lightEntity->addComponent(lightTransform);
 
     // Tweak render settings
     this->defaultFrameGraph()->setClearColor(QColor(QRgb(0x4d4d4f)));
@@ -886,29 +875,29 @@ void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
     material->setAlpha(0.0f);
 
     mousePressEnabled = false;
+    rotationEnabled = true;
 }
 
 void CNome3DView::wheelEvent(QWheelEvent *ev)
 {
-
     if (rotationEnabled)
     {
         QVector3D cameraPosition = cameraset->position();
         zPos = cameraPosition.z();
         QPoint numPixels = ev->pixelDelta();
-        QPoint numDegrees = ev->angleDelta() / 10.0f;
+        QPoint numDegrees = ev->angleDelta() / 13.0f;
 
         if (!numPixels.isNull())
         {
-            objectZ += numPixels.y() * 0.2;
+            objectZ += numPixels.y() * 0.15;
         }
         else if (!numDegrees.isNull())
         {
-            QPoint numSteps = numDegrees / 15;
-            objectZ += numSteps.y() * 0.2;
+            QPoint numSteps = numDegrees / 15.0;
+            objectZ += numSteps.y() * 0.15;
         }
-        if (objectZ > 2)
-            objectZ = 2;
+        if (objectZ > 30)
+            objectZ = 30;
         sphereTransform->setTranslation(QVector3D(objectX, objectY, objectZ));
         ev->accept();
     }

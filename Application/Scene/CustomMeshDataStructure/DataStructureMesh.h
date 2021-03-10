@@ -17,7 +17,7 @@
 class Parameter;
 class Group;
 
-using namespace std;
+//using namespace std;
 //using namespace glm;
 
 //////////////////////////////////////////////////////////////////////
@@ -26,26 +26,26 @@ class Mesh
 {
 public:
     /* A list of all vertices in this mesh. */
-    vector<Vertex*> vertList;
+    std::vector<Vertex*> vertList;
     /* A list of all facets in this mesh.*/
-    vector<Face*> faceList;
+    std::vector<Face*> faceList;
 
-    vector<Edge*> edgeList;
+    std::vector<Edge*> edgeList;
 
     // Randy added these two. Easy way to access Vertex objects in Mesh.cpp. Don't need to traverse vertList
-    unordered_map<string, Vertex*> nameToVert;
-    unordered_map<int, Vertex*> idToVert; // Randy added this on 2/19
-    unordered_map<string, Face*> nameToFace;
+    std::unordered_map<std::string, Vertex*> nameToVert;
+    std::unordered_map<int, Vertex*> idToVert; // Randy added this on 2/19
+    std::unordered_map<std::string, Face*> nameToFace;
 
     /* This is an auxillary table to build a mesh, matching edge to vertex.*/
-    unordered_map<Vertex*, vector<Edge*>> edgeTable;
+    std::unordered_map<Vertex*, std::vector<Edge*>> edgeTable;
 
 
     int n_vertices();
     int n_faces();
     int n_edges();
-    vector<Face*> faces();
-    vector<Edge*> edges();
+    std::vector<Face*> faces();
+    std::vector<Edge*> edges();
 
     bool visible = true;
 
@@ -84,7 +84,7 @@ public:
      * @param v1, v2: the two vertices of this edge.
      * If it does not exists, then return NULL.
      */
-    Edge* findEdge(const string& v1, const string& v2, bool setmobius = true);
+    Edge* findEdge(const std::string& v1, const std::string& v2, bool setmobius = true);
     /**
      * @brief Find one edge v1-v2 in this Mesh.
      * @param v1, v2: the two vertices of this edge.
@@ -100,7 +100,8 @@ public:
      * @brief Add a triangle face to a mesh, with three vertices.
      * @param v1, v2, v3 are the three vertices of the face.
      */
-    Face* addFace(vector<Vertex*> vertices, bool reverseOrder = false); // Randy changed this on 1/22
+    Face* addFace(std::vector<Vertex*> vertices,
+                  bool reverseOrder = false); // Randy changed this on 1/22
     /**
      * @brief delelteFace: Delete a face from this mesh.
      * @param face: the face to be deleted.
@@ -114,14 +115,14 @@ public:
 
     // test for copying instances 
 
-    Mesh randymakeCopy(string copy_mesh_name = "", bool isPolyline = false);
+    Mesh randymakeCopy(std::string copy_mesh_name = "", bool isPolyline = false);
 
 
     /**
      * @brief makeCopy: Make a copy of current mesh.
      * @return The copied mesh.
      */
-    Mesh makeCopy(string copy_mesh_name = "");
+    Mesh makeCopy(std::string copy_mesh_name = "");
     /**
      * @brief makeCopyForTransform: Make a copy of current mesh.
      * It is used for future transformation.
@@ -152,7 +153,7 @@ public:
     // Compute the vertex normals for every face and vertex of the mesh.
     void computeNormals(bool isPolyline = false);
     // Return the list of edges on the boarders
-    vector<Edge*> boundaryEdgeList();
+    std::vector<Edge*> boundaryEdgeList();
     /* The color of this mesh.*/
     //QColor color;
     /* Check if this mesh if empty. */
@@ -176,15 +177,15 @@ public:
     /* Reset the transformations to this mesh of going up one level. */
     //void setTransformation(vector<Transformation>);
     /* The name of this mesh. */
-    string name;
+    std::string name;
     /* Update the value of all elements made by expression. */
     //void updateMesh();
     /* A map of vertex ID to its position expression. */
-    unordered_map<int, vector<string>> idToExprs;
+    std::unordered_map<int, std::vector<std::string>> idToExprs;
     /* A pointer to the global parameter. */
-    unordered_map<string, Parameter>* params{};
+    std::unordered_map<std::string, Parameter>* params {};
     /* Set the global parameter pointer for this mesh. */
-    void setGlobalParameter(unordered_map<string, Parameter>* params);
+    void setGlobalParameter(std::unordered_map<std::string, Parameter>* params);
     /* The paraent group of this mesh. */
     Group* parent;
     /**
@@ -201,10 +202,10 @@ public:
     float ro;
     float ratio;
     float h;
-    string n_expr;
-    string ro_expr;
-    string ratio_expr;
-    string h_expr;
+    std::string n_expr;
+    std::string ro_expr;
+    std::string ratio_expr;
+    std::string h_expr;
     //void makeFunnel();
     //void makeTunnel();
     //void makeTunnel2();
@@ -216,16 +217,16 @@ public:
     //void updateTunnel_ro_ratio_or_h();
     //int setFunnelParameterValues(string, int);
     //void setTunnelParameterValues(string, int);
-    vector<Parameter*> influencingParams;
+    std::vector<Parameter*> influencingParams;
     /* Add a parameter that influence this funnel. */
     void addParam(Parameter*);
     /* The pointer to the copied mesh before transformation. */
     Mesh* before_transform_mesh{};
     /* Find a vertex in this mesh given its name. */
-    Vertex* findVertexInThisMesh(string name);
+    Vertex* findVertexInThisMesh(std::string name);
     /* Find a face in this mesh given its name. And delete this face.
      * return true if it is in this mesh. */
-    bool deleteFaceInThisMesh(string name);
+    bool deleteFaceInThisMesh(std::string name);
     /* Indicator that this group is in editing mode.
      * So we can't change the hyper parameters of this mesh,
      * e.g. the parameter n of the mesh.

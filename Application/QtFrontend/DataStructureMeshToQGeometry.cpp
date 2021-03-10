@@ -174,7 +174,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
         uint32_t vertexCount = 0;
 
         // this is how the vertex is displayed
-        vector<Vertex*>::iterator vIt;
+        std::vector<Vertex*>::iterator vIt;
         for (auto vIt = fromMesh.vertList.begin(); vIt < fromMesh.vertList.end(); vIt++)
         {
             auto currVert = *vIt;

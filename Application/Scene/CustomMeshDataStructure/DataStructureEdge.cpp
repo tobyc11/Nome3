@@ -54,7 +54,7 @@ Edge* Edge::nextEdge(Vertex* v, Face* f)
             return nextVbFb;
         }
     }
-    cout << "Error: Invalid search of edge at vertex " << v->ID << "." << endl;
+    std::cout << "Error: Invalid search of edge at vertex " << v->ID << "." << std::endl;
     exit(0);
 }
 
@@ -86,7 +86,7 @@ void Edge::setNextEdge(Vertex* v, Face* f, Edge* nextEdge)
             return;
         }
     }
-    cout << "Error: Invalid set next edge at vertex " << v->ID << "." << endl;
+    std::cout << "Error: Invalid set next edge at vertex " << v->ID << "." << std::endl;
     exit(0);
 }
 
@@ -102,7 +102,7 @@ Vertex* Edge::theOtherVertex(Vertex* v)
     }
     else
     {
-        cout << "ERROR: v is not in edge!" << endl;
+        std::cout << "ERROR: v is not in edge!" << std::endl;
         // exit(0);
     }
 }
@@ -119,7 +119,7 @@ Face* Edge::theOtherFace(Face* f) const
     }
     else
     {
-        cout << "ERROR: f is not adjacent to this edge" << endl;
+        std::cout << "ERROR: f is not adjacent to this edge" << std::endl;
         exit(0);
     }
 }
@@ -143,7 +143,7 @@ Edge* Edge::nextEdgeOfFace(Face* f)
     }
     else
     {
-        cout << "ERROR: f is not adjacent to this edge" << endl;
+        std::cout << "ERROR: f is not adjacent to this edge" << std::endl;
         exit(0);
     }
 }

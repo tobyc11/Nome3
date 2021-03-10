@@ -99,6 +99,8 @@ If you run into an issue with windeployqt.exe, make sure CMake was able to find 
 Upon your first run of CMake, it may complain about Foundation does not contain a CMakeLists.txt file. This is because when you clone the repository, git does not by default clone all the submodules, so the Foundation subfolder is empty by default. You can either reclone the repo with git clone --recursive or run git submodule update --init --recursive. If you have further questions, read the top portion of this short tutorial on git submodules - https://www.vogella.com/tutorials/GitSubmodules/article.html.
 
 
+If you receive  /bigobj error message due to exprtk.hpp, please follow the following instructions: https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/ms173499(v=vs.90)?redirectedfrom=MSDN
+
 This an example of running a simple cube .nom instance after following the steps above:
 ![](https://github.com/cyj0912/Nome3/blob/master/Docs/hellocube.png)
 

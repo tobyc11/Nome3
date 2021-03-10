@@ -279,7 +279,7 @@ void COffsetRefiner::closeFace(Face* face)
         Vertex * vertex2Top = newVertexHandleList[vertex2TopIndex];
         Vertex * vertex2Bottom = newVertexHandleList[vertex2BottomIndex];
 
-        vector<Edge*> boundaryEdgeList1 = currMesh.boundaryEdgeList(); // Randy added this. needed to check if vert is in boundary
+        std::vector<Edge*> boundaryEdgeList1 = currMesh.boundaryEdgeList(); // Randy added this. needed to check if vert is in boundary
 
         // check to see if the vertex is on an edge that is on a boundary.. In openMesh, is_boundary() checked if a vertex is adjacent to a boundary edge
         

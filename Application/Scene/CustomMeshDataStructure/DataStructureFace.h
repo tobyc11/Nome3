@@ -15,7 +15,7 @@
 
 #include <vector>
 
-using namespace std;
+//using namespace std;
 
 /**
  * @brief The Face class. The face class build for winged-
@@ -38,7 +38,7 @@ public:
     /* FaceID, is the index from the global face list.*/
     int id;
     /* The name of this face.*/
-    string name;
+    std::string name;
     /* The color of this face. */
     std::vector<int> v_ids;
     std::array<float, 3> color; // QColor color; 1/28 randy updated this to std::aray<float, 3> so easily usable in DataStructureMeshToQGeometry
@@ -46,7 +46,7 @@ public:
     /* Indicate if this face has user defined color. */
     bool user_defined_color;
 
-    string surfaceName; // Randy added this
+    std::string surfaceName; // Randy added this
 };
 
 #endif // __FACE_H__

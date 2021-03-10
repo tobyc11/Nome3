@@ -58,6 +58,11 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
         {
             delete GeometryRenderer;
             delete Geometry;
+            if (PointRenderer)
+                delete PointRenderer;
+            if (PointGeometry)
+                delete PointGeometry;
+
             // A Qt3DRender::QGeometry class is used to group a list of Qt3DRender::QAttribute
             // objects together to form a geometric shape Qt3D is able to render using
             // Qt3DRender::QGeometryRenderer.
@@ -80,8 +85,6 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             this->addComponent(GeometryRenderer); // adding geometry data to interactive mesh
 
             if (showVertBox) {
-                delete PointRenderer;
-                delete PointGeometry;
                 /// TODO: alow the debug draw
                 std::string xmlPath = "";
                 if (!showVertBox)

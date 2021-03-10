@@ -9,22 +9,16 @@ namespace Nome
 CInteractiveLight::CInteractiveLight(Scene::CSceneTreeNode* node)
     : SceneTreeNode(node)
 {
-    UpdateTransform();
     UpdateLight();
 }
 
-void CInteractiveLight::UpdateTransform()
-{
-    /*
-    if (!Transform)
-    {
-        //Transform = new Qt3DCore::QTransform(this);
-        // this->addComponent(Transform);
+void CInteractiveLight::UpdateTransform() {
+    if (type == DirectionalLight) {
+        auto *dLight = dynamic_cast<Qt3DRender::QDirectionalLight *>(Light);
+        const auto &tf = SceneTreeNode->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+        QMatrix4x4 qtf{tf.ToMatrix4().Data()};
+        dLight->setWorldDirection(qtf * QVector3D(0, 1, 0));
     }
-    const auto& tf = SceneTreeNode->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-    QMatrix4x4 qtf { tf.ToMatrix4().Data() };
-    Transform->setMatrix(qtf);
-     */
 }
 
 void CInteractiveLight::UpdateLight()

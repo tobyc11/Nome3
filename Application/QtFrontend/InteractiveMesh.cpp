@@ -58,8 +58,6 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
         {
             delete GeometryRenderer;
             delete Geometry;
-            delete PointRenderer;
-            delete PointGeometry;
             // A Qt3DRender::QGeometry class is used to group a list of Qt3DRender::QAttribute
             // objects together to form a geometric shape Qt3D is able to render using
             // Qt3DRender::QGeometryRenderer.
@@ -81,27 +79,31 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             GeometryRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
             this->addComponent(GeometryRenderer); // adding geometry data to interactive mesh
 
-            /// TODO: alow the debug draw
-            std::string xmlPath = "";
-            if (!showVertBox)
-                xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
-            else
-                xmlPath = CResourceMgr::Get().Find("DebugDrawLineWITHVERTBOX.xml");
+            if (showVertBox) {
+                delete PointRenderer;
+                delete PointGeometry;
+                /// TODO: alow the debug draw
+                std::string xmlPath = "";
+                if (!showVertBox)
+                    xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
+                else
+                    xmlPath = CResourceMgr::Get().Find("DebugDrawLineWITHVERTBOX.xml");
 
-            // May need to optimize this in the future. Cause we're parsing the file everytime the node is marked dirty, even though we could keep the material the same if that was not changed
-            PointEntity = new Qt3DCore::QEntity(this);
-            auto* lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
-            PointMaterial = lineMat;
-            PointMaterial->setParent(this);
-            PointEntity->addComponent(PointMaterial);
+                // May need to optimize this in the future. Cause we're parsing the file everytime the node is marked dirty, even though we could keep the material the same if that was not changed
+                PointEntity = new Qt3DCore::QEntity(this);
+                auto *lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
+                PointMaterial = lineMat;
+                PointMaterial->setParent(this);
+                PointEntity->addComponent(PointMaterial);
 
-            // PointGeometry = meshToQGeometry.GetPointGeometry();
-            PointGeometry = DSmeshToQGeometry.GetPointGeometry();
-            PointGeometry->setParent(PointEntity);
-            PointRenderer = new Qt3DRender::QGeometryRenderer(PointEntity);
-            PointRenderer->setGeometry(PointGeometry);
-            PointRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
-            PointEntity->addComponent(PointRenderer);
+                // PointGeometry = meshToQGeometry.GetPointGeometry();
+                PointGeometry = DSmeshToQGeometry.GetPointGeometry();
+                PointGeometry->setParent(PointEntity);
+                PointRenderer = new Qt3DRender::QGeometryRenderer(PointEntity);
+                PointRenderer->setGeometry(PointGeometry);
+                PointRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
+                PointEntity->addComponent(PointRenderer);
+            }
 
         }
         else

@@ -109,7 +109,6 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
                 // Create an InteractiveLight from the scene node
                 auto* light = new CInteractiveLight(node);
                 light->setParent(this->Root);
-                light->UpdateLight();
                 InteractiveLights.insert(light);
             }
         }
@@ -182,8 +181,8 @@ void CNome3DView::PostSceneUpdate()
                     light->UpdateTransform();
                     if (node->WasEntityUpdated())
                     {
-                        printf("Delivering the rendering light of the scene %s\n", node->GetPath().c_str());
                         light->UpdateLight();
+                        printf("Delivering the rendering light of the scene %s\n", node->GetPath().c_str());
                         node->SetEntityUpdated(false);
                     }
                 }
@@ -364,7 +363,7 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
             entity = node->GetOwner()->GetEntity();
         if (entity)
         {
-            if (!entity->isMerged) {
+            if (!entity->isMerged && entity->IsMesh()) {
                 const auto &l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
                 auto localRay = ray.Transformed(l2w.Inverse());
                 localRay.Direction =
@@ -501,7 +500,7 @@ void CNome3DView::PickEdgeWorldRay(tc::Ray& ray)
             entity = node->GetOwner()->GetEntity();
         if (entity)
         {
-            if (!entity->isMerged) {
+            if (!entity->isMerged && entity->IsMesh()) {
                 const auto &l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
                 auto localRay = ray.Transformed(l2w.Inverse());
                 localRay.Direction = localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
@@ -641,7 +640,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
             entity = node->GetOwner()->GetEntity();
         if (entity)
         {
-            if (!entity->isMerged) {
+            if (!entity->isMerged && entity->IsMesh()) {
                 const auto &l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
                 auto localRay = ray.Transformed(l2w.Inverse());
                 localRay.Direction =

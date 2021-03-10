@@ -30,11 +30,9 @@ public:
     explicit CLight(std::string name)
         : CEntity(std::move(name))
     {
-        LI = new CLightInfo;
+
     }
-    ~CLight() {
-        delete LI;
-    }
+
 
     void MarkDirty() override;
     void UpdateEntity() override;
@@ -44,11 +42,11 @@ public:
     AST::ACommand* SyncToAST(AST::CASTContext& ctx, bool createNewNode) override;
     CSceneTreeNode* GetSceneTreeNode() const { return SceneTreeNode; }
 
-    CLightInfo* GetLight(){return LI;};
+    CLightInfo& GetLight(){return LI;};
 
 
 private:
-    CLightInfo* LI;
+    CLightInfo LI;
     CSceneTreeNode* SceneTreeNode;
 };
 }

@@ -104,17 +104,30 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
         if (entity)
         {
             printf("Generating the entity    %s\n", entity->GetName().c_str());
+            if (!entity->IsMesh())
+            {
+                // Create an InteractiveLight from the scene node
+                auto* light = new CInteractiveLight(node);
+                light->setParent(this->Root);
+                light->UpdateLight();
+                InteractiveLights.insert(light);
+            }
+        }
+    });
+    Scene->ForEachSceneTreeNode([this](CSceneTreeNode* node) {
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+        {
+            entity = node->GetOwner()->GetEntity();
+        }
+        if (entity)
+        {
             if (entity->IsMesh())
             {
                 // Create an InteractiveMesh from the scene node
                 auto* mesh = new CInteractiveMesh(node);
                 mesh->setParent(this->Root);
                 InteractiveMeshes.insert(mesh);
-            } else {
-                // Create an InteractiveLight from the scene node
-                auto* light = new CInteractiveLight(node);
-                light->setParent(this->Root);
-                InteractiveLights.insert(light);
             }
         }
     });

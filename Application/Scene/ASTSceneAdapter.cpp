@@ -249,7 +249,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 if (!expr)
                     std::cout << "Haven't detected the light type, use ambient light as default" << std::endl;
                 else
-                    light->GetLight()->type = static_cast<const AST::AIdent*>(expr)->ToString();
+                    light->GetLight().type = static_cast<const AST::AIdent*>(expr)->ToString();
             }
 
 

@@ -41,7 +41,7 @@ void CLight::UpdateEntity() {
         return;
 
     Super::UpdateEntity();
-    LI->color = QColor(int(R.GetValue(0.0f) * 255), int(G.GetValue(0.0f) * 255), int(B.GetValue(0.0f) * 255));
+    LI.color = QColor(int(R.GetValue(0.0f) * 255), int(G.GetValue(0.0f) * 255), int(B.GetValue(0.0f) * 255));
     SetValid(true);
 }
 

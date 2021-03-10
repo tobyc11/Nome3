@@ -29,8 +29,6 @@ public:
 
 private:
     Scene::CSceneTreeNode* SceneTreeNode = nullptr;
-
-    Qt3DCore::QTransform* Transform = nullptr;
 };
 
 }

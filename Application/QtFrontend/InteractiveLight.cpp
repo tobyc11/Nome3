@@ -1,7 +1,6 @@
 #include "InteractiveLight.h"
 #include "Nome3DView.h"
 #include "ResourceMgr.h"
-#include <Matrix3x4.h>
 #include <Scene/Light.h>
 
 namespace Nome
@@ -16,49 +15,46 @@ CInteractiveLight::CInteractiveLight(Scene::CSceneTreeNode* node)
 
 void CInteractiveLight::UpdateTransform()
 {
+    /*
     if (!Transform)
     {
-        Transform = new Qt3DCore::QTransform(this);
-        this->addComponent(Transform);
+        //Transform = new Qt3DCore::QTransform(this);
+        // this->addComponent(Transform);
     }
     const auto& tf = SceneTreeNode->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
     QMatrix4x4 qtf { tf.ToMatrix4().Data() };
     Transform->setMatrix(qtf);
+     */
 }
 
 void CInteractiveLight::UpdateLight()
 {
-
     auto* entity = SceneTreeNode->GetInstanceEntity();
     if (!entity)
     {
         entity = SceneTreeNode->GetOwner()->GetEntity();
     }
-
     if (entity)
     {
-        auto* LightInstance = dynamic_cast<Scene::CLight*>(entity)->GetLight();
-        if (LightInstance)
-        {
-            if (LightInstance->type == "NOME_DIRECTIONAL") {
-                if (!Light)
-                    Light = new Qt3DRender::QDirectionalLight();
-                Light->setColor(LightInstance->color);
-                type = DirectionalLight;
-            } else if (LightInstance->type == "NOME_AMBIENT") {
-                Color = LightInstance->color;
-                type = AmbientLight;
-            } else if (LightInstance->type == "NOME_SPOT") {
-                if (!Light)
-                    Light = new Qt3DRender::QSpotLight();
-                Light->setColor(LightInstance->color);
-                type = SpotLight;
-            } else if (LightInstance->type == "NOME_POINT"){
-                if (!Light)
-                    Light = new Qt3DRender::QPointLight();
-                Light->setColor(LightInstance->color);
-                type = PointLight;
-            }
+        auto LightInstance = dynamic_cast<Scene::CLight*>(entity)->GetLight();
+        if (LightInstance.type == "NOME_DIRECTIONAL") {
+            if (!Light)
+                Light = new Qt3DRender::QDirectionalLight();
+            Light->setColor(LightInstance.color);
+            type = DirectionalLight;
+        } else if (LightInstance.type == "NOME_AMBIENT") {
+            Color = LightInstance.color;
+            type = AmbientLight;
+        } else if (LightInstance.type == "NOME_SPOT") {
+            if (!Light)
+                Light = new Qt3DRender::QSpotLight();
+            Light->setColor(LightInstance.color);
+            type = SpotLight;
+        } else if (LightInstance.type == "NOME_POINT"){
+            if (!Light)
+                Light = new Qt3DRender::QPointLight();
+            Light->setColor(LightInstance.color);
+            type = PointLight;
         }
         else
         {
@@ -69,8 +65,4 @@ void CInteractiveLight::UpdateLight()
         }
     }
 }
-
-
-
-
 }

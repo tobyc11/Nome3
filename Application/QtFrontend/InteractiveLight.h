@@ -5,6 +5,9 @@
 #include <Qt3DCore/QEntity>
 #include <Qt3DCore/QTransform>
 #include <Qt3DRender/QMaterial>
+#include <QDirectionalLight>
+
+enum LightType { SpotLight, AmbientLight, DirectionalLight, PointLight };
 
 namespace Nome
 {
@@ -19,19 +22,15 @@ public:
     void UpdateTransform();
     void UpdateLight();
 
-    void InitInteractions();
-
+public:
+    Qt3DRender::QAbstractLight* Light = nullptr;
+    LightType type;
+    QColor Color;
 
 private:
     Scene::CSceneTreeNode* SceneTreeNode = nullptr;
 
     Qt3DCore::QTransform* Transform = nullptr;
-
-    Qt3DRender::QMaterial* Material = nullptr;
-    Qt3DRender::QMaterial* LineMaterial = nullptr;
-
-    Qt3DCore::QEntity* PointEntity;
-    Qt3DRender::QMaterial* PointMaterial;
 };
 
 }

@@ -242,6 +242,17 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
 
             entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
+            if (auto* light = dynamic_cast<CLight*>(entity.Get())) {
+                auto* typeinfo = cmd->GetNamedArgument("type");
+                auto* expr = typeinfo->GetArgument(0);
+                // Just return if the corresponding element is not found in the AST
+                if (!expr)
+                    std::cout << "Haven't detected the light type, use ambient light as default" << std::endl;
+                else
+                    light->GetLight()->type = static_cast<const AST::AIdent*>(expr)->ToString();
+            }
+
+
             // All entities are added to the EntityLibrary dictionary
             GEnv.Scene->AddEntity(entity);
             if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))

@@ -143,7 +143,7 @@ void main()
       }
     }
     else { // Randy added this on 12/3
-      vec4 selectedCol = vec4(1.0, 0.0, 1.0, 1.0);
+      vec4 selectedCol = vec4(0.0, 0.0, 1.0, 1.0);
       fragColor = selectedCol; // Randy added this on 12/3
     } // Randy added this on 12/3
 

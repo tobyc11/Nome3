@@ -316,7 +316,7 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ra
         auto minDist = *std::min_element(hitDistances.begin(), hitDistances.end());
         std::cout << "Triangle hit distance:  " + std::to_string(minDist) << std::endl;
         auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-        if (minDist < 100)
+        if (minDist < 10)
         {
             result.emplace_back(minDist, instPrefix + currFace->name);
         }
@@ -446,6 +446,7 @@ void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, b
         auto iter = currMesh.nameToFace.find(name.substr(prefixLen));
         if (iter == currMesh.nameToFace.end())
             continue;
+
 
         Face* currFace = iter->second;
         if (!currFace->selected)

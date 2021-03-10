@@ -7,7 +7,6 @@ namespace Nome::Scene
 
 COffsetRefiner::COffsetRefiner(DSMesh& _m, bool offsetFlag)
 {
-    this->currMesh;
     currMesh = _m;
     flag = offsetFlag;
 

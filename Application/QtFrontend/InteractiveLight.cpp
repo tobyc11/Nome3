@@ -1,23 +1,17 @@
 #include "InteractiveLight.h"
 #include "Nome3DView.h"
-#include "FrontendContext.h"
 #include "ResourceMgr.h"
 #include <Matrix3x4.h>
 #include <Scene/Light.h>
-
-
-#include <Qt3DRender/QGeometryRenderer>
 
 namespace Nome
 {
 
 CInteractiveLight::CInteractiveLight(Scene::CSceneTreeNode* node)
     : SceneTreeNode(node)
-
 {
     UpdateTransform();
     UpdateLight();
-    InitInteractions();
 }
 
 void CInteractiveLight::UpdateTransform()
@@ -43,11 +37,28 @@ void CInteractiveLight::UpdateLight()
 
     if (entity)
     {
-        auto* LightInstance = dynamic_cast<Scene::CLightInstance*>(entity);
+        auto* LightInstance = dynamic_cast<Scene::CLight*>(entity)->GetLight();
         if (LightInstance)
         {
-
-
+            if (LightInstance->type == "NOME_DIRECTIONAL") {
+                if (!Light)
+                    Light = new Qt3DRender::QDirectionalLight();
+                Light->setColor(LightInstance->color);
+                type = DirectionalLight;
+            } else if (LightInstance->type == "NOME_AMBIENT") {
+                Color = LightInstance->color;
+                type = AmbientLight;
+            } else if (LightInstance->type == "NOME_SPOT") {
+                if (!Light)
+                    Light = new Qt3DRender::QSpotLight();
+                Light->setColor(LightInstance->color);
+                type = SpotLight;
+            } else if (LightInstance->type == "NOME_POINT"){
+                if (!Light)
+                    Light = new Qt3DRender::QPointLight();
+                Light->setColor(LightInstance->color);
+                type = PointLight;
+            }
         }
         else
         {
@@ -57,40 +68,9 @@ void CInteractiveLight::UpdateLight()
                       << std::endl;
         }
     }
-
 }
 
 
-void CInteractiveLight::InitInteractions()
-{
-    // Only Light instances support vertex picking
-    auto* Light = dynamic_cast<Scene::CLightInstance*>(SceneTreeNode->GetInstanceEntity());
-    if (!Light)
-        return;
-
-    auto* picker = new Qt3DRender::QObjectPicker(this);
-    picker->setHoverEnabled(true);
-    connect(picker, &Qt3DRender::QObjectPicker::pressed, [](Qt3DRender::QPickEvent* pick) {
-        if (pick->button() == Qt3DRender::QPickEvent::LeftButton)
-        {
-            const auto& wi = pick->worldIntersection();
-            const auto& origin = GFrtCtx->NomeView->camera()->position();
-            auto dir = wi - origin;
-
-            tc::Ray ray({ origin.x(), origin.y(), origin.z() }, { dir.x(), dir.y(), dir.z() });
-
-            if (GFrtCtx->NomeView->PickVertexBool)
-                GFrtCtx->NomeView->PickVertexWorldRay(ray);
-            if (GFrtCtx->NomeView->PickEdgeBool)
-                GFrtCtx->NomeView->PickEdgeWorldRay(ray);
-            if (GFrtCtx->NomeView->PickFaceBool)
-                GFrtCtx->NomeView->PickFaceWorldRay(ray);
-            if (GFrtCtx->NomeView->PickPolylineBool)
-                GFrtCtx->NomeView->PickPolylineWorldRay(ray);
-        }
-    });
-    this->addComponent(picker);
-}
 
 
 }

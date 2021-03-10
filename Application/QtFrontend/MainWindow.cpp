@@ -175,6 +175,7 @@ void CMainWindow::on_actionMerge_triggered()
           // vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get
           // merged.
             merger->MergeIn(*mesh);
+            entity->isMerged = true;
         }
     });
 

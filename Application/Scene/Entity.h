@@ -118,7 +118,7 @@ public:
     virtual CEntity* Instantiate(CSceneTreeNode* treeNode) { return nullptr; }
 
     virtual AST::ACommand* SyncToAST(AST::CASTContext& ctx, bool createNewNode);
-
+    bool isMerged = false;
 private:
     std::string Name;
     bool bIsValid = false;

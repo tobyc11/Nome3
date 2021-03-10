@@ -154,53 +154,10 @@ void CNome3DView::PostSceneUpdate()
         {
             entity = node->GetOwner()->GetEntity();
         }
-
         if (entity)
         {
-            if (entity->IsMesh())
-            {
-                CInteractiveMesh* mesh = nullptr;
-                // Check for existing InteractiveMesh
-                auto iter = sceneMeshAssoc.find(node);
-                if (iter != sceneMeshAssoc.end())
-                {
-                    // Found existing InteractiveMesh, mark as alive
-                    mesh = iter->second;
-                    aliveSetMesh.insert(mesh);
-                    mesh->UpdateTransform();
-                    if (node->WasEntityUpdated())
-                    {
-
-                        printf("Geom regen for %s\n", node->GetPath().c_str());
-                        mesh->UpdateGeometry(PickVertexBool);
-                        mesh->UpdateMaterial(WireFrameMode);
-                        node->SetEntityUpdated(false);
-                    }
-                }
-                else
-                {
-                    mesh = new CInteractiveMesh(node);
-                    mesh->setParent(this->Root);
-                    aliveSetMesh.insert(mesh);
-                    InteractiveMeshes.insert(mesh);
-                }
-
-                // Create a DebugDraw for the CEntity if not already
-                auto eIter = EntityDrawData.find(entity);
-                if (eIter == EntityDrawData.end())
-                {
-                    auto* debugDraw = new CDebugDraw(Root);
-                    aliveEntityDrawData[entity] = debugDraw;
-                    // TODO: somehow uncommenting this line leads to a crash in Qt3D
-                    // mesh->SetDebugDraw(debugDraw);
-                }
-                else
-                {
-                    aliveEntityDrawData[entity] = eIter->second;
-                    mesh->SetDebugDraw(eIter->second);
-                }
-            } else {
-                /// TODO: add light
+            if (!entity->IsMesh()){
+                /// add and update light
                 CInteractiveLight* light = nullptr;
                 // Check for existing InteractiveMesh
                 auto iter = sceneLightAssoc.find(node);
@@ -223,6 +180,65 @@ void CNome3DView::PostSceneUpdate()
                     light->setParent(this->Root);
                     aliveSetLight.insert(light);
                     InteractiveLights.insert(light);
+                }
+            }
+        }
+    });
+
+    Scene->ForEachSceneTreeNode([&](CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+        {
+            entity = node->GetOwner()->GetEntity();
+        }
+        if (entity)
+        {
+            if (entity->IsMesh())
+            {
+                CInteractiveMesh* mesh = nullptr;
+                // Check for existing InteractiveMesh
+                auto iter = sceneMeshAssoc.find(node);
+                if (iter != sceneMeshAssoc.end())
+                {
+                    // Found existing InteractiveMesh, mark as alive
+                    mesh = iter->second;
+                    if (entity->isMerged) {
+                        auto iterr = aliveSetMesh.find(mesh);
+                        if (iterr != aliveSetMesh.end())
+                        {
+                            aliveSetMesh.erase(iterr);
+                        }
+                    } else {
+                        aliveSetMesh.insert(mesh);
+                        mesh->UpdateTransform();
+                        if (node->WasEntityUpdated()) {
+                            printf("Geom regen for %s\n", node->GetPath().c_str());
+                            mesh->UpdateMaterial(WireFrameMode);
+                            mesh->UpdateGeometry(PickVertexBool);
+                            node->SetEntityUpdated(false);
+                        }
+                    }
+                }
+                else if (!entity->isMerged)
+                {
+                    mesh = new CInteractiveMesh(node);
+                    mesh->setParent(this->Root);
+                    aliveSetMesh.insert(mesh);
+                    InteractiveMeshes.insert(mesh);
+                }
+                if (!entity->isMerged) {
+                    // Create a DebugDraw for the CEntity if not already
+                    auto eIter = EntityDrawData.find(entity);
+                    if (eIter == EntityDrawData.end()) {
+                        auto *debugDraw = new CDebugDraw(Root);
+                        aliveEntityDrawData[entity] = debugDraw;
+                        // TODO: somehow uncommenting this line leads to a crash in Qt3D
+                        // mesh->SetDebugDraw(debugDraw);
+                    } else {
+                        aliveEntityDrawData[entity] = eIter->second;
+                        mesh->SetDebugDraw(eIter->second);
+                    }
                 }
             }
         }
@@ -335,15 +351,17 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
             entity = node->GetOwner()->GetEntity();
         if (entity)
         {
-            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-            auto localRay = ray.Transformed(l2w.Inverse());
-            localRay.Direction =
-                localRay.Direction
-                    .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
-            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-            auto pickResults = meshInst->PickFaces(localRay);
-            for (const auto& [dist, name] : pickResults)
-                hits.emplace_back(dist, meshInst, name);
+            if (!entity->isMerged) {
+                const auto &l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+                auto localRay = ray.Transformed(l2w.Inverse());
+                localRay.Direction =
+                        localRay.Direction
+                                .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                auto *meshInst = dynamic_cast<Scene::CMeshInstance *>(entity);
+                auto pickResults = meshInst->PickFaces(localRay);
+                for (const auto&[dist, name] : pickResults)
+                    hits.emplace_back(dist, meshInst, name);
+            }
         }
     });
 
@@ -470,15 +488,17 @@ void CNome3DView::PickEdgeWorldRay(tc::Ray& ray)
             entity = node->GetOwner()->GetEntity();
         if (entity)
         {
-            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-            auto localRay = ray.Transformed(l2w.Inverse());
-            localRay.Direction =localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+            if (!entity->isMerged) {
+                const auto &l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+                auto localRay = ray.Transformed(l2w.Inverse());
+                localRay.Direction = localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
 
-            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-            auto pickResults = meshInst->PickEdges(localRay);
+                auto *meshInst = dynamic_cast<Scene::CMeshInstance *>(entity);
+                auto pickResults = meshInst->PickEdges(localRay);
 
-            for (const auto& [dist, names] : pickResults)
-                hits.emplace_back(dist, meshInst, names);
+                for (const auto&[dist, names] : pickResults)
+                    hits.emplace_back(dist, meshInst, names);
+            }
         }
     });
     std::sort(hits.begin(), hits.end());
@@ -608,15 +628,17 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
             entity = node->GetOwner()->GetEntity();
         if (entity)
         {
-            const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-            auto localRay = ray.Transformed(l2w.Inverse());
-            localRay.Direction =
-                localRay.Direction
-                    .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
-            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-            auto pickResults = meshInst->PickVertices(localRay);
-            for (const auto& [dist, name] : pickResults)
-                hits.emplace_back(dist, meshInst, name);
+            if (!entity->isMerged) {
+                const auto &l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+                auto localRay = ray.Transformed(l2w.Inverse());
+                localRay.Direction =
+                        localRay.Direction
+                                .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                auto *meshInst = dynamic_cast<Scene::CMeshInstance *>(entity);
+                auto pickResults = meshInst->PickVertices(localRay);
+                for (const auto&[dist, name] : pickResults)
+                    hits.emplace_back(dist, meshInst, name);
+            }
         }
     });
 

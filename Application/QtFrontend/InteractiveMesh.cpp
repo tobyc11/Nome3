@@ -22,10 +22,11 @@ CInteractiveMesh::CInteractiveMesh(Scene::CSceneTreeNode* node)
     , PointMaterial {}
     , PointGeometry {}
     , PointRenderer {}
+    , InstanceColor {95.0 / 255.0, 75.0 / 255.0, 139.0 / 255.0}
 {
     UpdateTransform();
-    UpdateGeometry(false); // false = don't show vert boxes by default
     UpdateMaterial(false); // false = don't show facets by default
+    UpdateGeometry(false); // false = don't show vert boxes by default
     InitInteractions();
 }
 
@@ -63,46 +64,44 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             // objects together to form a geometric shape Qt3D is able to render using
             // Qt3DRender::QGeometryRenderer.
             auto test = meshInstance->GetDSMesh();
-            if (test.visible)
-            {
-
-                auto selectedfacehandles =
+            // TODO: replace with a better method
+            auto selectedfacehandles =
                     meshInstance->GetSelectedFaceHandles(); // Randy added on 12/3
 
-                auto DSFaceWithColorVector = meshInstance->GetDSFaceWithColorVector();
+            auto DSFaceWithColorVector = meshInstance->GetDSFaceWithColorVector();
 
-                CDataStructureMeshToQGeometry DSmeshToQGeometry(meshInstance->GetDSMesh(),
-                                                                true); // Project SwitchDS
+            CDataStructureMeshToQGeometry DSmeshToQGeometry(meshInstance->GetDSMesh(), InstanceColor,
+                                                            true); // Project SwitchDS
 
-                // Geometry = meshToQGeometry.GetGeometry();
-                Geometry = DSmeshToQGeometry.GetGeometry();
-                Geometry->setParent(this);
-                GeometryRenderer = new Qt3DRender::QGeometryRenderer(this);
-                GeometryRenderer->setGeometry(Geometry);
-                GeometryRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
-                this->addComponent(GeometryRenderer); // adding geometry data to interactive mesh
+            // Geometry = meshToQGeometry.GetGeometry();
+            Geometry = DSmeshToQGeometry.GetGeometry();
+            Geometry->setParent(this);
+            GeometryRenderer = new Qt3DRender::QGeometryRenderer(this);
+            GeometryRenderer->setGeometry(Geometry);
+            GeometryRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
+            this->addComponent(GeometryRenderer); // adding geometry data to interactive mesh
 
-                std::string xmlPath = "";
-                if (!showVertBox)
-                    xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
-                else
-                    xmlPath = CResourceMgr::Get().Find("DebugDrawLineWITHVERTBOX.xml");
+            /// TODO: alow the debug draw
+            std::string xmlPath = "";
+            if (!showVertBox)
+                xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
+            else
+                xmlPath = CResourceMgr::Get().Find("DebugDrawLineWITHVERTBOX.xml");
 
-                // May need to optimize this in the future. Cause we're parsing the file everytime the node is marked dirty, even though we could keep the material the same if that was not changed
-                PointEntity = new Qt3DCore::QEntity(this);
-                auto* lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
-                PointMaterial = lineMat;
-                PointMaterial->setParent(this);
-                PointEntity->addComponent(PointMaterial);
+            // May need to optimize this in the future. Cause we're parsing the file everytime the node is marked dirty, even though we could keep the material the same if that was not changed
+            PointEntity = new Qt3DCore::QEntity(this);
+            auto* lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
+            PointMaterial = lineMat;
+            PointMaterial->setParent(this);
+            PointEntity->addComponent(PointMaterial);
 
-                // PointGeometry = meshToQGeometry.GetPointGeometry();
-                PointGeometry = DSmeshToQGeometry.GetPointGeometry();
-                PointGeometry->setParent(PointEntity);
-                PointRenderer = new Qt3DRender::QGeometryRenderer(PointEntity);
-                PointRenderer->setGeometry(PointGeometry);
-                PointRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
-                PointEntity->addComponent(PointRenderer);
-            }
+            // PointGeometry = meshToQGeometry.GetPointGeometry();
+            PointGeometry = DSmeshToQGeometry.GetPointGeometry();
+            PointGeometry->setParent(PointEntity);
+            PointRenderer = new Qt3DRender::QGeometryRenderer(PointEntity);
+            PointRenderer->setGeometry(PointGeometry);
+            PointRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
+            PointEntity->addComponent(PointRenderer);
 
         }
         else
@@ -118,21 +117,18 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             this->addComponent(vPlaceholder);
         }
     }
-
 }
 
 void CInteractiveMesh::UpdateMaterial(bool showFacets)
 {
-    QVector3D instanceColor { 1.0f, 0.5f, 0.1f }; // orange color
-
     // If the scene tree node is not within a group, then we can directly use its surface color, if it has one
     if (!SceneTreeNode->GetParent()->GetOwner()->IsGroup())
     {
         if (auto surface = SceneTreeNode->GetOwner()->GetSurface())
         {
-            instanceColor.setX(surface->ColorR.GetValue(1.0f));
-            instanceColor.setY(surface->ColorG.GetValue(1.0f));
-            instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+            InstanceColor[0] = (surface->ColorR.GetValue(1.0f));
+            InstanceColor[1] = (surface->ColorG.GetValue(1.0f));
+            InstanceColor[2] = (surface->ColorB.GetValue(1.0f));
         }
     }
     else // else, the scenetreenode is within a group, and we keep bubbling up from where we are
@@ -147,9 +143,9 @@ void CInteractiveMesh::UpdateMaterial(bool showFacets)
             if (auto surface = currNode->GetOwner()->GetSurface())
             { // if the currNode itself is assigned a surface color, then this color is prioritzed.
               // we set the color and break.
-                instanceColor.setX(surface->ColorR.GetValue(1.0f));
-                instanceColor.setY(surface->ColorG.GetValue(1.0f));
-                instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+                InstanceColor[0] = (surface->ColorR.GetValue(1.0f));
+                InstanceColor[1] = (surface->ColorG.GetValue(1.0f));
+                InstanceColor[2] = (surface->ColorB.GetValue(1.0f));
                 setColor = true;
                 break;
             }
@@ -163,37 +159,41 @@ void CInteractiveMesh::UpdateMaterial(bool showFacets)
 
             if (auto surface = currNode->GetOwner()->GetSurface())
             {
-                instanceColor.setX(surface->ColorR.GetValue(1.0f));
-                instanceColor.setY(surface->ColorG.GetValue(1.0f));
-                instanceColor.setZ(surface->ColorB.GetValue(1.0f));
+                InstanceColor[0] = (surface->ColorR.GetValue(1.0f));
+                InstanceColor[1] = (surface->ColorG.GetValue(1.0f));
+                InstanceColor[2] = (surface->ColorB.GetValue(1.0f));
             }
         }
     }
 
     if (!Material)
     {
+        /*
         auto xmlPath = CResourceMgr::Get().Find("WireframeLit.xml");
         auto* mat = new CXMLMaterial(QString::fromStdString(xmlPath));
+         */
+        // TO replace the material with qt library material to get better performance
+        auto* mat  = new Qt3DExtras::QPerVertexColorMaterial;
         this->addComponent(mat);
         Material = mat;
     }
-    auto* mat = dynamic_cast<CXMLMaterial*>(Material);
+    for (auto light : GFrtCtx->NomeView->InteractiveLights) {
+        if (light->type != AmbientLight) {
+            this->addComponent(light->Light);
+        } else {
+            InstanceColor[0] = light->Color.redF();
+            InstanceColor[1] = light->Color.greenF();
+            InstanceColor[2] = light->Color.blueF();
+        }
+    }
 
-    mat->FindParameterByName("kd")->setValue(instanceColor);
-    if (showFacets)
-    {
-        mat->FindParameterByName("showFacets")->setValue(1);
-    }
-    else
-    {
-        mat->FindParameterByName("showFacets")->setValue(0);
-    }
+
     // Use non-default line color only if the instance has a surface
     auto surface = SceneTreeNode->GetOwner()->GetSurface();
     if (LineMaterial && surface)
     {
         auto* lineMat = dynamic_cast<CXMLMaterial*>(LineMaterial);
-        lineMat->FindParameterByName("instanceColor")->setValue(instanceColor);
+        lineMat->FindParameterByName("instanceColor")->setValue(QVector3D(InstanceColor[0], InstanceColor[1], InstanceColor[2]));
     }
 }
 

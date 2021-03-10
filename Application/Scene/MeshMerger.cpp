@@ -157,7 +157,6 @@ void CMeshMerger::MergeIn(CMeshInstance& meshInstance)
     MergedMesh.buildBoundary();
     MergedMesh.computeNormals();
     currMesh = MergedMesh.randymakeCopy();
-
 }
 
 

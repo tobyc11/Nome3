@@ -275,8 +275,11 @@ void CScene::Update()
                         if (!entity) // Check to see if the an entity is instantiable (e.g., polyline, funnel, mesh, etc.), and not just an instance identifier.
                             entity = node->GetOwner()->GetEntity(); // If it's not instantiable, get entity instead of instance entity
 
-                        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity)) // set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
+                        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity)) { // set "auto * mesh" to this entity. Call MergeIn to set merger's vertices based on mesh's vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get merged.
                             ent->MergeIn(*mesh);
+                            entity->isMerged = true;
+                        }
+
                     });
                 }
                 ent->Catmull();

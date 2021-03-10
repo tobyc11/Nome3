@@ -45,6 +45,8 @@ argSurface : 'surface' ident ;
 argCross : 'cross' ident ;
 argSegs : 'segs' expression ;
 argOrder : 'order' expression ;
+argLightType : 'type' ident;
+argLightColor : 'color' vector3;
 argTransform
    : 'rotate' LPAREN exp1=expression exp2=expression exp3=expression RPAREN LPAREN exp4=expression RPAREN # argTransformTwo
    | 'scale' LPAREN expression expression expression RPAREN # argTransformOne
@@ -103,7 +105,9 @@ command
    | open='sharp' expression idList+ end='endsharp' # CmdSharp
    | open='offset' name=ident argOffsetFlag* argHeight* argWidth* command* end='endoffset' # CmdOffset
    | open='include' name=ident end='endinclude' # CmdInclude
+   | open='light' name=ident argLightType argLightColor end='endlight' # CmdLight
    ;
+
 
 set : open='set' ident expression expression expression expression;
 

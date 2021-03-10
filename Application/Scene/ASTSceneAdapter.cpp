@@ -30,6 +30,7 @@
 #include "Torus.h"
 #include "TorusKnot.h"
 #include "Tunnel.h"
+#include "Light.h"
 #include <StringPrintf.h>
 #include <unordered_map>
 
@@ -65,12 +66,12 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
     { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
     { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
-    { "offset", ECommandKind::Instance },    { "gencartesiansurf", ECommandKind::Entity },
-    { "genparametricsurf", ECommandKind::Entity }, { "subdivision", ECommandKind::Instance },
-    { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity },
-    {"sharp", ECommandKind::Entity }, { "ellipsoid", ECommandKind::Entity },
-    { "include", ECommandKind::DocEdit }, { "spiral", ECommandKind::Entity }
-
+    { "subdivision", ECommandKind::Instance },  { "offset", ECommandKind::Instance },
+    { "mobiusstrip", ECommandKind::Entity }, { "helix", ECommandKind::Entity },
+    { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
+    { "spiral", ECommandKind::Entity },      { "sharp", ECommandKind::Entity },
+    { "gencartesiansurf", ECommandKind::Entity },    { "genparametricsurf", ECommandKind::Entity },
+    { "light", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -128,6 +129,11 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CGenCartesianSurf(name);
     else if (cmd == "genparametricsurf")
         return new CGenParametricSurf(name);
+    else if (cmd == "light") {
+        return new CLight(name);
+
+    }
+
     return nullptr;
 }
 
@@ -236,6 +242,17 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
 
             entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
+            if (auto* light = dynamic_cast<CLight*>(entity.Get())) {
+                auto* typeinfo = cmd->GetNamedArgument("type");
+                auto* expr = typeinfo->GetArgument(0);
+                // Just return if the corresponding element is not found in the AST
+                if (!expr)
+                    std::cout << "Haven't detected the light type, use ambient light as default" << std::endl;
+                else
+                    light->GetLight().type = static_cast<const AST::AIdent*>(expr)->ToString();
+            }
+
+
             // All entities are added to the EntityLibrary dictionary
             GEnv.Scene->AddEntity(entity);
             if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))

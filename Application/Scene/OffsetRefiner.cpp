@@ -8,8 +8,8 @@ namespace Nome::Scene
 
 COffsetRefiner::COffsetRefiner(DSMesh& _m, bool offsetFlag)
 {
-   
     currMesh = _m.newMakeCopy(); // Project AddOffset
+
     flag = offsetFlag;
     size_t numFaces = currMesh.faceList.size(); // Mesh.n_faces();
     faceVertices.resize(numFaces);

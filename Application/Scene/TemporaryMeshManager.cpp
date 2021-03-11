@@ -15,8 +15,8 @@ namespace Nome::Scene
 
 std::string CTemporaryMeshManager::AddPoint(std::vector<std::string> pos)
 {
-    std::cout << pos[0] << pos[1] << pos[2] << "ADDED POINT DEBUG" << std::endl;
-    std::string pointName = "__tempPoint" + std::to_string(num_points);
+    std::cout << pos[0] << pos[1] << pos[2] << "TempMesh AddPoint DEBUG" << std::endl;
+    std::string pointName = "__tempPoint" + std::to_string(num_points);                     
     AST::ACommand* pointCmd =
         new AST::ACommand(new AST::CToken("point", 0, 1), new AST::CToken("endpoint", 0, 1));
     AST::AIdent* tempPointIdent = new AST::AIdent(new AST::CToken(pointName, 0, 1));

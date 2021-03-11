@@ -330,6 +330,54 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ra
     return result;
 }
 
+
+std::vector<std::pair<float, Vector3>> CMeshInstance::GetHitPoint(const tc::Ray& localRay)
+{
+    std::vector<std::pair<float, Vector3>> result;
+    std::unordered_map<float, Vector3> distToHitPoint;
+    auto instPrefix = GetSceneTreeNode()->GetPath() + "."; // path Name
+    std::vector<float> hitDistances;
+    for (Face* currFace : currMesh.faceList)
+    {
+        // WARNING: Doesn't give all combinations. Naive method only works with convex polygons
+        for (int i = 0; i < currFace->vertices.size(); i++)
+        {
+            for (int j = i + 1; j < currFace->vertices.size(); j++)
+            {
+                for (int k = j + 1; k < currFace->vertices.size(); k++)
+                {
+                    Vertex* firstPoint = currFace->vertices[i];
+                    Vertex* secondPoint = currFace->vertices[j];
+                    Vertex* thirdPoint = currFace->vertices[k];
+                    auto testdist1 = localRay.HitDistance(
+                        firstPoint->position, secondPoint->position, thirdPoint->position);
+                    distToHitPoint[testdist1] = localRay.HitPoint(firstPoint->position, secondPoint->position,
+                                                        thirdPoint->position);
+                    hitDistances.push_back(testdist1);
+                }
+            }
+        }
+        // Now that we're checking intersection with triangulation of the face, see if it
+        // intersected any triangle
+        auto minDist = *std::min_element(hitDistances.begin(), hitDistances.end());
+        std::cout << "Triangle hit distance:  " + std::to_string(minDist) << std::endl;
+        auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
+        if (minDist < 10)
+        {
+            result.emplace_back(minDist, distToHitPoint[minDist]);
+        }
+    }
+    // std::sort(result.begin(), result.end());
+    for (const auto& sel : result)
+    {
+        std::cout << "Get HitPoint" << std::endl;
+        printf("t=%.3f\n", sel.first);
+    }
+    return result;
+}
+
+
+
 std::vector<std::pair<float, std::vector<std::string>>> CMeshInstance::PickPolylines(const tc::Ray& localRay)
 {
     std::vector<std::pair<float, std::vector<std::string>>> result;

@@ -372,8 +372,7 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
                 const auto &l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
                 auto localRay = ray.Transformed(l2w.Inverse());
                 localRay.Direction =
-                        localRay.Direction
-                                .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                        localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
                 auto *meshInst = dynamic_cast<Scene::CMeshInstance *>(entity);
                 auto pickResults = meshInst->PickFaces(localRay);
                 for (const auto&[dist, name] : pickResults)
@@ -770,6 +769,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
 void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
 {
 
+
     // TODO: the camera position stays constant, so seems like we have to rotateRay here. This seems
     // a bit counterintuitive. camera should be moving, not the entire scene
     // rotateRay(ray);
@@ -783,14 +783,69 @@ void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
     // ray.Direction = tc::Vector3(direction.x(), direction.y(), direction.z());
     // ray.Origin = tc::Vector3(origin.x(), origin.y(), origin.z());
 
+
     rotateRay(ray);
+    std::vector<std::tuple<float, Scene::CMeshInstance*, tc::Vector3>> hits;
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            if (!entity->isMerged && entity->IsMesh())
+            {
+                const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+                auto localRay = ray.Transformed(l2w.Inverse());
+                localRay.Direction =
+                    localRay.Direction
+                        .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+                auto pickResults = meshInst->GetHitPoint(localRay);
+                for (const auto& [dist, hitPoint] : pickResults)
+                    hits.emplace_back(dist, meshInst, hitPoint);
+            }
+        }
+    });
+
+    std::sort(hits.begin(), hits.end());
+
+   
+    // if (!hits.empty()) {
+    //    hits.resize(1); // Force there to be only one face selected. This is more user-friendly.
+    //}
+
+    tc::Vector3 closestHitPoint;
+    if (hits.size() > 0)
+    {
+        closestHitPoint = std::get<2>(hits[0]);
+    }
+    else
+    {
+
+        return;
+    }
+    
+
+    //rotateRay(ray);
     RayVertPositions.push_back(ray.Origin);
-    //
+    std::cout << "intersection: " << intersection.x() << " " << intersection.y() << " "
+              << intersection.z() << std::endl;
     auto Q_rotated_intersection = rotation.inverted().rotatedVector(intersection);
 
+    std::cout << "rotated intersection: " << Q_rotated_intersection.x() << " " << Q_rotated_intersection.y() << " "
+              << Q_rotated_intersection.z() << std::endl;
     tc::Vector3 rotated_intersection = tc::Vector3(
         Q_rotated_intersection.x(), Q_rotated_intersection.y(), Q_rotated_intersection.z());
-    RayVertPositions.push_back(rotated_intersection);
+
+    QVector3D test = { closestHitPoint.x , closestHitPoint.y , closestHitPoint.z };
+    auto testRotated = rotation.inverted().rotatedVector(test);
+    tc::Vector3 testRotatedVec = tc::Vector3(testRotated.x(), testRotated.y(), testRotated.z());
+
+    std::cout << testRotatedVec.x << " " << testRotatedVec.y << " " << testRotatedVec.z
+              << "testRotatedVec VS closestHitPoint" << closestHitPoint.x << " "<<
+        closestHitPoint.y << " "<< closestHitPoint.z << std::endl;
+    RayVertPositions.push_back(closestHitPoint);
 }
 
 // Currently not used

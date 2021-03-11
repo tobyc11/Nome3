@@ -24,6 +24,12 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
             builder.Ingest(Normal[0], Normal[1], Normal[2]);
             builder.Ingest(faceColor[0], faceColor[1], faceColor[2]);
         }
+        void SendBackfaceToBuilder(CGeometryBuilder2& builder) const
+        {
+            builder.Ingest(Pos[0], Pos[1], Pos[2]);
+            builder.Ingest(Normal[0], Normal[1], Normal[2]);
+            builder.Ingest(.0 , .0 , .0);
+        }
     };
     const uint32_t stride = sizeof(CVertexData);
     static_assert(stride == 36, "Vertex data size isn't as expected");
@@ -124,6 +130,11 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
                 v0.SendToBuilder(builder);
                 vPrev.SendToBuilder(builder);
                 vCurr.SendToBuilder(builder);
+                v0.SendBackfaceToBuilder(builder);
+                vCurr.SendBackfaceToBuilder(builder);
+                vPrev.SendBackfaceToBuilder(builder);
+
+
                 vPrev = vCurr;
             }
             faceVCount++;

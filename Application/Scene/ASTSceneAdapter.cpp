@@ -337,7 +337,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     else if (cmd->GetCommand() == "subdivision" || cmd->GetCommand() == "offset")
     {
         // 1.read all instances to a merged mesh
-        InstanciateUnder = GEnv.Scene->CreateMerge(cmd->GetName());
+        InstanciateUnder = GEnv.Scene->CreateMerge(cmd->GetName()); // Conceptually similar to CreateGroup, here we create a "Merge" node containing all meshes we need to merge
         InstanciateUnder->SyncFromAST(cmd, scene);
 
 

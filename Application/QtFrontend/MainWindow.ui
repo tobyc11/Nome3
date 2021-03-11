@@ -74,6 +74,7 @@
     <!--<addaction name="actionResetTempMesh"/>-->
      <addaction name="actionCommitChanges"/>
      <addaction name="actionShowFacets"/>
+     <addaction name="actionRenderRay"/> <!-- Randy's Render Ray-->
    </widget>
 
 
@@ -85,6 +86,7 @@
       <addaction name="actionToggleEdgeSelection"/>
       <addaction name="actionToggleFaceSelection"/>
 	  <addaction name="actionTogglePolylineSelection"/>
+     <addaction name="actionToggleRenderRay"/> <!-- Randy's Render Ray Toggle-->
     </widget>
 
     <widget class="QMenu" name="menuModifySelected">
@@ -118,6 +120,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+    <addaction name="actionAddPoint"/> <!--Steven's Add point-->
+    <addaction name="actionRenderRay"/> <!--Randy's Render ray-->
    <addaction name="actionAddFace"/>
    <addaction name="actionAddPolyline"/>
    <!--<addaction name="actionRemoveFace"/>-->
@@ -164,6 +168,19 @@
     <string>About</string>
    </property>
   </action>
+   <!-- Steven's Add Point-->
+   <action name="actionAddPoint">
+     <property name="text">
+       <string>&amp;Add Point</string>
+     </property>
+   </action>
+
+   <!-- Randy's Render Ray-->
+   <action name="actionRenderRay">
+     <property name="text">
+       <string>&amp;Render Ray</string>
+     </property>
+   </action>
 <!--  <action name="actionPoint">
    <property name="text">
     <string>&amp;Point</string>
@@ -225,6 +242,13 @@
    </property>
   </action>
 
+   <!-- Steven's Add Point-->
+   <action name="actionCommitTempPoint">
+     <property name="text">
+       <string>Commit Point</string>
+     </property>
+   </action>
+
    <action name="actionShowFacets">
      <property name="text">
        <string>Show Facets</string>
@@ -264,6 +288,17 @@
 			<bool>true</bool>
 		</property>
 	</action>
+
+   <!-- Randy's Render Ray-->
+   <action name="actionToggleRenderRay">
+     <property name="text">
+       <string>Enable Render Ray</string>
+     </property>
+     <property name ="checkable">
+       <bool>true</bool>
+     </property>
+   </action>
+   
  </widget>
  <resources/>
  <connections/>

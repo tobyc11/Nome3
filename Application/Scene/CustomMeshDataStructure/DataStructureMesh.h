@@ -29,6 +29,7 @@ public:
     /* A list of all facets in this mesh.*/
     std::vector<Face*> faceList;
 
+    /* A list of all edges in this mesh. Added this one because edgeTable (not randyedgeTable) was behaving weirdly*/ 
     std::vector<Edge*> edgeList;
 
     // Randy added these two. Easy way to access Vertex objects in Mesh.cpp. Don't need to traverse vertList

@@ -5,9 +5,69 @@
 #include <sstream>
 #include <utility>
 
+// Steven's Add Point
+#include "ASTSceneAdapter.h"
+#include <map>
+
 namespace Nome::Scene
 {
 
+
+std::string CTemporaryMeshManager::AddPoint(std::vector<std::string> pos)
+{
+    std::cout << pos[0] << pos[1] << pos[2] << "ADDED POINT DEBUG" << std::endl;
+    std::string pointName = "__tempPoint" + std::to_string(num_points);
+    AST::ACommand* pointCmd =
+        new AST::ACommand(new AST::CToken("point", 0, 1), new AST::CToken("endpoint", 0, 1));
+    AST::AIdent* tempPointIdent = new AST::AIdent(new AST::CToken(pointName, 0, 1));
+    AST::AVector* posAExpr =
+        new AST::AVector(new AST::CToken("(", 0, 1), new AST::CToken(")", 0, 1));
+
+    AST::ANumber* num1A = new AST::ANumber(new AST::CToken(pos.at(0), 0, 2));
+    AST::ANumber* num2A = new AST::ANumber(new AST::CToken(pos.at(1), 0, 2));
+    AST::ANumber* num3A = new AST::ANumber(new AST::CToken(pos.at(2), 0, 2));
+
+    posAExpr->AddChild(num1A);
+    posAExpr->AddChild(num2A);
+    posAExpr->AddChild(num3A);
+
+    pointCmd->PushPositionalArgument(tempPointIdent);
+    pointCmd->PushPositionalArgument(posAExpr);
+
+    TAutoPtr<CEntity> tempPoint = CASTSceneAdapter::MakeEntity(pointCmd->GetCommand(), pointName);
+    tempPoint->GetMetaObject().DeserializeFromAST(*pointCmd, *tempPoint);
+    Scene->AddEntity(tempPoint);
+
+    std::vector<std::string> points = { pointName };
+    CSceneNode* TempPolylineNode = nullptr;
+    if (!TempPolylineNode)
+        TempPolylineNode = Scene->GetRootNode()->CreateChildNode("__tempPolylineNodePoint"
+                                                                 + std::to_string(num_points));
+    else
+        TempPolylineNode->SetEntity(nullptr);
+
+    TempPolylinePoint = new CPolyline("__tempPolylinePointNode." + std::to_string(num_points));
+    TempPolylineNode->SetEntity(TempPolylinePoint);
+    TempPolylinePoint->SetPointSourceNames(Scene, points);
+    TempPolylinePoint->SetClosed(false);
+    num_points += 1;
+    polyline_prev_num_points += 1;
+
+    std::string cmd = "\npoint " + pointName + " ( " + pos.at(0) + " " + pos.at(1) + " " + pos.at(2)
+        + ") endpoint\npolyline __tempPolylineNodePoint" + std::to_string(num_points) + " ( "
+        + pointName + " ) endpolyline\ninstance __inst__tempPolylineNodePoint"
+        + std::to_string(num_points) + " __tempPolylineNodePoint" + std::to_string(num_points)
+        + " endinstance\n";
+    pointMap.insert(std::pair<std::string, std::string>(pointName, cmd));
+    // SourceMgr->AppendText(
+    //     "\npoint " + pointName + " ( " + pos.at(0) + " " + pos.at(1) + " " + pos.at(2)
+    //     +") endpoint\npolyline __tempPolylineNodePoint" + std::to_string(num_points)
+    //     + " ( " + pointName +" ) endpolyline\ninstance __inst__tempPolylineNodePoint"
+    //     + std::to_string(num_points) + " __tempPolylineNodePoint" + std::to_string(num_points) +
+    //     " endinstance\n");
+
+    return pointName;
+}
 
 // Warning: this function is poorly implemented. Need to fix in the future
 void CTemporaryMeshManager::RemoveFace(const std::vector<std::string>& faceNames)
@@ -198,6 +258,15 @@ std::string CTemporaryMeshManager::CommitChanges(AST::CASTContext& ctx)
     TempMesh = nullptr;
     TempMeshNode = nullptr;
     */
+
+     // Steven's Add Point
+    for (std::map<std::string, std::string>::iterator p = pointMap.begin(); p != pointMap.end();
+         ++p)
+    {
+        SourceMgr->AppendText(p->second);
+    }
+    pointMap.clear();
+
     return "";
 }
 

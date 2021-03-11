@@ -4,6 +4,7 @@
 #include <Parsing/SourceManager.h>
 #include <string>
 #include <vector>
+#include <map> // Steven's Add Point
 
 namespace Nome::Scene
 {
@@ -36,6 +37,7 @@ public:
     std::vector<std::string> AddedTempPolylineNodeNames; // added to assist with deselection
 
     void AddPolyline(const std::vector<std::string>& points);
+    std::string AddPoint(const std::vector<std::string> pos); // Steven's function. Randy made it return the point name
 
     std::string CommitChanges(
         AST::CASTContext& ctx); // const std::string& entityName, const std::string& nodeName);
@@ -56,6 +58,15 @@ private:
 
     unsigned int FaceCounter = 0;
     unsigned int num_polylines = 0;
+
+     // Steven add point
+    CPolyline* TempPolylinePoint = nullptr;
+    CSceneNode* TempPointNode = nullptr;
+    CSceneNode* TempPolylinePointNode = nullptr;
+    unsigned int num_points = 0;
+    unsigned int polyline_prev_num_points = 0;
+    std::map<std::string, std::string> pointMap;
+
 };
 
 }

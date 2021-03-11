@@ -340,6 +340,22 @@ void CNome3DView::ClearSelectedEdges()
     });
 }
 
+// Randy added on 2/26 to clear rendered ray
+void CNome3DView::ClearRenderedRay()
+{
+    RayVertPositions.clear();
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            meshInst->DeselectAll();
+        }
+    });
+}
 
 void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
 {
@@ -751,6 +767,31 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
     }
 }
 
+void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
+{
+
+    // TODO: the camera position stays constant, so seems like we have to rotateRay here. This seems
+    // a bit counterintuitive. camera should be moving, not the entire scene
+    // rotateRay(ray);
+    // QVector3D origin = QVector3D(ray.Origin.x, ray.Origin.y, ray.Origin.z) - QVector3D(objectX,
+    // objectY, objectZ);
+    //;
+    // origin = rotation.inverted().rotatedVector(origin);
+    // QVector3D direction = rotation.inverted().rotatedVector(
+    //    QVector3D(ray.Direction.x, ray.Direction.y, ray.Direction.z));
+
+    // ray.Direction = tc::Vector3(direction.x(), direction.y(), direction.z());
+    // ray.Origin = tc::Vector3(origin.x(), origin.y(), origin.z());
+
+    rotateRay(ray);
+    RayVertPositions.push_back(ray.Origin);
+    //
+    auto Q_rotated_intersection = rotation.inverted().rotatedVector(intersection);
+
+    tc::Vector3 rotated_intersection = tc::Vector3(
+        Q_rotated_intersection.x(), Q_rotated_intersection.y(), Q_rotated_intersection.z());
+    RayVertPositions.push_back(rotated_intersection);
+}
 
 // Currently not used
 Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)

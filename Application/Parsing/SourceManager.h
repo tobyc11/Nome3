@@ -42,14 +42,13 @@ public:
     std::optional<size_t> RemoveTokens(const std::vector<AST::CToken*>& tokenList);
     // Inserts a token into the text buffer, returns the pos after last inserted character
     size_t InsertToken(size_t globalOffset, AST::CToken* token);
-    size_t InsertToken(size_t globalOffset, AST::CToken* token, const std::string& before,
-                       const std::string& after);
+    size_t InsertToken(size_t globalOffset, AST::CToken* token, const std::string& before, const std::string& after);
 
     // Requires that the new command is not in the text yet
-    bool AppendCmdAfter(AST::ACommand* parent, AST::ACommand* after,
-                        AST::ACommand* newCommand);
+    bool AppendCmdAfter(AST::ACommand* parent, AST::ACommand* after, AST::ACommand* newCommand);
     bool AppendCmdEndOfFile(AST::ACommand* newCommand);
 
+    bool AppendText(const std::string& text); // Steven's Add Point 
     void CommitASTChanges();
     void SaveFile() const;
 

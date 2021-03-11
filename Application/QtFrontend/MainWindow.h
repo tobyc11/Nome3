@@ -59,6 +59,7 @@ private slots:
     */
     // void on_actionAbout_triggered(); commeting out with new developments
 
+    void on_actionAddPoint_triggered(); // Steven's Add Point
 
     void on_actionAddFace_triggered();
     void on_actionAddPolyline_triggered(); 
@@ -68,6 +69,9 @@ private slots:
 
     /* Randy temporarily commenting out due to temporarymeshmanager changes
     void on_actionResetTempMesh_triggered(); */
+
+    void on_actionRenderRay_triggered(); // Randy added this on 2/26
+    void on_actionToggleRenderRay_triggered(); // Randy added this on 2/26 for adding points via ray
 
     void on_actionCommitChanges_triggered();
 

@@ -34,9 +34,16 @@ public:
         return SelectedEdgeVertices;
     }
 
+    // Randy added on 2/26 for adding vertices via a ray
+    [[nodiscard]] const std::vector<tc::Vector3>& GetRayVertPositions() const
+    {
+        return RayVertPositions;
+    }
+
     void ClearSelectedVertices(); // Randy added on 9/27
     void ClearSelectedFaces(); // Randy added on 10/14 for deselecting faces
     void ClearSelectedEdges(); // Randy added on 11/5 for deselecting edges
+    void ClearRenderedRay(); // Randy added on 2/26 for deselecting ray
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
@@ -44,7 +51,7 @@ public:
     void PickFaceWorldRay(tc::Ray& ray); // Randy added on 10/10
     void PickEdgeWorldRay(tc::Ray& ray); // Randy added on 10/29
     void PickPolylineWorldRay(tc::Ray& ray); // Randy added on 12/22
-
+    void RenderRay(tc::Ray& ray, QVector3D intersection); // Randy added on 2/26
     bool WireFrameMode = false; // Randy added on 10/16 for choose wireframe mode or default mode.
                                 // Changed to false on 11/21
 
@@ -57,6 +64,7 @@ public:
     bool PickFaceBool = false; // Randy added on 11/5
     bool PickEdgeBool = false; // Randy added on 11/5
     bool PickPolylineBool = false; // Randy added on 12/22
+    bool RenderRayBool = false; // Randy added on 2/26
     std::unordered_set<CInteractiveLight*> InteractiveLights;
 
 protected:
@@ -80,6 +88,7 @@ private:
     std::unordered_set<CInteractiveMesh*> InteractiveMeshes;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> EntityDrawData;
     std::vector<std::string> SelectedVertices;
+    std::vector<tc::Vector3> RayVertPositions; // Randy added on 2/26 for adding vertices via a Ray
     std::vector<std::string> SelectedFaces; // Randy added on 10/10
     std::vector<std::string> SelectedEdgeVertices; // Randy added on 11/5
     // std::vector<const & std::vector<std::string>> SelectedEdgeVertPositions; // There are no edge "names" right now TODO: Introduce Edge names and handles

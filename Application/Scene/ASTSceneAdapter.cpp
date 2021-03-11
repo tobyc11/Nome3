@@ -334,9 +334,10 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         InstanciateUnder = GEnv.Scene->GetRootNode();
     }
 
-    else if (cmd->GetCommand() == "subdivision") {
+    else if (cmd->GetCommand() == "subdivision" || cmd->GetCommand() == "offset")
+    {
         // 1.read all instances to a merged mesh
-        InstanciateUnder = GEnv.Scene->CreateMerge(cmd->GetName());
+        InstanciateUnder = GEnv.Scene->CreateMerge(cmd->GetName()); // Conceptually similar to CreateGroup, here we create a "Merge" node containing all meshes we need to merge
         InstanciateUnder->SyncFromAST(cmd, scene);
 
 
@@ -359,6 +360,21 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 merger->SetSharp(true);
             else
                 merger->SetSharp(false);
+        }
+        else
+        {
+            auto flag = cmd->GetNamedArgument("offset_type");
+            if (flag)
+            {
+                auto flagName = flag->GetArgument(
+                    0)[0]; // Returns a casted AExpr that was an AIdent before casting
+                auto flagIdentifier = static_cast<AST::AIdent*>(&flagName)
+                                          ->ToString(); // Downcast it back to an AIdent
+                if (flagIdentifier == "NOME_OFFSET_DEFAULT")
+                    merger->SetOffsetFlag(true);
+                else
+                    merger->SetOffsetFlag(false);
+            }
         }
 
         scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity

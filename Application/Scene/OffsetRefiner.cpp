@@ -288,23 +288,6 @@ void COffsetRefiner::closeFace(Face* face)
         // check to see if the vertex is on an edge that is on a boundary.. In openMesh,
         // is_boundary() checked if a vertex is adjacent to a boundary edge
 
-        // Randy added the next few lines. allAdjacentEdges contains the adjacent edges for the
-        // relevant verts
-        auto vert1TopETable = currMesh.randyedgeTable[vertex1Top];
-        std::vector<Edge*> allAdjacentEdges = vert1TopETable;
-        auto vert1BotETable = currMesh.randyedgeTable[vertex1Bottom];
-        auto vert2TopETable = currMesh.randyedgeTable[vertex2Top];
-        auto vert2BotETable = currMesh.randyedgeTable[vertex2Bottom];
-        allAdjacentEdges.insert(allAdjacentEdges.end(), vert1BotETable.begin(),
-                                vert1BotETable.end());
-        allAdjacentEdges.insert(allAdjacentEdges.end(), vert2TopETable.begin(),
-                                vert2TopETable.end());
-        allAdjacentEdges.insert(allAdjacentEdges.end(), vert2BotETable.begin(),
-                                vert2BotETable.end());
-
-
-
-        // TODO: I think this is not working as seen in the single face case
         std::vector<Vertex*> verts = { vertex1Top, vertex1Bottom, vertex2Top, vertex2Bottom }; 
         std::vector<Edge*> boundaryList = currMesh.boundaryEdgeList();
         bool allOnBoundary = true;

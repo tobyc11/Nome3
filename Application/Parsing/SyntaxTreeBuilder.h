@@ -41,6 +41,8 @@ public:
     antlrcpp::Any visitArgOffsetFlag(NomParser::ArgOffsetFlagContext* ctx) override;
     antlrcpp::Any visitArgHeight(NomParser::ArgHeightContext* ctx) override;
     antlrcpp::Any visitArgWidth(NomParser::ArgWidthContext* ctx) override;
+    antlrcpp::Any visitArgCameraProjection(NomParser::ArgCameraProjectionContext* ctx) override;
+    antlrcpp::Any visitArgCameraFrustum(NomParser::ArgCameraFrustumContext* ctx) override;
 
     antlrcpp::Any visitCmdExprListOne(NomParser::CmdExprListOneContext* context) override;
     antlrcpp::Any visitCmdLight(NomParser::CmdLightContext* context) override;
@@ -53,6 +55,7 @@ public:
     antlrcpp::Any visitCmdBank(NomParser::CmdBankContext* context) override;
     antlrcpp::Any visitCmdDelete(NomParser::CmdDeleteContext* context) override;
     antlrcpp::Any visitCmdSweep(NomParser::CmdSweepContext* context) override;
+    antlrcpp::Any visitCmdCamera(NomParser::CmdCameraContext* context) override;
     antlrcpp::Any visitSet(NomParser::SetContext* context) override;
     antlrcpp::Any visitDeleteFace(NomParser::DeleteFaceContext* context) override;
 

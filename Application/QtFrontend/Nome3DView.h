@@ -2,6 +2,7 @@
 #include "DebugDraw.h"
 #include "InteractiveMesh.h"
 #include "InteractiveLight.h"
+#include "Scene/Background.h"
 #include "OrbitTransformController.h"
 #include <Ray.h>
 #include <Scene/Scene.h>

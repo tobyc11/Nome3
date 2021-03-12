@@ -10,6 +10,7 @@
 #include <QStatusBar>
 #include <QTableWidget>
 #include <QBuffer>
+#include <Scene/Camera.h>
 
 
 namespace Nome
@@ -72,7 +73,6 @@ CNome3DView::CNome3DView()
     sphereRotateTransformAnimation->setLoopCount(-1);
 
     Root->addComponent(sphereTransform);
-
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -95,10 +95,26 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
             printf("Generating the entity    %s\n", entity->GetName().c_str());
             if (!entity->IsMesh())
             {
-                // Create an InteractiveLight from the scene node
-                auto* light = new CInteractiveLight(node);
-                light->setParent(this->Root);
-                InteractiveLights.insert(light);
+                if (entity->renderType == Scene::CEntity::LIGHT) {
+                    // Create an InteractiveLight from the scene node
+                    auto *light = new CInteractiveLight(node);
+                    light->setParent(this->Root);
+                    InteractiveLights.insert(light);
+                    node->SetEntityUpdated(false);
+                } else if (entity->renderType == Scene::CEntity::BACKGROUND) {
+                    auto* background = dynamic_cast<Scene::CBackground*>(entity);
+                    this->defaultFrameGraph()->setClearColor(background->background);
+                    node->SetEntityUpdated(false);
+                } else if (entity->renderType == Scene::CEntity::CAMERA) {
+                    auto* camera = dynamic_cast<Scene::CCamera*>(entity);
+                    auto para = camera->para;
+                    if (camera->projectionType == "NOME_ORTHOGRAPHIC")
+                        this->cameraset->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
+                    else if (camera->projectionType == "NOME_PERSPECTIVE")
+                        this->cameraset->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
+
+                    node->SetEntityUpdated(false);
+                }
             }
         }
     });
@@ -137,6 +153,7 @@ void CNome3DView::UnloadScene()
 void CNome3DView::PostSceneUpdate()
 {
     using namespace Scene;
+    bool bUpdateScene = false;
     std::unordered_map<CSceneTreeNode*, CInteractiveMesh*> sceneMeshAssoc;
     std::unordered_map<CSceneTreeNode*, CInteractiveLight*> sceneLightAssoc;
 
@@ -158,30 +175,54 @@ void CNome3DView::PostSceneUpdate()
         if (entity)
         {
             if (!entity->IsMesh()){
-                /// add and update light
-                CInteractiveLight* light = nullptr;
-                // Check for existing InteractiveMesh
-                auto iter = sceneLightAssoc.find(node);
-                if (iter != sceneLightAssoc.end())
-                {
-                    // Found existing InteractiveMesh, mark as alive
-                    light = iter->second;
-                    aliveSetLight.insert(light);
-                    light->UpdateTransform();
+                if (entity->renderType == Scene::CEntity::LIGHT) {
+                    /// add and update light
+                    CInteractiveLight* light = nullptr;
+                    // Check for existing InteractiveMesh
+                    auto iter = sceneLightAssoc.find(node);
+                    if (iter != sceneLightAssoc.end())
+                    {
+                        // Found existing InteractiveMesh, mark as alive
+                        light = iter->second;
+                        aliveSetLight.insert(light);
+                        light->UpdateTransform();
+                        if (node->WasEntityUpdated())
+                        {
+                            light->UpdateLight();
+                            bUpdateScene = true;
+                            printf("Delivering the rendering light of the scene %s\n", node->GetPath().c_str());
+                            node->SetEntityUpdated(false);
+                        }
+                    }
+                    else
+                    {
+                        light = new CInteractiveLight(node);
+                        light->setParent(this->Root);
+                        aliveSetLight.insert(light);
+                        InteractiveLights.insert(light);
+                    }
+                } else if (entity->renderType == Scene::CEntity::BACKGROUND) {
                     if (node->WasEntityUpdated())
                     {
-                        light->UpdateLight();
-                        printf("Delivering the rendering light of the scene %s\n", node->GetPath().c_str());
+                        auto* background = dynamic_cast<Scene::CBackground*>(entity);
+                        this->defaultFrameGraph()->setClearColor(background->background);
+                        node->SetEntityUpdated(false);
+                    }
+                } else if (entity->renderType == Scene::CEntity::CAMERA) {
+                    if (node->WasEntityUpdated())
+                    {
+                        auto* camera = dynamic_cast<Scene::CCamera*>(entity);
+                        auto para = camera->para;
+
+                        if (camera->projectionType == "NOME_ORTHOGRAPHIC")
+                            this->cameraset->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
+                        else if (camera->projectionType == "NOME_PERSPECTIVE")
+                            this->cameraset->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
+
                         node->SetEntityUpdated(false);
                     }
                 }
-                else
-                {
-                    light = new CInteractiveLight(node);
-                    light->setParent(this->Root);
-                    aliveSetLight.insert(light);
-                    InteractiveLights.insert(light);
-                }
+
             }
         }
     });
@@ -213,7 +254,7 @@ void CNome3DView::PostSceneUpdate()
                     } else {
                         aliveSetMesh.insert(mesh);
                         mesh->UpdateTransform();
-                        if (node->WasEntityUpdated()) {
+                        if (node->WasEntityUpdated() || bUpdateScene) {
                             printf("Geom regen for %s\n", node->GetPath().c_str());
                             mesh->UpdateMaterial(WireFrameMode);
                             mesh->UpdateGeometry(PickVertexBool);

@@ -2,7 +2,6 @@
 
 namespace Nome::Scene
 {
-
 DEFINE_META_OBJECT(CPoint)
 {
     BindPositionalArgument(&CPoint::X, 1, 0);

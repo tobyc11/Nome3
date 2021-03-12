@@ -2,14 +2,13 @@
 #include "BSpline.h"
 #include "BezierSpline.h"
 #include "Circle.h"
+#include "Camera.h"
 #include "Spiral.h"
 #include "Sphere.h"
 #include "Ellipsoid.h"
-
 #include "Cylinder.h"
 #include "Dupin.h"
-#include "Ellipsoid.h"
-
+#include "Background.h"
 #include "Environment.h"
 #include "Face.h"
 #include "Funnel.h"
@@ -18,12 +17,9 @@
 #include "Helix.h"
 #include "MeshMerger.h"
 #include "Hyperboloid.h"
-#include "MeshMerger.h"
 #include "MobiusStrip.h"
 #include "Point.h"
 #include "Polyline.h"
-#include "Sphere.h"
-#include "Spiral.h"
 #include "Surface.h"
 #include "Sweep.h"
 #include "SweepControlPoint.h"
@@ -60,7 +56,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
     { "torusknot", ECommandKind::Entity },   { "torus", ECommandKind::Entity },
     { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
-    { "surface", ECommandKind::Entity },     { "background", ECommandKind::Dummy },
+    { "surface", ECommandKind::Entity },     { "background", ECommandKind::Entity },
     { "foreground", ECommandKind::Dummy },   { "insidefaces", ECommandKind::Dummy },
     { "outsidefaces", ECommandKind::Dummy }, { "offsetfaces", ECommandKind::Dummy },
     { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
@@ -71,7 +67,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
     { "spiral", ECommandKind::Entity },      { "sharp", ECommandKind::Entity },
     { "gencartesiansurf", ECommandKind::Entity },    { "genparametricsurf", ECommandKind::Entity },
-    { "light", ECommandKind::Entity }
+    { "light", ECommandKind::Entity }, { "camera", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -129,10 +125,12 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CGenCartesianSurf(name);
     else if (cmd == "genparametricsurf")
         return new CGenParametricSurf(name);
-    else if (cmd == "light") {
+    else if (cmd == "light")
         return new CLight(name);
-
-    }
+    else if (cmd == "background")
+        return new CBackground(name);
+    else if (cmd == "camera")
+        return new CCamera(name);
 
     return nullptr;
 }
@@ -251,15 +249,26 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 else
                     light->GetLight().type = static_cast<const AST::AIdent*>(expr)->ToString();
             }
+            if (auto* camera = dynamic_cast<CCamera*>(entity.Get())) {
+                auto* typeinfo = cmd->GetNamedArgument("projection");
+                auto* expr = typeinfo->GetArgument(0);
+                // Just return if the corresponding element is not found in the AST
+                if (!expr)
+                    std::cout << "Haven't detected the camera projection type" << std::endl;
+                else
+                    camera->projectionType = static_cast<const AST::AIdent*>(expr)->ToString();
+            }
 
 
             // All entities are added to the EntityLibrary dictionary
             GEnv.Scene->AddEntity(entity);
             if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
-                if (auto* face = dynamic_cast<CFace*>(entity.Get()))
+                if (auto* face = dynamic_cast<CFace*>(entity.Get())) {
                     mesh->Faces.Connect(face->Face);
-                else if (auto* point = dynamic_cast<CPoint*>(entity.Get()))
+                }
+                else if (auto* point = dynamic_cast<CPoint*>(entity.Get())) {
                     mesh->Points.Connect(point->Point); // Randy added on 12/5
+                }
 
             // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one
             // face) recursively via VisitCommandSyncScene.

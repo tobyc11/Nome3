@@ -56,6 +56,8 @@ void CMeshMerger::Catmull()
 
     currMesh = otherMesh.newMakeCopy();
     subdivide(currMesh, subdivisionLevel);
+    currMesh.buildBoundary();
+    currMesh.computeNormals();
     std::cout << "done with subdiv" << std::endl;
 }
 

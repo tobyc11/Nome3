@@ -19,7 +19,10 @@ void CLight::MarkDirty()
 
 bool CLight::IsInstantiable() { return true; }
 
-bool CLight::IsMesh() { return false; }
+bool CLight::IsMesh() {
+    renderType = LIGHT;
+    return false;
+}
 
 CEntity* CLight::Instantiate(CSceneTreeNode* treeNode)
 {
@@ -27,14 +30,7 @@ CEntity* CLight::Instantiate(CSceneTreeNode* treeNode)
     return this;
 }
 
-AST::ACommand* CLight::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
-{
-    if (!createNewNode)
-        throw "unimplemented";
-    auto* node = ctx.Make<AST::ACommand>(ctx.MakeToken("mesh"), ctx.MakeToken("endmesh"));
-    node->PushPositionalArgument(ctx.MakeIdent(GetName()));
-    return node;
-}
+
 
 void CLight::UpdateEntity() {
     if (!IsDirty())

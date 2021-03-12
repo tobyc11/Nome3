@@ -4,6 +4,7 @@
 ##  CHS 2020/12/2
 ######################################################
 
+
 bank slider
   set sublevel 3 0 5 1
   set upper_sharpness 9 0 10 0.5
@@ -11,10 +12,15 @@ bank slider
   set AMB_RR 0 0 1 0.1
   set AMB_GG 0 0 1 0.1
   set AMB_BB 0 0 1 0.1
+  set BGG 0 0 1 0.1
   set DIR1_RGB 0 0 1 0.1
   set DIR2_RGB 0 0 1 0.1
   set DIR1_control 0 0 180 1
   set DIR2_control 0 0 180 1
+  set cam_fieldOfView 45.0 30 90 1
+  set cam_aspect 1.77 1 2 0.01
+  set cam_nearPlane 0.1 -100 100 1
+  set cam_farPlane 1000.0 1 2000 10
 endbank
 
 light amb
@@ -33,6 +39,10 @@ light sun2
 endlight
 
 
+camera cam
+ projection NOME_PERSPECTIVE
+ frustum ({expr $slider.cam_fieldOfView} {expr $slider.cam_aspect} {expr $slider.cam_nearPlane} {expr $slider.cam_farPlane}  )
+endcamera
 
 ####  Some Surface colors  ###########################
 surface M  color  (0.9 0   1  ) endsurface   # Magenta
@@ -47,6 +57,8 @@ point ayz (-1  1  1) endpoint
 point ayc (-1  1 -1) endpoint
 point abz (-1 -1  1) endpoint
 point abc (-1 -1 -1) endpoint
+
+background bg ({expr $slider.BGG} {expr $slider.BGG} {expr $slider.BGG}) endbackground
 
 mesh cube
   face ftop (xyz ayz abz xbz)  surface M  endface   ## We plan to make color specifications on individual faces allowable. ##
@@ -71,12 +83,17 @@ endsubdivision
 
 
 
+
 instance sunn sun1 rotate (0 0 1) ({expr $slider.DIR1_control})   endinstance
 
 instance sunn sun2 rotate (1 0 0) ({expr $slider.DIR2_control})   endinstance
 
 
 instance ambb amb endinstance
+
+instance bgg bg endinstance
+
+instance camm cam endinstance
 
 
 

@@ -25,7 +25,7 @@
 #include "BoundingBox.h"
 #include "Frustum.h"
 #include "Ray.h"
-
+#include <iostream>
 
 
 namespace tc
@@ -241,7 +241,6 @@ float Ray::HitDistance(const Vector3& v0, const Vector3& v1, const Vector3& v2, 
                         *outNormal = edge1.CrossProduct(edge2);
                     if (outBary)
                         *outBary = Vector3(1 - (u / det) - (v / det), u / det, v / det);
-
                     return distance;
                 }
             }
@@ -250,6 +249,68 @@ float Ray::HitDistance(const Vector3& v0, const Vector3& v1, const Vector3& v2, 
 
     return M_INFINITY;
 }
+
+
+// https://forum.unity.com/threads/hit-point-for-moller-trumbore-triangle-intersection.457106/
+Vector3 Ray::HitPoint(const Vector3& v0, const Vector3& v1, const Vector3& v2, Vector3* outNormal,
+                       Vector3* outBary) const
+{
+    // Vectors from p1 to p2/p3 (edges)
+    // Find vectors for edges sharing vertex/point p1
+    Vector3 edge1(v1 - v0);
+    Vector3 edge2(v2 - v0);
+
+    // Calculate determinant & check backfacing
+    Vector3 p(Direction.CrossProduct(edge2));
+    float det = edge1.DotProduct(p);
+    if (det > -M_EPSILON && det < M_EPSILON)
+    {
+        return Vector3();
+    }
+
+    float invDet = 1.0f / det;
+
+    // Calculate u & v parameters and test
+
+    // calculate distance from v0 to ray origin
+    Vector3 t(Origin - v0);
+
+        // Calculate u parameter
+    float u = t.DotProduct(p)*invDet;
+
+    // Check for ray hit
+    if (u < 0 || u > 1)
+    {
+        return Vector3();
+    }
+   
+    Vector3 q(t.CrossProduct(edge1)); //  //Prepare to test v parameter Vector3 q = Vector3.Cross(t, e1);
+    
+      // Calculate v parameter
+    float v = Direction.DotProduct(q)*invDet;
+
+    // Check for ray hit
+    if (v < 0 || u + v > 1)
+    {
+        return Vector3();
+    }
+     
+    // New code here
+    // fill in our intersection point
+    auto hitPoint = v0 + u * edge1 + v * edge2;
+
+        
+    if ((edge2.DotProduct(q) * invDet) > M_EPSILON)
+    {
+        // ray does intersect
+        return hitPoint;
+    }
+
+    // No hit at all
+    std::cout << "no hit at all" << std::endl;
+    return Vector3();
+}
+
 
 float Ray::HitDistance(const void* vertexData, unsigned vertexStride, unsigned vertexStart, unsigned vertexCount,
     Vector3* outNormal, Vector2* outUV, unsigned uvOffset) const

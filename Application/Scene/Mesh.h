@@ -192,8 +192,8 @@ public:
     DSMesh& GetDSMesh() { return currMesh; }
 
     std::vector<std::pair<float, std::string>> PickVertices(const tc::Ray& localRay);
-    std::vector<std::pair<float, std::string>>
-    PickFaces(const tc::Ray& localRay); // Randy added on 10/10 for face selection
+    std::vector<std::pair<float, std::string>> PickFaces(const tc::Ray& localRay); // Randy added on 10/10 for face selection
+    std::vector<std::pair<float, Vector3>> GetHitPoint(const tc::Ray& localRay); // Randy added on 3/10 for intersection point
     std::vector<std::pair<float, std::vector<std::string>>> PickPolylines(const tc::Ray& localRay); // Randy added on 12/22 for polyline selection
     std::vector<std::pair<float, std::vector<std::string>>>
     PickEdges(const tc::Ray& localRay); // Randy added on 10/29 for edge selection

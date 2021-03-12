@@ -318,20 +318,35 @@ void CMainWindow::on_actionRemoveFace_triggered()
 void CMainWindow::on_actionRenderRay_triggered()
 {
     statusBar()->showMessage("inside Render Ray");
+    std::vector<std::string> allPointNames;
+    const auto& vertPositions =Nome3DView->GetRayVertPositions(); //  vector containing vector of string positions
+    auto origin = vertPositions[0];
+    auto hitPoint = vertPositions[1];
+    std::vector<std::string> originString = { std::to_string(origin.x),
+                                         std::to_string(origin.y),
+                                         std::to_string(origin.z) };
 
-    const auto& vertPositions =
-        Nome3DView->GetRayVertPositions(); //  vector containing vector of string positions
-    std::vector<std::string> originString = { std::to_string(vertPositions[0].x),
-                                         std::to_string(vertPositions[0].y),
-                                         std::to_string(vertPositions[0].z) };
+    std::vector<std::string> intersectionString = { std::to_string(hitPoint.x),
+                                               std::to_string(hitPoint.y),
+                                               std::to_string(hitPoint.z) };
 
-    std::vector<std::string> intersectionString = { std::to_string(vertPositions[1].x),
-                                               std::to_string(vertPositions[1].y),
-                                               std::to_string(vertPositions[1].z) };
+    std::string originName = TemporaryMeshManager->AddPoint(originString);
+    std::string intersectionName = TemporaryMeshManager->AddPoint(intersectionString);
 
-    auto originName = TemporaryMeshManager->AddPoint(originString);
-    auto intersectionName = TemporaryMeshManager->AddPoint(intersectionString);
-    TemporaryMeshManager->AddPolyline({ originName, intersectionName });
+    allPointNames.push_back(originName);
+
+    std::vector<tc::Vector3> pointsInBtwn;
+    for (float i = 0.1; i < 1; i+=0.1) {
+        tc::Vector3 vecInBtwn = {origin.x +i*(hitPoint.x-origin.x), origin.y +i*(hitPoint.y-origin.y),
+                                origin.z +i*(hitPoint.z-origin.z)}; //https://math.stackexchange.com/questions/428766/how-do-i-find-out-the-coordinates-of-every-point-between-two-points
+        std::vector<std::string> vecInBtwnString { std::to_string(vecInBtwn.x), std::to_string(vecInBtwn.y), std::to_string(vecInBtwn.z)};
+        std::string vecInBtwnName = TemporaryMeshManager->AddPoint(vecInBtwnString);
+        //allPointNames.push_back(vecInBtwnName);
+    }
+
+    allPointNames.push_back(intersectionName);
+
+    TemporaryMeshManager->AddPolyline(allPointNames);
     Nome3DView->ClearRenderedRay();
 }
 

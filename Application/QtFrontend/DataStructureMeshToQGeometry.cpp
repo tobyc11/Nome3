@@ -159,8 +159,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
 
     auto* normAttr = new Qt3DRender::QAttribute(Geometry);
     //std::cout << Qt3DRender::QAttribute::defaultNormalAttributeName().toStdString() << std::endl;
-    normAttr->setName(
-        Qt3DRender::QAttribute::defaultNormalAttributeName()); // default is vertexNormal. This is
+    normAttr->setName(Qt3DRender::QAttribute::defaultNormalAttributeName()); // default is vertexNormal. This is
                                                                // used as input in the .vert shader
     normAttr->setAttributeType(Qt3DRender::QAttribute::VertexAttribute);
     normAttr->setBuffer(buffer);

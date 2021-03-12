@@ -766,24 +766,10 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
     }
 }
 
+
+
 void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
 {
-
-
-    // TODO: the camera position stays constant, so seems like we have to rotateRay here. This seems
-    // a bit counterintuitive. camera should be moving, not the entire scene
-    // rotateRay(ray);
-    // QVector3D origin = QVector3D(ray.Origin.x, ray.Origin.y, ray.Origin.z) - QVector3D(objectX,
-    // objectY, objectZ);
-    //;
-    // origin = rotation.inverted().rotatedVector(origin);
-    // QVector3D direction = rotation.inverted().rotatedVector(
-    //    QVector3D(ray.Direction.x, ray.Direction.y, ray.Direction.z));
-
-    // ray.Direction = tc::Vector3(direction.x(), direction.y(), direction.z());
-    // ray.Origin = tc::Vector3(origin.x(), origin.y(), origin.z());
-
-
     rotateRay(ray);
     std::vector<std::tuple<float, Scene::CMeshInstance*, tc::Vector3>> hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
@@ -797,13 +783,22 @@ void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
             {
                 const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
                 auto localRay = ray.Transformed(l2w.Inverse());
-                localRay.Direction =
-                    localRay.Direction
-                        .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                localRay.Direction =  localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
                 auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
                 auto pickResults = meshInst->GetHitPoint(localRay);
                 for (const auto& [dist, hitPoint] : pickResults)
-                    hits.emplace_back(dist, meshInst, hitPoint);
+                {
+
+                    //Ray Ray::Transformed(const Matrix3x4& transform) const
+                    //{
+                    //    Ray ret;
+                    //    ret.Origin = transform * Origin;
+                    //    ret.Direction = transform * Vector4(Direction, 0.0f);
+                    //    return ret;
+                    //}
+                    auto hitPointRotated = l2w * hitPoint; // transform(hitPoint, l2w);
+                    hits.emplace_back(dist, meshInst, hitPointRotated);
+                }
             }
         }
     });

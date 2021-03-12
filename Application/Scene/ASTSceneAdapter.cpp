@@ -10,6 +10,7 @@
 #include "Funnel.h"
 #include "GenCartesianSurf.h"
 #include "GenParametricSurf.h"
+#include "GenImplicitSurf.h"
 #include "Helix.h"
 #include "Hyperboloid.h"
 #include "MeshMerger.h"
@@ -63,7 +64,8 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "mobiusstrip", ECommandKind::Entity }, { "helix", ECommandKind::Entity },
     { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
     { "spiral", ECommandKind::Entity },      { "sharp", ECommandKind::Entity },
-    { "gencartesiansurf", ECommandKind::Entity },    { "genparametricsurf", ECommandKind::Entity }
+    { "gencartesiansurf", ECommandKind::Entity },    { "genparametricsurf", ECommandKind::Entity },
+    { "genimplicitsurf", ECommandKind::Entity }
 };
 
 ECommandKind CASTSceneAdapter::ClassifyCommand(const std::string& cmd)
@@ -121,6 +123,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CGenCartesianSurf(name);
     else if (cmd == "genparametricsurf")
         return new CGenParametricSurf(name);
+    else if (cmd == "genimplicitsurf")
+        return new CGenImplicitSurf(name);
     return nullptr;
 }
 

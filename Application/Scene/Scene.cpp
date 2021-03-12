@@ -233,7 +233,6 @@ std::pair<CSceneTreeNode*, std::string> CScene::WalkPath(const std::string& path
 
 void CScene::DFSTreeNodeUpdate(CSceneTreeNode* treeNode, bool markDirty)
 {
-
     treeNode->L2WTransform.Update();
 
     const auto& childNodes = treeNode->GetChildren();
@@ -243,10 +242,12 @@ void CScene::DFSTreeNodeUpdate(CSceneTreeNode* treeNode, bool markDirty)
     if (auto* ent = treeNode->GetEntity())
     {
         // Update the instance entity
-        if (ent->IsDirty())
+        if (ent->IsDirty() )
         {
             treeNode->SetEntityUpdated(true);
             markedDirty = markDirty;
+            if (ent->IsMesh())
+                brenderUpdate = false;
         }
 
         ent->UpdateEntity();
@@ -256,10 +257,10 @@ void CScene::DFSTreeNodeUpdate(CSceneTreeNode* treeNode, bool markDirty)
 void CScene::Update()
 {
     // Called every frame to make sure everything is up to date
-
+    brenderUpdate = true;
     DFSTreeNodeUpdate(GetRootTreeNode(), true);
 
-    if (markedDirty && !Merges.empty())
+    if (markedDirty && !Merges.empty() && !brenderUpdate)
     {
         for (auto & Merge : Merges)
         {

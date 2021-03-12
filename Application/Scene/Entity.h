@@ -6,7 +6,6 @@
 #include <Parsing/ASTContext.h>
 #include <string>
 
-
 /*
  * The meta class provides basic reflection support for entities
  * Things we need:
@@ -60,6 +59,7 @@ public:
 class CEntity : public Flow::CFlowNode
 {
 public:
+    enum RenderType {LIGHT, CAMERA, BACKGROUND};
     // This chunk should be kept in sync with DECLARE_META_CLASS above
     // except some changes for CEntity being the root of all entities
     class CMetaClass : public IMetaClass, public CASTBinding<CEntity, false>
@@ -119,7 +119,9 @@ public:
 
     virtual AST::ACommand* SyncToAST(AST::CASTContext& ctx, bool createNewNode);
     bool isMerged = false;
+    RenderType renderType;
 private:
+
     std::string Name;
     bool bIsValid = false;
     bool bEntityDirty = true;

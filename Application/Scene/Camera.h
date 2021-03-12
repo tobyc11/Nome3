@@ -1,95 +1,37 @@
 #pragma once
-#include "SceneGraph.h"
-#include <Frustum.h>
-#include <stdexcept>
+#include "Entity.h"
+
 
 namespace Nome::Scene
 {
+    class CCamera : public CEntity {
+    DEFINE_INPUT(float, para0) { MarkDirty(); }
+    DEFINE_INPUT(float, para1) { MarkDirty(); }
+    DEFINE_INPUT(float, para2) { MarkDirty(); }
+    DEFINE_INPUT(float, para3) { MarkDirty(); }
+    DEFINE_INPUT(float, para4) { MarkDirty(); }
+    DEFINE_INPUT(float, para5) { MarkDirty(); }
+        void MarkDirty() override;
+        void UpdateEntity() override;
 
-using tc::Frustum;
-using tc::Matrix4;
+    public:
+        DECLARE_META_CLASS(CCamera, CEntity);
+        CCamera() = default;
+        explicit CCamera(const std::string& name)
+                : CEntity(std::move(name))
+        {
+        }
 
-class CCamera : public tc::FRefCounted
-{
-public:
-    CCamera(CSceneTreeNode* treeNode)
-        : SceneTreeNode(treeNode)
-    {
-    }
+        bool IsMesh() override;
+        bool IsInstantiable() override;
+        CEntity* Instantiate(CSceneTreeNode* treeNode) override;
 
-    void CalculateProjMatrix() const;
+    public:
+        std::string projectionType;
+        float para[6];
 
-    const Matrix4& GetProjMatrix() const;
-
-    Matrix4 GetViewMatrix() const;
-
-    Frustum GetFrustum() const;
-
-    /// Property getter/setter
-    float GetAspectRatio() const { return AspectRatio; }
-    void SetAspectRatio(float value)
-    {
-        AspectRatio = value;
-        bProjMatrixDirty = true;
-    }
-
-    float GetFovY() const { return FovY; }
-    void SetFovY(float value)
-    {
-        FovY = value;
-        bProjMatrixDirty = true;
-    }
-
-    float GetNearClip() const { return NearClip; }
-    void SetNearClip(float value)
-    {
-        NearClip = value;
-        bProjMatrixDirty = true;
-    }
-
-    float GetFarClip() const { return FarClip; }
-    void SetFarClip(float value)
-    {
-        FarClip = value;
-        bProjMatrixDirty = true;
-    }
-
-private:
-    // This is where the view transform comes from
-    TAutoPtr<CSceneTreeNode> SceneTreeNode;
-
-    // bool bIsOrthographic = false;
-    float AspectRatio = 1.0f;
-    /// The vertical field of view, the default is 59 degrees
-    float FovY = 59.0f;
-    float NearClip = 0.1f;
-    float FarClip = 1000.0f;
-    // float Zoom;
-    // float OrthoSize;
-
-    mutable Matrix4 ProjMatrix;
-    mutable bool bProjMatrixDirty = true;
-};
-
-class COrbitCameraController : public Flow::CFlowNode
-{
-    // A transform whose inverse is the view matrix
-    DEFINE_OUTPUT_WITH_UPDATE(Matrix3x4, Transform) { CalcTransform(); }
-
-public:
-    void Activate() { bIsActive = true; }
-    void Inactivate() { bIsActive = false; }
-
-    void MouseMoved(int deltaX, int deltaY);
-    void WheelMoved(int degree);
-
-private:
-    void CalcTransform();
-
-    bool bIsActive = false;
-
-    Vector3 Location = { 0.0f, 0.0f, 10.0f };
-    float Yaw = 0.0f, Pitch = 0.0f;
-};
+    private:
+        CSceneTreeNode* SceneTreeNode;
+    };
 
 }

@@ -2,92 +2,46 @@
 
 namespace Nome::Scene
 {
-
-void CCamera::CalculateProjMatrix() const
-{
-    if (!bProjMatrixDirty)
-        return;
-
-    ProjMatrix = Matrix4::ZERO;
-
-    if (true /*!bIsOrthographic*/)
+    DEFINE_META_OBJECT(CCamera)
     {
-        float h = 1.0f / tanf(FovY * tc::M_DEGTORAD_2);
-        float w = h / AspectRatio;
-        float q = FarClip / (NearClip - FarClip);
-        float qn = NearClip * q;
-
-        ProjMatrix[0][0] = w;
-        ProjMatrix[1][1] = h;
-        ProjMatrix[2][2] = q;
-        ProjMatrix[2][3] = qn;
-        ProjMatrix[3][2] = -1.0f;
-    }
-    else
-    {
-        throw std::runtime_error("Unimplemented feature.");
+        BindNamedArgument(&CCamera::para0, "frustum", 0, 0);
+        BindNamedArgument(&CCamera::para1, "frustum", 0, 1);
+        BindNamedArgument(&CCamera::para2, "frustum", 0, 2);
+        BindNamedArgument(&CCamera::para3, "frustum", 0, 3);
+        BindNamedArgument(&CCamera::para4, "frustum", 0, 4);
+        BindNamedArgument(&CCamera::para5, "frustum", 0, 5);
     }
 
-    bProjMatrixDirty = false;
-}
-
-const Matrix4& CCamera::GetProjMatrix() const
-{
-    CalculateProjMatrix();
-    return ProjMatrix;
-}
-
-Matrix4 CCamera::GetViewMatrix() const
-{
-    if (SceneTreeNode)
+    void CCamera::MarkDirty()
     {
-        auto viewInv = SceneTreeNode->L2WTransform.GetValue(Matrix3x4::IDENTITY);
-        return viewInv.Inverse().ToMatrix4();
-    }
-    return Matrix4::IDENTITY;
-}
-
-Frustum CCamera::GetFrustum() const
-{
-    auto frustum = Frustum();
-    if (SceneTreeNode)
-    {
-        const auto& viewMatrix = SceneTreeNode->L2WTransform.GetValue(Matrix3x4::IDENTITY);
-
-        frustum.Define(FovY, AspectRatio, 1.0f, NearClip, FarClip, viewMatrix);
-        return frustum;
+        Super::MarkDirty();
     }
 
-    return frustum;
-}
-
-void COrbitCameraController::MouseMoved(int deltaX, int deltaY)
-{
-    if (bIsActive)
+    void CCamera::UpdateEntity()
     {
-        const float kCameraSpeed = 0.1f;
-        Yaw += deltaX * kCameraSpeed;
-        Pitch += deltaY * kCameraSpeed;
-        Transform.MarkDirty();
+        para[0] = para0.GetValue(0.5);
+        para[1] = para1.GetValue(-0.5);
+        para[2] = para2.GetValue(-0.5);
+        para[3] = para3.GetValue(0.5);
+        para[4] = para4.GetValue(0.1);
+        para[5] = para5.GetValue(1000);
+        Super::UpdateEntity();
+        SetValid(true);
     }
-}
 
-void COrbitCameraController::WheelMoved(int degree)
-{
-    const float kZoomSpeed = 1.0f / 15.0f * 0.25f;
-    float delta = -degree * kZoomSpeed;
-    if (Location.z + delta < 0.0f)
-        Location.z /= 2.0f;
-    else
-        Location.z += delta;
-    Transform.MarkDirty();
-}
+    bool CCamera::IsMesh() {
+        renderType = CAMERA;
+        return false;
+    }
 
-void COrbitCameraController::CalcTransform()
-{
-    auto rot = Quaternion(-Pitch, -Yaw, 0.0f);
-    Transform.UpdateValue(Matrix3x4(rot.RotationMatrix())
-                          * Matrix3x4(Location, Quaternion::IDENTITY, 1.0f));
-}
+    bool CCamera::IsInstantiable() {
+        return true;
+    }
+
+    CEntity *CCamera::Instantiate(CSceneTreeNode *treeNode) {
+        SceneTreeNode = treeNode;
+        return this;
+    }
+
 
 }

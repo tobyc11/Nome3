@@ -39,8 +39,6 @@ public:
     bool IsInstantiable() override;
     bool IsMesh() override;
     CEntity* Instantiate(CSceneTreeNode* treeNode) override;
-    AST::ACommand* SyncToAST(AST::CASTContext& ctx, bool createNewNode) override;
-    CSceneTreeNode* GetSceneTreeNode() const { return SceneTreeNode; }
 
     CLightInfo& GetLight(){return LI;};
 

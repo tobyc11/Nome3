@@ -88,6 +88,7 @@ private:
 
 private:
     bool markedDirty = true;
+    bool brenderUpdate = false;
     CBankAndSet BankAndSet;
 
     // This is the root node of the scene tree

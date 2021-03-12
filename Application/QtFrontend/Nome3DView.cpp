@@ -788,14 +788,6 @@ void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
                 auto pickResults = meshInst->GetHitPoint(localRay);
                 for (const auto& [dist, hitPoint] : pickResults)
                 {
-
-                    //Ray Ray::Transformed(const Matrix3x4& transform) const
-                    //{
-                    //    Ray ret;
-                    //    ret.Origin = transform * Origin;
-                    //    ret.Direction = transform * Vector4(Direction, 0.0f);
-                    //    return ret;
-                    //}
                     auto hitPointRotated = l2w * hitPoint; // transform(hitPoint, l2w);
                     hits.emplace_back(dist, meshInst, hitPointRotated);
                 }
@@ -805,34 +797,15 @@ void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
 
     std::sort(hits.begin(), hits.end());
 
-   
-    // if (!hits.empty()) {
-    //    hits.resize(1); // Force there to be only one face selected. This is more user-friendly.
-    //}
-
     tc::Vector3 closestHitPoint;
     if (hits.size() > 0)
-    {
         closestHitPoint = std::get<2>(hits[0]);
-    }
     else
-    {
-
         return;
-    }
-    
 
-    //rotateRay(ray);
     RayVertPositions.push_back(ray.Origin);
     std::cout << "intersection: " << intersection.x() << " " << intersection.y() << " "
               << intersection.z() << std::endl;
-    auto Q_rotated_intersection = rotation.inverted().rotatedVector(intersection);
-
-    std::cout << "rotated intersection: " << Q_rotated_intersection.x() << " " << Q_rotated_intersection.y() << " "
-              << Q_rotated_intersection.z() << std::endl;
-    tc::Vector3 rotated_intersection = tc::Vector3(
-        Q_rotated_intersection.x(), Q_rotated_intersection.y(), Q_rotated_intersection.z());
-
     QVector3D test = { closestHitPoint.x , closestHitPoint.y , closestHitPoint.z };
     auto testRotated = rotation.inverted().rotatedVector(test);
     tc::Vector3 testRotatedVec = tc::Vector3(testRotated.x(), testRotated.y(), testRotated.z());

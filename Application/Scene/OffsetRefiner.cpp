@@ -237,8 +237,7 @@ void COffsetRefiner::generateNewFaces(Face* face, bool needGrid, bool needOffset
         // offsetFaces.push_back(faceIndexList);
 
         // Randy below line to hopefully replace above lines
-        Face* offsetFaceTop =
-            currMesh.addFace({ vertex1TopInside, vertex1Top, vertex2Top, vertex2TopInside });
+        Face* offsetFaceTop = currMesh.addFace({vertex1TopInside, vertex1Top, vertex2Top, vertex2TopInside});
         offsetFaces.push_back(offsetFaceTop);
 
         // Mesh.add_face(newVertexList[vertex1TopInsideIndex],
@@ -252,13 +251,10 @@ void COffsetRefiner::generateNewFaces(Face* face, bool needGrid, bool needOffset
             Vertex* vertex2Bottom = newVertices[vertex2Id].bottomVert;
             Vertex* vertex2BottomInside = newFaceVertices[faceId][vertex2Id].bottomVert;
 
-            Face* offsetFaceBotTop = currMesh.addFace(
-                { vertex1BottomInside, vertex1TopInside, vertex2TopInside, vertex2BottomInside });
+            Face* offsetFaceBotTop = currMesh.addFace({vertex1BottomInside, vertex1TopInside, vertex2TopInside, vertex2BottomInside});
             offsetFaces.push_back(offsetFaceBotTop);
 
-            Face* offsetFaceBot = currMesh.addFace(
-                { vertex1Bottom, vertex1BottomInside, vertex2BottomInside,
-                  vertex2Bottom }); // TODO // randy check if the two BottomInside is a typo or
+            Face* offsetFaceBot = currMesh.addFace( { vertex1Bottom, vertex1BottomInside, vertex2BottomInside, vertex2Bottom }); // TODO // randy check if the two BottomInside is a typo or
                                     // should i switch to it
             offsetFaces.push_back(offsetFaceBot);
         }
@@ -306,17 +302,30 @@ void COffsetRefiner::closeFace(Face* face)
         allAdjacentEdges.insert(allAdjacentEdges.end(), vert2BotETable.begin(),
                                 vert2BotETable.end());
 
-        bool onBoundary = true;
-        for (Edge* adjEdge : allAdjacentEdges)
+
+
+        // TODO: I think this is not working as seen in the single face case
+        std::vector<Vertex*> verts = { vertex1Top, vertex1Bottom, vertex2Top, vertex2Bottom }; 
+        std::vector<Edge*> boundaryList = currMesh.boundaryEdgeList();
+        bool allOnBoundary = true;
+        for (auto vert : verts)
         {
+            bool onBoundary = false;
             std::vector<Edge*> boundaryList = currMesh.boundaryEdgeList();
-            if (std::find(boundaryList.begin(), boundaryList.end(), adjEdge) == boundaryList.end())
-            { // if none of the relevant verts are on a boundary edge
-                // if one of
-                onBoundary = false;
+            std::vector<Edge*> adjEdges = currMesh.randyedgeTable[vertex1Top];
+            for (auto adjEdge : adjEdges)
+            {
+                if (std::find(boundaryList.begin(), boundaryList.end(), adjEdge)
+                    != boundaryList.end())
+                {
+                    // just need one of the vert's edges to be onboundary
+                    onBoundary = true;
+                }
             }
+            allOnBoundary = allOnBoundary && onBoundary;
         }
-        if (onBoundary)
+
+        if (allOnBoundary)
         {
             // currMesh.addPolygonFace({ vertex1Top, vertex1Bottom, vertex2Bottom, vertex2Top });
 
@@ -325,8 +334,7 @@ void COffsetRefiner::closeFace(Face* face)
             // offsetFaces.push_back(faceIndexList);
 
             // Randy added below to replace above lines
-            Face* offsetFaceClose =
-                currMesh.addFace({ vertex1Top, vertex1Bottom, vertex2Bottom, vertex2Top });
+            Face* offsetFaceClose = currMesh.addFace({ vertex1Top, vertex1Bottom, vertex2Bottom, vertex2Top });
             offsetFaces.push_back(offsetFaceClose);
         }
         // if (vertex1Top.is_boundary() && vertex1Bottom.is_boundary() && vertex2Top.is_boundary()

@@ -74,7 +74,7 @@
     <!--<addaction name="actionResetTempMesh"/>-->
      <addaction name="actionCommitChanges"/>
      <addaction name="actionShowFacets"/>
-     <addaction name="actionRenderRay"/> <!-- Randy's Render Ray-->
+     <addaction name="actionRenderRay"/> 
    </widget>
 
 
@@ -86,7 +86,6 @@
       <addaction name="actionToggleEdgeSelection"/>
       <addaction name="actionToggleFaceSelection"/>
 	  <addaction name="actionTogglePolylineSelection"/>
-     <addaction name="actionToggleRenderRay"/> <!-- Randy's Render Ray Toggle-->
     </widget>
 
     <widget class="QMenu" name="menuModifySelected">
@@ -96,6 +95,14 @@
       <addaction name="actionRemoveFace"/>
     </widget>
 
+    <widget class="QMenu" name="menuAddPointConfig">
+      <property name="title">
+        <string>&amp;Add Point Config</string>
+      </property>
+      <addaction name="actionToggleRenderRay"/>
+      <addaction name="actionRenderRay"/>
+      <!--<addaction name="actionAddPoint"/> Steven's add point-->
+    </widget>
 
     <addaction name="menuFile"/>
    <!--<addaction name="menuAdd"/>-->
@@ -103,6 +110,7 @@
     <!--<addaction name="menuAbout"/>-->
     <addaction name="menuSelect"/>
     <addaction name="menuModifySelected"/>
+    <addaction name="menuAddPointConfig"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -120,12 +128,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-    <addaction name="actionAddPoint"/> <!--Steven's Add point-->
-    <addaction name="actionRenderRay"/> <!--Randy's Render ray-->
    <addaction name="actionAddFace"/>
    <addaction name="actionAddPolyline"/>
    <!--<addaction name="actionRemoveFace"/>-->
-    <!--<addaction name="actionSharpenFace"/>-->
    <!--<addaction name="actionResetTempMesh"/>
    <addaction name="separator"/>-->
    <addaction name="actionCommitChanges"/>
@@ -178,7 +183,7 @@
    <!-- Randy's Render Ray-->
    <action name="actionRenderRay">
      <property name="text">
-       <string>&amp;Render Ray</string>
+       <string>&amp;Draw Added Points</string>
      </property>
    </action>
 <!--  <action name="actionPoint">
@@ -292,7 +297,7 @@
    <!-- Randy's Render Ray-->
    <action name="actionToggleRenderRay">
      <property name="text">
-       <string>Enable Render Ray</string>
+       <string>Enable Add Point </string>
      </property>
      <property name ="checkable">
        <bool>true</bool>

@@ -133,7 +133,6 @@ void CSourceManager::ReportErros(std::string code) {
                             
                         }
                         i = j;
-
                     }
                     shapemap[keyword] = endword;
                 }
@@ -167,12 +166,10 @@ void CSourceManager::ReportErros(std::string code) {
     }
     spaces.push_back(code);
     parsedcode.push_back(spaces);
-    std::cout << parsedcode.size() << std::endl;
     for (int i = 0; i < parsedcode.size(); i++) {
         std::vector<std::string> line = parsedcode.at(i);
         for (int j = 0; j < line.size(); j++) {
             std::string element = line.at(j); 
-            std::cout << element + " " + std::to_string(i) + " " + std::to_string(j) << std::endl;
             if (element == "group" || (shapemap.find(element))!= shapemap.end()) { //check for keywords here.
                 auto cast = shapemap.find(element);
                 std::string endval = cast -> second;
@@ -250,6 +247,28 @@ std::vector<std::string> CSourceManager::CheckStatement(std::vector<std::vector<
                 }
             }
             std::string element = line.at(l);
+            if (element.find("(") != std::string::npos) { //FIX THIS PART
+                if (element.find("()") != std::string::npos) {
+                    continue; 
+                } else {
+                    for (int cnt = l + 1; cnt < line.size(); cnt++) {
+                        if (line.at(cnt).find(")") != std::string::npos) {
+                            l = cnt; 
+                            break;
+                        } else if (line.at(cnt).find("(") != std::string::npos) {
+                            std::cout << cnt << std::endl;
+                            std::cout << line.at(cnt) << std::endl;
+                            std::cout << "Error at Line " + std::to_string(i + 1) + ": Mismatched Parehthesis" << std::endl;
+                            return {"error"};
+                        }
+                        l = cnt;
+                    }
+                }
+            } else if (element.find(")")!= std::string::npos) {
+                std::cout << "Error at Line " + std::to_string(i + 1) + ": Mismatched Parehthesis" << std::endl;
+                return {"error"};
+            }
+
             if ((shapemap.find(element))!= shapemap.end() && element != "instance") {
                 std::cout << "Error at Line " + std::to_string(i + 1) + ": " + element + " is a reserved keyword." << std::endl;
                 return {"error"};

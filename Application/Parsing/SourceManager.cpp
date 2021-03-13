@@ -66,7 +66,38 @@ bool CSourceManager::ParseMainSource()
 
     return !errorListener.bDidErrorHappen;
 }
+bool CSourceManager::balancedbracket(std::string codeline) {   
+    std::stack<char> stk; 
+    char x; 
 
+    for (int i = 0; i < codeline.length(); i++) { 
+        if (codeline[i] == '(' || codeline[i] == '[' || codeline[i] == '{') { 
+            stk.push(codeline[i]); 
+            continue; 
+        } 
+        switch (codeline[i]) { 
+        case ')': 
+            x = stk.top(); 
+            stk.pop(); 
+            if (x == '{' || x == '[') 
+                return false; 
+            break; 
+        case '}': 
+            x = stk.top(); 
+            stk.pop(); 
+            if (x == '(' || x == '[') 
+                return false; 
+            break; 
+        case ']': 
+            x = stk.top(); 
+            stk.pop(); 
+            if (x == '(' || x == '{') 
+                return false; 
+            break; 
+        } 
+    } 
+    return (stk.empty()); 
+} 
 void CSourceManager::ReportErros(std::string code) {
     size_t pos = 0; 
     std::string delimiter = "\n";
@@ -234,6 +265,14 @@ std::vector<std::string> CSourceManager::CheckStatement(std::vector<std::vector<
             k = i;
         }
         std::vector<std::string> line = parsedcode.at(k);
+        std::string linestr = "";
+        for (int l = 0; l < line.size(); l++) {
+            linestr += line.at(l);
+        }
+        if (!balancedbracket(linestr)) {
+            std::cout << "Error at Line " + std::to_string(i + 1) + ": Mismatched Parehthesis" << std::endl;
+            return {"error"};
+        }
         for (int l = 0; l < line.size(); l++) {
             global_k = k;
             global_l = l;
@@ -247,28 +286,6 @@ std::vector<std::string> CSourceManager::CheckStatement(std::vector<std::vector<
                 }
             }
             std::string element = line.at(l);
-            if (element.find("(") != std::string::npos) { //FIX THIS PART
-                if (element.find("()") != std::string::npos) {
-                    continue; 
-                } else {
-                    for (int cnt = l + 1; cnt < line.size(); cnt++) {
-                        if (line.at(cnt).find(")") != std::string::npos) {
-                            l = cnt; 
-                            break;
-                        } else if (line.at(cnt).find("(") != std::string::npos) {
-                            std::cout << cnt << std::endl;
-                            std::cout << line.at(cnt) << std::endl;
-                            std::cout << "Error at Line " + std::to_string(i + 1) + ": Mismatched Parehthesis" << std::endl;
-                            return {"error"};
-                        }
-                        l = cnt;
-                    }
-                }
-            } else if (element.find(")")!= std::string::npos) {
-                std::cout << "Error at Line " + std::to_string(i + 1) + ": Mismatched Parehthesis" << std::endl;
-                return {"error"};
-            }
-
             if ((shapemap.find(element))!= shapemap.end() && element != "instance") {
                 std::cout << "Error at Line " + std::to_string(i + 1) + ": " + element + " is a reserved keyword." << std::endl;
                 return {"error"};

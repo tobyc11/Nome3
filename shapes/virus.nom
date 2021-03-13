@@ -1,0 +1,33 @@
+bank b
+	set height 2.00 2 25 1
+endbank
+surface pingpong color (0.274 0.627 0.494) endsurface
+surface red color (1 0 0) endsurface
+surface white color (1 1 1) endsurface
+surface grey color (0 0 1) endsurface
+surface brown color (0.54 0.27 0.07) endsurface
+
+sphere ball (1.5 360 -90 90 20 20) endsphere
+sphere ball2 (3.5 360 -90 90 20 20) endsphere
+cylinder center (1 20 360 20) endcylinder
+
+
+point uno (0 0 20) endpoint
+point dos (0 1 20) endpoint
+point tres ({expr $b.height} * sin((1/10)*$frame)*cos((1/10)*$frame) {expr $b.height}*cos((1/20)*$frame) {expr $b.height}*sin((1/10)*$frame)*sin((1/10)*$frame)) endpoint
+point quatro ({expr $b.height} * sin((1/20)*$frame)*cos((1/20)*$frame) {expr $b.height}*cos((1/20)*$frame) {expr $b.height}*sin((1/20)*$frame)*sin((1/20)*$frame)) endpoint
+point tres2 ({expr $b.height} * sin((1/20)*$frame)*cos((1/20)*$frame) {expr $b.height}*cos((1/20)*$frame) {expr $b.height}*sin((1/20)*$frame)*sin((1/20)*$frame)) endpoint
+point quatro2 ({expr $b.height} * sin((1/20)*$frame)*cos((1/20)*$frame) {expr $b.height}*cos((1/20)*$frame) {expr $b.height}*sin((1/20)*$frame)*sin((1/20)*$frame)) endpoint
+point cinco ({expr $b.height} * 2 * sin((1/10)*$frame)*cos((1/20)*$frame) {expr $b.height}*2*cos((1/20)*$frame) {expr $b.height}*2*sin((1/20)*$frame)*sin((1/20)*$frame)) endpoint
+point seis  ({expr $b.height} * 2 * sin((1/20)*$frame)*cos((1/20)*$frame) {expr $b.height}*2*cos((1/20)*$frame) {expr $b.height}*2*sin((1/20)*$frame)*sin((1/20)*$frame)) endpoint
+
+beziercurve net1 (uno dos tres quatro) 100 endbeziercurve
+beziercurve net2 (tres2 quatro2 cinco seis) 10 endbeziercurve
+
+
+instance planetuno ball translate ({expr $b.height} * sin((1/20)*$frame)*cos((1/20)*$frame) {expr $b.height}*cos((1/20)*$frame) {expr $b.height}*sin((1/20)*$frame)*sin((1/20)*$frame)) [surface white] endinstance
+instance planetdos ball2 translate ({expr $b.height} * 2 * sin((1/20)*$frame)*cos((1/20)*$frame) {expr $b.height}*2*cos((1/20)*$frame) {expr $b.height}*2*sin((1/20)*$frame)*sin((1/20)*$frame)) [surface grey] endinstance
+
+instance two net1 endinstance
+instance three net2 endinstance
+instance cylin center [surface red] endinstance

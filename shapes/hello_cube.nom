@@ -1,0 +1,20 @@
+point p1 (1 1 1) endpoint
+point p2 (1 -1 1) endpoint
+point p3 (-1 -1 1) endpoint
+point p4 (-1 1 1) endpoint
+
+mesh one_face
+    face f1 (p1 p2 p3 p4) endface
+endmesh
+
+group cube
+  instance front one_face endinstance
+  instance back one_face rotate (0 1 0) (180) endinstance
+  instance left one_face rotate (0 1 0) (-90) endinstance
+  instance right one_face rotate (0 1 0) (90) endinstance
+  instance top one_face rotate (1 0 0) (90) endinstance
+  instance bottom one_face rotate (1 0 0) (-90) endinstance
+endgroup
+
+instance cube0 cube endinstance
+instance cube1 cube translate (3 0 0) endinstance

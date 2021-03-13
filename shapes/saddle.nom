@@ -1,0 +1,9 @@
+bank hyp_slider
+  set a 0 0 20 1
+  set c 0 0 1 0.1
+
+endbank
+
+
+saddle testhyp ({expr $hyp_slider.a} {expr $hyp_slider.c}) endsaddle
+instance hyp testhyp endinstance

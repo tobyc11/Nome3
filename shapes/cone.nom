@@ -1,0 +1,10 @@
+bank b
+	set radius 0 1 15 1
+	set segments 20 20 35 1
+    set height 0 3 15 1
+	set cut 1 0 1 0.1
+	set angle 360 0 360 1
+endbank
+
+cone example ({expr $b.segments} {expr $b.radius} {expr $b.height} {expr $b.cut} {expr $b.angle} 0 0) endcone
+instance thesphere example endinstance

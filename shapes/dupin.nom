@@ -1,0 +1,13 @@
+bank hyp_slider
+  set a 1 0 1 0.1
+  set b 0.98 0 1 0.1
+  set c 0.199 0 1 0.1
+  set d 0.3 0 1 0.1
+  set u 2 0 2 0.1
+  set v 2 0 2 0.1
+  set crosssec 15 0 30 1
+endbank
+
+
+dupin testhyp ({expr $hyp_slider.a} {expr $hyp_slider.b} {expr $hyp_slider.c} {expr $hyp_slider.d} {expr $hyp_slider.u} {expr $hyp_slider.v} {expr $hyp_slider.crosssec}) enddupin
+instance hyp testhyp endinstance

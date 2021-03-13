@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <fstream>
 #include <unordered_map>
 
 namespace Nome

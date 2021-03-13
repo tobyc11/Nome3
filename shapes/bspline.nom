@@ -1,0 +1,6 @@
+point p1 (0 0 1) endpoint
+point p2 (0 1 3) endpoint
+point p3 (0 0 3) endpoint
+bspline bsp 1 (p3 p2 p1) 1 endbspline
+
+instance thesurf bsp endinstance

@@ -1,0 +1,8 @@
+bank circle_slider
+  set num_vert 20 5 100 1
+  set radius 1 1 100 1
+endbank
+
+circle testcircle ({expr $circle_slider.num_vert} {expr $circle_slider.radius}) endcircle
+
+instance circle1 testcircle endinstance

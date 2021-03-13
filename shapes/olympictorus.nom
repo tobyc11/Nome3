@@ -1,8 +1,0 @@
-torus example (40 7 0.5 360 360 30) endtorus
-instance circle0 example endinstance
-instance circle1 example translate (10 0 0) endinstance
-instance circle2 example translate (20 0 0) endinstance
-instance circle2 example translate (5 -8 0) endinstance
-instance circle2 example translate (15 -8 0) endinstance
-
-

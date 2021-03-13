@@ -1,2 +1,0 @@
-spiral test (1/7*sin((1/10)*$frame) 40 500) endspiral
-instance hyp test endinstance

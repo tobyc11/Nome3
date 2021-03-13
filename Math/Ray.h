@@ -93,6 +93,11 @@ public:
     float HitDistance(const Vector3& v0, const Vector3& v1, const Vector3& v2, Vector3* outNormal = nullptr, Vector3* outBary = nullptr) const;
     // Randy added this. Return hit distance to a line segment (e.g. edge)
     float HitDistance(const Vector3& point1, const Vector3& point2) const;
+
+    // Randy added this to get intersection point
+    Vector3 HitPoint(const Vector3& v0, const Vector3& v1, const Vector3& v2,
+                        Vector3* outNormal = nullptr, Vector3* outBary = nullptr) const;
+
     /// Return hit distance to non-indexed geometry data, or infinity if no hit. Optionally return hit normal and hit uv coordinates at intersect point.
     float HitDistance
         (const void* vertexData, unsigned vertexStride, unsigned vertexStart, unsigned vertexCount, Vector3* outNormal = nullptr,

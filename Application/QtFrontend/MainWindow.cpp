@@ -20,6 +20,7 @@
 #include <QVBoxLayout>
 #include <StringPrintf.h>
 
+#include <QTableWidget> // Steven's Add Point
 namespace Nome
 {
 
@@ -175,6 +176,7 @@ void CMainWindow::on_actionMerge_triggered()
           // vertices. Reminder: an instance identifier is NOT a Mesh, so only real entities get
           // merged.
             merger->MergeIn(*mesh);
+            entity->isMerged = true;
         }
     });
 
@@ -237,6 +239,45 @@ void CMainWindow::on_actionAbout_triggered()
                           "insert author name for current version"));
 }*/
 
+// Steven's Add Point
+void CMainWindow::on_actionAddPoint_triggered()
+{
+    auto* dialog = new QDialog(GFrtCtx->MainWindow);
+    dialog->setModal(true);
+    auto* layout1 = new QHBoxLayout(dialog);
+    auto* table = new QTableWidget();
+    const char* xyz[3] = { "X: ", "Y: ", "Z: " };
+    std::vector<QLineEdit*> getLines;
+    for (auto* s : xyz)
+    {
+        QLabel* tempLabel = new QLabel(tr(s));
+        QLineEdit* tempInput = new QLineEdit("");
+        layout1->addWidget(tempLabel);
+        layout1->addWidget(tempInput);
+        getLines.push_back(tempInput);
+    }
+    auto* layout2 = new QVBoxLayout();
+    auto* btnOk = new QPushButton();
+    btnOk->setText("OK");
+    connect(btnOk, &QPushButton::clicked, [this, dialog, getLines]() {
+        std::vector<std::string> pos;
+        for (auto* getline : getLines)
+        {
+            pos.push_back(getline->text().toStdString().c_str());
+        }
+        TemporaryMeshManager->AddPoint(pos);
+        dialog->close();
+    });
+    auto* btnCancel = new QPushButton();
+    btnCancel->setText("Cancel");
+    connect(btnCancel, &QPushButton::clicked, dialog, &QWidget::close);
+    layout2->addWidget(btnOk);
+    layout2->addWidget(btnCancel);
+    layout1->addLayout(layout2);
+    dialog->show();
+}
+
+
 void CMainWindow::on_actionAddFace_triggered()
 {
     const auto& verts = Nome3DView->GetSelectedVertices();
@@ -273,6 +314,52 @@ void CMainWindow::on_actionRemoveFace_triggered()
 //void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->ResetTemporaryMesh(); }
 
 
+// Randy added on 2/26 for adding vertices via a ray
+void CMainWindow::on_actionRenderRay_triggered()
+{
+    std::vector<std::string> allPointNames;
+    const auto& vertPositions =Nome3DView->GetRayVertPositions(); //  vector containing vector of string positions
+    auto origin = vertPositions[0];
+    auto hitPoint = vertPositions[1];
+    std::vector<std::string> originString = { std::to_string(origin.x), std::to_string(origin.y), std::to_string(origin.z) };
+
+    std::vector<std::string> intersectionString = { std::to_string(hitPoint.x), std::to_string(hitPoint.y), std::to_string(hitPoint.z) };
+
+    std::string originName = TemporaryMeshManager->AddPoint(originString);
+    std::string intersectionName = TemporaryMeshManager->AddPoint(intersectionString);
+
+    allPointNames.push_back(originName);
+
+    std::vector<tc::Vector3> pointsInBtwn;
+    for (float i = 0.1; i < 1; i+=0.1) {
+        tc::Vector3 vecInBtwn = {origin.x +i*(hitPoint.x-origin.x), origin.y +i*(hitPoint.y-origin.y), origin.z +i*(hitPoint.z-origin.z)}; //https://math.stackexchange.com/questions/428766/how-do-i-find-out-the-coordinates-of-every-point-between-two-points
+        std::vector<std::string> vecInBtwnString { std::to_string(vecInBtwn.x), std::to_string(vecInBtwn.y), std::to_string(vecInBtwn.z)};
+        std::string vecInBtwnName = TemporaryMeshManager->AddPoint(vecInBtwnString);
+        //allPointNames.push_back(vecInBtwnName);
+    }
+
+    allPointNames.push_back(intersectionName);
+
+    TemporaryMeshManager->AddPolyline(allPointNames);
+    Nome3DView->PickVertexBool = !Nome3DView->PickVertexBool; // fix this later
+    Nome3DView->ClearRenderedRay();
+}
+
+// Toggle on/off Ray Rendering
+void CMainWindow::on_actionToggleRenderRay_triggered()
+{
+    Nome3DView->RenderRayBool = !Nome3DView->RenderRayBool;
+    // mark all mesh instances dirty. Added on 11/26
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+
+        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+            mesh->MarkDirty();
+    });
+}
+
 void CMainWindow::on_actionCommitChanges_triggered()
 {
     TemporaryMeshManager->CommitChanges(SourceMgr->GetASTContext());
@@ -297,6 +384,8 @@ void CMainWindow::on_actionShowFacets_triggered()
             mesh->MarkDirty();
     });
 }
+
+
 
 // Toggle on/off Vertex selection
 void CMainWindow::on_actionToggleVertexSelection_triggered()

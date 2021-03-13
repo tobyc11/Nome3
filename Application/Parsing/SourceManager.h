@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <unordered_map>
 
 namespace Nome
 {
@@ -27,6 +28,12 @@ public:
 
     void InsertText(size_t globalOffset, const std::string& text);
     void RemoveText(size_t globalOffset, size_t length);
+    void ReportErros(std::string code); 
+    std::vector<std::string> CheckStatement(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> idmap, std::string endstatement, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckInstance(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckGroup(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string>& idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckBank(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &referencemap, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    int checkcount(std::string str, char letter);
     [[nodiscard]] std::string CollectText() const;
     [[nodiscard]] std::pair<size_t, size_t> FindPieceIndexAndOffset(size_t globalOffset) const;
 
@@ -35,14 +42,13 @@ public:
     std::optional<size_t> RemoveTokens(const std::vector<AST::CToken*>& tokenList);
     // Inserts a token into the text buffer, returns the pos after last inserted character
     size_t InsertToken(size_t globalOffset, AST::CToken* token);
-    size_t InsertToken(size_t globalOffset, AST::CToken* token, const std::string& before,
-                       const std::string& after);
+    size_t InsertToken(size_t globalOffset, AST::CToken* token, const std::string& before, const std::string& after);
 
     // Requires that the new command is not in the text yet
-    bool AppendCmdAfter(AST::ACommand* parent, AST::ACommand* after,
-                        AST::ACommand* newCommand);
+    bool AppendCmdAfter(AST::ACommand* parent, AST::ACommand* after, AST::ACommand* newCommand);
     bool AppendCmdEndOfFile(AST::ACommand* newCommand);
 
+    bool AppendText(const std::string& text); // Steven's Add Point 
     void CommitASTChanges();
     void SaveFile() const;
 

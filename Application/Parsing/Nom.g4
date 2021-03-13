@@ -45,6 +45,10 @@ argSurface : 'surface' ident ;
 argCross : 'cross' ident ;
 argSegs : 'segs' expression ;
 argOrder : 'order' expression ;
+argLightType : 'type' ident;
+argLightColor : 'color' vector3;
+argCameraProjection : 'projection' ident;
+argCameraFrustum : 'frustum' LPAREN expression* RPAREN;
 argTransform
    : 'rotate' LPAREN exp1=expression exp2=expression exp3=expression RPAREN LPAREN exp4=expression RPAREN # argTransformTwo
    | 'scale' LPAREN expression expression expression RPAREN # argTransformOne
@@ -85,11 +89,12 @@ command
    | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
    | open='gencartesiansurf' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endgencartesiansurf' # CmdExprListOne
    | open='genparametricsurf' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endgenparametricsurf' # CmdExprListOne
+   | open='genimplicitsurf' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endgenimplicitsurf' # CmdExprListOne
    | open='beziercurve' name=ident idList argSegs* end='endbeziercurve' # CmdIdListOne
    | open='bspline' name=ident argOrder* idList argSegs* end='endbspline' # CmdIdListOne
    | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
    | open='surface' name=ident argColor end='endsurface' # CmdSurface
-   | open='background' argSurface end='endbackground' # CmdArgSurface
+   | open='background' name=ident LPAREN expression expression expression RPAREN end='endbackground' # CmdExprListOne
    | open='foreground' argSurface end='endforeground' # CmdArgSurface
    | open='insidefaces' argSurface end='endinsidefaces' # CmdArgSurface
    | open='outsidefaces' argSurface end='endoutsidefaces' # CmdArgSurface
@@ -103,7 +108,10 @@ command
    | open='sharp' expression idList+ end='endsharp' # CmdSharp
    | open='offset' name=ident argOffsetFlag* argHeight* argWidth* command* end='endoffset' # CmdOffset
    | open='include' name=ident end='endinclude' # CmdInclude
+   | open='light' name=ident argLightType argLightColor end='endlight' # CmdLight
+   | open='camera' name=ident argCameraProjection argCameraFrustum end='endcamera' #CmdCamera
    ;
+
 
 set : open='set' ident expression expression expression expression;
 
@@ -112,7 +120,7 @@ deleteFace : open='face' ident end='endface' ;
 IDENT : VALID_ID_START VALID_ID_CHAR* | QUOTE VALID_ID_FUNC* QUOTE ;
 fragment VALID_ID_START : ('a' .. 'z') | ('A' .. 'Z') | '_' | '.' ;
 fragment VALID_ID_CHAR : VALID_ID_START | ('0' .. '9') ;
-fragment VALID_ID_FUNC : VALID_ID_CHAR | '(' | ')' | '*' | '/' | '+' | '!' | '%' | '=' | '^' | '-' | '|' ;
+fragment VALID_ID_FUNC : VALID_ID_CHAR | '(' | ')' | '*' | '/' | '+' | '!' | '%' | '=' | '^' | '-' | '|' | ',' | '<' | '>' ;
 fragment QUOTE : '"' ;
 
 //The NUMBER part gets its potential sign from "(PLUS | MINUS)* atom" in the expression rule

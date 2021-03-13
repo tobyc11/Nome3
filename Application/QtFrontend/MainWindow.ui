@@ -74,6 +74,7 @@
     <!--<addaction name="actionResetTempMesh"/>-->
      <addaction name="actionCommitChanges"/>
      <addaction name="actionShowFacets"/>
+     <addaction name="actionRenderRay"/> 
    </widget>
 
 
@@ -94,6 +95,14 @@
       <addaction name="actionRemoveFace"/>
     </widget>
 
+    <widget class="QMenu" name="menuAddPointConfig">
+      <property name="title">
+        <string>&amp;Add Point Config</string>
+      </property>
+      <addaction name="actionToggleRenderRay"/>
+      <addaction name="actionRenderRay"/>
+      <!--<addaction name="actionAddPoint"/> Steven's add point-->
+    </widget>
 
     <addaction name="menuFile"/>
    <!--<addaction name="menuAdd"/>-->
@@ -101,6 +110,7 @@
     <!--<addaction name="menuAbout"/>-->
     <addaction name="menuSelect"/>
     <addaction name="menuModifySelected"/>
+    <addaction name="menuAddPointConfig"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -121,7 +131,6 @@
    <addaction name="actionAddFace"/>
    <addaction name="actionAddPolyline"/>
    <!--<addaction name="actionRemoveFace"/>-->
-    <!--<addaction name="actionSharpenFace"/>-->
    <!--<addaction name="actionResetTempMesh"/>
    <addaction name="separator"/>-->
    <addaction name="actionCommitChanges"/>
@@ -164,6 +173,19 @@
     <string>About</string>
    </property>
   </action>
+   <!-- Steven's Add Point-->
+   <action name="actionAddPoint">
+     <property name="text">
+       <string>&amp;Add Point</string>
+     </property>
+   </action>
+
+   <!-- Randy's Render Ray-->
+   <action name="actionRenderRay">
+     <property name="text">
+       <string>&amp;Draw Added Points</string>
+     </property>
+   </action>
 <!--  <action name="actionPoint">
    <property name="text">
     <string>&amp;Point</string>
@@ -225,6 +247,13 @@
    </property>
   </action>
 
+   <!-- Steven's Add Point-->
+   <action name="actionCommitTempPoint">
+     <property name="text">
+       <string>Commit Point</string>
+     </property>
+   </action>
+
    <action name="actionShowFacets">
      <property name="text">
        <string>Show Facets</string>
@@ -264,6 +293,17 @@
 			<bool>true</bool>
 		</property>
 	</action>
+
+   <!-- Randy's Render Ray-->
+   <action name="actionToggleRenderRay">
+     <property name="text">
+       <string>Enable Add Point </string>
+     </property>
+     <property name ="checkable">
+       <bool>true</bool>
+     </property>
+   </action>
+   
  </widget>
  <resources/>
  <connections/>

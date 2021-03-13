@@ -207,6 +207,7 @@ bool TBindingTranslator<Flow::TInput<float>>::FromASTToValue(AST::ACommand* comm
     return true;
 }
 
+
 template <>
 bool TBindingTranslator<std::string>::FromASTToValue(AST::ACommand* command,
                                                      const CCommandSubpart& subpart,

@@ -32,7 +32,7 @@ Vertex::Vertex(float x, float y, float z, unsigned long ID)
     before_transform_vertex = NULL;
 }
 
-Vertex::Vertex(float x, float y, float z, string assignedName, unsigned long ID)
+Vertex::Vertex(float x, float y, float z, std::string assignedName, unsigned long ID)
 {
     name = assignedName;
     position = tc::Vector3(x, y, z);

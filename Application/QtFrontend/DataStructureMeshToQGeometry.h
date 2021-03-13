@@ -121,7 +121,7 @@ class CDataStructureMeshToQGeometry
 {
 public:
     explicit CDataStructureMeshToQGeometry(
-        const DSMesh& fromMesh, bool bGenPointGeometry = false);
+        const DSMesh& fromMesh, std::array<float, 3>& InstanceColor, bool bGenPointGeometry = false);
 
     ~CDataStructureMeshToQGeometry();
 

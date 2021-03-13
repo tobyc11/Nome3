@@ -40,13 +40,13 @@ void Mesh::addVertex(float x, float y, float z) {
     addVertex(vertCopy);
 }
 
-Edge* Mesh::findEdge(const string& v1, const string& v2, bool setmobius) {
+Edge* Mesh::findEdge(const std::string& v1, const std::string& v2, bool setmobius) {
     return findEdge(nameToVert.at(v1), nameToVert.at(v2), setmobius);
 }
 Edge* Mesh::findEdge(Vertex* v1, Vertex* v2, bool setmobius)
 {
-    unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
-    vector<Edge*>::iterator eIt;
+    std::unordered_map<Vertex*, std::vector<Edge*>>::iterator vIt;
+    std::vector<Edge*>::iterator eIt;
     vIt = edgeTable.find(v2);
     if (vIt != edgeTable.end())
     {
@@ -97,7 +97,7 @@ Edge* Mesh::createEdge(Vertex* v1, Vertex* v2)
         {
             v2->oneEdge = edge;
         }
-        unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
+        std::unordered_map<Vertex*, std::vector<Edge*>>::iterator vIt;
         vIt = edgeTable.find(v1);
         if (vIt != edgeTable.end())
         {
@@ -105,26 +105,48 @@ Edge* Mesh::createEdge(Vertex* v1, Vertex* v2)
         }
         else
         {
-            vector<Edge*> currEdges;
+            std::vector<Edge*> currEdges;
             currEdges.push_back(edge);
             edgeTable[v1] = currEdges;
+        }
+
+        if (randyedgeTable.count(v1) > 0)
+        {
+            randyedgeTable[v1].push_back(edge);
+        }
+        else
+        {
+            std::vector<Edge*> currEdges;
+            currEdges.push_back(edge);
+            randyedgeTable[v1] = currEdges;
+        }
+
+        if (randyedgeTable.count(v2) > 0)
+        {
+            randyedgeTable[v2].push_back(edge);
+        }
+        else
+        {
+            std::vector<Edge*> currEdges;
+            currEdges.push_back(edge);
+            randyedgeTable[v2] = currEdges;
         }
     }
     // cout<<"The va of edge is "<<edge -> va -> ID<<" . The vb is "<< edge -> vb -> ID<<" ."<<endl;
     return edge;
 }
 
-Face * Mesh::addFace(vector<Vertex*> vertices, bool reverseOrder)
+Face* Mesh::addFace(std::vector<Vertex*> vertices, bool reverseOrder)
 {
     if (vertices.size() < 3)
     {
-        cout << "A face have at least 3 vertices" << endl;
+        std::cout << "A face have at least 3 vertices" << std::endl;
         return NULL; // Randy added the null
     }
     Face* newFace = new Face(vertices); // Randy added the (vertices)
-    vector<Vertex*>::iterator vIt;
-    vector<Edge*> edgesInFace;
-    vector<Edge*>::iterator eIt;
+    std::vector<Vertex*>::iterator vIt;
+    std::vector<Edge*> edgesInFace;
+    std::vector<Edge*>::iterator eIt;
     Edge* currEdge;
 
     if (!reverseOrder)
@@ -151,12 +173,12 @@ Face * Mesh::addFace(vector<Vertex*> vertices, bool reverseOrder)
             }
             else
             {
-                cout << "addFace ERROR: Try to create a Non-Manifold at edge with vertex1 : "
+                std::cout << "addFace ERROR: Try to create a Non-Manifold at edge with vertex1 : "
                      << currEdge->va->position.x << " " << currEdge->va->position.y << "  "
                      << currEdge->va->position.z << " and vertex2 :"
                     << currEdge->vb->position.x << " " << currEdge->vb->position.y << "  "
                                                      << currEdge->vb->position.z
-                  << endl;
+                          << std::endl;
                // exit(0);
             }
         }
@@ -185,8 +207,8 @@ Face * Mesh::addFace(vector<Vertex*> vertices, bool reverseOrder)
             }
             else
             {
-                cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : "
-                     << currEdge->va->ID << " and vertex2 :" << currEdge->vb->ID << endl;
+                std::cout << "ERROR: Try to create a Non-Manifold at edge with vertex1 : "
+                          << currEdge->va->ID << " and vertex2 :" << currEdge->vb->ID << std::endl;
                // exit(0); // TODO: This is being triggered
             }
         }
@@ -271,9 +293,9 @@ Face * Mesh::addFace(vector<Vertex*> vertices, bool reverseOrder)
 // This one takes O(E) time.
 void Mesh::buildBoundary()
 {
-    unordered_map<Vertex*, vector<Edge*>>::iterator evIt;
-    vector<Edge*> edgesAtThisPoint;
-    vector<Edge*>::iterator eIt;
+    std::unordered_map<Vertex*, std::vector<Edge*>>::iterator evIt;
+    std::vector<Edge*> edgesAtThisPoint;
+    std::vector<Edge*>::iterator eIt;
     for (evIt = edgeTable.begin(); evIt != edgeTable.end(); evIt++)
     {
         edgesAtThisPoint = evIt->second;
@@ -366,9 +388,9 @@ void getVertexNormal(Vertex* currVert)
     Edge* firstEdge = currVert->oneEdge;
     if (firstEdge == NULL)
     {   
-        cout << currVert->name
+        std::cout << currVert->name
          + " is a lonely vertex without any adjacent edges. This error message  also appear for shapes with non-manifold verts and for polylines"
-            << endl;
+                  << std::endl;
         return;
     }
     Edge* currEdge = firstEdge;
@@ -413,8 +435,8 @@ void getVertexNormal(Vertex* currVert)
 // Iterate over every vertex in the mesh and compute its normal
 void Mesh::computeNormals(bool isPolyline)
 {
-    vector<Vertex*>::iterator vIt;
-    vector<Face*>::iterator fIt;
+    std::vector<Vertex*>::iterator vIt;
+    std::vector<Face*>::iterator fIt;
     // cout<<"faceTable size: "<<faceList.size()<<endl;
     for (fIt = faceList.begin(); fIt < faceList.end(); fIt++)
     {
@@ -433,17 +455,17 @@ void Mesh::computeNormals(bool isPolyline)
 }
 
 
-vector<Edge*> Mesh::boundaryEdgeList()
+std::vector<Edge*> Mesh::boundaryEdgeList()
 {
-    vector<Edge*> boundaryEdgeList;
-    unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
+    std::vector<Edge*> boundaryEdgeList;
+    std::unordered_map<Vertex*, std::vector<Edge*>>::iterator vIt;
     // cout<<"Edge table size: "<<edgeTable.size()<<endl;
     for (vIt = edgeTable.begin(); vIt != edgeTable.end(); vIt++)
     {
         // cout<<vIt -> first -> ID<<endl;
-        vector<Edge*> edges = vIt->second;
-        vector<Edge*>::iterator eIt;
-        vector<Edge*> newEdges;
+        std::vector<Edge*> edges = vIt->second;
+        std::vector<Edge*>::iterator eIt;
+        std::vector<Edge*> newEdges;
         for (eIt = edges.begin(); eIt < edges.end(); eIt++)
         {
             if ((*eIt)->fb == NULL)
@@ -496,11 +518,10 @@ void Mesh::clearAndDelete()
 
 
 // test function
-Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
+Mesh Mesh::newMakeCopy(std::string copy_mesh_name, bool isPolyline)
 {
     // cout<<"Creating a copy of the current map.\n";
     Mesh newMesh;
-
     if (copy_mesh_name == "")
     {
         newMesh.name = this->name;
@@ -510,9 +531,10 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
         newMesh.name = copy_mesh_name;
     }
     newMesh.clear();
-    vector<Vertex*>::iterator vIt;
+    std::vector<Vertex*>::iterator vIt;
     for (vIt = vertList.begin(); vIt < vertList.end(); vIt++)
     {
+      
         Vertex* vertCopy = new Vertex;
         vertCopy->ID = (*vIt)->ID;
         vertCopy->name = (*vIt)->name;
@@ -520,11 +542,10 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
         vertCopy->sharpness = (*vIt)->sharpness;
         newMesh.addVertex(vertCopy);
     }
-    vector<Face*>::iterator fIt;
-    vector<Vertex*> vertices;
+    std::vector<Face*>::iterator fIt;
+    std::vector<Vertex*> vertices;
     for (fIt = faceList.begin(); fIt < faceList.end(); fIt++)
     {
-
         Face* tempFace = *fIt;
         Edge* firstEdge = tempFace->oneEdge;
         Edge* currEdge = firstEdge;
@@ -533,7 +554,6 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
         vertices.clear();
         do
         {
-
             if (tempFace == currEdge->fa)
             {
                 tempv = currEdge->vb;
@@ -563,125 +583,21 @@ Mesh Mesh::randymakeCopy(string copy_mesh_name, bool isPolyline)
         newMesh.faceList[newMesh.faceList.size() - 1]->surfaceName =
             (*fIt)->surfaceName; // Randy added this
     }
-    vector<Edge*>::iterator eItr;
+
+    std::vector<Edge*>::iterator eItr;
     for (eItr = newMesh.edgeList.begin(); eItr != newMesh.edgeList.end(); eItr++) {
         (*eItr)->sharpness = findEdge((*eItr)->v0()->name, (*eItr)->v1()->name, false)->sharpness;
     }
     newMesh.buildBoundary();
-
     newMesh.computeNormals(isPolyline);
-
     return newMesh;
 }
 
-Mesh Mesh::makeCopy(string copy_mesh_name)
-{
-    // cout<<"Creating a copy of the current map.\n";
-    Mesh newMesh;
-
-    if (copy_mesh_name == "")
-    {
-        newMesh.name = this->name;
-    }
-    else
-    {
-        newMesh.name = copy_mesh_name;
-    }
-    newMesh.clear();
-    vector<Vertex*>::iterator vIt;
-    for (vIt = vertList.begin(); vIt < vertList.end(); vIt++)
-    {
-        Vertex* vertCopy = new Vertex;
-        vertCopy->ID = (*vIt)->ID;
-        vertCopy->name = (*vIt)->name;
-        vertCopy->position = (*vIt)->position;
-        vertCopy->isParametric = (*vIt)->isParametric;
-        if ((*vIt)->isParametric)
-        {
-            vertCopy->x_expr = (*vIt)->x_expr;
-            vertCopy->y_expr = (*vIt)->y_expr;
-            vertCopy->z_expr = (*vIt)->z_expr;
-            //vertCopy->params = (*vIt)->params;
-            //vertCopy->influencingParams = (*vIt)->influencingParams;
-        }
-        newMesh.addVertex(vertCopy);
-    }
-    vector<Face*>::iterator fIt;
-    vector<Vertex*> vertices;
-    for (fIt = faceList.begin(); fIt < faceList.end(); fIt++)
-    {
-        Face* tempFace = *fIt;
-        Edge* firstEdge = tempFace->oneEdge;
-        Edge* currEdge = firstEdge;
-        Edge* nextEdge;
-        Vertex* tempv;
-        vertices.clear();
-        do
-        {
-            if (tempFace == currEdge->fa)
-            {
-                tempv = currEdge->vb;
-                nextEdge = currEdge->nextVbFa;
-            }
-            else
-            {
-                if (currEdge->mobius)
-                {
-                    tempv = currEdge->vb;
-                    nextEdge = currEdge->nextVbFb;
-                }
-                else
-                {
-                    tempv = currEdge->va;
-                    nextEdge = currEdge->nextVaFb;
-                }
-            }
-            vertices.push_back(newMesh.vertList[tempv->ID]);
-            currEdge = nextEdge;
-        } while (currEdge != firstEdge);
-        newMesh.addFace(vertices);
-        newMesh.faceList[newMesh.faceList.size() - 1]->user_defined_color =
-            (*fIt)->user_defined_color;
-        newMesh.faceList[newMesh.faceList.size() - 1]->color = (*fIt)->color;
-        newMesh.faceList[newMesh.faceList.size() - 1]->name = (*fIt)->name;
-        newMesh.faceList[newMesh.faceList.size() - 1]->surfaceName = (*fIt)->surfaceName; // Randy added this
-    }
-    newMesh.buildBoundary();
-    newMesh.computeNormals();
-    newMesh.params = params;
-    newMesh.type = type;
-    if (type == 1)
-    {
-        newMesh.n = n;
-        newMesh.ro = ro;
-        newMesh.ratio = ratio;
-        newMesh.h = h;
-        newMesh.n_expr = n_expr;
-        newMesh.ro_expr = ro_expr;
-        newMesh.ratio_expr = ratio_expr;
-        newMesh.h_expr = h_expr;
-        newMesh.influencingParams = influencingParams;
-    }
-    else if (type == 2)
-    {
-        newMesh.n = n;
-        newMesh.ro = ro;
-        newMesh.ratio = ratio;
-        newMesh.h = h;
-        newMesh.n_expr = n_expr;
-        newMesh.ro_expr = ro_expr;
-        newMesh.ratio_expr = ratio_expr;
-        newMesh.h_expr = h_expr;
-        newMesh.influencingParams = influencingParams;
-    }
-    return newMesh;
-}
-
-void Mesh::setGlobalParameter(unordered_map<string, Parameter>* params) { this->params = params; }
+void Mesh::setGlobalParameter(std::unordered_map<std::string, Parameter>* params) { this->params = params; }
 
 void Mesh::addParam(Parameter* param) { influencingParams.push_back(param); }
 
-Vertex* Mesh::findVertexInThisMesh(string name)
+Vertex* Mesh::findVertexInThisMesh(std::string name)
 {
     for (Vertex*& v : vertList)
     {
@@ -695,7 +611,7 @@ Vertex* Mesh::findVertexInThisMesh(string name)
     return NULL;
 }
 
-bool Mesh::deleteFaceInThisMesh(string name)
+bool Mesh::deleteFaceInThisMesh(std::string name)
 {
     for (Face*& f : faceList)
     {
@@ -758,7 +674,7 @@ void Mesh::deleteFace(Face* face)
     {
         faceList.erase(faceList.begin() + counter);
     }
-    vector<Edge*> removeEdgeList;
+    std::vector<Edge*> removeEdgeList;
     removeEdgeList.clear();
     Edge* firstEdge = face->oneEdge;
     Edge* currEdge = firstEdge;
@@ -780,8 +696,8 @@ void Mesh::deleteFace(Face* face)
                 else
                 {
                     /*Switch the va and vb, also need to change in the edgetable. */
-                    unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
-                    vector<Edge*>::iterator eIt;
+                    std::unordered_map<Vertex*, std::vector<Edge*>>::iterator vIt;
+                    std::vector<Edge*>::iterator eIt;
                     vIt = edgeTable.find(currEdge->va);
                     if (vIt != edgeTable.end())
                     {
@@ -796,7 +712,7 @@ void Mesh::deleteFace(Face* face)
                     }
                     else
                     {
-                        cout << "Error, there is a bug in the program!" << endl;
+                        std::cout << "Error, there is a bug in the program!" << std::endl;
                     }
                     vIt = edgeTable.find(currEdge->vb);
                     if (vIt != edgeTable.end())
@@ -805,7 +721,7 @@ void Mesh::deleteFace(Face* face)
                     }
                     else
                     {
-                        vector<Edge*> edges;
+                        std::vector<Edge*> edges;
                         edges.push_back(currEdge);
                         edgeTable[currEdge->vb] = edges;
                     }
@@ -855,12 +771,12 @@ void Mesh::deleteFace(Face* face)
 
 void Mesh::deleteEdge(Edge* edge)
 {
-    vector<Edge*>::iterator eIt;
+    std::vector<Edge*>::iterator eIt;
     for (eIt = edgeList.begin(); eIt != edgeList.end(); eIt++) {
         if (*eIt == edge)
             edgeList.erase(eIt);
     }
-    unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
+    std::unordered_map<Vertex*, std::vector<Edge*>>::iterator vIt;
     vIt = edgeTable.find(edge->va);
     bool foundEdge = false;
     if (vIt != edgeTable.end())
@@ -877,7 +793,7 @@ void Mesh::deleteEdge(Edge* edge)
     }
     if (!foundEdge)
     {
-        cout << "Error: You can't delete this edge. Check the program!" << endl;
+        std::cout << "Error: You can't delete this edge. Check the program!" << std::endl;
     }
     else
     {
@@ -908,7 +824,7 @@ void Mesh::deleteEdge(Edge* edge)
             }
             if (!foundEdge)
             {
-                cout << "Warning: Your deletion has deleted a vertex." << endl;
+                std::cout << "Warning: Your deletion has deleted a vertex." << std::endl;
                 edge->va->oneEdge = NULL;
                 deleteVertex(edge->va);
             }
@@ -939,7 +855,7 @@ void Mesh::deleteEdge(Edge* edge)
             }
             if (!foundEdge)
             {
-                cout << "Warning: Your deletion has deleted a vertex." << endl;
+                std::cout << "Warning: Your deletion has deleted a vertex." << std::endl;
                 edge->vb->oneEdge = NULL;
                 deleteVertex(edge->vb);
             }
@@ -956,7 +872,7 @@ void Mesh::updateVertListAfterDeletion()
     vertList.clear();
     bool foundVa;
     bool foundVb;
-    unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
+    std::unordered_map<Vertex*, std::vector<Edge*>>::iterator vIt;
     for (vIt = edgeTable.begin(); vIt != edgeTable.end(); vIt++)
     {
         for (Edge* edge : (vIt->second))
@@ -995,8 +911,8 @@ void Mesh::setBoundaryEdgeToNull(Vertex* v)
 {
     /* Traverse around v and find boundary edges.
      * Set the nextFb pointers to NULL for those edges. */
-    vector<Edge*> edgeAtThisPoint;
-    unordered_map<Vertex*, vector<Edge*>>::iterator vIt;
+    std::vector<Edge*> edgeAtThisPoint;
+    std::unordered_map<Vertex*, std::vector<Edge*>>::iterator vIt;
     vIt = edgeTable.find(v);
     if (vIt != edgeTable.end())
     {
@@ -1012,7 +928,7 @@ void Mesh::setBoundaryEdgeToNull(Vertex* v)
     }
     else
     {
-        cout << "Error: The Vertex doesn't belongs to this Mesh. Debug here." << endl;
+        std::cout << "Error: The Vertex doesn't belongs to this Mesh. Debug here." << std::endl;
     }
 }
 int Mesh::n_faces() {
@@ -1021,13 +937,13 @@ int Mesh::n_faces() {
 int Mesh::n_vertices() {
     return vertList.size();
 }
-vector<Face*> Mesh::faces() {
+std::vector<Face*> Mesh::faces() {
     return faceList;
 }
 int Mesh::n_edges() {
     return edgeList.size();
 }
-vector<Edge*> Mesh::edges() {
+std::vector<Edge*> Mesh::edges() {
     return edgeList;
 }
 

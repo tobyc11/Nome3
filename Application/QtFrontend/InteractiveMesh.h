@@ -2,7 +2,7 @@
 #include "DebugDraw.h"
 #include <Scene/RendererInterface.h>
 #include <Scene/SceneGraph.h>
-
+#include <array>
 #include <Qt3DCore/QEntity>
 #include <Qt3DCore/QTransform>
 #include <Qt3DRender/QMaterial>
@@ -36,6 +36,8 @@ private:
     Qt3DRender::QMaterial* PointMaterial;
     Qt3DRender::QGeometry* PointGeometry;
     Qt3DRender::QGeometryRenderer* PointRenderer;
+
+    std::array<float, 3> InstanceColor;
 };
 
 }

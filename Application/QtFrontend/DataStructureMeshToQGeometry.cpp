@@ -1,6 +1,7 @@
 #include "DataStructureMeshToQGeometry.h"
 #include <Qt3DRender/QBuffer>
 #include <iostream>
+
 namespace Nome
 {
 #define VERT_COLOR 1.0f, 1.0f, 1.0f // normalized: 255 pixel value coresponds to 1
@@ -8,40 +9,41 @@ namespace Nome
 
     // Project SwitchDS
 CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
-    const DSMesh& fromMesh, bool bGenPointGeometry)
+    const DSMesh& fromMesh, std::array<float, 3>& InstanceColor, bool bGenPointGeometry)
 {
     // Per face normal, thus no shared vertices between faces
     struct CVertexData
     {
         std::array<float, 3> Pos; // a float is 4 bytes
         std::array<float, 3> Normal;
-        int colorSelected; // Randy added this to color faces that are selected
         std::array<float, 3> faceColor; // Randy added this on 12/12 to handle face entity coloring
 
         void SendToBuilder(CGeometryBuilder2& builder) const
         {
             builder.Ingest(Pos[0], Pos[1], Pos[2]);
             builder.Ingest(Normal[0], Normal[1], Normal[2]);
-            builder.IngestInt(colorSelected);
             builder.Ingest(faceColor[0], faceColor[1], faceColor[2]);
+        }
+        void SendBackfaceToBuilder(CGeometryBuilder2& builder) const
+        {
+            builder.Ingest(Pos[0], Pos[1], Pos[2]);
+            builder.Ingest(Normal[0], Normal[1], Normal[2]);
+            builder.Ingest(.0 , .0 , .0);
         }
     };
     const uint32_t stride = sizeof(CVertexData);
-    static_assert(stride == 40, "Vertex data size isn't as expected");
+    static_assert(stride == 36, "Vertex data size isn't as expected");
     QByteArray bufferArray;
     CAttribute2 attrPos { bufferArray, offsetof(CVertexData, Pos), stride,
                          Qt3DRender::QAttribute::Float, 3 };
     CAttribute2 attrNor { bufferArray, offsetof(CVertexData, Normal), stride,
                          Qt3DRender::QAttribute::Float, 3 };
-    CAttribute2 attrcolorSelected { bufferArray, offsetof(CVertexData, colorSelected), stride,
-                                   Qt3DRender::QAttribute::Int, 1 };
     CAttribute2 attrfaceColor { bufferArray, offsetof(CVertexData, faceColor), stride,
                                Qt3DRender::QAttribute::Float, 3 };
 
     CGeometryBuilder2 builder;
     builder.AddAttribute(&attrPos);
     builder.AddAttribute(&attrNor);
-    builder.AddAttribute(&attrcolorSelected);
     builder.AddAttribute(&attrfaceColor);
 
     //CMeshImpl::FaceIter fIter, fEnd = fromMesh.faces_end();
@@ -53,7 +55,8 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
         int faceVCount = 0;
         //CMeshImpl::FaceVertexIter fvIter = CMeshImpl::FaceVertexIter(fromMesh, *fIter);
 
-        std::array<float, 3> potentialFaceColor = { 999.0, 999.0, 999.0 }; // dummy default values
+        std::array<float, 3> potentialFaceColor = InstanceColor;
+        std::array<float, 3> SelectedFaceColor {.7, .7, .7};
         Face* currFace = (*fIt);
         if (!currFace->surfaceName.empty())
             potentialFaceColor = currFace->color;
@@ -94,8 +97,10 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
                 const auto& fnVec = currFace->normal; // 1/28 i think currFace->normal is not set: currFace->normal; //
                                // fromMesh.normal(*fIter);
                 v0.Normal = { fnVec.x, fnVec.y, fnVec.z };
-                v0.colorSelected = currFace->selected; // Randy added this to handle marking which faces are selected.
-                v0.faceColor = potentialFaceColor; //
+                if (currFace->selected)
+                    v0.faceColor = SelectedFaceColor;
+                else
+                    v0.faceColor = potentialFaceColor;
             }
             else if (faceVCount == 1) // second vert
             {
@@ -103,8 +108,10 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
                 vPrev.Pos = { posVec.x, posVec.y, posVec.z };
                 const auto& fnVec = currFace->normal; // fromMesh.normal(*fIter);
                 vPrev.Normal = { fnVec.x, fnVec.y, fnVec.z };
-                vPrev.colorSelected = currFace->selected;
-                vPrev.faceColor = potentialFaceColor;
+                if (currFace->selected)
+                    vPrev.faceColor = SelectedFaceColor;
+                else
+                    vPrev.faceColor = potentialFaceColor;
             }
             else // remaining 3rd, 4th (if a quad face), and any additional polygon vertices. For
                  // the 4th vert and beyond, we send to builder again, creating another triangle.
@@ -116,22 +123,27 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
                 vCurr.Pos = { posVec.x, posVec.y, posVec.z };
                 const auto& fnVec = currFace->normal; // fromMesh.normal(*fIter);
                 vCurr.Normal = { fnVec.x, fnVec.y, fnVec.z };
-                vCurr.colorSelected = currFace->selected;
-                vCurr.faceColor = potentialFaceColor;
+                if (currFace->selected)
+                    vCurr.faceColor = SelectedFaceColor;
+                else
+                    vCurr.faceColor = potentialFaceColor;
                 v0.SendToBuilder(builder);
                 vPrev.SendToBuilder(builder);
                 vCurr.SendToBuilder(builder);
+                v0.SendBackfaceToBuilder(builder);
+                vCurr.SendBackfaceToBuilder(builder);
+                vPrev.SendBackfaceToBuilder(builder);
+
+
                 vPrev = vCurr;
             }
             faceVCount++;
-
         } while (currEdge != firstEdge);
-
     }
 
     Geometry = new Qt3DRender::QGeometry();
 
-    auto* buffer = new Qt3DRender::QBuffer(Qt3DRender::QBuffer::VertexBuffer, Geometry);
+    auto* buffer = new Qt3DRender::QBuffer(Geometry);
     buffer->setData(bufferArray);
 
     auto* posAttr = new Qt3DRender::QAttribute(Geometry);
@@ -147,8 +159,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
 
     auto* normAttr = new Qt3DRender::QAttribute(Geometry);
     //std::cout << Qt3DRender::QAttribute::defaultNormalAttributeName().toStdString() << std::endl;
-    normAttr->setName(
-        Qt3DRender::QAttribute::defaultNormalAttributeName()); // default is vertexNormal. This is
+    normAttr->setName(Qt3DRender::QAttribute::defaultNormalAttributeName()); // default is vertexNormal. This is
                                                                // used as input in the .vert shader
     normAttr->setAttributeType(Qt3DRender::QAttribute::VertexAttribute);
     normAttr->setBuffer(buffer);
@@ -156,17 +167,9 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
     attrNor.FillInQAttribute(normAttr);
     Geometry->addAttribute(normAttr);
 
-    // Randy added this to handle marking which things are selected.  Not sure if needed
-    auto* colorSelectedAttr = new Qt3DRender::QAttribute(Geometry);
-    colorSelectedAttr->setName(QString::fromStdString("colorSelected"));
-    colorSelectedAttr->setAttributeType(Qt3DRender::QAttribute::VertexAttribute);
-    colorSelectedAttr->setBuffer(buffer);
-    colorSelectedAttr->setCount(builder.GetVertexCount());
-    attrcolorSelected.FillInQAttribute(colorSelectedAttr);
-    Geometry->addAttribute(colorSelectedAttr);
 
     auto* faceColorAttr = new Qt3DRender::QAttribute(Geometry);
-    faceColorAttr->setName("faceColor");
+    faceColorAttr->setName(Qt3DRender::QAttribute::defaultColorAttributeName());
     faceColorAttr->setAttributeType(Qt3DRender::QAttribute::VertexAttribute);
     faceColorAttr->setBuffer(buffer);
     faceColorAttr->setCount(builder.GetVertexCount());
@@ -181,7 +184,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
         uint32_t vertexCount = 0;
 
         // this is how the vertex is displayed
-        vector<Vertex*>::iterator vIt;
+        std::vector<Vertex*>::iterator vIt;
         for (auto vIt = fromMesh.vertList.begin(); vIt < fromMesh.vertList.end(); vIt++)
         {
             auto currVert = *vIt;

@@ -2,34 +2,32 @@
 #include "BSpline.h"
 #include "BezierSpline.h"
 #include "Circle.h"
+#include "Camera.h"
 #include "Spiral.h"
 #include "Sphere.h"
 #include "Ellipsoid.h"
-
 #include "Cylinder.h"
 #include "Dupin.h"
-#include "Ellipsoid.h"
-
+#include "Background.h"
 #include "Environment.h"
 #include "Face.h"
 #include "Funnel.h"
 #include "GenCartesianSurf.h"
 #include "GenParametricSurf.h"
+#include "GenImplicitSurf.h"
 #include "Helix.h"
 #include "MeshMerger.h"
 #include "Hyperboloid.h"
-#include "MeshMerger.h"
 #include "MobiusStrip.h"
 #include "Point.h"
 #include "Polyline.h"
-#include "Sphere.h"
-#include "Spiral.h"
 #include "Surface.h"
 #include "Sweep.h"
 #include "SweepControlPoint.h"
 #include "Torus.h"
 #include "TorusKnot.h"
 #include "Tunnel.h"
+#include "Light.h"
 #include <StringPrintf.h>
 #include <unordered_map>
 
@@ -59,17 +57,19 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
     { "torusknot", ECommandKind::Entity },   { "torus", ECommandKind::Entity },
     { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
-    { "surface", ECommandKind::Entity },     { "background", ECommandKind::Dummy },
+    { "surface", ECommandKind::Entity },     { "background", ECommandKind::Entity },
     { "foreground", ECommandKind::Dummy },   { "insidefaces", ECommandKind::Dummy },
     { "outsidefaces", ECommandKind::Dummy }, { "offsetfaces", ECommandKind::Dummy },
     { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
     { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
     { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
-    { "offset", ECommandKind::Instance },    { "gencartesiansurf", ECommandKind::Entity },
-    { "genparametricsurf", ECommandKind::Entity }, { "subdivision", ECommandKind::Instance },
-    { "mobiusstrip", ECommandKind::Entity }, {"helix", ECommandKind::Entity },
-    {"sharp", ECommandKind::Entity }, { "ellipsoid", ECommandKind::Entity },
-    { "include", ECommandKind::DocEdit }, { "spiral", ECommandKind::Entity }
+    { "subdivision", ECommandKind::Instance },  { "offset", ECommandKind::Instance },
+    { "mobiusstrip", ECommandKind::Entity }, { "helix", ECommandKind::Entity },
+    { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
+    { "spiral", ECommandKind::Entity },      { "sharp", ECommandKind::Entity },
+    { "gencartesiansurf", ECommandKind::Entity },    { "genparametricsurf", ECommandKind::Entity },
+    { "camera", ECommandKind::Entity }, { "genimplicitsurf", ECommandKind::Entity },
+    { "light", ECommandKind::Entity }
 
 };
 
@@ -128,6 +128,17 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CGenCartesianSurf(name);
     else if (cmd == "genparametricsurf")
         return new CGenParametricSurf(name);
+    else if (cmd == "light")
+        return new CLight(name);
+    else if (cmd == "background")
+        return new CBackground(name);
+    else if (cmd == "camera")
+        return new CCamera(name);
+    else if (cmd == "genimplicitsurf")
+        return new CGenImplicitSurf(name);
+
+
+
     return nullptr;
 }
 
@@ -236,13 +247,35 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
 
             entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
+            if (auto* light = dynamic_cast<CLight*>(entity.Get())) {
+                auto* typeinfo = cmd->GetNamedArgument("type");
+                auto* expr = typeinfo->GetArgument(0);
+                // Just return if the corresponding element is not found in the AST
+                if (!expr)
+                    std::cout << "Haven't detected the light type, use ambient light as default" << std::endl;
+                else
+                    light->GetLight().type = static_cast<const AST::AIdent*>(expr)->ToString();
+            }
+            if (auto* camera = dynamic_cast<CCamera*>(entity.Get())) {
+                auto* typeinfo = cmd->GetNamedArgument("projection");
+                auto* expr = typeinfo->GetArgument(0);
+                // Just return if the corresponding element is not found in the AST
+                if (!expr)
+                    std::cout << "Haven't detected the camera projection type" << std::endl;
+                else
+                    camera->projectionType = static_cast<const AST::AIdent*>(expr)->ToString();
+            }
+
+
             // All entities are added to the EntityLibrary dictionary
             GEnv.Scene->AddEntity(entity);
             if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
-                if (auto* face = dynamic_cast<CFace*>(entity.Get()))
+                if (auto* face = dynamic_cast<CFace*>(entity.Get())) {
                     mesh->Faces.Connect(face->Face);
-                else if (auto* point = dynamic_cast<CPoint*>(entity.Get()))
+                }
+                else if (auto* point = dynamic_cast<CPoint*>(entity.Get())) {
                     mesh->Points.Connect(point->Point); // Randy added on 12/5
+                }
 
             // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one
             // face) recursively via VisitCommandSyncScene.
@@ -317,9 +350,10 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         InstanciateUnder = GEnv.Scene->GetRootNode();
     }
 
-    else if (cmd->GetCommand() == "subdivision") {
+    else if (cmd->GetCommand() == "subdivision" || cmd->GetCommand() == "offset")
+    {
         // 1.read all instances to a merged mesh
-        InstanciateUnder = GEnv.Scene->CreateMerge(cmd->GetName());
+        InstanciateUnder = GEnv.Scene->CreateMerge(cmd->GetName()); // Conceptually similar to CreateGroup, here we create a "Merge" node containing all meshes we need to merge
         InstanciateUnder->SyncFromAST(cmd, scene);
 
 
@@ -342,6 +376,21 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 merger->SetSharp(true);
             else
                 merger->SetSharp(false);
+        }
+        else
+        {
+            auto flag = cmd->GetNamedArgument("offset_type");
+            if (flag)
+            {
+                auto flagName = flag->GetArgument(
+                    0)[0]; // Returns a casted AExpr that was an AIdent before casting
+                auto flagIdentifier = static_cast<AST::AIdent*>(&flagName)
+                                          ->ToString(); // Downcast it back to an AIdent
+                if (flagIdentifier == "NOME_OFFSET_DEFAULT")
+                    merger->SetOffsetFlag(true);
+                else
+                    merger->SetOffsetFlag(false);
+            }
         }
 
         scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity

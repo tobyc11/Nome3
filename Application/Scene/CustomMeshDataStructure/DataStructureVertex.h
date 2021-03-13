@@ -15,7 +15,7 @@
 #include <Vector3.h>
 #include <array>
 
-using namespace std;
+//using namespace std;
 
 class Edge;
 class Mesh;
@@ -40,7 +40,7 @@ public:
      * @param ID: The vertex ID.
      */
     Vertex(float x, float y, float z, unsigned long ID);
-    Vertex(float x, float y, float z, string assignedName, unsigned long ID);
+    Vertex(float x, float y, float z, std::string assignedName, unsigned long ID);
     /* The position. */
     tc::Vector3 position;
     /* Vertex normal. */
@@ -69,13 +69,13 @@ public:
     /* Indicator of whether this vertex is parametric. */
     bool isParametric;
     /* The string expression of its position x. */
-    string x_expr;
+    std::string x_expr;
     /* The string expression of its position y. */
-    string y_expr;
+    std::string y_expr;
     /* The string expression of its position z. */
-    string z_expr;
+    std::string z_expr;
     /* The name of this vertex.*/
-    string name;
+    std::string name;
     /* Add a parameter that influence this funnel. */
     //void addParam(Parameter*);
     /* Parameters that influence this vertex. */

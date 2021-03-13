@@ -9,7 +9,7 @@ class CFileBuilder : public NomBaseVisitor
 {
 public:
     // The CStringBuffer is used to generate source location references
-    CFileBuilder(CStringBuffer& srcStringBuffer)
+    explicit CFileBuilder(CStringBuffer& srcStringBuffer)
         : SrcStringBuffer(srcStringBuffer)
     {
     }
@@ -34,11 +34,18 @@ public:
     antlrcpp::Any visitArgTwist(NomParser::ArgTwistContext* context) override;
     antlrcpp::Any visitArgReverse(NomParser::ArgReverseContext* context) override;
     antlrcpp::Any visitArgMintorsion(NomParser::ArgMintorsionContext* context) override;
+    antlrcpp::Any visitArgSdLevel(NomParser::ArgSdLevelContext* ctx) override;
+    antlrcpp::Any visitArgSdFlag(NomParser::ArgSdFlagContext* ctx) override;
+    antlrcpp::Any visitArgLightType(NomParser::ArgLightTypeContext* ctx) override;
+    antlrcpp::Any visitArgLightColor(NomParser::ArgLightColorContext* ctx) override;
     antlrcpp::Any visitArgOffsetFlag(NomParser::ArgOffsetFlagContext* ctx) override;
     antlrcpp::Any visitArgHeight(NomParser::ArgHeightContext* ctx) override;
     antlrcpp::Any visitArgWidth(NomParser::ArgWidthContext* ctx) override;
+    antlrcpp::Any visitArgCameraProjection(NomParser::ArgCameraProjectionContext* ctx) override;
+    antlrcpp::Any visitArgCameraFrustum(NomParser::ArgCameraFrustumContext* ctx) override;
 
     antlrcpp::Any visitCmdExprListOne(NomParser::CmdExprListOneContext* context) override;
+    antlrcpp::Any visitCmdLight(NomParser::CmdLightContext* context) override;
     antlrcpp::Any visitCmdIdListOne(NomParser::CmdIdListOneContext* context) override;
     antlrcpp::Any visitCmdNamedArgs(NomParser::CmdNamedArgsContext* context) override;
     antlrcpp::Any visitCmdSubCmds(NomParser::CmdSubCmdsContext* context) override;
@@ -48,6 +55,7 @@ public:
     antlrcpp::Any visitCmdBank(NomParser::CmdBankContext* context) override;
     antlrcpp::Any visitCmdDelete(NomParser::CmdDeleteContext* context) override;
     antlrcpp::Any visitCmdSweep(NomParser::CmdSweepContext* context) override;
+    antlrcpp::Any visitCmdCamera(NomParser::CmdCameraContext* context) override;
     antlrcpp::Any visitSet(NomParser::SetContext* context) override;
     antlrcpp::Any visitDeleteFace(NomParser::DeleteFaceContext* context) override;
 
@@ -77,8 +85,6 @@ private:
 
     CStringBuffer& SrcStringBuffer;
 
-    antlrcpp::Any visitArgSdLevel(NomParser::ArgSdLevelContext* ctx) override;
-    antlrcpp::Any visitArgSdFlag(NomParser::ArgSdFlagContext* ctx) override;
     antlrcpp::Any visitCmdSharp(NomParser::CmdSharpContext* ctx) override;
 };
 

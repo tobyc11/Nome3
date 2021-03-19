@@ -857,65 +857,6 @@ void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
     RayVertPositions.push_back(closestHitPoint);
 }
 
-// Currently not used
-Qt3DCore::QEntity* CNome3DView::MakeGridEntity(Qt3DCore::QEntity* parent)
-{
-    const float size = 100.0f;
-    const int divisions = 100;
-    const float halfSize = size / 2.0f;
-
-    auto* gridEntity = new Qt3DCore::QEntity(parent);
-
-    auto* geometry = new Qt3DRender::QGeometry(gridEntity);
-
-    QByteArray bufferBytes;
-    bufferBytes.resize(3 * sizeof(float) * 4 * (divisions + 1));
-    auto* positions = reinterpret_cast<float*>(bufferBytes.data());
-    float xStart = -size / 2.0f;
-    float increment = size / divisions;
-    for (int i = 0; i <= divisions; i++)
-    {
-        *positions++ = xStart;
-        *positions++ = 0.0f;
-        *positions++ = -halfSize;
-        *positions++ = xStart;
-        *positions++ = 0.0f;
-        *positions++ = halfSize;
-
-        *positions++ = -halfSize;
-        *positions++ = 0.0f;
-        *positions++ = xStart;
-        *positions++ = halfSize;
-        *positions++ = 0.0f;
-        *positions++ = xStart;
-        xStart += increment;
-    }
-
-    auto* buf = new QBuffer((QByteArray*)Qt3DRender::QBuffer::VertexBuffer, geometry);
-    buf->setData(bufferBytes);
-
-    auto* positionAttr = new Qt3DRender::QAttribute(geometry);
-    positionAttr->setName(Qt3DRender::QAttribute::defaultPositionAttributeName());
-    positionAttr->setVertexBaseType(Qt3DRender::QAttribute::Float);
-    positionAttr->setVertexSize(3);
-    positionAttr->setAttributeType(Qt3DRender::QAttribute::VertexAttribute);
-    positionAttr->setBuffer(reinterpret_cast<Qt3DRender::QBuffer*>(buf));
-    positionAttr->setByteStride(3 * sizeof(float));
-    positionAttr->setCount(4 * (divisions + 1));
-    geometry->addAttribute(positionAttr);
-
-    auto* gridMesh = new Qt3DRender::QGeometryRenderer(gridEntity);
-    gridMesh->setGeometry(geometry);
-    gridMesh->setPrimitiveType(Qt3DRender::QGeometryRenderer::Lines);
-    auto* material = new Qt3DExtras::QPhongMaterial(gridEntity);
-    material->setAmbient({ 255, 255, 255 });
-
-    gridEntity->addComponent(gridMesh);
-    gridEntity->addComponent(material);
-
-    return gridEntity;
-}
-
 
 // Xinyu add on Oct 8 for rotation
 void CNome3DView::mousePressEvent(QMouseEvent* e)

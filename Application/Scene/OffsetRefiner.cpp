@@ -48,8 +48,7 @@ void COffsetRefiner::Refine(float height, float width)
     bool needGrid = (width > 0);
     bool needOffset = (height > 0);
 
-    auto vertSize = currMesh.vertList.size(); // Randy DEBUG felt very weird 2/22. curRMesh size was
-                                              // increasing with generatenewvertices... what the
+    auto vertSize = currMesh.vertList.size(); 
 
     for (int i = 0; i < vertSize; i++) // Randy perhaps vertList is changing size wrong
     {
@@ -97,9 +96,7 @@ void COffsetRefiner::generateNewVertices(Vertex* vertex, float height)
     if (vertexEdges[vertex->ID] > 2)
     {
         auto edges = currMesh.randyedgeTable[vertex];
-        for (auto edge : edges) // for (auto edge : currMesh.edgeTable[vertex])//vertex.edges())
-                                // Randy i think this was causing bug. edgetable is a one to one
-                                // relationship with key val for some reason
+        for (auto edge : edges) 
         {
             sumEdges += getEdgeVector(edge, vertex).Normalized();
         }
@@ -227,13 +224,13 @@ void COffsetRefiner::generateNewFaces(Face* face, bool needGrid, bool needOffset
         Vertex* vertex2Top = newVertices[vertex2Id].topVert;
         Vertex* vertex2TopInside = newFaceVertices[faceId][vertex2Id].topVert;
 
-        std::vector<int> faceIndexList;
-        faceIndexList = {
-            vertex1TopInsideIndex,
-            vertex1TopIndex, // Randy the bug is here, for some reason always 0
-            vertex2TopIndex, // Randy the bug is here, for some reason always 0
-            vertex2TopInsideIndex,
-        };
+        //std::vector<int> faceIndexList;
+        //faceIndexList = {
+        //    vertex1TopInsideIndex,
+        //    vertex1TopIndex, // Randy the bug is here, for some reason always 0
+        //    vertex2TopIndex, // Randy the bug is here, for some reason always 0
+        //    vertex2TopInsideIndex,
+        //};
         // offsetFaces.push_back(faceIndexList);
 
         // Randy below line to hopefully replace above lines

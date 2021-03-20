@@ -4,6 +4,7 @@
 #include "SyntaxTreeBuilder.h"
 #include "antlr4-runtime.h"
 #include <unordered_map>
+#include <fstream>
 #include <stack>
 #include <utility>
 
@@ -36,8 +37,8 @@ CSourceManager::CSourceManager(std::string mainSource)
 {
 }
 
-bool CSourceManager::ParseMainSource()
-{
+
+bool CSourceManager::ParseMainSource() {
     std::ifstream ifs(MainSource);
     std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     ifs.close();
@@ -65,7 +66,38 @@ bool CSourceManager::ParseMainSource()
 
     return !errorListener.bDidErrorHappen;
 }
+bool CSourceManager::balancedbracket(std::string codeline) {   
+    std::stack<char> stk; 
+    char x; 
 
+    for (int i = 0; i < codeline.length(); i++) { 
+        if (codeline[i] == '(' || codeline[i] == '[' || codeline[i] == '{') { 
+            stk.push(codeline[i]); 
+            continue; 
+        } 
+        switch (codeline[i]) { 
+        case ')': 
+            x = stk.top(); 
+            stk.pop(); 
+            if (x == '{' || x == '[') 
+                return false; 
+            break; 
+        case '}': 
+            x = stk.top(); 
+            stk.pop(); 
+            if (x == '(' || x == '[') 
+                return false; 
+            break; 
+        case ']': 
+            x = stk.top(); 
+            stk.pop(); 
+            if (x == '(' || x == '{') 
+                return false; 
+            break; 
+        } 
+    } 
+    return (stk.empty()); 
+} 
 void CSourceManager::ReportErros(std::string code) {
     size_t pos = 0; 
     std::string delimiter = "\n";
@@ -76,43 +108,69 @@ void CSourceManager::ReportErros(std::string code) {
     std::unordered_map<std::string, std::string> shapemap;
     std::unordered_map<std::string, std::string> idmap;
     std::unordered_map<std::string, std::string> referencemap;
-    shapemap["surface"] = "endsurface";
-    shapemap["bank"] = "endbank";
-    shapemap["point"] = "endpoint";
-    shapemap["controlpoint"] = "endcontrolpoint";
-    shapemap["polyline"] = "endpolyline";
-    shapemap["face"] = "endface";
-    shapemap["beziercurve"] = "endbeziercurve";
-    shapemap["bspline"] = "endbspline";
-    shapemap["mesh"] = "endmesh";
-    shapemap["circle"] = "endcircle";
-    shapemap["disk"] = "enddisk";
-    shapemap["cylinder"] = "endcylinder";
-    shapemap["funnel"] = "endfunnel";
-    shapemap["tunnel"] = "endtunnel";
-    shapemap["sphere"] = "endsphere";
-    shapemap["ellipsoid"] = "endellipsoid";
-    shapemap["torus"] = "endtorus";
-    shapemap["torusknot"] = "endtorusknot";
-    shapemap["mobiusstrip"] = "endmobiusstrip";
-    shapemap["dupin"] = "enddupin";
-    shapemap["sweep"] = "endsweep";
-    shapemap["instance"] = "endinstance";
-    shapemap["group"] = "endgroup";
-    shapemap["subdivision"] = "endsubdivision";
-    shapemap["offset"] = "endoffset";
-    shapemap["background"] = "endbackground";
-    shapemap["foreground"] = "endforeground";
-    shapemap["insidefaces"] = "endinsidefaces";
-    shapemap["outsidefaces"] = "endoutsidefaces";
-    shapemap["offsetfaces"] = "endoffsetfaces";
-    shapemap["frontfaces"] = "endfrontfaces";
-    shapemap["backfaces"] = "endbackfaces";
-    shapemap["rimfaces"] = "endrimfaces";
-    shapemap["delete"] = "enddelete";
-    shapemap["subdivision"] = "endsubdivision";
-    shapemap["offset"] = "endoffset";
-    shapemap["include"] = "endinclude";
+    std::string sourcepath = GetMainSourcePath();
+    int cnt = 0;
+    for (int i = sourcepath.length(); i >= 0; i--) {
+        if (sourcepath[i] == '/' && cnt < 2) {
+            cnt++; 
+        } if (sourcepath[i] == '/' && cnt == 2) {
+            cnt = i;
+            break;
+        }
+    }
+    std::string basepath = sourcepath.substr(0, cnt);
+
+    std::ifstream file (basepath + "/Application/Parsing/Nom.g4");
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            std::vector<std::string> spaces;
+            std::string str = line.c_str();
+            size_t pos = 0; 
+            while ((pos = str.find(delimiter2)) != std::string::npos) {
+                token = str.substr(0, pos);
+                str.erase(0, pos + delimiter.length());
+                spaces.push_back(token);
+            }
+            for (int i = 0; i < spaces.size(); i++) {
+                std::string keyword;
+                std::string endword;
+                if (spaces[i].find("open=") != std::string::npos) {
+                    int start = 0; int end = 0;
+                    for (int k = 0; k < spaces[i].size(); k++) {
+                        if (start == 0 && spaces[i][k] == '\'') {
+                            start = k;
+                        } else if (start > 0 && spaces[i][k] == '\'') {
+                            end = k;
+                        }
+                    }
+                    end--;
+                    keyword = spaces[i].substr(start + 1, end - start);
+                    if (keyword == "set") {
+                        continue;
+                    }
+                    for (int j = i; j < spaces.size(); j++) {
+                        if (spaces[j].find("end=") != std::string::npos) {
+                            int start = 0; int end = 0;
+                            for (int k = 0; k < spaces[j].size(); k++) {
+                                if (start == 0 && spaces[j][k] == '\'') {
+                                    start = k;
+                                } else if (start > 0 && spaces[j][k] == '\'') {
+                                    end = k;
+                                }
+                            }
+                            endword = spaces[j].substr(start + 1, end - start - 1);
+                            break;
+                            
+                        }
+                        i = j;
+                    }
+                    shapemap[keyword] = endword;
+                }
+            }
+        }
+        file.close();
+    }
     while((pos = code.find(delimiter)) != std::string::npos) {
         token = code.substr(0, pos);
         std::vector<std::string> spaces;
@@ -139,12 +197,14 @@ void CSourceManager::ReportErros(std::string code) {
     }
     spaces.push_back(code);
     parsedcode.push_back(spaces);
-    std::cout << parsedcode.size() << std::endl;
     for (int i = 0; i < parsedcode.size(); i++) {
         std::vector<std::string> line = parsedcode.at(i);
         for (int j = 0; j < line.size(); j++) {
             std::string element = line.at(j); 
-            std::cout << element + " " + std::to_string(i) + " " + std::to_string(j) << std::endl;
+            if (element.find("#") != std::string::npos && element.at(0) == '#') { //Comment Detection
+                j = line.size();
+                continue; 
+            }
             if (element == "group" || (shapemap.find(element))!= shapemap.end()) { //check for keywords here.
                 auto cast = shapemap.find(element);
                 std::string endval = cast -> second;
@@ -209,6 +269,14 @@ std::vector<std::string> CSourceManager::CheckStatement(std::vector<std::vector<
             k = i;
         }
         std::vector<std::string> line = parsedcode.at(k);
+        std::string linestr = "";
+        for (int l = 0; l < line.size(); l++) {
+            linestr += line.at(l);
+        }
+        if (!balancedbracket(linestr)) {
+            std::cout << "Error at Line " + std::to_string(i + 1) + ": Mismatched Parehthesis" << std::endl;
+            return {"error"};
+        }
         for (int l = 0; l < line.size(); l++) {
             global_k = k;
             global_l = l;

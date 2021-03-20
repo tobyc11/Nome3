@@ -1,0 +1,11 @@
+bank par
+    set radius 5 3 15 1  
+    set max_long 360 0 360 1 
+    set min_latt -90 -90 0 1
+    set max_latt 90 0 90 1
+    set long_segs 10 8 15 1
+    set latt_segs 10 8 15 1  
+endbank
+
+sphere sun {expr $par.radius} {expr $par.max_long} {expr $par.min_latt} {expr $par.max_latt} {expr $par.long_segs} {expr $par.latt_segs} endsphere
+instance cube0 sun endinstance

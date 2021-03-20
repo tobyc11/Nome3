@@ -37,8 +37,8 @@ CSourceManager::CSourceManager(std::string mainSource)
 {
 }
 
-bool CSourceManager::ParseMainSource()
-{
+
+bool CSourceManager::ParseMainSource() {
     std::ifstream ifs(MainSource);
     std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     ifs.close();
@@ -201,6 +201,10 @@ void CSourceManager::ReportErros(std::string code) {
         std::vector<std::string> line = parsedcode.at(i);
         for (int j = 0; j < line.size(); j++) {
             std::string element = line.at(j); 
+            if (element.find("#") != std::string::npos && element.at(0) == '#') { //Comment Detection
+                j = line.size();
+                continue; 
+            }
             if (element == "group" || (shapemap.find(element))!= shapemap.end()) { //check for keywords here.
                 auto cast = shapemap.find(element);
                 std::string endval = cast -> second;

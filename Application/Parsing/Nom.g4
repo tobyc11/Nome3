@@ -48,6 +48,7 @@ argOrder : 'order' expression ;
 argLightType : 'type' ident;
 argLightColor : 'color' vector3;
 argCameraProjection : 'projection' ident;
+argCameraID : 'cameraID' ident;
 argCameraFrustum : 'frustum' LPAREN expression* RPAREN;
 argTransform
    : 'rotate' LPAREN exp1=expression exp2=expression exp3=expression RPAREN LPAREN exp4=expression RPAREN # argTransformTwo
@@ -109,6 +110,7 @@ command
    | open='include' name=ident end='endinclude' # CmdInclude
    | open='light' name=ident argLightType argLightColor end='endlight' # CmdLight
    | open='camera' name=ident argCameraProjection argCameraFrustum end='endcamera' #CmdCamera
+   | open='viewport' name=ident argCameraID LPAREN expression expression expression expression RPAREN end='endviewport' #CmdViewport
    ;
 
 

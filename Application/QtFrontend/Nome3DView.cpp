@@ -11,6 +11,7 @@
 #include <QTableWidget>
 #include <QBuffer>
 #include <Scene/Camera.h>
+#include <Scene/Viewport.h>
 
 
 namespace Nome
@@ -27,7 +28,16 @@ CNome3DView::CNome3DView()
     Base = new Qt3DCore::QEntity;
     torus = new Qt3DCore::QEntity(Base);
 
+
+    // Viewport initialization
+    this->defaultFrameGraph()->setClearColor(QColor(QRgb(0x4d4d4f)));
+    //addRenderer = new Qt3DExtras::QForwardRenderer();
+
+    //addRenderer->setClearColor(QColor(QRgb(0xf0f000)));
+    ss = new Qt3DRender::QRenderSurfaceSelector;
+
     Root = new Qt3DCore::QEntity(Base);
+
     this->setRootEntity(Base);
 
     // Initialize the crystal ball
@@ -46,15 +56,14 @@ CNome3DView::CNome3DView()
     torus->addComponent(torusMesh);
     torus->addComponent(material);
 
-    // Tweak render settings
-    this->defaultFrameGraph()->setClearColor(QColor(QRgb(0x4d4d4f)));
+
 
     // Setup camera
     zPos = 2.73;
-    cameraset = this->camera();
-    cameraset->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
-    cameraset->setPosition(QVector3D(0, 0, zPos));
-    cameraset->setViewCenter(QVector3D(0, 0, 0));
+    mainCamera = this->camera();
+    mainCamera->lens()->setPerspectiveProjection(45.0f, 1280.f / 720.f, 0.1f, 1000.0f);
+    mainCamera->setPosition(QVector3D(0, 0, zPos));
+    mainCamera->setViewCenter(QVector3D(0, 0, 0));
 
     // Xinyu add on Oct 8 for rotation
     projection.setToIdentity();
@@ -105,13 +114,55 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
                     auto* background = dynamic_cast<Scene::CBackground*>(entity);
                     this->defaultFrameGraph()->setClearColor(background->background);
                     node->SetEntityUpdated(false);
-                } else if (entity->renderType == Scene::CEntity::CAMERA) {
+                } else if (entity->renderType == Scene::CEntity::VIEWPORT) {
+                    auto* viewport = dynamic_cast<Scene::CViewport*>(entity);
+                    if (this->activeFrameGraph() == this->defaultFrameGraph()) {
+                        this->setActiveFrameGraph(ss);
+                        mainView = new Qt3DRender::QViewport(ss);
+                        mainView->setNormalizedRect(QRectF(0, 0, 1, 1));
+                        clearBuffers = new Qt3DRender::QClearBuffers(mainView);
+                        clearBuffers->setBuffers(Qt3DRender::QClearBuffers::ColorDepthBuffer);
+                        clearBuffers->setClearColor(QColor(QRgb(0x4d4d4f)));
+                    }
+                    auto* vp = new Qt3DRender::QViewport(mainView);
+                    vp->setNormalizedRect(QRectF(viewport->viewport));
+                    auto* camSelector = new Qt3DRender::QCameraSelector(vp);
+                    camViewMap.emplace(viewport->cameraId, camSelector);
+
+                }
+            }
+        }
+    });
+    Scene->ForEachSceneTreeNode([this](CSceneTreeNode* node) {
+        printf("%s\n", node->GetPath().c_str());
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+        {
+            entity = node->GetOwner()->GetEntity();
+        }
+
+        if (entity)
+        {
+            printf("Generating the entity    %s\n", entity->GetName().c_str());
+            if (!entity->IsMesh())
+            {
+                if (entity->renderType == Scene::CEntity::CAMERA) {
                     auto* camera = dynamic_cast<Scene::CCamera*>(entity);
                     auto para = camera->para;
+                    Qt3DRender::QCamera* cam;
+                    for (auto camMap : camViewMap)  {
+                        if (camMap.first == camera->GetNameWithoutPrefix())
+                        {
+                            cam = new Qt3DRender::QCamera;
+                            auto* camLens = new Qt3DRender::QCameraLens;
+                            camMap.second->setCamera(cam);
+                            cameraSet.emplace(camMap.first, cam);
+                        }
+                    }
                     if (camera->projectionType == "NOME_ORTHOGRAPHIC")
-                        this->cameraset->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
+                        cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
                     else if (camera->projectionType == "NOME_PERSPECTIVE")
-                        this->cameraset->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
+                        cam->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
 
                     node->SetEntityUpdated(false);
                 }
@@ -213,14 +264,22 @@ void CNome3DView::PostSceneUpdate()
                     {
                         auto* camera = dynamic_cast<Scene::CCamera*>(entity);
                         auto para = camera->para;
-
+                        Qt3DRender::QCamera* cam;
+                        for (auto camMap : cameraSet)  {
+                            if (camMap.first == camera->GetNameWithoutPrefix())
+                            {
+                                cam = camMap.second;
+                            }
+                        }
                         if (camera->projectionType == "NOME_ORTHOGRAPHIC")
-                            this->cameraset->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
+                            cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
                         else if (camera->projectionType == "NOME_PERSPECTIVE")
-                            this->cameraset->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
+                            cam->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
 
                         node->SetEntityUpdated(false);
                     }
+                } else if (entity->renderType == Scene::CEntity::VIEWPORT) {
+                    // TODO:may add the viewport change capability
                 }
 
             }
@@ -864,7 +923,7 @@ void CNome3DView::mousePressEvent(QMouseEvent* e)
     material->setAlpha(0.7f);
 
     rotationEnabled = e->button() == Qt::RightButton ? false : true;
-    zPos = cameraset->position().z();
+    zPos = mainCamera->position().z();
     // Save mouse press position
     firstPosition = QVector2D(e->localPos());
     mousePressEnabled = true;
@@ -926,7 +985,7 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
 {
     if (rotationEnabled)
     {
-        QVector3D cameraPosition = cameraset->position();
+        QVector3D cameraPosition = mainCamera->position();
         zPos = cameraPosition.z();
         QPoint numPixels = ev->pixelDelta();
         QPoint numDegrees = ev->angleDelta() / 13.0f;
@@ -991,13 +1050,13 @@ QVector2D CNome3DView::GetProjectionPoint(QVector2D originalPosition) {
     // Calculate the equivalent y by the radius
     double tempY = sqrt(qPow(tempX, 2) + qPow(yRatio, 2));
     //Calculate the camera view angle according to the picked point
-    double theta = qAtan(tempY * qTan(qDegreesToRadians(cameraset->lens()->fieldOfView() / 2)));
+    double theta = qAtan(tempY * qTan(qDegreesToRadians(mainCamera->lens()->fieldOfView() / 2)));
 
     double temp = 1 + qPow(qTan(theta), 2);
     double judge = (1 - qPow(zPos, 2)) / temp + qPow(zPos / temp, 2);
 
     double projectedHeight = (judge > 0 ? (zPos / temp - qSqrt(judge)) : (zPos - 1 / zPos))
-        * qTan(qDegreesToRadians(cameraset->lens()->fieldOfView() / 2));
+        * qTan(qDegreesToRadians(mainCamera->lens()->fieldOfView() / 2));
 
     double projectedWidth = projectedHeight * this->width() / this->height();
 

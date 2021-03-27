@@ -136,16 +136,6 @@ private:
     Qt3DRender::QViewport* mainView;
     Qt3DRender::QClearBuffers* clearBuffers;
     Qt3DRender::QRenderSurfaceSelector* ss;
-    //Qt3DRender::QCameraSelector* cameraSelector;
-    //Qt3DRender::QClearBuffers* clearBuffers;
-    //Qt3DRender::QRenderSurfaceSelector* surfaceSelector;
-    //Qt3DRender::QRenderSettings* renderSetting;
-    //Qt3DExtras::QForwardRenderer* addRenderer;
-
-
-
-
-
 };
 
 }

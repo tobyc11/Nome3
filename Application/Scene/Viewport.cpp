@@ -17,8 +17,8 @@ void CViewport::UpdateEntity()
         return;
 
     Super::UpdateEntity();
-    viewport.adjust(rect_x1.GetValue(.0), rect_y1.GetValue(0.0),
-                    rect_x2.GetValue(1.0), rect_y2.GetValue(1.0));
+    viewport.setRect(rect_x1.GetValue(0.0), rect_x2.GetValue(0.0),
+                     rect_y1.GetValue(1.0), rect_y2.GetValue(1.0));
     SetValid(true);
 }
 

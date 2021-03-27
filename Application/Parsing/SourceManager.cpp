@@ -77,18 +77,27 @@ bool CSourceManager::balancedbracket(std::string codeline) {
         } 
         switch (codeline[i]) { 
         case ')': 
+            if (stk.empty()) {
+                return false;
+            }
             x = stk.top(); 
             stk.pop(); 
             if (x == '{' || x == '[') 
                 return false; 
             break; 
         case '}': 
+            if (stk.empty()) {
+                return false;
+            }
             x = stk.top(); 
             stk.pop(); 
             if (x == '(' || x == '[') 
                 return false; 
             break; 
         case ']': 
+            if (stk.empty()) {
+                return false;
+            }
             x = stk.top(); 
             stk.pop(); 
             if (x == '(' || x == '{') 
@@ -477,36 +486,11 @@ std::vector<std::string> CSourceManager::CheckInstance(std::vector<std::vector<s
             } else if (element == "rotate" || element == "scale" || element == "translate") {
                 int templ = l+1;
                 std::string secondelem = line.at(templ);
-                if (secondelem.find('(') != std::string::npos && secondelem.find(')') == std::string::npos) {
-                    if (checkcount(secondelem, '(') > 1) {
-                        std::cout << "Error at Line " + std::to_string(k + 1) + " Mismatched Parenthesis. Parenthesis must close at the same line." << std::endl;
-                        return {"error"};
-                    }
-                    templ++;
-                    secondelem = line.at(templ);
-                    while (secondelem.find(')') == std::string::npos) {
-                        if (templ == line.size() - 1) {
-                            std::cout << "Error at Line " + std::to_string(k + 1) + " Mismatched Parenthesis. Parenthesis must close at the same line." << std::endl;
-                            return {"error"};
-                        } else if(secondelem.find('(') != std::string::npos) {
-                            std::cout << "Error at Line " + std::to_string(k + 1) + " Mismatched Parenthesis. Parenthesis must close at the same line." << std::endl;
-                            return {"error"};
-                        }
-                        templ++;
-                        secondelem = line.at(templ);
-                    }
-                    l = templ;
-                    if (checkcount(line.at(l), ')') > 1)  {
-                        std::cout << "Error at Line " + std::to_string(k + 1) + " Mismatched Parenthesis. Parenthesis must close at the same line." << std::endl;
-                        return {"error"};
-
-                    }
-                } else if (secondelem.find('(') != std::string::npos && secondelem.find(')') != std::string::npos) {
-                    if (checkcount(secondelem, ')') > 1 || checkcount(secondelem, '(') > 1) {
-                        std::cout << "Error at Line " + std::to_string(k + 1) + " Mismatched Parenthesis. Parenthesis must close at the same line." << std::endl;
-                        return {"error"};
-                    }
-                } else {
+                bool par = balancedbracket(secondelem);
+                if (!par) {
+                    std::cout << "Error at Line " + std::to_string(k + 1) + "Mismatched Parenthesis" << std::endl;
+                    return {"error"};
+                } else if (secondelem.find('(') == std::string::npos) {
                     std::cout << "Error at Line " + std::to_string(k + 1) + "Expected Start of Parenthesis" << std::endl;
                     return {"error"};
                 }

@@ -3,6 +3,7 @@
 #include "NomParser.h"
 #include "SyntaxTreeBuilder.h"
 #include "antlr4-runtime.h"
+#include "ResourceMgr.h"
 #include <unordered_map>
 #include <fstream>
 #include <stack>
@@ -117,19 +118,9 @@ void CSourceManager::ReportErros(std::string code) {
     std::unordered_map<std::string, std::string> shapemap;
     std::unordered_map<std::string, std::string> idmap;
     std::unordered_map<std::string, std::string> referencemap;
-    std::string sourcepath = GetMainSourcePath();
-    int cnt = 0;
-    for (int i = sourcepath.length(); i >= 0; i--) {
-        if (sourcepath[i] == '/' && cnt < 2) {
-            cnt++; 
-        } if (sourcepath[i] == '/' && cnt == 2) {
-            cnt = i;
-            break;
-        }
-    }
-    std::string basepath = sourcepath.substr(0, cnt);
-
-    std::ifstream file (basepath + "/Application/Parsing/Nom.g4");
+    std::string thepath = CResourceMgr::Get().Find("DebugDrawLine.xml");
+    std::string basepath = thepath.substr(0, 43);
+    std::ifstream file (basepath + "Parsing/Nom.g4");
     if (file.is_open()) {
         std::string line;
         while (std::getline(file, line)) {

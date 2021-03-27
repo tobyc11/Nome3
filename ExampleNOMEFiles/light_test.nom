@@ -21,6 +21,7 @@ bank slider
   set cam_aspect 1.77 1 2 0.01
   set cam_nearPlane 0.1 -100 100 1
   set cam_farPlane 1000.0 1 2000 10
+  set camangle 2  -4   4    0.1
 endbank
 
 light amb
@@ -42,11 +43,13 @@ endlight
 camera cam1
  projection NOME_PERSPECTIVE
  frustum ({expr $slider.cam_fieldOfView} {expr $slider.cam_aspect} {expr $slider.cam_nearPlane} {expr $slider.cam_farPlane}  )
+  ctranslate ( 0.0 0.0 1.00 )  crotate (0 1 0)({expr $slider.camangle})
 endcamera
 
 camera cam2
  projection NOME_PERSPECTIVE
- frustum (45.0  1.77  0.1  1000.0)
+ frustum ({expr $slider.cam_fieldOfView} {expr $slider.cam_aspect} {expr $slider.cam_nearPlane} {expr $slider.cam_farPlane}  )
+ ctranslate ( 0.0 0.0 1.00 )  crotate (0 1 0)({expr -$slider.camangle})
 endcamera
 
 viewport vp1

@@ -40,24 +40,6 @@ CNome3DView::CNome3DView()
 
     this->setRootEntity(Base);
 
-    // Initialize the crystal ball
-    //auto *torusMesh = new Qt3DExtras::QTorusMesh;
-    //torusMesh->setRadius(1.0f);
-    //torusMesh->setMinorRadius(0.001f);
-    //torusMesh->setRings(100);
-    //torusMesh->setSlices(100);
-
-    //material = new Qt3DExtras::QPhongAlphaMaterial(Root);
-    //material->setAlpha(0.0f);
-    //material->setDiffuse(QColor(0, 255, 0));
-    //material->setAmbient(QColor(0, 255, 0));
-    //material->setShininess(5);
-
-    //torus->addComponent(torusMesh);
-    //torus->addComponent(material);
-
-
-
     // Setup camera
     zPos = 2.73;
     mainCamera = this->camera();
@@ -125,10 +107,8 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
                         clearBuffers->setBuffers(Qt3DRender::QClearBuffers::ColorDepthBuffer);
                         clearBuffers->setClearColor(QColor(QRgb(0x4d4d4f)));
                         mainCamera->setEnabled(false);
-                        this->camera()->setEnabled(false);
-                        this->camera()->setNearPlane(1000);
-                        this->camera()->setFarPlane(0.1);
-                        this->camera()->setFieldOfView(0.1);
+                        mainCamera->setViewCenter(QVector3D(3, 3, 3));
+                        mainCamera->setPosition(QVector3D(3000, 3000, 3000));
                     }
                     auto* vp = new Qt3DRender::QViewport(mainView);
                     vp->setNormalizedRect(QRectF(viewport->viewport));
@@ -163,15 +143,19 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
                             auto* camLens = new Qt3DRender::QCameraLens;
                             camMap.second->setCamera(cam);
                             cameraSet.emplace(camMap.first, cam);
-                            auto* cc = new Qt3DExtras::QOrbitCameraController;
-                            cc->setCamera(cam);
-
                         }
                     }
+                    cam->setPosition(camera->translation);
+                    cam->setViewCenter(QVector3D(0, 0, 0));
+                    cam->rotate(camera->rotation);
                     if (camera->projectionType == "NOME_ORTHOGRAPHIC")
                         cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
                     else if (camera->projectionType == "NOME_PERSPECTIVE")
                         cam->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
+                    else if (camera->projectionType == "NOME_FRUSTUM")
+                        cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
+
+
 
 
                     node->SetEntityUpdated(false);
@@ -285,7 +269,11 @@ void CNome3DView::PostSceneUpdate()
                             cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
                         else if (camera->projectionType == "NOME_PERSPECTIVE")
                             cam->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
-
+                        else if (camera->projectionType == "NOME_FRUSTUM")
+                            cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
+                        cam->setPosition(camera->translation);
+                        cam->setViewCenter(QVector3D(0, 0, 0));
+                        cam->rotate(camera->rotation);
                         node->SetEntityUpdated(false);
                     }
                 } else if (entity->renderType == Scene::CEntity::VIEWPORT) {
@@ -933,7 +921,6 @@ void CNome3DView::mousePressEvent(QMouseEvent* e)
     //material->setAlpha(0.7f);
 
     rotationEnabled = e->button() == Qt::RightButton ? false : true;
-    zPos = mainCamera->position().z();
     // Save mouse press position
     firstPosition = QVector2D(e->localPos());
     mousePressEnabled = true;
@@ -996,7 +983,6 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
     if (rotationEnabled)
     {
         QVector3D cameraPosition = mainCamera->position();
-        zPos = cameraPosition.z();
         QPoint numPixels = ev->pixelDelta();
         QPoint numDegrees = ev->angleDelta() / 13.0f;
 

@@ -179,6 +179,34 @@ antlrcpp::Any CFileBuilder::visitArgTransformOne(NomParser::ArgTransformOneConte
     return result;
 }
 
+antlrcpp::Any CFileBuilder::visitArgTranslate(NomParser::ArgTranslateContext* context)
+{
+    auto* result = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    auto* List = new AST::AVector(ConvertToken(context->LPAREN()->getSymbol()),
+                                       ConvertToken(context->RPAREN()->getSymbol()));
+    for (auto* expr : context->expression())
+    {
+        List->AddChild(visit(expr).as<AST::AExpr*>());
+    }
+    result->AddChild(List);
+    return result;
+}
+
+antlrcpp::Any CFileBuilder::visitArgRotate(NomParser::ArgRotateContext* context)
+{
+    auto* result = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    auto* list =
+        new AST::AVector(ConvertToken(context->LPAREN(0)), ConvertToken(context->RPAREN(0)));
+    list->AddChild(visit(context->exp1).as<AST::AExpr*>());
+    list->AddChild(visit(context->exp2).as<AST::AExpr*>());
+    list->AddChild(visit(context->exp3).as<AST::AExpr*>());
+    result->AddChild(list);
+    list = new AST::AVector(ConvertToken(context->LPAREN(1)), ConvertToken(context->RPAREN(1)));
+    list->AddChild(visit(context->exp4).as<AST::AExpr*>());
+    result->AddChild(list);
+    return result;
+}
+
 antlrcpp::Any CFileBuilder::visitArgColor(NomParser::ArgColorContext* context)
 {
     auto* result = new AST::ANamedArgument(ConvertToken(context->getStart()));
@@ -436,6 +464,11 @@ antlrcpp::Any CFileBuilder::visitCmdCamera(NomParser::CmdCameraContext *context)
     // Handle arguments other than name
     cmd->AddNamedArgument(visit(context->argCameraProjection()));
     cmd->AddNamedArgument(visit(context->argCameraFrustum()));
+    for (auto* arg : context->argTranslate())
+        cmd->AddNamedArgument(visit(arg));
+    for (auto* arg : context->argRotate())
+        cmd->AddNamedArgument(visit(arg));
+
 
     return cmd;
 }

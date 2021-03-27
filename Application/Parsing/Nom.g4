@@ -55,8 +55,10 @@ argTransform
    | 'scale' LPAREN expression expression expression RPAREN # argTransformOne
    | 'translate' LPAREN expression expression expression RPAREN # argTransformOne
    ;
-argColor : 'color' LPAREN expression expression expression RPAREN ;
+argRotate : 'crotate' LPAREN exp1=expression exp2=expression exp3=expression RPAREN LPAREN exp4=expression RPAREN;
+argTranslate : 'ctranslate' LPAREN expression expression expression RPAREN;
 
+argColor : 'color' LPAREN expression expression expression RPAREN ;
 argControlRotate : 'rotate' vector3 ;
 argControlScale : 'scale' vector3 ;
 argPoint : 'point' ident ;
@@ -109,7 +111,7 @@ command
    | open='offset' name=ident argOffsetFlag* argHeight* argWidth* command* end='endoffset' # CmdOffset
    | open='include' name=ident end='endinclude' # CmdInclude
    | open='light' name=ident argLightType argLightColor end='endlight' # CmdLight
-   | open='camera' name=ident argCameraProjection argCameraFrustum end='endcamera' #CmdCamera
+   | open='camera' name=ident argCameraProjection argCameraFrustum argTranslate* argRotate* end='endcamera' #CmdCamera
    | open='viewport' name=ident argCameraID LPAREN expression expression expression expression RPAREN end='endviewport' #CmdViewport
    ;
 

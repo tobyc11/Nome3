@@ -1,5 +1,6 @@
 #pragma once
 #include "Entity.h"
+#include <QQuaternion>
 
 
 namespace Nome::Scene
@@ -11,6 +12,13 @@ namespace Nome::Scene
     DEFINE_INPUT(float, para3) { MarkDirty(); }
     DEFINE_INPUT(float, para4) { MarkDirty(); }
     DEFINE_INPUT(float, para5) { MarkDirty(); }
+    DEFINE_INPUT(float, translate_x) { MarkDirty(); }
+    DEFINE_INPUT(float, translate_y) { MarkDirty(); }
+    DEFINE_INPUT(float, translate_z) { MarkDirty(); }
+    DEFINE_INPUT(float, rotate_x) { MarkDirty(); }
+    DEFINE_INPUT(float, rotate_y) { MarkDirty(); }
+    DEFINE_INPUT(float, rotate_z) { MarkDirty(); }
+    DEFINE_INPUT(float, rotate_scale) { MarkDirty(); }
         void MarkDirty() override;
         void UpdateEntity() override;
 
@@ -29,6 +37,8 @@ namespace Nome::Scene
     public:
         std::string projectionType;
         float para[6];
+        QQuaternion rotation;
+        QVector3D translation;
 
     private:
         CSceneTreeNode* SceneTreeNode;

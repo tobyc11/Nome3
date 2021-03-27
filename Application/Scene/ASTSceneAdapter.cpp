@@ -28,6 +28,7 @@
 #include "TorusKnot.h"
 #include "Tunnel.h"
 #include "Light.h"
+#include "Viewport.h"
 #include <StringPrintf.h>
 #include <unordered_map>
 
@@ -69,7 +70,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "spiral", ECommandKind::Entity },      { "sharp", ECommandKind::Entity },
     { "gencartesiansurf", ECommandKind::Entity },    { "genparametricsurf", ECommandKind::Entity },
     { "camera", ECommandKind::Entity }, { "genimplicitsurf", ECommandKind::Entity },
-    { "light", ECommandKind::Entity }
+    { "light", ECommandKind::Entity }, { "viewport", ECommandKind::Entity }
 
 };
 
@@ -136,6 +137,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CCamera(name);
     else if (cmd == "genimplicitsurf")
         return new CGenImplicitSurf(name);
+    else if (cmd == "viewport")
+        return new CViewport(name);
 
 
 
@@ -264,6 +267,15 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                     std::cout << "Haven't detected the camera projection type" << std::endl;
                 else
                     camera->projectionType = static_cast<const AST::AIdent*>(expr)->ToString();
+            }
+            if (auto* viewport = dynamic_cast<CViewport*>(entity.Get())) {
+                auto* cameraId = cmd->GetNamedArgument("cameraID");
+                auto* expr = cameraId->GetArgument(0);
+                // Just return if the corresponding element is not found in the AST
+                if (!expr)
+                    std::cout << "Haven't detected the camera input to the viewport" << std::endl;
+                else
+                    viewport->cameraId = static_cast<const AST::AIdent*>(expr)->ToString();
             }
 
 

@@ -21,6 +21,7 @@ bank slider
   set cam_aspect 1.77 1 2 0.01
   set cam_nearPlane 0.1 -100 100 1
   set cam_farPlane 1000.0 1 2000 10
+  set camangle 2  -4   4    0.1
 endbank
 
 light amb
@@ -39,10 +40,30 @@ light sun2
 endlight
 
 
-camera cam
+camera cam1
  projection NOME_PERSPECTIVE
  frustum ({expr $slider.cam_fieldOfView} {expr $slider.cam_aspect} {expr $slider.cam_nearPlane} {expr $slider.cam_farPlane}  )
+  ctranslate ( 0.0 0.0 1.00 )  crotate (0 1 0)({expr $slider.camangle})
 endcamera
+
+camera cam2
+ projection NOME_PERSPECTIVE
+ frustum ({expr $slider.cam_fieldOfView} {expr $slider.cam_aspect} {expr $slider.cam_nearPlane} {expr $slider.cam_farPlane}  )
+ ctranslate ( 0.0 0.0 1.00 )  crotate (0 1 0)({expr -$slider.camangle})
+endcamera
+
+viewport vp1
+ cameraID cam1
+ (0 0 0.5 1)
+endviewport
+
+viewport vp2
+ cameraID cam2
+ (0.5 0 0.5 1)
+endviewport
+
+
+
 
 ####  Some Surface colors  ###########################
 surface M  color  (0.9 0   1  ) endsurface   # Magenta
@@ -93,7 +114,11 @@ instance ambb amb endinstance
 
 instance bgg bg endinstance
 
-instance camm cam endinstance
+instance camm cam1 endinstance
+instance camm cam2 endinstance
+
+instance vpp1 vp1 endinstance
+instance vpp2 vp2 endinstance
 
 
 

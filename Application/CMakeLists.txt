@@ -18,7 +18,6 @@ option(NOME_BUILD_TESTS "Build tests" OFF)
 file(GLOB PG2_SOURCES
     *.h *.cpp
     Flow/*.h Flow/*.cpp
-    FlowViz/*.h FlowViz/*.cpp
     Parsing/*.h Parsing/*.cpp Parsing/*.l Parsing/*.y
     QtFrontend/*.h QtFrontend/*.cpp QtFrontend/*.ui QtFrontend/*.qrc
     Scene/*.h Scene/*.cpp

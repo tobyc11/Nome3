@@ -12,6 +12,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
+//TODO: enable multiple view ports
+#include <QViewport>
+#include <QRenderSurfaceSelector>
+
 namespace Nome
 {
 
@@ -19,6 +23,7 @@ class CNome3DView : public Qt3DExtras::Qt3DWindow
 {
 public:
     CNome3DView();
+
     ~CNome3DView() override;
 
     [[nodiscard]] const std::vector<std::string>& GetSelectedVertices() const
@@ -101,7 +106,7 @@ private:
     QVector2D secondPosition;
 
     QQuaternion rotation;
-    Qt3DRender::QCamera *cameraset;
+    Qt3DRender::QCamera* mainCamera;
     // Qt3DRender::QMaterial *material;
     bool mousePressEnabled;
 
@@ -118,15 +123,19 @@ private:
     // For the animation
     Qt3DCore::QTransform *sphereTransform;
 
-    QQuaternion quaternionX;
-    QQuaternion quaternionY;
     OrbitTransformController *controller;
     QPropertyAnimation *sphereRotateTransformAnimation;
     Qt3DCore::QEntity *torus;
 
     Qt3DExtras::QPhongAlphaMaterial *material;
 
+    //TODO: configure viewport
+    std::map<std::string, Qt3DRender::QCameraSelector*> camViewMap;
+    std::map<std::string, Qt3DRender::QCamera*> cameraSet;
 
+    Qt3DRender::QViewport* mainView;
+    Qt3DRender::QClearBuffers* clearBuffers;
+    Qt3DRender::QRenderSurfaceSelector* ss;
 };
 
 }

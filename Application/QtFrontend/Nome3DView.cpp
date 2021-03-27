@@ -145,8 +145,9 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
                         }
                     }
                     cam->setPosition(camera->translation);
+                    cam->setUpVector(QVector3D(0, 0, 1));
                     cam->setViewCenter(QVector3D(0, 0, 0));
-                    cam->rotate(camera->rotation);
+                    cam->rotateAboutViewCenter(camera->rotation);
                     if (camera->projectionType == "NOME_ORTHOGRAPHIC")
                         cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
                     else if (camera->projectionType == "NOME_PERSPECTIVE")
@@ -268,8 +269,9 @@ void CNome3DView::PostSceneUpdate()
                         else if (camera->projectionType == "NOME_FRUSTUM")
                             cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
                         cam->setPosition(camera->translation);
+                        cam->setUpVector(QVector3D(0, 0, 1));
                         cam->setViewCenter(QVector3D(0, 0, 0));
-                        cam->rotate(camera->rotation);
+                        cam->rotateAboutViewCenter(camera->rotation);
                         node->SetEntityUpdated(false);
                     }
                 } else if (entity->renderType == Scene::CEntity::VIEWPORT) {

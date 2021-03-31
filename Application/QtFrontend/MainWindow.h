@@ -70,7 +70,8 @@ private slots:
     /* Randy temporarily commenting out due to temporarymeshmanager changes
     void on_actionResetTempMesh_triggered(); */
 
-    void on_actionRenderRay_triggered(); // Randy added this on 2/26
+    void displayRay(); // Randy added this on 2/26
+    void displayPoint(); // Randy added this on 3/20
     void on_actionToggleRenderRay_triggered(); // Randy added this on 2/26 for adding points via ray
 
     void on_actionCommitChanges_triggered();

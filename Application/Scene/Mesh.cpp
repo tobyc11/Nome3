@@ -316,7 +316,7 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ra
         auto minDist = *std::min_element(hitDistances.begin(), hitDistances.end());
         std::cout << "Triangle hit distance:  " + std::to_string(minDist) << std::endl;
         auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-        if (minDist < 10)
+        if (minDist < 100) // minDist of 10 did not work for cases where we zoom away from the scene
         {
             result.emplace_back(minDist, instPrefix + currFace->name);
         }
@@ -360,19 +360,19 @@ std::vector<std::pair<float, Vector3>> CMeshInstance::GetHitPoint(const tc::Ray&
         // Now that we're checking intersection with triangulation of the face, see if it
         // intersected any triangle
         auto minDist = *std::min_element(hitDistances.begin(), hitDistances.end());
-        std::cout << "Triangle hit distance:  " + std::to_string(minDist) << std::endl;
+        //std::cout << "Triangle hit distance:  " + std::to_string(minDist) << std::endl;
         auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-        if (minDist < 10)
+        if (minDist < 100)
         {
             result.emplace_back(minDist, distToHitPoint[minDist]);
         }
     }
     // std::sort(result.begin(), result.end());
-    for (const auto& sel : result)
-    {
-        std::cout << "Get HitPoint" << std::endl;
-        printf("t=%.3f\n", sel.first);
-    }
+ //   for (const auto& sel : result)
+ //   {
+       //std::cout << "Get HitPoint" << std::endl;
+       // printf("t=%.3f\n", sel.first);
+ //   }
     return result;
 }
 

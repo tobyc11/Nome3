@@ -255,7 +255,7 @@ void CNome3DView::PostSceneUpdate()
                         aliveSetMesh.insert(mesh);
                         mesh->UpdateTransform();
                         if (node->WasEntityUpdated() || bUpdateScene) {
-                            printf("Geom regen for %s\n", node->GetPath().c_str());
+                           //  printf("Geom regen for %s\n", node->GetPath().c_str()); Randy commented this out on 3/25/2021
                             mesh->UpdateMaterial(WireFrameMode);
                             mesh->UpdateGeometry(PickVertexBool);
                             node->SetEntityUpdated(false);
@@ -384,7 +384,8 @@ void CNome3DView::ClearSelectedEdges()
 // Randy added on 2/26 to clear rendered ray
 void CNome3DView::ClearRenderedRay()
 {
-    RayVertPositions.clear();
+    RayVertPositions.clear(); //TODO: Fix this logic. Should I clean here or in RenderRay?
+   
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
         auto* entity = node->GetInstanceEntity();
@@ -396,6 +397,12 @@ void CNome3DView::ClearRenderedRay()
             meshInst->DeselectAll();
         }
     });
+}
+
+// Randy added on 2/26 to clear rendered ray
+void CNome3DView::ClearInteractivePoint()
+{
+    RayInteractivePoint.clear();
 }
 
 void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
@@ -688,9 +695,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
             if (!entity->isMerged && entity->IsMesh()) {
                 const auto &l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
                 auto localRay = ray.Transformed(l2w.Inverse());
-                localRay.Direction =
-                        localRay.Direction
-                                .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                localRay.Direction = localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
                 auto *meshInst = dynamic_cast<Scene::CMeshInstance *>(entity);
                 auto pickResults = meshInst->PickVertices(localRay);
                 for (const auto&[dist, name] : pickResults)
@@ -704,19 +709,16 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
     if (hits.size() == 1)
     {
         const auto& [dist, meshInst, vertName] = hits[0];
-        auto position =
-            std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
+        auto position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
         if (position == SelectedVertices.end()) // if this vertex has not been selected before
         {
             SelectedVertices.push_back(vertName); // add vertex to selected vertices
-            GFrtCtx->MainWindow->statusBar()->showMessage(
-                QString::fromStdString("Selected " + vertName));
+            GFrtCtx->MainWindow->statusBar()->showMessage(QString::fromStdString("Selected " + vertName));
         }
         else // else, this vertex has been selected previously
         {
             SelectedVertices.erase(position);
-            GFrtCtx->MainWindow->statusBar()->showMessage(
-                QString::fromStdString("Deselected " + vertName));
+            GFrtCtx->MainWindow->statusBar()->showMessage(QString::fromStdString("Deselected " + vertName));
         }
 
         meshInst->MarkVertAsSelected({ vertName }, InputSharpness());
@@ -807,54 +809,165 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
     }
 }
 
+//typedef struct
+//{
+//    double x, y, z;
+//} XYZ;
 
+/*
+   Calculate the line segment PaPb that is the shortest route between
+   two lines P1P2 and P3P4. Calculate also the values of mua and mub where
+      Pa = P1 + mua (P2 - P1)
+      Pb = P3 + mub (P4 - P3)
+   Return FALSE if no solution exists.
+*/
+int LineLineIntersect(tc::Vector3 p1, tc::Vector3 p2, tc::Vector3 p3, tc::Vector3 p4, tc::Vector3* pa, tc::Vector3* pb, double* mua, double* mub)
+{
+    tc::Vector3 p13, p43, p21;
+    double d1343, d4321, d1321, d4343, d2121;
+    double numer, denom;
+    float EPS = 0.001f;
+    p13.x = p1.x - p3.x;
+    p13.y = p1.y - p3.y;
+    p13.z = p1.z - p3.z;
+    p43.x = p4.x - p3.x;
+    p43.y = p4.y - p3.y;
+    p43.z = p4.z - p3.z;
+    if (abs(p43.x) < EPS && abs(p43.y) < EPS && abs(p43.z) < EPS)
+        return (FALSE);
+    p21.x = p2.x - p1.x;
+    p21.y = p2.y - p1.y;
+    p21.z = p2.z - p1.z;
+    if (abs(p21.x) < EPS && abs(p21.y) < EPS && abs(p21.z) < EPS)
+        return (FALSE);
 
+    d1343 = p13.x * p43.x + p13.y * p43.y + p13.z * p43.z;
+    d4321 = p43.x * p21.x + p43.y * p21.y + p43.z * p21.z;
+    d1321 = p13.x * p21.x + p13.y * p21.y + p13.z * p21.z;
+    d4343 = p43.x * p43.x + p43.y * p43.y + p43.z * p43.z;
+    d2121 = p21.x * p21.x + p21.y * p21.y + p21.z * p21.z;
+
+    denom = d2121 * d4343 - d4321 * d4321;
+    if (abs(denom) < EPS)
+        return (FALSE);
+    numer = d1343 * d4321 - d1321 * d4343;
+
+    *mua = numer / denom;
+    *mub = (d1343 + d4321 * (*mua)) / d4343;
+
+    pa->x = p1.x + *mua * p21.x;
+    pa->y = p1.y + *mua * p21.y;
+    pa->z = p1.z + *mua * p21.z;
+    pb->x = p3.x + *mub * p43.x;
+    pb->y = p3.y + *mub * p43.y;
+    pb->z = p3.z + *mub * p43.z;
+
+    return (TRUE);
+}
+
+// Creates ray OR adds hit point on ray
 void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
 {
+    std::cout << "Inside RenderRay" << std::endl;
     rotateRay(ray);
-    std::vector<std::tuple<float, Scene::CMeshInstance*, tc::Vector3>> hits;
-    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        // Obtain either an instance entity or a shared entity from the scene node
-        auto* entity = node->GetInstanceEntity();
-        if (!entity)
-            entity = node->GetOwner()->GetEntity();
-        if (entity)
-        {
-            if (!entity->isMerged && entity->IsMesh())
+
+
+    if (RayVertPositions.size() == 0) // Create Ray Mode
+    {
+        std::cout << "CREATE RAY MODE: current Ray Origin" << ray.Origin.x << " " << ray.Origin.y << " "
+                  << ray.Origin.z << "   CREATE RAY MODE: Ray Dir" << ray.Direction.x << " " << ray.Direction.y
+                  << " " << ray.Direction.z << std::endl;
+        std::vector<std::tuple<float, Scene::CMeshInstance*, tc::Vector3>> hits;
+        Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+            // Obtain either an instance entity or a shared entity from the scene node
+            auto* entity = node->GetInstanceEntity();
+            if (!entity)
+                entity = node->GetOwner()->GetEntity();
+            if (entity)
             {
-                const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-                auto localRay = ray.Transformed(l2w.Inverse());
-                localRay.Direction =  localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
-                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-                auto pickResults = meshInst->GetHitPoint(localRay);
-                for (const auto& [dist, hitPoint] : pickResults)
+                if (!entity->isMerged && entity->IsMesh())
                 {
-                    auto hitPointRotated = l2w * hitPoint; // transform(hitPoint, l2w);
-                    hits.emplace_back(dist, meshInst, hitPointRotated);
+                    const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+                    auto localRay = ray.Transformed(l2w.Inverse());
+                    localRay.Direction =
+                        localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                    auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+                    auto pickResults = meshInst->GetHitPoint(localRay);
+                    for (const auto& [dist, hitPoint] : pickResults)
+                    {
+                        auto hitPointRotated = l2w * hitPoint; // transform(hitPoint, l2w);
+                        std::cout << hitPointRotated.x << " " << hitPointRotated.y << " " <<hitPointRotated.z
+                                  << "RenderRay should be like current Ray but with the current intersection point" << std::endl;
+                        hits.emplace_back(dist, meshInst, hitPointRotated);
+                    }
                 }
             }
-        }
-    });
+        });
+        std::cout << "hitPoint size: " << hits.size() <<  std::endl;
+        std::sort(hits.begin(), hits.end());
 
-    std::sort(hits.begin(), hits.end());
+        tc::Vector3 closestHitPoint;
+        if (hits.size() > 0)
+            closestHitPoint = std::get<2>(hits[0]); // get the closest hitPointRotated
+        else
+            return;
 
-    tc::Vector3 closestHitPoint;
-    if (hits.size() > 0)
-        closestHitPoint = std::get<2>(hits[0]);
-    else
-        return;
+        RayVertPositions.push_back(ray.Origin);
+        QVector3D test = { closestHitPoint.x, closestHitPoint.y, closestHitPoint.z };
+        RayVertPositions.push_back(closestHitPoint);
+        RayCasted = true;
+    }
+    else // Selection Mode
+    { 
 
-    RayVertPositions.push_back(ray.Origin);
-    std::cout << "intersection: " << intersection.x() << " " << intersection.y() << " "
-              << intersection.z() << std::endl;
-    QVector3D test = { closestHitPoint.x , closestHitPoint.y , closestHitPoint.z };
-    auto testRotated = rotation.inverted().rotatedVector(test);
-    tc::Vector3 testRotatedVec = tc::Vector3(testRotated.x(), testRotated.y(), testRotated.z());
+        // Bug: Ray initialization automatically normalizes the direction component, which may mess up the scaling. origin remains the same.
+        //tc::Ray castRay = tc::Ray(RayVertPositions[0], RayVertPositions[1]); 
+        std::cout << "initial castRay startPoint " << RayVertPositions[0].x << " " << RayVertPositions[0].y << " " << RayVertPositions[0].z
+                  <<  "   initial castRay endpoint " << RayVertPositions[1].x << " " << RayVertPositions[1].y << " " << RayVertPositions[1].z << std::endl;
+       // std::cout << "initial castRay endPoint without normalized " <<  castRay.Direction.x << " " << castRay.Direction.y << " " << castRay.Direction.z
+        //          << std::endl;
+        std::cout << "newly cast ray origin " << ray.Origin.x << " " << ray.Origin.y << " " << ray.Origin.z
+                  << "   newly cast ray Dir"  
+                  << ray.Direction.x << " " << ray.Direction.y
+                  << " " << ray.Direction.z << std::endl;
+   
+        //tc::Vector3 closestPoint = castRay.ClosestPoint(ray);  // ray.ClosestPoint(castRay);  /// Return closest point to another ray.
+        tc::Vector3 closestPointOnInitialRay;
+        tc::Vector3 closestPointOnNewRay;
+        double mua;
+        double mub;
+        auto interBool = LineLineIntersect(RayVertPositions[0], RayVertPositions[1], ray.Origin, ray.Direction,
+                          &closestPointOnInitialRay, &closestPointOnNewRay, &mua, &mub);
+        
+        std::cout << "interBool " << interBool << std::endl;
+        auto closestPoint = closestPointOnInitialRay;
+        std::cout << "closestPoint on initial castRay: " << closestPoint.x <<  " " << closestPoint.y << " "<< closestPoint.z << std::endl;
+        RayInteractivePoint.push_back(closestPoint); // single interactive point
+        RayVertPositions.clear();
+        RayVertPositions.push_back(ray.Origin);
+        RayVertPositions.push_back(ray.Direction);  // closestPoint);
+        RayCasted = true; // false;
 
-    std::cout << testRotatedVec.x << " " << testRotatedVec.y << " " << testRotatedVec.z
-              << "testRotatedVec VS closestHitPoint" << closestHitPoint.x << " "<<
-        closestHitPoint.y << " "<< closestHitPoint.z << std::endl;
-    RayVertPositions.push_back(closestHitPoint);
+        // Remove the casted ray TODO: Remove the entire node so we can save changes
+        Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+            // Obtain either an instance entity or a shared entity from the scene node
+            auto* entity = node->GetInstanceEntity();
+            if (!entity)
+                entity = node->GetOwner()->GetEntity();
+            if (entity)
+            {
+                if (!entity->isMerged && entity->IsMesh())
+                {
+                   //std::cout << "looking for ray" << std::endl;
+                    if (entity->GetName().find("TempInteractivePoly") != std::string::npos) {
+                       // std::cout << "found ray, remove" << std::endl;
+                        //node->GetOwner()->SetEntity(nullptr);
+                        
+                    }
+                }
+            }
+        });
+    }
 }
 
 

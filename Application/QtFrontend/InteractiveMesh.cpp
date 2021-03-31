@@ -224,11 +224,10 @@ void CInteractiveMesh::InitInteractions()
 
             // Randy's Render Ray
             if (GFrtCtx->NomeView->RenderRayBool)
-            {
-                std::cout << "Ray was just cast-> click on Render Ray button to visualize it"<< std::endl;
                 GFrtCtx->NomeView->RenderRay(ray, wi); // Randy added this on 2/26
-            }
-
+            // else if alreadfy picked
+            // get intersection point withr ray (only) using project6ion equation. 
+            // add poinyt theer
             if (GFrtCtx->NomeView->PickVertexBool)
                 GFrtCtx->NomeView->PickVertexWorldRay(ray);
             if (GFrtCtx->NomeView->PickEdgeBool)

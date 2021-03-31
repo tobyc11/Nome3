@@ -37,6 +37,8 @@ public:
     std::vector<std::string> AddedTempPolylineNodeNames; // added to assist with deselection
 
     void AddPolyline(const std::vector<std::string>& points);
+    void AddInteractivePolyline(const std::vector<std::string>& points); // Can interactively click on this polyline and add a point there. The polyline will automatically dissapear afterwards.
+
     std::string AddPoint(const std::vector<std::string> pos); // Steven's function. Randy made it return the point name
 
     std::string CommitChanges(

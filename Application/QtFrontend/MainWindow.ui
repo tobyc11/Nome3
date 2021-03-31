@@ -74,7 +74,6 @@
     <!--<addaction name="actionResetTempMesh"/>-->
      <addaction name="actionCommitChanges"/>
      <addaction name="actionShowFacets"/>
-     <addaction name="actionRenderRay"/> 
    </widget>
 
 
@@ -100,7 +99,6 @@
         <string>&amp;Add Point Config</string>
       </property>
       <addaction name="actionToggleRenderRay"/>
-      <addaction name="actionRenderRay"/>
       <!--<addaction name="actionAddPoint"/> Steven's add point-->
     </widget>
 
@@ -180,12 +178,6 @@
      </property>
    </action>
 
-   <!-- Randy's Render Ray-->
-   <action name="actionRenderRay">
-     <property name="text">
-       <string>&amp;Draw Added Points</string>
-     </property>
-   </action>
 <!--  <action name="actionPoint">
    <property name="text">
     <string>&amp;Point</string>

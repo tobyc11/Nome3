@@ -1,4 +1,4 @@
-point p00 0 0 0) endpoint
+point p00 (0 0 0) endpoint
 point p01 (0.5 0.5 -0.4) endpoint
 point p02 (0.0 1.0 -0.8) endpoint
 point p03 (0.0 1.0 -0.8) endpoint

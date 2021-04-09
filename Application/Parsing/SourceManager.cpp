@@ -3,7 +3,7 @@
 #include "NomParser.h"
 #include "SyntaxTreeBuilder.h"
 #include "antlr4-runtime.h"
-#include "ResourceMgr.h"
+#include "../QtFrontend/ResourceMgr.h"
 #include <unordered_map>
 #include <fstream>
 #include <stack>

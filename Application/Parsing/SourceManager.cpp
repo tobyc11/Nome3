@@ -28,7 +28,7 @@ private:
                      size_t charPositionInLine, const std::string& msg,
                      std::exception_ptr e) override
     {
-        std::cout << "line " << line << ":" << charPositionInLine << " " << msg << std::endl;
+        //std::cout << "line " << line << ":" << charPositionInLine << " " << msg << std::endl;
         bDidErrorHappen = true;
     }
 };
@@ -62,7 +62,7 @@ bool CSourceManager::ParseMainSource() {
     ASTContext.SetAstRoot(ASTRoot);
 
     std::cout << "====== Debug Print AST ======" << std::endl;
-    std::cout << *ASTRoot;
+    //std::cout << *ASTRoot;
     std::cout << "====== End Debug Print AST ======" << std::endl;
 
     return !errorListener.bDidErrorHappen;
@@ -202,6 +202,10 @@ void CSourceManager::ReportErros(std::string code) {
         for (int j = 0; j < line.size(); j++) {
             std::string element = line.at(j); 
             if (element.find("#") != std::string::npos && element.at(0) == '#') { //Comment Detection
+                j = line.size();
+                continue; 
+            } 
+            if (element.empty()) {
                 j = line.size();
                 continue; 
             }
@@ -496,7 +500,85 @@ std::vector<std::string> CSourceManager::CheckInstance(std::vector<std::vector<s
         }
     }
     std::cout << "Error at Line " + std::to_string(i + 1) + ": endinstance expected" << std::endl;
-    return {};
+    return {"error"};
+}
+
+std::vector<std::string> CSourceManager::CheckSubdivision(std::vector<std::vector<std::string>> parsedcode,
+                                                        std::unordered_map<std::string, std::string> &idmap,
+                                                        int i, int j,
+                                                        std::unordered_map<std::string, std::string> shapemap) {
+    bool first_time = true;
+    std::string id;
+    int global_k;
+    int global_l;
+    int cnt = 1;
+    for (int k = 0; k < parsedcode.size(); k++) {
+        if (first_time == true) {
+            k = i;
+        }
+        std::vector<std::string> line = parsedcode.at(k);
+        for (int l = 0; l < line.size(); l++) {
+            if (first_time == true) {
+                l = j;
+                first_time = false;
+                id = line.at(l);
+                if ((idmap.find(id))!= idmap.end()) {
+                    std::cout << "Error at Line " + std::to_string(i + 1) + ": " + id + " is already being used." << std::endl;
+                    return {"error"};
+                }
+                continue;
+            }
+            if (cnt == 2 && line.at(l) == "NOME_OFFSET_DEFAULT" || line.at(l) == "NOME_OFFSET_GRID") {
+                continue;
+            }
+            if (cnt == 3 ) {
+                if (isNumber(line.at(l))) {
+                    continue;
+                }
+            }
+            global_k = k;
+            global_l = l;
+            std::vector<std::string> result;
+            std::string element = line.at(l);
+            if (element == "endsubdivision") {
+                std::vector<std::string> ret;
+                if (l == line.size() - 1) {
+                    ret = {std::to_string(k), std::to_string(l)};
+                } else {
+                    ret = {std::to_string(k), std::to_string(l)};
+                }
+                return ret; 
+            } else if (element == "instance") {
+                if (l == line.size() - 1) {
+                    result = CheckInstance(parsedcode, idmap, k + 1, 0, shapemap);
+                } else {
+                    result = CheckInstance(parsedcode, idmap, k, l + 1, shapemap);
+                }
+            }
+            else {
+                std::cout << "Error at Line " + std::to_string(k + 1) + ": Expected Instance" << std::endl;
+                return {"error"};
+            }
+            if (result[0] == "error") {
+                return {"error"};
+            }
+            k = std::stoi(result[0]);
+            l = std::stoi(result[1]);
+            std::string elemid = result[2];
+            idmap[elemid] = "TRUE";
+            cnt++;
+        }
+    }
+    std::cout << "Error at Line " + std::to_string(i + 1) + ": endsubdivision expected" << std::endl;
+    return {std::to_string(global_k), std::to_string(global_l)};
+}
+
+bool CSourceManager::isNumber(std::string s) {
+    for (int i = 0; i < s.length(); i++)
+        if (isdigit(s[i]) == false)
+            return false;
+ 
+    return true;
 }
 
 int CSourceManager::checkcount(std::string str, char letter) {

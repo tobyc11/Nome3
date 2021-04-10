@@ -36,6 +36,8 @@ public:
     std::vector<std::string> CheckInstance(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
     std::vector<std::string> CheckGroup(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string>& idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
     std::vector<std::string> CheckBank(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &referencemap, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckSubdivision(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    bool isNumber(std::string s);
     int checkcount(std::string str, char letter);
     [[nodiscard]] std::string CollectText() const;
     [[nodiscard]] std::pair<size_t, size_t> FindPieceIndexAndOffset(size_t globalOffset) const;

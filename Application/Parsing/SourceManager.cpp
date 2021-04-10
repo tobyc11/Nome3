@@ -3,6 +3,7 @@
 #include "NomParser.h"
 #include "SyntaxTreeBuilder.h"
 #include "antlr4-runtime.h"
+#include "../QtFrontend/ResourceMgr.h"
 #include <unordered_map>
 #include <fstream>
 #include <stack>
@@ -77,18 +78,27 @@ bool CSourceManager::balancedbracket(std::string codeline) {
         } 
         switch (codeline[i]) { 
         case ')': 
+            if (stk.empty()) {
+                return false;
+            }
             x = stk.top(); 
             stk.pop(); 
             if (x == '{' || x == '[') 
                 return false; 
             break; 
         case '}': 
+            if (stk.empty()) {
+                return false;
+            }
             x = stk.top(); 
             stk.pop(); 
             if (x == '(' || x == '[') 
                 return false; 
             break; 
         case ']': 
+            if (stk.empty()) {
+                return false;
+            }
             x = stk.top(); 
             stk.pop(); 
             if (x == '(' || x == '{') 
@@ -108,19 +118,9 @@ void CSourceManager::ReportErros(std::string code) {
     std::unordered_map<std::string, std::string> shapemap;
     std::unordered_map<std::string, std::string> idmap;
     std::unordered_map<std::string, std::string> referencemap;
-    std::string sourcepath = GetMainSourcePath();
-    int cnt = 0;
-    for (int i = sourcepath.length(); i >= 0; i--) {
-        if (sourcepath[i] == '/' && cnt < 2) {
-            cnt++; 
-        } if (sourcepath[i] == '/' && cnt == 2) {
-            cnt = i;
-            break;
-        }
-    }
-    std::string basepath = sourcepath.substr(0, cnt);
-
-    std::ifstream file (basepath + "/Application/Parsing/Nom.g4");
+    std::string thepath = CResourceMgr::Get().Find("DebugDrawLine.xml");
+    std::string basepath = thepath.substr(0, 43);
+    std::ifstream file (basepath + "Parsing/Nom.g4");
     if (file.is_open()) {
         std::string line;
         while (std::getline(file, line)) {
@@ -477,36 +477,11 @@ std::vector<std::string> CSourceManager::CheckInstance(std::vector<std::vector<s
             } else if (element == "rotate" || element == "scale" || element == "translate") {
                 int templ = l+1;
                 std::string secondelem = line.at(templ);
-                if (secondelem.find('(') != std::string::npos && secondelem.find(')') == std::string::npos) {
-                    if (checkcount(secondelem, '(') > 1) {
-                        std::cout << "Error at Line " + std::to_string(k + 1) + " Mismatched Parenthesis. Parenthesis must close at the same line." << std::endl;
-                        return {"error"};
-                    }
-                    templ++;
-                    secondelem = line.at(templ);
-                    while (secondelem.find(')') == std::string::npos) {
-                        if (templ == line.size() - 1) {
-                            std::cout << "Error at Line " + std::to_string(k + 1) + " Mismatched Parenthesis. Parenthesis must close at the same line." << std::endl;
-                            return {"error"};
-                        } else if(secondelem.find('(') != std::string::npos) {
-                            std::cout << "Error at Line " + std::to_string(k + 1) + " Mismatched Parenthesis. Parenthesis must close at the same line." << std::endl;
-                            return {"error"};
-                        }
-                        templ++;
-                        secondelem = line.at(templ);
-                    }
-                    l = templ;
-                    if (checkcount(line.at(l), ')') > 1)  {
-                        std::cout << "Error at Line " + std::to_string(k + 1) + " Mismatched Parenthesis. Parenthesis must close at the same line." << std::endl;
-                        return {"error"};
-
-                    }
-                } else if (secondelem.find('(') != std::string::npos && secondelem.find(')') != std::string::npos) {
-                    if (checkcount(secondelem, ')') > 1 || checkcount(secondelem, '(') > 1) {
-                        std::cout << "Error at Line " + std::to_string(k + 1) + " Mismatched Parenthesis. Parenthesis must close at the same line." << std::endl;
-                        return {"error"};
-                    }
-                } else {
+                bool par = balancedbracket(secondelem);
+                if (!par) {
+                    std::cout << "Error at Line " + std::to_string(k + 1) + "Mismatched Parenthesis" << std::endl;
+                    return {"error"};
+                } else if (secondelem.find('(') == std::string::npos) {
                     std::cout << "Error at Line " + std::to_string(k + 1) + "Expected Start of Parenthesis" << std::endl;
                     return {"error"};
                 }

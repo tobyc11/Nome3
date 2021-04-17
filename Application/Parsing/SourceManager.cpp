@@ -235,6 +235,17 @@ void CSourceManager::ReportErros(std::string code) {
                     }
                     i = std::stoi(result[0]);
                     j = std::stoi(result[1]);
+                } else if (element == "subdivision") {
+                    if (j == line.size() - 1) {
+                        result = CheckSubdivision(parsedcode, idmap, i + 1, 0, shapemap);
+                    } else {
+                        result = CheckSubdivision(parsedcode, idmap, i, j + 1, shapemap);
+                    }
+                    if (result[0] == "error") {
+                        return;
+                    }
+                    i = std::stoi(result[0]);
+                    j = std::stoi(result[1]);
                 } else {
                     if (j == line.size() - 1) {
                         result = CheckStatement(parsedcode, idmap, endval, i + 1, 0, shapemap);
@@ -410,7 +421,7 @@ std::vector<std::string> CSourceManager::CheckBank(std::vector<std::vector<std::
             }
             if (l == 0) {
                 if (element == "set") {
-                    if (line.size() == 6) {
+                    if (line.size() == 6 || line.size() == 7) {
                         std::string secondval = line.at(l + 1);
                         if ((shapemap.find(secondval))!= shapemap.end() && secondval != "instance") {
                             std::cout << "Error at Line " + std::to_string(i + 1) + ": " + secondval + " is a reserved keyword." << std::endl;
@@ -425,7 +436,7 @@ std::vector<std::string> CSourceManager::CheckBank(std::vector<std::vector<std::
                         referencemap[secondval] = true; 
                         l+=5;
                     } else {
-                        std::cout << "Error at Line " + std::to_string(k + 1) + ": Expected 5 Parameters in Set, Received " + std::to_string(line.size() - 1)  << std::endl;
+                        std::cout << "Error at Line " + std::to_string(k + 1) + ": Expected 5 or (optional) 6 Parameters in Set, Received " + std::to_string(line.size() - 1)  << std::endl;
                         return {"error"};
                     }
 

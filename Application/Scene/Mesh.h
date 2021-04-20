@@ -190,6 +190,8 @@ public:
 
     // Project SwitchDS
     DSMesh& GetDSMesh() { return currMesh; }
+   
+
 
     std::vector<std::pair<float, std::string>> PickVertices(const tc::Ray& localRay);
     std::vector<std::pair<float, std::string>> PickFaces(const tc::Ray& localRay); // Randy added on 10/10 for face selection

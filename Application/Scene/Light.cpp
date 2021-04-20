@@ -20,7 +20,6 @@ void CLight::MarkDirty()
 bool CLight::IsInstantiable() { return true; }
 
 bool CLight::IsMesh() {
-    renderType = LIGHT;
     return false;
 }
 

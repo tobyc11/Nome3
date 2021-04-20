@@ -8,7 +8,6 @@
 namespace Flow::Viz
 {
 
-class CFlowViz;
 class CConnector;
 
 class CNode : public QGraphicsItem

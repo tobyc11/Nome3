@@ -30,7 +30,7 @@ public:
     explicit CLight(std::string name)
         : CEntity(std::move(name))
     {
-
+        renderType = LIGHT;
     }
 
 

@@ -29,7 +29,9 @@ DEFINE_META_OBJECT(CGenImplicitSurf)
     BindPositionalArgument(&CGenImplicitSurf::y_end, 1, 3);
     BindPositionalArgument(&CGenImplicitSurf::z_start, 1, 4);
     BindPositionalArgument(&CGenImplicitSurf::z_end, 1, 5);
-    BindPositionalArgument(&CGenImplicitSurf::num_segs, 1, 6);
+    BindPositionalArgument(&CGenImplicitSurf::num_segs_x, 1, 6);
+    BindPositionalArgument(&CGenImplicitSurf::num_segs_y, 1, 7);
+    BindPositionalArgument(&CGenImplicitSurf::num_segs_z, 1, 8);
 }
 
 void CGenImplicitSurf::UpdateEntity()
@@ -45,7 +47,9 @@ void CGenImplicitSurf::UpdateEntity()
     double yEnd = (double)y_end.GetValue(0.0f);
     double zStart = (double)z_start.GetValue(0.0f);
     double zEnd = (double)z_end.GetValue(0.0f);
-    int numSegs = (int)num_segs.GetValue(0.0f);
+    int numSegsX = (int)num_segs_x.GetValue(0.0f);
+    int numSegsY = (int)num_segs_y.GetValue(0.0f);
+    int numSegsZ = (int)num_segs_z.GetValue(0.0f);
 
 
     std::string funcStr = this->GetName(); // ex. funcStr := z(x,y) = "(x^4)+(y^4)+(z^4)+(-5)*((x^2)+(y^2)+(z^2))+11.8"
@@ -65,30 +69,30 @@ void CGenImplicitSurf::UpdateEntity()
 
 
     // runs marching cube algo and then creates vertices & faces
-    runMarchingCubes(numSegs, xStart, yStart, zStart, xEnd, yEnd, zEnd);
+    runMarchingCubes(numSegsX, numSegsY, numSegsZ, xStart, yStart, zStart, xEnd, yEnd, zEnd);
 
 }
 
-void CGenImplicitSurf::runMarchingCubes(int gridSize,
+void CGenImplicitSurf::runMarchingCubes(int gridSizeX, int gridSizeY, int gridSizeZ,
                                             double xMin, double yMin, double zMin,
                                             double xMax, double yMax, double zMax)
 {
-    double deltaX = (xMax-xMin)/((double)(gridSize-1));
-    double deltaY = (yMax-yMin)/((double)(gridSize-1));
-    double deltaZ = (zMax-zMin)/((double)(gridSize-1));
+    double deltaX = (xMax-xMin)/((double)(gridSizeX-1));
+    double deltaY = (yMax-yMin)/((double)(gridSizeY-1));
+    double deltaZ = (zMax-zMin)/((double)(gridSizeZ-1));
 
     Gridcell grid;
     std::vector <Xyz> vertex(15);
     std::vector <Triangle> Triangles(10);
     int count[2] = {0,0};
 
-    for (int i = 0; i<gridSize; i++){
+    for (int i = 0; i<gridSizeX; i++){
         grid.p[0].x = xMin + i*deltaX; grid.p[1].x = xMin + (i+1)*deltaX; grid.p[2].x = xMin +(i+1)*deltaX; grid.p[3].x = xMin +i*deltaX;
         grid.p[4].x = xMin +i*deltaX; grid.p[5].x = xMin +(i+1)*deltaX; grid.p[6].x = xMin +(i+1)*deltaX; grid.p[7].x = xMin +i*deltaX;
-        for (int j = 0; j<gridSize; j++){
+        for (int j = 0; j<gridSizeY; j++){
             grid.p[0].y = yMin +j*deltaY; grid.p[1].y = yMin +j*deltaY; grid.p[2].y = yMin +(j+1)*deltaY; grid.p[3].y =yMin + (j+1)*deltaY;
             grid.p[4].y =yMin + j*deltaY; grid.p[5].y = yMin +j*deltaY; grid.p[6].y =yMin + (j+1)*deltaY; grid.p[7].y = yMin +(j+1)*deltaY;
-            for (int k = 0; k<gridSize; k++){
+            for (int k = 0; k<gridSizeZ; k++){
 
                 grid.p[0].z =zMin + k*deltaZ; grid.p[1].z = zMin +k*deltaZ; grid.p[2].z = zMin +k*deltaZ; grid.p[3].z = zMin +k*deltaZ;
                 grid.p[4].z = zMin +(k+1)*deltaZ; grid.p[5].z = zMin +(k+1)*deltaZ; grid.p[6].z =zMin + (k+1)*deltaZ; grid.p[7].z =zMin + (k+1)*deltaZ;

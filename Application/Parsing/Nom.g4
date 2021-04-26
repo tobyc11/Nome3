@@ -91,7 +91,7 @@ command
    | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
    | open='gencartesiansurf' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endgencartesiansurf' # CmdExprListOne
    | open='genparametricsurf' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endgenparametricsurf' # CmdExprListOne
-   | open='genimplicitsurf' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endgenimplicitsurf' # CmdExprListOne
+   | open='genimplicitsurf' name=ident LPAREN expression expression expression expression expression expression expression expression expression RPAREN end='endgenimplicitsurf' # CmdExprListOne
    | open='beziercurve' name=ident idList argSegs* end='endbeziercurve' # CmdIdListOne
    | open='bspline' name=ident argOrder* idList argSegs* end='endbspline' # CmdIdListOne
    | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance

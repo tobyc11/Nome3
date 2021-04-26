@@ -43,7 +43,9 @@ class CGenImplicitSurf : public CMesh
     DEFINE_INPUT(float, y_end) { MarkDirty(); }
     DEFINE_INPUT(float, z_start) { MarkDirty(); }
     DEFINE_INPUT(float, z_end) { MarkDirty(); }
-    DEFINE_INPUT(float, num_segs) { MarkDirty(); }
+    DEFINE_INPUT(float, num_segs_x) { MarkDirty(); }
+    DEFINE_INPUT(float, num_segs_y) { MarkDirty(); }
+    DEFINE_INPUT(float, num_segs_z) { MarkDirty(); }
 
 public:
     DECLARE_META_CLASS(CGenImplicitSurf, CMesh);
@@ -58,7 +60,7 @@ public:
 
 private:
     double functionXyz(double x, double y, double z);
-    void runMarchingCubes(int gridSize, double xMin, double yMin, double zMin, double xMax, double yMax, double zMax);
+    void runMarchingCubes(int gridSizeX, int gridSizeY, int gridSizeZ, double xMin, double yMin, double zMin, double xMax, double yMax, double zMax);
     void addVerticesAndFaces(std::vector <Xyz> vertex, std::vector <Triangle> Triangles, int nv, int nt);
 
     expression_t expression;

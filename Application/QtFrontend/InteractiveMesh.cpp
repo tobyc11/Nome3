@@ -25,7 +25,7 @@ CInteractiveMesh::CInteractiveMesh(Scene::CSceneTreeNode* node)
     , PointGeometry {}
     , PointRenderer {}
 {
-    InstanceColor = { 95.0 / 255.0, 75.0 / 255.0, 139.0 / 255.0 };
+    InstanceColor = { 255.0 / 255.0, 165.0 / 255.0, 0.0 }; // Prof prefers orange
     UpdateTransform();
     UpdateMaterial(false); // false = don't show facets by default
     UpdateGeometry(false); // false = don't show vert boxes by default

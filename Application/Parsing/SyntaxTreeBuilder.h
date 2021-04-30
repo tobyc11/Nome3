@@ -26,8 +26,6 @@ public:
     antlrcpp::Any visitArgOrder(NomParser::ArgOrderContext* context) override;
     antlrcpp::Any visitArgTransformTwo(NomParser::ArgTransformTwoContext* context) override;
     antlrcpp::Any visitArgTransformOne(NomParser::ArgTransformOneContext* context) override;
-    antlrcpp::Any visitArgTranslate(NomParser::ArgTranslateContext* context) override;
-    antlrcpp::Any visitArgRotate(NomParser::ArgRotateContext* context) override;
     antlrcpp::Any visitArgColor(NomParser::ArgColorContext* context) override;
     antlrcpp::Any visitArgControlRotate(NomParser::ArgControlRotateContext* context) override;
     antlrcpp::Any visitArgControlScale(NomParser::ArgControlScaleContext* context) override;

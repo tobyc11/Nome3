@@ -1,11 +1,17 @@
 #pragma once
-#include "Entity.h"
 #include <QColor>
+#include <QRect>
+#include "Entity.h"
 
 
 namespace Nome::Scene
 {
-    class CBackground : public CEntity {
+
+    class CWindow : public CEntity {
+        DEFINE_INPUT(float, origin_x) { MarkDirty(); }
+        DEFINE_INPUT(float, origin_y) { MarkDirty(); }
+        DEFINE_INPUT(float, width) { MarkDirty(); }
+        DEFINE_INPUT(float, length) { MarkDirty(); }
         DEFINE_INPUT(float, R) { MarkDirty(); }
         DEFINE_INPUT(float, G) { MarkDirty(); }
         DEFINE_INPUT(float, B) { MarkDirty(); }
@@ -13,9 +19,9 @@ namespace Nome::Scene
         void UpdateEntity() override;
 
     public:
-        DECLARE_META_CLASS(CBackground, CEntity);
-        CBackground() = default;
-        explicit CBackground(const std::string& name)
+        DECLARE_META_CLASS(CWindow, CEntity);
+        CWindow() = default;
+        explicit CWindow(const std::string& name)
                 : CEntity(std::move(name))
         {
         }
@@ -25,7 +31,8 @@ namespace Nome::Scene
         CEntity* Instantiate(CSceneTreeNode* treeNode) override;
 
     public:
-        QColor background;
+        QColor Background;
+        QRectF window;
 
     private:
         CSceneTreeNode* SceneTreeNode;

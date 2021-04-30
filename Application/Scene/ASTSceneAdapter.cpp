@@ -58,7 +58,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
     { "torusknot", ECommandKind::Entity },   { "torus", ECommandKind::Entity },
     { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
-    { "surface", ECommandKind::Entity },     { "background", ECommandKind::Entity },
+    { "surface", ECommandKind::Entity },     { "window", ECommandKind::Entity },
     { "foreground", ECommandKind::Dummy },   { "insidefaces", ECommandKind::Dummy },
     { "outsidefaces", ECommandKind::Dummy }, { "offsetfaces", ECommandKind::Dummy },
     { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
@@ -131,8 +131,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CGenParametricSurf(name);
     else if (cmd == "light")
         return new CLight(name);
-    else if (cmd == "background")
-        return new CBackground(name);
+    else if (cmd == "window")
+        return new CWindow(name);
     else if (cmd == "camera")
         return new CCamera(name);
     else if (cmd == "genimplicitsurf")
@@ -266,7 +266,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 if (!expr)
                     std::cout << "Haven't detected the camera projection type" << std::endl;
                 else
-                    camera->projectionType = static_cast<const AST::AIdent*>(expr)->ToString();
+                    camera->GetCamera().type = static_cast<const AST::AIdent*>(expr)->ToString();
             }
             if (auto* viewport = dynamic_cast<CViewport*>(entity.Get())) {
                 auto* cameraId = cmd->GetNamedArgument("cameraID");

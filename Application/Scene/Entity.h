@@ -59,7 +59,7 @@ public:
 class CEntity : public Flow::CFlowNode
 {
 public:
-    enum RenderType {LIGHT, CAMERA, BACKGROUND, VIEWPORT};
+    enum RenderType {LIGHT, CAMERA, WINDOW, VIEWPORT};
     // This chunk should be kept in sync with DECLARE_META_CLASS above
     // except some changes for CEntity being the root of all entities
     class CMetaClass : public IMetaClass, public CASTBinding<CEntity, false>

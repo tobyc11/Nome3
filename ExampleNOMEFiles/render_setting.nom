@@ -55,14 +55,13 @@ endgroup
 camera cam  ## camera type
   projection NOME_PERSPECTIVE ### NOTICE: SLF_PERSPECTIVE->NOME_PERSPECTIVE
   frustum ( -0.2 -0.2 -4 0.2 0.2 -0.01 ) ### NOTICE: NO BRACKETS( -0.2 -0.2 -4 ) ( 0.2 0.2 -0.01 )
-  crotate (0 1 0)({expr $sw_camangle})
-  ctranslate ( 0.0 0.0 1.00 )  # NOTICE: camera specific rotate and translate
 endcamera
 
 group gCam  ## the cameras used
   instance cam
     id righteye
-
+    rotate (0 1 0)({expr $sw_camangle})
+    translate ( 0.0 0.0 1.00 )  # NOTICE: camera specific rotate and translate
   endinstance
 
   instance cam
@@ -78,12 +77,12 @@ window display  ## select a part of the computer screen
   background (0.l 0.8 0.9)  ## a light blue
 endwindow
 
-viewport rightview display  ## select the left half of the display window
+viewport rightview  ## select the left half of the display window
   origin (0 0)
   size (0.5 1)
 endviewport
 
-viewport leftview display  ## select the right half of the display window
+viewport leftview  ## select the right half of the display window
   origin (0.5 0)
   size (0.5 1)
 endviewport
@@ -95,11 +94,7 @@ render rightview  ## rendering for the right camera ### TODO:support this?
   light world.main_amb.amb
 endrender
 
-render leftview  ## rendering for the left camera
-  gCam.lefteye.cam world
-  light world.left_sun.sun
-  light world.main_amb.amb
-endrender
+
 
 ## Both these cameras have their own crystal ball interface.
 ##   They could be manipulated individually.

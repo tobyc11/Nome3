@@ -41,6 +41,7 @@ void CInteractiveMesh::UpdateTransform()
     }
     const auto& tf = SceneTreeNode->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
     QMatrix4x4 qtf { tf.ToMatrix4().Data() };
+
     Transform->setMatrix(qtf);
 }
 

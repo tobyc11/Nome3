@@ -7,10 +7,10 @@ namespace Nome::Scene
 
 class CViewport : public CEntity
 {
-DEFINE_INPUT(float, rect_x1) { MarkDirty(); }
-DEFINE_INPUT(float, rect_x2) { MarkDirty(); }
-DEFINE_INPUT(float, rect_y1) { MarkDirty(); }
-DEFINE_INPUT(float, rect_y2) { MarkDirty(); }
+    DEFINE_INPUT(float, origin_x) { MarkDirty(); }
+    DEFINE_INPUT(float, origin_y) { MarkDirty(); }
+    DEFINE_INPUT(float, length) { MarkDirty(); }
+    DEFINE_INPUT(float, width) { MarkDirty(); }
 
 public:
     DECLARE_META_CLASS(CViewport, CEntity);

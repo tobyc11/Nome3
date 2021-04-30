@@ -55,8 +55,6 @@ argTransform
    | 'scale' LPAREN expression expression expression RPAREN # argTransformOne
    | 'translate' LPAREN expression expression expression RPAREN # argTransformOne
    ;
-argRotate : 'crotate' LPAREN exp1=expression exp2=expression exp3=expression RPAREN LPAREN exp4=expression RPAREN;
-argTranslate : 'ctranslate' LPAREN expression expression expression RPAREN;
 
 argColor : 'color' LPAREN expression expression expression RPAREN ;
 argControlRotate : 'rotate' vector3 ;
@@ -99,7 +97,7 @@ command
    | open='bspline' name=ident argOrder* idList argSegs* end='endbspline' # CmdIdListOne
    | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
    | open='surface' name=ident argColor end='endsurface' # CmdSurface
-   | open='window' name=ident argOrigin* argSize* argBackground* end='endwindow' # CmdWindow
+   | open='window' name=ident argOrigin argSize argBackground end='endwindow' # CmdWindow
    | open='foreground' argSurface end='endforeground' # CmdArgSurface
    | open='insidefaces' argSurface end='endinsidefaces' # CmdArgSurface
    | open='outsidefaces' argSurface end='endoutsidefaces' # CmdArgSurface
@@ -114,8 +112,8 @@ command
    | open='offset' name=ident argOffsetFlag* argHeight* argWidth* command* end='endoffset' # CmdOffset
    | open='include' name=ident end='endinclude' # CmdInclude
    | open='light' name=ident argLightType argLightColor end='endlight' # CmdLight
-   | open='camera' name=ident argCameraProjection argCameraFrustum argTranslate* argRotate* end='endcamera' #CmdCamera
-   | open='viewport' name=ident argCameraID LPAREN expression expression expression expression RPAREN end='endviewport' #CmdViewport
+   | open='camera' name=ident argCameraProjection argCameraFrustum end='endcamera' #CmdCamera
+   | open='viewport' name=ident argCameraID argOrigin argSize end='endviewport' #CmdViewport
    ;
 
 

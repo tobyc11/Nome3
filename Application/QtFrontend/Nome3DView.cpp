@@ -12,6 +12,7 @@
 #include <QBuffer>
 #include <Scene/Camera.h>
 #include <Scene/Viewport.h>
+#include <Scene/Window.h>
 
 
 namespace Nome
@@ -91,9 +92,16 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
                     light->setParent(this->Root);
                     InteractiveLights.insert(light);
                     node->SetEntityUpdated(false);
-                } else if (entity->renderType == Scene::CEntity::BACKGROUND) {
-                    auto* background = dynamic_cast<Scene::CBackground*>(entity);
-                    this->defaultFrameGraph()->setClearColor(background->background);
+                } else if (entity->renderType == Scene::CEntity::WINDOW) {
+                    auto* window = dynamic_cast<Scene::CWindow*>(entity);
+                    auto &w = window->window;
+                    int m_w = this->maximumWidth();
+                    int m_h = this->maximumHeight();
+                    QRect adapt_w = QRect(w.x() * m_w, w.y() * m_h,
+                                          w.width() * m_w, w.height() * m_h);
+                    this->setGeometry(adapt_w);
+
+                    this->defaultFrameGraph()->setClearColor(window->Background);
                     node->SetEntityUpdated(false);
                 } else if (entity->renderType == Scene::CEntity::VIEWPORT) {
                     auto* viewport = dynamic_cast<Scene::CViewport*>(entity);
@@ -144,14 +152,9 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
                             cameraSet.emplace(camMap.first, cam);
                         }
                     }
-                    cam->setPosition(camera->translation);
-                    cam->setUpVector(QVector3D(0, 0, 1));
-                    cam->setViewCenter(QVector3D(0, 0, 0));
-                    cam->rotateAboutViewCenter(camera->rotation);
-                    if (camera->projectionType == "NOME_ORTHOGRAPHIC")
+
+                    if (camera->projectionType == "NOME_PERSPECTIVE")
                         cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
-                    else if (camera->projectionType == "NOME_PERSPECTIVE")
-                        cam->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
                     else if (camera->projectionType == "NOME_FRUSTUM")
                         cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
 
@@ -243,11 +246,11 @@ void CNome3DView::PostSceneUpdate()
                         aliveSetLight.insert(light);
                         InteractiveLights.insert(light);
                     }
-                } else if (entity->renderType == Scene::CEntity::BACKGROUND) {
+                } else if (entity->renderType == Scene::CEntity::WINDOW) {
                     if (node->WasEntityUpdated())
                     {
-                        auto* background = dynamic_cast<Scene::CBackground*>(entity);
-                        this->defaultFrameGraph()->setClearColor(background->background);
+                        auto* window = dynamic_cast<Scene::CWindow*>(entity);
+                        this->defaultFrameGraph()->setClearColor(window->background);
                         node->SetEntityUpdated(false);
                     }
                 } else if (entity->renderType == Scene::CEntity::CAMERA) {
@@ -262,12 +265,11 @@ void CNome3DView::PostSceneUpdate()
                                 cam = camMap.second;
                             }
                         }
-                        if (camera->projectionType == "NOME_ORTHOGRAPHIC")
+                        if (camera->projectionType == "NOME_PERSPECTIVE")
                             cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
-                        else if (camera->projectionType == "NOME_PERSPECTIVE")
-                            cam->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
                         else if (camera->projectionType == "NOME_FRUSTUM")
                             cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
+
                         cam->setPosition(camera->translation);
                         cam->setUpVector(QVector3D(0, 0, 1));
                         cam->setViewCenter(QVector3D(0, 0, 0));

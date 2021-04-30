@@ -1,4 +1,4 @@
-#include "Background.h"
+#include "Window.h"
 
 namespace Nome::Scene
 {

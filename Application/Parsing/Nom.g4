@@ -66,6 +66,9 @@ argAzimuth : 'azimuth' expression ;
 argTwist : 'twist' expression ;
 argReverse : 'reverse' ;
 argMintorsion : 'mintorsion' ;
+argOrigin : 'origin' LPAREN expression expression RPAREN;
+argSize : 'size' LPAREN expression expression RPAREN;
+argBackground : 'background' LPAREN expression expression expression RPAREN;
 
 command
    : open='point' name=ident LPAREN expression expression expression RPAREN end='endpoint' # CmdExprListOne
@@ -96,7 +99,7 @@ command
    | open='bspline' name=ident argOrder* idList argSegs* end='endbspline' # CmdIdListOne
    | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
    | open='surface' name=ident argColor end='endsurface' # CmdSurface
-   | open='background' name=ident LPAREN expression expression expression RPAREN end='endbackground' # CmdExprListOne
+   | open='window' name=ident argOrigin* argSize* argBackground* end='endwindow' # CmdWindow
    | open='foreground' argSurface end='endforeground' # CmdArgSurface
    | open='insidefaces' argSurface end='endinsidefaces' # CmdArgSurface
    | open='outsidefaces' argSurface end='endoutsidefaces' # CmdArgSurface

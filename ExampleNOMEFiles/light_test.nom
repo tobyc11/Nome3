@@ -43,13 +43,13 @@ endlight
 camera cam1
  projection NOME_PERSPECTIVE
  frustum ({expr $slider.cam_fieldOfView} {expr $slider.cam_aspect} {expr $slider.cam_nearPlane} {expr $slider.cam_farPlane}  )
-  ctranslate ( 0.0 0.0 1.00 )  crotate (0 1 0)({expr $slider.camangle})
+  ctranslate ( 0.0 0.0 3.00 )  crotate (0 1 0)({expr $slider.camangle})
 endcamera
 
 camera cam2
  projection NOME_PERSPECTIVE
  frustum ({expr $slider.cam_fieldOfView} {expr $slider.cam_aspect} {expr $slider.cam_nearPlane} {expr $slider.cam_farPlane}  )
- ctranslate ( 0.0 0.0 1.00 )  crotate (0 1 0)({expr -$slider.camangle})
+ ctranslate ( 0.0 0.0 3.00 )  crotate (0 1 0)({expr -$slider.camangle})
 endcamera
 
 viewport vp1

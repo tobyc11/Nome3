@@ -1,9 +1,9 @@
 #pragma once
 #include "DebugDraw.h"
-#include "InteractiveMesh.h"
 #include "InteractiveLight.h"
-#include "Scene/Background.h"
+#include "InteractiveMesh.h"
 #include "OrbitTransformController.h"
+#include "Scene/Window.h"
 #include <Ray.h>
 #include <Scene/Scene.h>
 

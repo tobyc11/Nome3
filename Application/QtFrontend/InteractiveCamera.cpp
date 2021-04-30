@@ -32,20 +32,32 @@ void CInteractiveCamera::UpdateCamera()
     if (entity)
     {
         auto CameraInstance = dynamic_cast<Scene::CCamera*>(entity)->GetCamera();
+        name = entity->GetNameWithoutPrefix();
+
         if (CameraInstance.type == "NOME_PERSPECTIVE") {
             if (!Camera)
-                Camera = new Qt3DRender::QDirectionalCamera();
-            Camera->setColor(CameraInstance.color);
-            type = DirectionalCamera;
-        } else if (CameraInstance.type == "NOME_AMBIENT") {
-            Color = CameraInstance.color;
-            type = AmbientCamera;
+                Camera = new Qt3DRender::QCamera();
+            Camera->lens()->setOrthographicProjection(CameraInstance.para[0],
+                                                      CameraInstance.para[1],
+                                                      CameraInstance.para[2],
+                                                      CameraInstance.para[3],
+                                                      CameraInstance.para[4],
+                                                      CameraInstance.para[5]);
+
+            type = Perspective;
+        } else if (CameraInstance.type == "NOME_FRUSTUM") {
+            Camera->lens()->setFrustumProjection(CameraInstance.para[0],
+                                                 CameraInstance.para[1],
+                                                 CameraInstance.para[2],
+                                                 CameraInstance.para[3],
+                                                 CameraInstance.para[4],
+                                                 CameraInstance.para[5]);
+
+            type = FRUSTUM;
         }
         else
         {
-            std::cout << "The entity is not a Camera instance, we don't know how to handle it. For "
-                         "example, if you try to instanciate a face, it'll generate this "
-                         "placeholder sphere."
+            std::cout << "The entity is not a Camera instance, we don't know how to handle it."
                       << std::endl;
         }
     }

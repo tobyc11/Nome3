@@ -25,6 +25,7 @@ public:
 public:
     Qt3DRender::QCamera* Camera = nullptr;
     CameraType type;
+    std::string name;
 
 
 private:

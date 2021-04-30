@@ -64,6 +64,8 @@ CNome3DView::CNome3DView()
     sphereRotateTransformAnimation->setLoopCount(-1);
 
     Root->addComponent(sphereTransform);
+    mainView = new Qt3DRender::QViewport(ss);
+    clearBuffers = new Qt3DRender::QClearBuffers(mainView);
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -102,15 +104,15 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
                     this->setGeometry(adapt_w);
 
                     this->defaultFrameGraph()->setClearColor(window->Background);
+                    clearBuffers->setClearColor(window->Background);
                     node->SetEntityUpdated(false);
                 } else if (entity->renderType == Scene::CEntity::VIEWPORT) {
                     auto* viewport = dynamic_cast<Scene::CViewport*>(entity);
                     if (this->activeFrameGraph() == this->defaultFrameGraph()) {
                         this->setActiveFrameGraph(ss);
                         this->renderSettings()->setActiveFrameGraph(ss);
-                        mainView = new Qt3DRender::QViewport(ss);
+
                         mainView->setNormalizedRect(QRectF(0, 0, 1, 1));
-                        clearBuffers = new Qt3DRender::QClearBuffers(mainView);
                         clearBuffers->setBuffers(Qt3DRender::QClearBuffers::ColorDepthBuffer);
                         clearBuffers->setClearColor(QColor(QRgb(0x4d4d4f)));
                         auto *noDraw = new Qt3DRender::QNoDraw(clearBuffers);
@@ -141,23 +143,10 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
             if (!entity->IsMesh())
             {
                 if (entity->renderType == Scene::CEntity::CAMERA) {
-                    auto* camera = dynamic_cast<Scene::CCamera*>(entity);
-                    auto para = camera->para;
-                    Qt3DRender::QCamera* cam;
-                    for (auto camMap : camViewMap)  {
-                        if (camMap.first == camera->GetNameWithoutPrefix())
-                        {
-                            cam = new Qt3DRender::QCamera;
-                            camMap.second->setCamera(cam);
-                            cameraSet.emplace(camMap.first, cam);
-                        }
-                    }
-
-                    if (camera->projectionType == "NOME_PERSPECTIVE")
-                        cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
-                    else if (camera->projectionType == "NOME_FRUSTUM")
-                        cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
-
+                    // Create an InteractiveLight from the scene node
+                    auto *camera = new CInteractiveCamera(node);
+                    camera->setParent(this->Root);
+                    InteractiveCameras.insert(camera);
                     node->SetEntityUpdated(false);
                 }
             }
@@ -190,7 +179,13 @@ void CNome3DView::UnloadScene()
     InteractiveMeshes.clear();
     for (auto* l : InteractiveLights)
         delete l;
+    for (auto* c : InteractiveCameras)
+        delete c;
     InteractiveLights.clear();
+    InteractiveCameras.clear();
+
+    this->renderSettings()->setActiveFrameGraph(this->defaultFrameGraph());
+
     Scene = nullptr;
 }
 
@@ -201,14 +196,18 @@ void CNome3DView::PostSceneUpdate()
     bool bUpdateScene = false;
     std::unordered_map<CSceneTreeNode*, CInteractiveMesh*> sceneMeshAssoc;
     std::unordered_map<CSceneTreeNode*, CInteractiveLight*> sceneLightAssoc;
+    std::unordered_map<CSceneTreeNode*, CInteractiveCamera*> sceneCameraAssoc;
 
     std::unordered_set<CInteractiveMesh*> aliveSetMesh;
     std::unordered_set<CInteractiveLight*> aliveSetLight;
+    std::unordered_set<CInteractiveCamera*> aliveSetCamera;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> aliveEntityDrawData;
     for (auto* m : InteractiveMeshes)
         sceneMeshAssoc.emplace(m->GetSceneTreeNode(), m);
     for (auto* l : InteractiveLights)
         sceneLightAssoc.emplace(l->GetSceneTreeNode(), l);
+    for (auto* c : InteractiveCameras)
+        sceneCameraAssoc.emplace(c->GetSceneTreeNode(), c);
 
     Scene->ForEachSceneTreeNode([&](CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
@@ -250,31 +249,45 @@ void CNome3DView::PostSceneUpdate()
                     if (node->WasEntityUpdated())
                     {
                         auto* window = dynamic_cast<Scene::CWindow*>(entity);
-                        this->defaultFrameGraph()->setClearColor(window->background);
+                        /// auto*
+                        this->defaultFrameGraph()->setClearColor(window->Background);
+                        clearBuffers->setClearColor(window->Background);
                         node->SetEntityUpdated(false);
+
                     }
                 } else if (entity->renderType == Scene::CEntity::CAMERA) {
-                    if (node->WasEntityUpdated())
+                    /// add and update camera
+                    CInteractiveCamera* camera;
+                    // Check for existing InteractiveMesh
+                    auto iter = sceneCameraAssoc.find(node);
+                    if (iter != sceneCameraAssoc.end())
                     {
-                        auto* camera = dynamic_cast<Scene::CCamera*>(entity);
-                        auto para = camera->para;
-                        Qt3DRender::QCamera* cam;
-                        for (const auto& camMap : cameraSet)  {
-                            if (camMap.first == camera->GetNameWithoutPrefix())
-                            {
-                                cam = camMap.second;
+                        // Found existing InteractiveMesh, mark as alive
+                        camera = iter->second;
+                        aliveSetCamera.insert(camera);
+                        camera->UpdateTransform();
+                        if (node->WasEntityUpdated())
+                        {
+                            camera->UpdateCamera();
+                            bUpdateScene = true;
+                            printf("Delivering the rendering camera of the scene %s\n", node->GetPath().c_str());
+                            node->SetEntityUpdated(false);
+                            for (auto camMap : camViewMap)  {
+                                if (camMap.first == camera->name)
+                                {
+                                    camera->Camera = new Qt3DRender::QCamera;
+                                    camMap.second->setCamera(camera->Camera);
+                                    cameraSet.emplace(camMap.first, camera->Camera);
+                                }
                             }
                         }
-                        if (camera->projectionType == "NOME_PERSPECTIVE")
-                            cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
-                        else if (camera->projectionType == "NOME_FRUSTUM")
-                            cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
-
-                        cam->setPosition(camera->translation);
-                        cam->setUpVector(QVector3D(0, 0, 1));
-                        cam->setViewCenter(QVector3D(0, 0, 0));
-                        cam->rotateAboutViewCenter(camera->rotation);
-                        node->SetEntityUpdated(false);
+                    }
+                    else
+                    {
+                        camera = new CInteractiveCamera(node);
+                        camera->setParent(this->Root);
+                        aliveSetCamera.insert(camera);
+                        InteractiveCameras.insert(camera);
                     }
                 } else if (entity->renderType == Scene::CEntity::VIEWPORT) {
                     // TODO:may add the viewport change capability
@@ -367,6 +380,17 @@ void CNome3DView::PostSceneUpdate()
         }
     }
     InteractiveLights = std::move(aliveSetLight);
+
+    for (auto* c : InteractiveCameras)
+    {
+        auto iter = aliveSetCamera.find(c);
+        if (iter == aliveSetCamera.end())
+        {
+            // Not in aliveSetMesh
+            delete c;
+        }
+    }
+    InteractiveCameras = std::move(aliveSetCamera);
 
     // Kill all entity debug draws that are not alive
     for (auto& iter : EntityDrawData)

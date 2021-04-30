@@ -47,7 +47,7 @@ group world
   instance sun
     id left_sun
     rotate (0 1 0) (-45)
-    rotate (0 0 1) (-60) ### TODO: 2rotations?
+    rotate (0 0 1) (-60)
   endinstance
 endgroup
 
@@ -88,7 +88,7 @@ viewport leftview  ## select the right half of the display window
 endviewport
 
 
-render rightview  ## rendering for the right camera ### TODO:support this?
+render rightview  ## rendering for the right camera ### TODO: not supported
   gCam.righteye.cam world
   light world.left_sun.sun
   light world.main_amb.amb

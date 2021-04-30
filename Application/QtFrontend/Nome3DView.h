@@ -1,5 +1,6 @@
 #pragma once
 #include "DebugDraw.h"
+#include "InteractiveCamera.h"
 #include "InteractiveLight.h"
 #include "InteractiveMesh.h"
 #include "OrbitTransformController.h"
@@ -72,6 +73,7 @@ public:
     bool PickPolylineBool = false; // Randy added on 12/22
     bool RenderRayBool = false; // Randy added on 2/26
     std::unordered_set<CInteractiveLight*> InteractiveLights;
+    std::unordered_set<CInteractiveCamera*> InteractiveCameras;
 
 protected:
     // Xinyu added on Oct 8 for rotation

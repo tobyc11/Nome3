@@ -343,6 +343,12 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         auto entityName = cmd->GetPositionalIdentAsString(1);
         auto entity = GEnv.Scene->FindEntity(entityName);
 
+        // <CMeshInstance> entity . check to see if this cast works
+        // use the casted object, which is successfully casted as a CMesh instance 
+        // so now just do dsMesh = entity.GetDSMesh() 
+        // dsMesh.faces, dsMesh.edgeList, 
+        
+
         if (entity)
             sceneNode->SetEntity(entity); // This line is very important. It attaches an entity
                                           // (e.g. mesh) to the scene node

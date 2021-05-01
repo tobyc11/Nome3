@@ -1,12 +1,12 @@
 #include "SourceManager.h"
+#include "../QtFrontend/ResourceMgr.h"
 #include "NomLexer.h"
 #include "NomParser.h"
 #include "SyntaxTreeBuilder.h"
 #include "antlr4-runtime.h"
-#include "../QtFrontend/ResourceMgr.h"
-#include <unordered_map>
 #include <fstream>
 #include <stack>
+#include <unordered_map>
 #include <utility>
 
 namespace Nome
@@ -28,7 +28,7 @@ private:
                      size_t charPositionInLine, const std::string& msg,
                      std::exception_ptr e) override
     {
-        //std::cout << "line " << line << ":" << charPositionInLine << " " << msg << std::endl;
+        // std::cout << "line " << line << ":" << charPositionInLine << " " << msg << std::endl;
         bDidErrorHappen = true;
     }
 };
@@ -38,8 +38,8 @@ CSourceManager::CSourceManager(std::string mainSource)
 {
 }
 
-
-bool CSourceManager::ParseMainSource() {
+bool CSourceManager::ParseMainSource()
+{
     std::ifstream ifs(MainSource);
     std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     ifs.close();
@@ -62,106 +62,131 @@ bool CSourceManager::ParseMainSource() {
     ASTContext.SetAstRoot(ASTRoot);
 
     std::cout << "====== Debug Print AST ======" << std::endl;
-    //std::cout << *ASTRoot;
+    // std::cout << *ASTRoot;
     std::cout << "====== End Debug Print AST ======" << std::endl;
 
     return !errorListener.bDidErrorHappen;
 }
-bool CSourceManager::balancedbracket(std::string codeline) {   
-    std::stack<char> stk; 
-    char x; 
+bool CSourceManager::balancedbracket(std::string codeline)
+{
+    std::stack<char> stk;
+    char x;
 
-    for (int i = 0; i < codeline.length(); i++) { 
-        if (codeline[i] == '(' || codeline[i] == '[' || codeline[i] == '{') { 
-            stk.push(codeline[i]); 
-            continue; 
-        } 
-        switch (codeline[i]) { 
-        case ')': 
-            if (stk.empty()) {
+    for (int i = 0; i < codeline.length(); i++)
+    {
+        if (codeline[i] == '(' || codeline[i] == '[' || codeline[i] == '{')
+        {
+            stk.push(codeline[i]);
+            continue;
+        }
+        switch (codeline[i])
+        {
+        case ')':
+            if (stk.empty())
+            {
                 return false;
             }
-            x = stk.top(); 
-            stk.pop(); 
-            if (x == '{' || x == '[') 
-                return false; 
-            break; 
-        case '}': 
-            if (stk.empty()) {
+            x = stk.top();
+            stk.pop();
+            if (x == '{' || x == '[')
+                return false;
+            break;
+        case '}':
+            if (stk.empty())
+            {
                 return false;
             }
-            x = stk.top(); 
-            stk.pop(); 
-            if (x == '(' || x == '[') 
-                return false; 
-            break; 
-        case ']': 
-            if (stk.empty()) {
+            x = stk.top();
+            stk.pop();
+            if (x == '(' || x == '[')
+                return false;
+            break;
+        case ']':
+            if (stk.empty())
+            {
                 return false;
             }
-            x = stk.top(); 
-            stk.pop(); 
-            if (x == '(' || x == '{') 
-                return false; 
-            break; 
-        } 
-    } 
-    return (stk.empty()); 
-} 
-void CSourceManager::ReportErros(std::string code) {
-    size_t pos = 0; 
+            x = stk.top();
+            stk.pop();
+            if (x == '(' || x == '{')
+                return false;
+            break;
+        }
+    }
+    return (stk.empty());
+}
+void CSourceManager::ReportErros(std::string code)
+{
+    size_t pos = 0;
     std::string delimiter = "\n";
-    std::string token; 
+    std::string token;
     std::vector<std::vector<std::string>> parsedcode;
-    std::string delimiter2 = " "; 
-    std::string token2; 
+    std::string delimiter2 = " ";
+    std::string token2;
     std::unordered_map<std::string, std::string> shapemap;
     std::unordered_map<std::string, std::string> idmap;
     std::unordered_map<std::string, std::string> referencemap;
     std::string thepath = CResourceMgr::Get().Find("DebugDrawLine.xml");
     std::string basepath = thepath.substr(0, 43);
-    std::ifstream file (basepath + "Parsing/Nom.g4");
-    if (file.is_open()) {
+    std::ifstream file(basepath + "Parsing/Nom.g4");
+    if (file.is_open())
+    {
         std::string line;
-        while (std::getline(file, line)) {
+        while (std::getline(file, line))
+        {
             std::vector<std::string> spaces;
             std::string str = line.c_str();
-            size_t pos = 0; 
-            while ((pos = str.find(delimiter2)) != std::string::npos) {
+            size_t pos = 0;
+            while ((pos = str.find(delimiter2)) != std::string::npos)
+            {
                 token = str.substr(0, pos);
                 str.erase(0, pos + delimiter.length());
                 spaces.push_back(token);
             }
-            for (int i = 0; i < spaces.size(); i++) {
+            for (int i = 0; i < spaces.size(); i++)
+            {
                 std::string keyword;
                 std::string endword;
-                if (spaces[i].find("open=") != std::string::npos) {
-                    int start = 0; int end = 0;
-                    for (int k = 0; k < spaces[i].size(); k++) {
-                        if (start == 0 && spaces[i][k] == '\'') {
+                if (spaces[i].find("open=") != std::string::npos)
+                {
+                    int start = 0;
+                    int end = 0;
+                    for (int k = 0; k < spaces[i].size(); k++)
+                    {
+                        if (start == 0 && spaces[i][k] == '\'')
+                        {
                             start = k;
-                        } else if (start > 0 && spaces[i][k] == '\'') {
+                        }
+                        else if (start > 0 && spaces[i][k] == '\'')
+                        {
                             end = k;
                         }
                     }
                     end--;
                     keyword = spaces[i].substr(start + 1, end - start);
-                    if (keyword == "set") {
+                    if (keyword == "set")
+                    {
                         continue;
                     }
-                    for (int j = i; j < spaces.size(); j++) {
-                        if (spaces[j].find("end=") != std::string::npos) {
-                            int start = 0; int end = 0;
-                            for (int k = 0; k < spaces[j].size(); k++) {
-                                if (start == 0 && spaces[j][k] == '\'') {
+                    for (int j = i; j < spaces.size(); j++)
+                    {
+                        if (spaces[j].find("end=") != std::string::npos)
+                        {
+                            int start = 0;
+                            int end = 0;
+                            for (int k = 0; k < spaces[j].size(); k++)
+                            {
+                                if (start == 0 && spaces[j][k] == '\'')
+                                {
                                     start = k;
-                                } else if (start > 0 && spaces[j][k] == '\'') {
+                                }
+                                else if (start > 0 && spaces[j][k] == '\'')
+                                {
                                     end = k;
                                 }
                             }
                             endword = spaces[j].substr(start + 1, end - start - 1);
                             break;
-                            
                         }
                         i = j;
                     }
@@ -171,13 +196,16 @@ void CSourceManager::ReportErros(std::string code) {
         }
         file.close();
     }
-    while((pos = code.find(delimiter)) != std::string::npos) {
+    while ((pos = code.find(delimiter)) != std::string::npos)
+    {
         token = code.substr(0, pos);
         std::vector<std::string> spaces;
-        size_t pos2 = 0; 
-        while((pos2 = token.find(delimiter2)) != std::string::npos) {
+        size_t pos2 = 0;
+        while ((pos2 = token.find(delimiter2)) != std::string::npos)
+        {
             token2 = token.substr(0, pos2);
-            if(token2.find_first_not_of(' ') != std::string::npos) {
+            if (token2.find_first_not_of(' ') != std::string::npos)
+            {
                 spaces.push_back(token2);
             }
             token.erase(0, pos2 + delimiter2.length());
@@ -188,71 +216,101 @@ void CSourceManager::ReportErros(std::string code) {
     }
     std::vector<std::string> spaces;
     size_t pos2 = 0;
-    while((pos2 = code.find(delimiter2)) != std::string::npos) {
+    while ((pos2 = code.find(delimiter2)) != std::string::npos)
+    {
         token2 = code.substr(0, pos2);
-        if(token2.find_first_not_of(' ') != std::string::npos) {
+        if (token2.find_first_not_of(' ') != std::string::npos)
+        {
             spaces.push_back(token2);
-        } 
+        }
         code.erase(0, pos2 + delimiter2.length());
     }
     spaces.push_back(code);
     parsedcode.push_back(spaces);
-    for (int i = 0; i < parsedcode.size(); i++) {
+    for (int i = 0; i < parsedcode.size(); i++)
+    {
         std::vector<std::string> line = parsedcode.at(i);
-        for (int j = 0; j < line.size(); j++) {
-            std::string element = line.at(j); 
-            if (element.find("#") != std::string::npos && element.at(0) == '#') { //Comment Detection
+        for (int j = 0; j < line.size(); j++)
+        {
+            std::string element = line.at(j);
+            if (element.find("#") != std::string::npos && element.at(0) == '#')
+            { // Comment Detection
                 j = line.size();
-                continue; 
-            } 
-            if (element.empty()) {
-                j = line.size();
-                continue; 
+                continue;
             }
-            if (element == "group" || (shapemap.find(element))!= shapemap.end()) { //check for keywords here.
+            if (element.empty())
+            {
+                j = line.size();
+                continue;
+            }
+            if (element == "group" || (shapemap.find(element)) != shapemap.end())
+            { // check for keywords here.
                 auto cast = shapemap.find(element);
-                std::string endval = cast -> second;
+                std::string endval = cast->second;
                 std::vector<std::string> result;
-                if (element == "group") {
-                    if (j == line.size() - 1) {
+                if (element == "group")
+                {
+                    if (j == line.size() - 1)
+                    {
                         result = CheckGroup(parsedcode, idmap, i + 1, 0, shapemap);
-                    } else {
+                    }
+                    else
+                    {
                         result = CheckGroup(parsedcode, idmap, i, j + 1, shapemap);
                     }
-                    if (result[0] == "error") {
+                    if (result[0] == "error")
+                    {
                         return;
                     }
                     i = std::stoi(result[0]);
                     j = std::stoi(result[1]);
-                } else if (element == "bank") {
-                    if (j == line.size() - 1) {
+                }
+                else if (element == "bank")
+                {
+                    if (j == line.size() - 1)
+                    {
                         result = CheckBank(parsedcode, referencemap, idmap, i + 1, 0, shapemap);
-                    } else {
-                        result = CheckBank(parsedcode,referencemap, idmap, i, j + 1, shapemap);
                     }
-                    if (result[0] == "error") {
+                    else
+                    {
+                        result = CheckBank(parsedcode, referencemap, idmap, i, j + 1, shapemap);
+                    }
+                    if (result[0] == "error")
+                    {
                         return;
                     }
                     i = std::stoi(result[0]);
                     j = std::stoi(result[1]);
-                } else if (element == "subdivision") {
-                    if (j == line.size() - 1) {
+                }
+                else if (element == "subdivision")
+                {
+                    if (j == line.size() - 1)
+                    {
                         result = CheckSubdivision(parsedcode, idmap, i + 1, 0, shapemap);
-                    } else {
+                    }
+                    else
+                    {
                         result = CheckSubdivision(parsedcode, idmap, i, j + 1, shapemap);
                     }
-                    if (result[0] == "error") {
+                    if (result[0] == "error")
+                    {
                         return;
                     }
                     i = std::stoi(result[0]);
                     j = std::stoi(result[1]);
-                } else {
-                    if (j == line.size() - 1) {
+                }
+                else
+                {
+                    if (j == line.size() - 1)
+                    {
                         result = CheckStatement(parsedcode, idmap, endval, i + 1, 0, shapemap);
-                    } else {
+                    }
+                    else
+                    {
                         result = CheckStatement(parsedcode, idmap, endval, i, j + 1, shapemap);
                     }
-                    if (result[0] == "error") {
+                    if (result[0] == "error")
+                    {
                         return;
                     }
                     i = std::stoi(result[0]);
@@ -261,90 +319,119 @@ void CSourceManager::ReportErros(std::string code) {
                     idmap[elemid] = "TRUE";
                 }
                 line = parsedcode.at(i);
-                element = line.at(j); 
-            } else {
-               std::cout << "Error at Line " + std::to_string(i + 1) + ": " + element + " is not a valid function." << std::endl;
-               return; 
+                element = line.at(j);
+            }
+            else
+            {
+                std::cout << "Error at Line " + std::to_string(i + 1) + ": " + element
+                        + " is not a valid function."
+                          << std::endl;
+                return;
             }
         }
     }
 }
 
-std::vector<std::string> CSourceManager::CheckStatement(std::vector<std::vector<std::string>> parsedcode,
-                                                        std::unordered_map<std::string, std::string> idmap,
-                                                        std::string endstatement,
-                                                        int i, int j,
-                                                        std::unordered_map<std::string, std::string> shapemap) {
+std::vector<std::string>
+CSourceManager::CheckStatement(std::vector<std::vector<std::string>> parsedcode,
+                               std::unordered_map<std::string, std::string> idmap,
+                               std::string endstatement, int i, int j,
+                               std::unordered_map<std::string, std::string> shapemap)
+{
     int global_k;
     int global_l;
     bool first_time = true;
     std::string id;
-    for (int k = 0; k < parsedcode.size(); k++) {
-        if (first_time == true) {
+    for (int k = 0; k < parsedcode.size(); k++)
+    {
+        if (first_time == true)
+        {
             k = i;
         }
         std::vector<std::string> line = parsedcode.at(k);
         std::string linestr = "";
-        for (int l = 0; l < line.size(); l++) {
+        for (int l = 0; l < line.size(); l++)
+        {
             linestr += line.at(l);
         }
-        if (!balancedbracket(linestr)) {
-            std::cout << "Error at Line " + std::to_string(i + 1) + ": Mismatched Parehthesis" << std::endl;
-            return {"error"};
+        if (!balancedbracket(linestr))
+        {
+            std::cout << "Error at Line " + std::to_string(i + 1) + ": Mismatched Parehthesis"
+                      << std::endl;
+            return { "error" };
         }
-        for (int l = 0; l < line.size(); l++) {
+        for (int l = 0; l < line.size(); l++)
+        {
             global_k = k;
             global_l = l;
-            if (first_time == true) {
+            if (first_time == true)
+            {
                 l = j;
                 first_time = false;
                 id = line.at(l);
-                if ((idmap.find(id))!= idmap.end()) {
-                    std::cout << "Error at Line " + std::to_string(i + 1) + ": " + id + " is already being used." << std::endl;
-                    return {"error"};
+                if ((idmap.find(id)) != idmap.end())
+                {
+                    std::cout << "Error at Line " + std::to_string(i + 1) + ": " + id
+                            + " is already being used."
+                              << std::endl;
+                    return { "error" };
                 }
             }
             std::string element = line.at(l);
-            if ((shapemap.find(element))!= shapemap.end() && element != "instance") {
-                std::cout << "Error at Line " + std::to_string(i + 1) + ": " + element + " is a reserved keyword." << std::endl;
-                return {"error"};
+            if ((shapemap.find(element)) != shapemap.end() && element != "instance")
+            {
+                std::cout << "Error at Line " + std::to_string(i + 1) + ": " + element
+                        + " is a reserved keyword."
+                          << std::endl;
+                return { "error" };
             }
-            if (element == endstatement) {
+            if (element == endstatement)
+            {
                 std::vector<std::string> ret;
-                if (l == line.size() - 1) {
-                    ret = {std::to_string(k), std::to_string(l), id};
-                } else {
-                    ret = {std::to_string(k), std::to_string(l), id};
+                if (l == line.size() - 1)
+                {
+                    ret = { std::to_string(k), std::to_string(l), id };
                 }
-                return ret; 
+                else
+                {
+                    ret = { std::to_string(k), std::to_string(l), id };
+                }
+                return ret;
             }
-
         }
     }
-    return {std::to_string(global_k), std::to_string(global_l), ""};
+    return { std::to_string(global_k), std::to_string(global_l), "" };
 }
 
-std::vector<std::string> CSourceManager::CheckGroup(std::vector<std::vector<std::string>> parsedcode,
-                                                        std::unordered_map<std::string, std::string> &idmap,
-                                                        int i, int j,
-                                                        std::unordered_map<std::string, std::string> shapemap) {
+std::vector<std::string>
+CSourceManager::CheckGroup(std::vector<std::vector<std::string>> parsedcode,
+                           std::unordered_map<std::string, std::string>& idmap, int i, int j,
+                           std::unordered_map<std::string, std::string> shapemap)
+{
     bool first_time = true;
     std::string id;
     int global_k;
     int global_l;
-    for (int k = 0; k < parsedcode.size(); k++) {
-        if (first_time == true) {
+    for (int k = 0; k < parsedcode.size(); k++)
+    {
+        if (first_time == true)
+        {
             k = i;
         }
         std::vector<std::string> line = parsedcode.at(k);
-        for (int l = 0; l < line.size(); l++) {
-            if (first_time == true) {
+        for (int l = 0; l < line.size(); l++)
+        {
+            if (first_time == true)
+            {
                 l = j;
                 first_time = false;
                 id = line.at(l);
-                if ((idmap.find(id))!= idmap.end()) {
-                    std::cout << "Error at Line " + std::to_string(i + 1) + ": " + id + " is already being used." << std::endl;
-                    return {"error"};
+                if ((idmap.find(id)) != idmap.end())
+                {
+                    std::cout << "Error at Line " + std::to_string(i + 1) + ": " + id
+                            + " is already being used."
+                              << std::endl;
+                    return { "error" };
                 }
                 continue;
             }
@@ -352,28 +439,39 @@ std::vector<std::string> CSourceManager::CheckGroup(std::vector<std::vector<std:
             global_l = l;
             std::vector<std::string> result;
             std::string element = line.at(l);
-            if (element == "endgroup") {
+            if (element == "endgroup")
+            {
                 std::vector<std::string> ret;
-                if (l == line.size() - 1) {
-                    ret = {std::to_string(k), std::to_string(l)};
-                } else {
-                    ret = {std::to_string(k), std::to_string(l)};
+                if (l == line.size() - 1)
+                {
+                    ret = { std::to_string(k), std::to_string(l) };
                 }
-                return ret; 
+                else
+                {
+                    ret = { std::to_string(k), std::to_string(l) };
+                }
+                return ret;
             }
-            if (element == "instance") {
-                if (l == line.size() - 1) {
+            if (element == "instance")
+            {
+                if (l == line.size() - 1)
+                {
                     result = CheckInstance(parsedcode, idmap, k + 1, 0, shapemap);
-                } else {
+                }
+                else
+                {
                     result = CheckInstance(parsedcode, idmap, k, l + 1, shapemap);
                 }
             }
-            else {
-                std::cout << "Error at Line " + std::to_string(k + 1) + ": Expected Instance" << std::endl;
-                return {"error"};
+            else
+            {
+                std::cout << "Error at Line " + std::to_string(k + 1) + ": Expected Instance"
+                          << std::endl;
+                return { "error" };
             }
-            if (result[0] == "error") {
-                return {"error"};
+            if (result[0] == "error")
+            {
+                return { "error" };
             }
             k = std::stoi(result[0]);
             l = std::stoi(result[1]);
@@ -382,168 +480,238 @@ std::vector<std::string> CSourceManager::CheckGroup(std::vector<std::vector<std:
         }
     }
     std::cout << "Error at Line " + std::to_string(i + 1) + ": endgroup expected" << std::endl;
-    return {std::to_string(global_k), std::to_string(global_l)};
+    return { std::to_string(global_k), std::to_string(global_l) };
 }
 
-std::vector<std::string> CSourceManager::CheckBank(std::vector<std::vector<std::string>> parsedcode,
-                                                        std::unordered_map<std::string, std::string> &referencemap,
-                                                        std::unordered_map<std::string, std::string> &idmap,
-                                                        int i, int j,
-                                                        std::unordered_map<std::string, std::string> shapemap) {
+std::vector<std::string>
+CSourceManager::CheckBank(std::vector<std::vector<std::string>> parsedcode,
+                          std::unordered_map<std::string, std::string>& referencemap,
+                          std::unordered_map<std::string, std::string>& idmap, int i, int j,
+                          std::unordered_map<std::string, std::string> shapemap)
+{
     bool first_time = true;
     std::string id;
-    for (int k = 0; k < parsedcode.size(); k++) {
-        if (first_time == true) {
+    for (int k = 0; k < parsedcode.size(); k++)
+    {
+        if (first_time == true)
+        {
             k = i;
         }
         std::vector<std::string> line = parsedcode.at(k);
-        for (int l = 0; l < line.size(); l++) {
-            if (first_time == true) {
+        for (int l = 0; l < line.size(); l++)
+        {
+            if (first_time == true)
+            {
                 l = j;
                 first_time = false;
                 id = line.at(l);
-                if ((idmap.find(id))!= idmap.end()) {
-                    std::cout << "Error at Line " + std::to_string(i + 1) + ": " + id + " is already being used." << std::endl;
-                    return {"error"};
+                if ((idmap.find(id)) != idmap.end())
+                {
+                    std::cout << "Error at Line " + std::to_string(i + 1) + ": " + id
+                            + " is already being used."
+                              << std::endl;
+                    return { "error" };
                 }
                 continue;
             }
             std::vector<std::string> result;
             std::string element = line.at(l);
-            if (element == "endbank") {
+            if (element == "endbank")
+            {
                 std::vector<std::string> ret;
-                if (l == line.size() - 1) {
-                    ret = {std::to_string(k), std::to_string(l)};
-                } else {
-                    ret = {std::to_string(k), std::to_string(l)};
+                if (l == line.size() - 1)
+                {
+                    ret = { std::to_string(k), std::to_string(l) };
                 }
-                return ret; 
+                else
+                {
+                    ret = { std::to_string(k), std::to_string(l) };
+                }
+                return ret;
             }
-            if (l == 0) {
-                if (element == "set") {
-                    if (line.size() == 6 || line.size() == 7) {
+            if (l == 0)
+            {
+                if (element == "set")
+                {
+                    if (line.size() == 6 || line.size() == 7)
+                    {
                         std::string secondval = line.at(l + 1);
-                        if ((shapemap.find(secondval))!= shapemap.end() && secondval != "instance") {
-                            std::cout << "Error at Line " + std::to_string(i + 1) + ": " + secondval + " is a reserved keyword." << std::endl;
-                            return {"error"};
-                        } else if (idmap.find(secondval) != idmap.end()) {
-                            std::cout << "Error at Line " + std::to_string(i + 1) + ": " + secondval + " is already being used as an id." << std::endl;
-                            return {"error"};
-                        } else if (referencemap.find(secondval) != referencemap.end()) {
-                            std::cout << "Error at Line " + std::to_string(i + 1) + ": " + secondval + " is already being used as an reference." << std::endl;
-                            return {"error"};
+                        if ((shapemap.find(secondval)) != shapemap.end() && secondval != "instance")
+                        {
+                            std::cout << "Error at Line " + std::to_string(i + 1) + ": " + secondval
+                                    + " is a reserved keyword."
+                                      << std::endl;
+                            return { "error" };
                         }
-                        referencemap[secondval] = true; 
-                        l+=5;
-                    } else {
-                        std::cout << "Error at Line " + std::to_string(k + 1) + ": Expected 5 or (optional) 6 Parameters in Set, Received " + std::to_string(line.size() - 1)  << std::endl;
-                        return {"error"};
+                        else if (idmap.find(secondval) != idmap.end())
+                        {
+                            std::cout << "Error at Line " + std::to_string(i + 1) + ": " + secondval
+                                    + " is already being used as an id."
+                                      << std::endl;
+                            return { "error" };
+                        }
+                        else if (referencemap.find(secondval) != referencemap.end())
+                        {
+                            std::cout << "Error at Line " + std::to_string(i + 1) + ": " + secondval
+                                    + " is already being used as an reference."
+                                      << std::endl;
+                            return { "error" };
+                        }
+                        referencemap[secondval] = true;
+                        l += 5;
                     }
-
-                } else {
-                    std::cout << "Error at Line " + std::to_string(k + 1) + ": Expected Set at the Start of a New Line." << std::endl;
-                    return {"error"};
+                    else
+                    {
+                        std::cout << "Error at Line " + std::to_string(k + 1)
+                                + ": Expected 5 or (optional) 6 Parameters in Set, Received "
+                                + std::to_string(line.size() - 1)
+                                  << std::endl;
+                        return { "error" };
+                    }
+                }
+                else
+                {
+                    std::cout << "Error at Line " + std::to_string(k + 1)
+                            + ": Expected Set at the Start of a New Line."
+                              << std::endl;
+                    return { "error" };
                 }
             }
-
         }
     }
     std::cout << "Error at Line " + std::to_string(i + 1) + ": endbank expected" << std::endl;
-    return {"error"};
+    return { "error" };
 }
 
-std::vector<std::string> CSourceManager::CheckInstance(std::vector<std::vector<std::string>> parsedcode,
-                                                        std::unordered_map<std::string, std::string> idmap,
-                                                        int i, int j,
-                                                        std::unordered_map<std::string, std::string> shapemap) {
+std::vector<std::string>
+CSourceManager::CheckInstance(std::vector<std::vector<std::string>> parsedcode,
+                              std::unordered_map<std::string, std::string> idmap, int i, int j,
+                              std::unordered_map<std::string, std::string> shapemap)
+{
     bool first_time = true;
     bool second_time = false;
     std::string id;
     std::string obj;
-    for (int k = 0; k < parsedcode.size(); k++) {
-        if (first_time == true) {
+    for (int k = 0; k < parsedcode.size(); k++)
+    {
+        if (first_time == true)
+        {
             k = i;
         }
         std::vector<std::string> line = parsedcode.at(k);
-        for (int l = 0; l < line.size(); l++) {
-            if (first_time == true) {
+        for (int l = 0; l < line.size(); l++)
+        {
+            if (first_time == true)
+            {
                 l = j;
                 first_time = false;
                 id = line.at(l);
-                if ((idmap.find(id))!= idmap.end()) {
-                    std::cout << "Error at Line " + std::to_string(k + 1) + ": " + id + " is already being used." << std::endl;
+                if ((idmap.find(id)) != idmap.end())
+                {
+                    std::cout << "Error at Line " + std::to_string(k + 1) + ": " + id
+                            + " is already being used."
+                              << std::endl;
                 }
                 second_time = true;
                 continue;
             }
-            if (second_time == true) {
-                obj = line.at(l); 
-                if ((idmap.find(obj)) == idmap.end()) {
-                    std::cout << "Error at Line " + std::to_string(k + 1) + ": " + obj + " is not defined." << std::endl;
+            if (second_time == true)
+            {
+                obj = line.at(l);
+                if ((idmap.find(obj)) == idmap.end())
+                {
+                    std::cout << "Error at Line " + std::to_string(k + 1) + ": " + obj
+                            + " is not defined."
+                              << std::endl;
                 }
-                second_time = false; 
+                second_time = false;
                 continue;
             }
             std::string element = line.at(l);
-            if (element == "endinstance") {
+            if (element == "endinstance")
+            {
                 std::vector<std::string> ret;
-                ret = {std::to_string(k), std::to_string(l), id};
-                return ret; 
-            } else if (element == "rotate" || element == "scale" || element == "translate") {
-                int templ = l+1;
+                ret = { std::to_string(k), std::to_string(l), id };
+                return ret;
+            }
+            else if (element == "rotate" || element == "scale" || element == "translate")
+            {
+                int templ = l + 1;
                 std::string secondelem = line.at(templ);
                 bool par = balancedbracket(secondelem);
-                if (!par) {
-                    std::cout << "Error at Line " + std::to_string(k + 1) + "Mismatched Parenthesis" << std::endl;
-                    return {"error"};
-                } else if (secondelem.find('(') == std::string::npos) {
-                    std::cout << "Error at Line " + std::to_string(k + 1) + "Expected Start of Parenthesis" << std::endl;
-                    return {"error"};
+                if (!par)
+                {
+                    std::cout << "Error at Line " + std::to_string(k + 1) + "Mismatched Parenthesis"
+                              << std::endl;
+                    return { "error" };
                 }
-            } else if (element == "surface" || element == "LOD" || element == "shading") {
-                int templ = l+1;
+                else if (secondelem.find('(') == std::string::npos)
+                {
+                    std::cout << "Error at Line " + std::to_string(k + 1)
+                            + "Expected Start of Parenthesis"
+                              << std::endl;
+                    return { "error" };
+                }
+            }
+            else if (element == "surface" || element == "LOD" || element == "shading")
+            {
+                int templ = l + 1;
                 std::string secondelem = line.at(templ);
-                if ((shapemap.find(secondelem))!= shapemap.end()) {
-                    std::cout << "Error at Line " + std::to_string(k + 1) + ": " + element + " is a reserved keyword." << std::endl;
+                if ((shapemap.find(secondelem)) != shapemap.end())
+                {
+                    std::cout << "Error at Line " + std::to_string(k + 1) + ": " + element
+                            + " is a reserved keyword."
+                              << std::endl;
                 }
-                l = templ; 
+                l = templ;
             }
         }
     }
     std::cout << "Error at Line " + std::to_string(i + 1) + ": endinstance expected" << std::endl;
-    return {"error"};
+    return { "error" };
 }
 
-std::vector<std::string> CSourceManager::CheckSubdivision(std::vector<std::vector<std::string>> parsedcode,
-                                                        std::unordered_map<std::string, std::string> &idmap,
-                                                        int i, int j,
-                                                        std::unordered_map<std::string, std::string> shapemap) {
+std::vector<std::string>
+CSourceManager::CheckSubdivision(std::vector<std::vector<std::string>> parsedcode,
+                                 std::unordered_map<std::string, std::string>& idmap, int i, int j,
+                                 std::unordered_map<std::string, std::string> shapemap)
+{
     bool first_time = true;
     std::string id;
     int global_k;
     int global_l;
     int cnt = 1;
-    for (int k = 0; k < parsedcode.size(); k++) {
-        if (first_time == true) {
+    for (int k = 0; k < parsedcode.size(); k++)
+    {
+        if (first_time == true)
+        {
             k = i;
         }
         std::vector<std::string> line = parsedcode.at(k);
-        for (int l = 0; l < line.size(); l++) {
-            if (first_time == true) {
+        for (int l = 0; l < line.size(); l++)
+        {
+            if (first_time == true)
+            {
                 l = j;
                 first_time = false;
                 id = line.at(l);
-                if ((idmap.find(id))!= idmap.end()) {
-                    std::cout << "Error at Line " + std::to_string(i + 1) + ": " + id + " is already being used." << std::endl;
-                    return {"error"};
+                if ((idmap.find(id)) != idmap.end())
+                {
+                    std::cout << "Error at Line " + std::to_string(i + 1) + ": " + id
+                            + " is already being used."
+                              << std::endl;
+                    return { "error" };
                 }
                 continue;
             }
-            if (cnt == 2 && line.at(l) == "NOME_OFFSET_DEFAULT" || line.at(l) == "NOME_OFFSET_GRID") {
+            if (cnt == 2 && line.at(l) == "NOME_OFFSET_DEFAULT" || line.at(l) == "NOME_OFFSET_GRID")
+            {
                 continue;
             }
-            if (cnt == 3 ) {
-                if (isNumber(line.at(l))) {
+            if (cnt == 3)
+            {
+                if (isNumber(line.at(l)))
+                {
                     continue;
                 }
             }
@@ -551,27 +719,39 @@ std::vector<std::string> CSourceManager::CheckSubdivision(std::vector<std::vecto
             global_l = l;
             std::vector<std::string> result;
             std::string element = line.at(l);
-            if (element == "endsubdivision") {
+            if (element == "endsubdivision")
+            {
                 std::vector<std::string> ret;
-                if (l == line.size() - 1) {
-                    ret = {std::to_string(k), std::to_string(l)};
-                } else {
-                    ret = {std::to_string(k), std::to_string(l)};
+                if (l == line.size() - 1)
+                {
+                    ret = { std::to_string(k), std::to_string(l) };
                 }
-                return ret; 
-            } else if (element == "instance") {
-                if (l == line.size() - 1) {
+                else
+                {
+                    ret = { std::to_string(k), std::to_string(l) };
+                }
+                return ret;
+            }
+            else if (element == "instance")
+            {
+                if (l == line.size() - 1)
+                {
                     result = CheckInstance(parsedcode, idmap, k + 1, 0, shapemap);
-                } else {
+                }
+                else
+                {
                     result = CheckInstance(parsedcode, idmap, k, l + 1, shapemap);
                 }
             }
-            else {
-                std::cout << "Error at Line " + std::to_string(k + 1) + ": Expected Instance" << std::endl;
-                return {"error"};
+            else
+            {
+                std::cout << "Error at Line " + std::to_string(k + 1) + ": Expected Instance"
+                          << std::endl;
+                return { "error" };
             }
-            if (result[0] == "error") {
-                return {"error"};
+            if (result[0] == "error")
+            {
+                return { "error" };
             }
             k = std::stoi(result[0]);
             l = std::stoi(result[1]);
@@ -580,30 +760,32 @@ std::vector<std::string> CSourceManager::CheckSubdivision(std::vector<std::vecto
             cnt++;
         }
     }
-    std::cout << "Error at Line " + std::to_string(i + 1) + ": endsubdivision expected" << std::endl;
-    return {std::to_string(global_k), std::to_string(global_l)};
+    std::cout << "Error at Line " + std::to_string(i + 1) + ": endsubdivision expected"
+              << std::endl;
+    return { std::to_string(global_k), std::to_string(global_l) };
 }
 
-bool CSourceManager::isNumber(std::string s) {
+bool CSourceManager::isNumber(std::string s)
+{
     for (int i = 0; i < s.length(); i++)
         if (isdigit(s[i]) == false)
             return false;
- 
+
     return true;
 }
 
-int CSourceManager::checkcount(std::string str, char letter) {
+int CSourceManager::checkcount(std::string str, char letter)
+{
     int count = 0;
     for (int i = 0; i < str.size(); i++)
     {
-        if (str[i] ==  letter)
+        if (str[i] == letter)
         {
-            ++ count;
+            ++count;
         }
     }
     return count;
 }
-
 
 void CSourceManager::InsertText(size_t globalOffset, const std::string& text)
 {

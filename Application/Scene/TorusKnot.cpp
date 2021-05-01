@@ -65,9 +65,9 @@ void CTorusKnot::UpdateEntity()
          i++) // Create torus knot, creating one cross section at each iteration
     {
         float t0 = i * dt;
-        float r0 = (majorRadius + minorRadius * cosf(_q * t0)); // * 0.5;
+        float r0 = (majorRadius + minorRadius * cosf(_p * t0)); // * 0.5;
 
-        Point p0 = { r0 * cosf(_p * t0), r0 * sinf(_p * t0), minorRadius * sinf(_q * t0) };
+        Point p0 = { r0 * cosf(_q * t0), r0 * sinf(_q * t0), minorRadius * sinf(_p * t0) };
         // Point p0 = { sinf(t0), cos(t0), 0}; // uncomment this to do torus instead    . naive
         // circle method
 
@@ -75,10 +75,10 @@ void CTorusKnot::UpdateEntity()
         // current point
 
         float t1 = t0 + epsilon;
-        float r1 = (majorRadius + minorRadius * cosf(_q * t1)); //* 0.5;
+        float r1 = (majorRadius + minorRadius * cosf(_p * t1)); //* 0.5;
 
         // p1 is p0 advanced infinitesimally along the curve
-        Point p1 = { r1 * cosf(_p * t1), r1 * sinf(_p * t1), minorRadius * sinf(_q * t1) };
+        Point p1 = { r1 * cosf(_q * t1), r1 * sinf(_q * t1), minorRadius * sinf(_p * t1) };
         // Point p1 = { sinf(t1), cos(t1), 0 }; //uncomment this to do torus instead
 
         // compute approximate tangent as vector connecting p0 to p1

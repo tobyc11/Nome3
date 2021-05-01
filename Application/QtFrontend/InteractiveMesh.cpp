@@ -25,7 +25,7 @@ CInteractiveMesh::CInteractiveMesh(Scene::CSceneTreeNode* node)
     , PointGeometry {}
     , PointRenderer {}
 {
-    InstanceColor = { 95.0 / 255.0, 75.0 / 255.0, 139.0 / 255.0 };
+    InstanceColor = { 255.0 / 255.0, 165.0 / 255.0, 0.0 }; // Prof prefers orange
     UpdateTransform();
     UpdateMaterial(false); // false = don't show facets by default
     UpdateGeometry(false); // false = don't show vert boxes by default
@@ -221,14 +221,8 @@ void CInteractiveMesh::InitInteractions()
 
             tc::Ray ray({ origin.x(), origin.y(), origin.z() }, { dir.x(), dir.y(), dir.z() });
 
-
-            // Randy's Render Ray
             if (GFrtCtx->NomeView->RenderRayBool)
-            {
-                std::cout << "Ray was just cast-> click on Render Ray button to visualize it"<< std::endl;
                 GFrtCtx->NomeView->RenderRay(ray, wi); // Randy added this on 2/26
-            }
-
             if (GFrtCtx->NomeView->PickVertexBool)
                 GFrtCtx->NomeView->PickVertexWorldRay(ray);
             if (GFrtCtx->NomeView->PickEdgeBool)

@@ -3,16 +3,15 @@
 #include "MainWindow.h"
 #include <Scene/Mesh.h>
 
+#include <QBuffer>
 #include <QDialog>
-#include <QInputDialog>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QPushButton>
 #include <QStatusBar>
 #include <QTableWidget>
-#include <QBuffer>
 #include <Scene/Camera.h>
 #include <Scene/Viewport.h>
-
 
 namespace Nome
 {
@@ -30,9 +29,9 @@ CNome3DView::CNome3DView()
 
     // Viewport initialization
     this->defaultFrameGraph()->setClearColor(QColor(QRgb(0x4d4d4f)));
-    //addRenderer = new Qt3DExtras::QForwardRenderer();
+    // addRenderer = new Qt3DExtras::QForwardRenderer();
 
-    //addRenderer->setClearColor(QColor(QRgb(0xf0f000)));
+    // addRenderer->setClearColor(QColor(QRgb(0xf0f000)));
     ss = new Qt3DRender::QRenderSurfaceSelector;
 
     Root = new Qt3DCore::QEntity(Base);
@@ -85,19 +84,25 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
             printf("Generating the entity    %s\n", entity->GetName().c_str());
             if (!entity->IsMesh())
             {
-                if (entity->renderType == Scene::CEntity::LIGHT) {
+                if (entity->renderType == Scene::CEntity::LIGHT)
+                {
                     // Create an InteractiveLight from the scene node
-                    auto *light = new CInteractiveLight(node);
+                    auto* light = new CInteractiveLight(node);
                     light->setParent(this->Root);
                     InteractiveLights.insert(light);
                     node->SetEntityUpdated(false);
-                } else if (entity->renderType == Scene::CEntity::BACKGROUND) {
+                }
+                else if (entity->renderType == Scene::CEntity::BACKGROUND)
+                {
                     auto* background = dynamic_cast<Scene::CBackground*>(entity);
                     this->defaultFrameGraph()->setClearColor(background->background);
                     node->SetEntityUpdated(false);
-                } else if (entity->renderType == Scene::CEntity::VIEWPORT) {
+                }
+                else if (entity->renderType == Scene::CEntity::VIEWPORT)
+                {
                     auto* viewport = dynamic_cast<Scene::CViewport*>(entity);
-                    if (this->activeFrameGraph() == this->defaultFrameGraph()) {
+                    if (this->activeFrameGraph() == this->defaultFrameGraph())
+                    {
                         this->setActiveFrameGraph(ss);
                         this->renderSettings()->setActiveFrameGraph(ss);
                         mainView = new Qt3DRender::QViewport(ss);
@@ -105,16 +110,14 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
                         clearBuffers = new Qt3DRender::QClearBuffers(mainView);
                         clearBuffers->setBuffers(Qt3DRender::QClearBuffers::ColorDepthBuffer);
                         clearBuffers->setClearColor(QColor(QRgb(0x4d4d4f)));
-                        auto *noDraw = new Qt3DRender::QNoDraw(clearBuffers);
-                        //auto* mainCamSelector = new Qt3DRender::QCameraSelector(mainView);
-                        //mainCamSelector->setCamera(mainCamera);
-
+                        auto* noDraw = new Qt3DRender::QNoDraw(clearBuffers);
+                        // auto* mainCamSelector = new Qt3DRender::QCameraSelector(mainView);
+                        // mainCamSelector->setCamera(mainCamera);
                     }
                     auto* vp = new Qt3DRender::QViewport(mainView);
                     vp->setNormalizedRect(QRectF(viewport->viewport));
                     auto* camSelector = new Qt3DRender::QCameraSelector(vp);
                     camViewMap.emplace(viewport->cameraId, camSelector);
-
                 }
             }
         }
@@ -132,11 +135,13 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
             printf("Generating the entity    %s\n", entity->GetName().c_str());
             if (!entity->IsMesh())
             {
-                if (entity->renderType == Scene::CEntity::CAMERA) {
+                if (entity->renderType == Scene::CEntity::CAMERA)
+                {
                     auto* camera = dynamic_cast<Scene::CCamera*>(entity);
                     auto para = camera->para;
                     Qt3DRender::QCamera* cam;
-                    for (auto camMap : camViewMap)  {
+                    for (auto camMap : camViewMap)
+                    {
                         if (camMap.first == camera->GetNameWithoutPrefix())
                         {
                             cam = new Qt3DRender::QCamera;
@@ -149,11 +154,13 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
                     cam->setViewCenter(QVector3D(0, 0, 0));
                     cam->rotateAboutViewCenter(camera->rotation);
                     if (camera->projectionType == "NOME_ORTHOGRAPHIC")
-                        cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
+                        cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3],
+                                                               para[4], para[5]);
                     else if (camera->projectionType == "NOME_PERSPECTIVE")
                         cam->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
                     else if (camera->projectionType == "NOME_FRUSTUM")
-                        cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
+                        cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3],
+                                                          para[4], para[5]);
 
                     node->SetEntityUpdated(false);
                 }
@@ -191,7 +198,6 @@ void CNome3DView::UnloadScene()
     Scene = nullptr;
 }
 
-
 void CNome3DView::PostSceneUpdate()
 {
     using namespace Scene;
@@ -216,8 +222,10 @@ void CNome3DView::PostSceneUpdate()
         }
         if (entity)
         {
-            if (!entity->IsMesh()){
-                if (entity->renderType == Scene::CEntity::LIGHT) {
+            if (!entity->IsMesh())
+            {
+                if (entity->renderType == Scene::CEntity::LIGHT)
+                {
                     /// add and update light
                     CInteractiveLight* light = nullptr;
                     // Check for existing InteractiveMesh
@@ -232,7 +240,8 @@ void CNome3DView::PostSceneUpdate()
                         {
                             light->UpdateLight();
                             bUpdateScene = true;
-                            printf("Delivering the rendering light of the scene %s\n", node->GetPath().c_str());
+                            printf("Delivering the rendering light of the scene %s\n",
+                                   node->GetPath().c_str());
                             node->SetEntityUpdated(false);
                         }
                     }
@@ -243,41 +252,50 @@ void CNome3DView::PostSceneUpdate()
                         aliveSetLight.insert(light);
                         InteractiveLights.insert(light);
                     }
-                } else if (entity->renderType == Scene::CEntity::BACKGROUND) {
+                }
+                else if (entity->renderType == Scene::CEntity::BACKGROUND)
+                {
                     if (node->WasEntityUpdated())
                     {
                         auto* background = dynamic_cast<Scene::CBackground*>(entity);
                         this->defaultFrameGraph()->setClearColor(background->background);
                         node->SetEntityUpdated(false);
                     }
-                } else if (entity->renderType == Scene::CEntity::CAMERA) {
+                }
+                else if (entity->renderType == Scene::CEntity::CAMERA)
+                {
                     if (node->WasEntityUpdated())
                     {
                         auto* camera = dynamic_cast<Scene::CCamera*>(entity);
                         auto para = camera->para;
                         Qt3DRender::QCamera* cam;
-                        for (const auto& camMap : cameraSet)  {
+                        for (const auto& camMap : cameraSet)
+                        {
                             if (camMap.first == camera->GetNameWithoutPrefix())
                             {
                                 cam = camMap.second;
                             }
                         }
                         if (camera->projectionType == "NOME_ORTHOGRAPHIC")
-                            cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
+                            cam->lens()->setOrthographicProjection(para[0], para[1], para[2],
+                                                                   para[3], para[4], para[5]);
                         else if (camera->projectionType == "NOME_PERSPECTIVE")
-                            cam->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
+                            cam->lens()->setPerspectiveProjection(para[0], para[1], para[2],
+                                                                  para[3]);
                         else if (camera->projectionType == "NOME_FRUSTUM")
-                            cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3], para[4], para[5]);
+                            cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3],
+                                                              para[4], para[5]);
                         cam->setPosition(camera->translation);
                         cam->setUpVector(QVector3D(0, 0, 1));
                         cam->setViewCenter(QVector3D(0, 0, 0));
                         cam->rotateAboutViewCenter(camera->rotation);
                         node->SetEntityUpdated(false);
                     }
-                } else if (entity->renderType == Scene::CEntity::VIEWPORT) {
+                }
+                else if (entity->renderType == Scene::CEntity::VIEWPORT)
+                {
                     // TODO:may add the viewport change capability
                 }
-
             }
         }
     });
@@ -300,16 +318,20 @@ void CNome3DView::PostSceneUpdate()
                 {
                     // Found existing InteractiveMesh, mark as alive
                     mesh = iter->second;
-                    if (entity->isMerged) {
+                    if (entity->isMerged)
+                    {
                         auto iterr = aliveSetMesh.find(mesh);
                         if (iterr != aliveSetMesh.end())
                         {
                             aliveSetMesh.erase(iterr);
                         }
-                    } else {
+                    }
+                    else
+                    {
                         aliveSetMesh.insert(mesh);
                         mesh->UpdateTransform();
-                        if (node->WasEntityUpdated() || bUpdateScene) {
+                        if (node->WasEntityUpdated() || bUpdateScene)
+                        {
                             printf("Geom regen for %s\n", node->GetPath().c_str());
                             mesh->UpdateMaterial(WireFrameMode);
                             mesh->UpdateGeometry(PickVertexBool);
@@ -324,15 +346,19 @@ void CNome3DView::PostSceneUpdate()
                     aliveSetMesh.insert(mesh);
                     InteractiveMeshes.insert(mesh);
                 }
-                if (!entity->isMerged) {
+                if (!entity->isMerged)
+                {
                     // Create a DebugDraw for the CEntity if not already
                     auto eIter = EntityDrawData.find(entity);
-                    if (eIter == EntityDrawData.end()) {
-                        auto *debugDraw = new CDebugDraw(Root);
+                    if (eIter == EntityDrawData.end())
+                    {
+                        auto* debugDraw = new CDebugDraw(Root);
                         aliveEntityDrawData[entity] = debugDraw;
                         // TODO: somehow uncommenting this line leads to a crash in Qt3D
                         // mesh->SetDebugDraw(debugDraw);
-                    } else {
+                    }
+                    else
+                    {
                         aliveEntityDrawData[entity] = eIter->second;
                         mesh->SetDebugDraw(eIter->second);
                     }
@@ -453,6 +479,22 @@ void CNome3DView::ClearRenderedRay()
     });
 }
 
+// Randy added on 2/26 to clear rendered ray
+void CNome3DView::ClearInteractivePoint()
+{
+    RayInteractivePoint.clear();
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        // Obtain either an instance entity or a shared entity from the scene node
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+        if (entity)
+        {
+            auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+            meshInst->DeselectAll();
+        }
+    });
+}
 void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
 {
     rotateRay(ray);
@@ -464,14 +506,16 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
             entity = node->GetOwner()->GetEntity();
         if (entity)
         {
-            if (!entity->isMerged && entity->IsMesh()) {
-                const auto &l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+            if (!entity->isMerged && entity->IsMesh())
+            {
+                const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
                 auto localRay = ray.Transformed(l2w.Inverse());
                 localRay.Direction =
-                        localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
-                auto *meshInst = dynamic_cast<Scene::CMeshInstance *>(entity);
+                    localRay.Direction
+                        .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
                 auto pickResults = meshInst->PickFaces(localRay);
-                for (const auto&[dist, name] : pickResults)
+                for (const auto& [dist, name] : pickResults)
                     hits.emplace_back(dist, meshInst, name);
             }
         }
@@ -484,8 +528,7 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
     if (hits.size() == 1)
     {
         const auto& [dist, meshInst, faceName] = hits[0];
-        auto position =
-            std::find(SelectedFaces.begin(), SelectedFaces.end(), faceName);
+        auto position = std::find(SelectedFaces.begin(), SelectedFaces.end(), faceName);
         if (position == SelectedFaces.end())
         { // if this face has not been selected before
             SelectedFaces.push_back(faceName); // add face to selected faces
@@ -543,8 +586,7 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
             {
                 int row = sel[0]->row();
                 const auto& [dist, meshInst, faceName] = hits[row];
-                auto position =
-                    std::find(SelectedFaces.begin(), SelectedFaces.end(), faceName);
+                auto position = std::find(SelectedFaces.begin(), SelectedFaces.end(), faceName);
                 if (position == SelectedFaces.end())
                 { // if this face has not been selected before
                     SelectedFaces.push_back(faceName); // add face to selected face
@@ -600,15 +642,18 @@ void CNome3DView::PickEdgeWorldRay(tc::Ray& ray)
             entity = node->GetOwner()->GetEntity();
         if (entity)
         {
-            if (!entity->isMerged && entity->IsMesh()) {
-                const auto &l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+            if (!entity->isMerged && entity->IsMesh())
+            {
+                const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
                 auto localRay = ray.Transformed(l2w.Inverse());
-                localRay.Direction = localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                localRay.Direction =
+                    localRay.Direction
+                        .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
 
-                auto *meshInst = dynamic_cast<Scene::CMeshInstance *>(entity);
+                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
                 auto pickResults = meshInst->PickEdges(localRay);
 
-                for (const auto&[dist, names] : pickResults)
+                for (const auto& [dist, names] : pickResults)
                     hits.emplace_back(dist, meshInst, names);
             }
         }
@@ -740,15 +785,16 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
             entity = node->GetOwner()->GetEntity();
         if (entity)
         {
-            if (!entity->isMerged && entity->IsMesh()) {
-                const auto &l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+            if (!entity->isMerged && entity->IsMesh())
+            {
+                const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
                 auto localRay = ray.Transformed(l2w.Inverse());
                 localRay.Direction =
-                        localRay.Direction
-                                .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
-                auto *meshInst = dynamic_cast<Scene::CMeshInstance *>(entity);
+                    localRay.Direction
+                        .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
                 auto pickResults = meshInst->PickVertices(localRay);
-                for (const auto&[dist, name] : pickResults)
+                for (const auto& [dist, name] : pickResults)
                     hits.emplace_back(dist, meshInst, name);
             }
         }
@@ -759,8 +805,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
     if (hits.size() == 1)
     {
         const auto& [dist, meshInst, vertName] = hits[0];
-        auto position =
-            std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
+        auto position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
         if (position == SelectedVertices.end()) // if this vertex has not been selected before
         {
             SelectedVertices.push_back(vertName); // add vertex to selected vertices
@@ -861,62 +906,202 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
         GFrtCtx->MainWindow->statusBar()->showMessage("No point hit.");
     }
 }
+// typedef struct
+//{
+//    double x, y, z;
+//} XYZ;
 
+/*
+   Calculate the line segment PaPb that is the shortest route between
+   two lines P1P2 and P3P4. Calculate also the values of mua and mub where
+      Pa = P1 + mua (P2 - P1)
+      Pb = P3 + mub (P4 - P3)
+   Return FALSE if no solution exists.
+*/
+int LineLineIntersect(tc::Vector3 p1, tc::Vector3 p2, tc::Vector3 p3, tc::Vector3 p4,
+                      tc::Vector3* pa, tc::Vector3* pb, double* mua, double* mub)
+{
+    tc::Vector3 p13, p43, p21;
+    double d1343, d4321, d1321, d4343, d2121;
+    double numer, denom;
+    float EPS = 0.000001f;
+    p13.x = p1.x - p3.x;
+    p13.y = p1.y - p3.y;
+    p13.z = p1.z - p3.z;
+    p43.x = p4.x - p3.x;
+    p43.y = p4.y - p3.y;
+    p43.z = p4.z - p3.z;
+    if (abs(p43.x) < EPS && abs(p43.y) < EPS && abs(p43.z) < EPS)
+    {
+        std::cout << "LineLine does not intersect 43: " << abs(p43.x) << " " << abs(p43.x) << " "
+                  << abs(p43.z) << std::endl;
+        return (FALSE);
+    }
+    p21.x = p2.x - p1.x;
+    p21.y = p2.y - p1.y;
+    p21.z = p2.z - p1.z;
+    if (abs(p21.x) < EPS && abs(p21.y) < EPS && abs(p21.z) < EPS)
+    {
+        std::cout << "LineLine does not intersect 21: " << abs(p21.x) << " " << abs(p21.x) << " "
+                  << abs(p21.z) << std::endl;
+        return (FALSE);
+    }
 
+    d1343 = p13.x * p43.x + p13.y * p43.y + p13.z * p43.z;
+    d4321 = p43.x * p21.x + p43.y * p21.y + p43.z * p21.z;
+    d1321 = p13.x * p21.x + p13.y * p21.y + p13.z * p21.z;
+    d4343 = p43.x * p43.x + p43.y * p43.y + p43.z * p43.z;
+    d2121 = p21.x * p21.x + p21.y * p21.y + p21.z * p21.z;
 
+    denom = d2121 * d4343 - d4321 * d4321;
+    if (abs(denom) < EPS)
+    {
+
+        std::cout << "LineLine does not intersect denom: " << abs(denom) << " " << d2121 * d4343
+                << "-" 
+                << d4321 * d4321 << "  " << d2121 << " " << d4343 << " " << d4321 << " " << d4321 << std::endl;
+        return (FALSE);
+    }
+    numer = d1343 * d4321 - d1321 * d4343;
+
+    *mua = numer / denom;
+    *mub = (d1343 + d4321 * (*mua)) / d4343;
+
+    pa->x = p1.x + *mua * p21.x;
+    pa->y = p1.y + *mua * p21.y;
+    pa->z = p1.z + *mua * p21.z;
+    pb->x = p3.x + *mub * p43.x;
+    pb->y = p3.y + *mub * p43.y;
+    pb->z = p3.z + *mub * p43.z;
+
+    return (TRUE);
+}
+
+// Creates ray OR adds hit point on ray
 void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
 {
+    std::cout << "Inside RenderRay" << std::endl;
     rotateRay(ray);
-    std::vector<std::tuple<float, Scene::CMeshInstance*, tc::Vector3>> hits;
-    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        // Obtain either an instance entity or a shared entity from the scene node
-        auto* entity = node->GetInstanceEntity();
-        if (!entity)
-            entity = node->GetOwner()->GetEntity();
-        if (entity)
-        {
-            if (!entity->isMerged && entity->IsMesh())
+
+    if (RayVertPositions.size() == 0) // Create Ray Mode
+    {
+        std::cout << "CREATE RAY MODE: current Ray Origin" << ray.Origin.x << " " << ray.Origin.y
+                  << " " << ray.Origin.z << "   CREATE RAY MODE: Ray Dir" << ray.Direction.x << " "
+                  << ray.Direction.y << " " << ray.Direction.z << std::endl;
+        std::vector<std::tuple<float, Scene::CMeshInstance*, tc::Vector3>> hits;
+        Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+            // Obtain either an instance entity or a shared entity from the scene node
+            auto* entity = node->GetInstanceEntity();
+            if (!entity)
+                entity = node->GetOwner()->GetEntity();
+            if (entity)
             {
-                const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
-                auto localRay = ray.Transformed(l2w.Inverse());
-                localRay.Direction =  localRay.Direction.Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
-                auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
-                auto pickResults = meshInst->GetHitPoint(localRay);
-                for (const auto& [dist, hitPoint] : pickResults)
+                if (!entity->isMerged && entity->IsMesh())
                 {
-                    auto hitPointRotated = l2w * hitPoint; // transform(hitPoint, l2w);
-                    hits.emplace_back(dist, meshInst, hitPointRotated);
+                    const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
+                    auto localRay = ray.Transformed(l2w.Inverse());
+                    localRay.Direction =
+                        localRay.Direction
+                            .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
+                    auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
+                    auto pickResults = meshInst->GetHitPoint(localRay);
+                    for (const auto& [dist, hitPoint] : pickResults)
+                    {
+                        auto hitPointRotated = l2w * hitPoint; // transform(hitPoint, l2w);
+                        std::cout << hitPointRotated.x << " " << hitPointRotated.y << " "
+                                  << hitPointRotated.z
+                                  << "RenderRay should be like current Ray but with the current "
+                                     "intersection point"
+                                  << std::endl;
+                        hits.emplace_back(dist, meshInst, hitPointRotated);
+                    }
                 }
             }
+        });
+        std::cout << "hitPoint size: " << hits.size() << std::endl;
+        std::sort(hits.begin(), hits.end());
+
+        tc::Vector3 closestHitPoint;
+        if (hits.size() > 0)
+            closestHitPoint = std::get<2>(hits[0]); // get the closest hitPointRotated
+        else
+            return;
+
+        RayVertPositions.push_back(ray.Origin);
+        QVector3D test = { closestHitPoint.x, closestHitPoint.y, closestHitPoint.z };
+        RayVertPositions.push_back(closestHitPoint);
+        RayCasted = true;
+    }
+    else // Selection Mode
+    {
+        std::cout << "initial castRay startPoint " << RayVertPositions[0].x << " "
+                  << RayVertPositions[0].y << " " << RayVertPositions[0].z
+                  << "   initial castRay endpoint " << RayVertPositions[1].x << " "
+                  << RayVertPositions[1].y << " " << RayVertPositions[1].z << std::endl;
+
+        std::cout << "newly cast ray origin " << ray.Origin.x << " " << ray.Origin.y << " "
+                  << ray.Origin.z << "   newly cast ray Dir" << ray.Direction.x << " "
+                  << ray.Direction.y << " " << ray.Direction.z << std::endl;
+
+        // tc::Vector3 closestPoint = castRay.ClosestPoint(ray);  // ray.ClosestPoint(castRay);  ///
+        // Return closest point to another ray.
+        tc::Vector3 closestPointOnInitialRay;
+        tc::Vector3 closestPointOnNewRay;
+        double mua;
+        double mub;
+
+
+      
+
+        auto interBool =
+            LineLineIntersect(RayVertPositions[0], RayVertPositions[1], ray.Origin, ray.Origin+5*ray.Direction,
+                              &closestPointOnInitialRay, &closestPointOnNewRay, &mua, &mub);
+
+        std::cout << "interBool " << interBool << std::endl;
+        if (interBool == 0) {
+            std::cout << "Warning did not find intersection" << std::endl;
+        } 
+        else
+        {
+            std::cout << "Found intersection" << std::endl;
         }
-    });
+        auto closestPoint = closestPointOnInitialRay;
+        std::cout << "closestPoint on initial castRay: " << closestPoint.x << " " << closestPoint.y
+                  << " " << closestPoint.z << std::endl;
+        RayInteractivePoint.push_back(closestPoint); // single interactive point
+   
+        RayVertPositions.clear();
+        RayVertPositions.push_back(ray.Origin);
+        RayVertPositions.push_back(ray.Origin + 5 * ray.Direction); // closestPoint);
+        RayCasted = true; // false;
 
-    std::sort(hits.begin(), hits.end());
-
-    tc::Vector3 closestHitPoint;
-    if (hits.size() > 0)
-        closestHitPoint = std::get<2>(hits[0]);
-    else
-        return;
-
-    RayVertPositions.push_back(ray.Origin);
-    std::cout << "intersection: " << intersection.x() << " " << intersection.y() << " "
-              << intersection.z() << std::endl;
-    QVector3D test = { closestHitPoint.x , closestHitPoint.y , closestHitPoint.z };
-    auto testRotated = rotation.inverted().rotatedVector(test);
-    tc::Vector3 testRotatedVec = tc::Vector3(testRotated.x(), testRotated.y(), testRotated.z());
-
-    std::cout << testRotatedVec.x << " " << testRotatedVec.y << " " << testRotatedVec.z
-              << "testRotatedVec VS closestHitPoint" << closestHitPoint.x << " "<<
-        closestHitPoint.y << " "<< closestHitPoint.z << std::endl;
-    RayVertPositions.push_back(closestHitPoint);
+        // Remove the casted ray TODO: Remove the entire node so we can save changes
+        Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+            // Obtain either an instance entity or a shared entity from the scene node
+            auto* entity = node->GetInstanceEntity();
+            if (!entity)
+                entity = node->GetOwner()->GetEntity();
+            if (entity)
+            {
+                if (!entity->isMerged && entity->IsMesh())
+                {
+                    // std::cout << "looking for ray" << std::endl;
+                    if (entity->GetName().find("TempInteractivePoly") != std::string::npos)
+                    {
+                        // std::cout << "found ray, remove" << std::endl;
+                        // node->GetOwner()->SetEntity(nullptr);
+                    }
+                }
+            }
+        });
+    }
 }
 
 
 // Xinyu add on Oct 8 for rotation
 void CNome3DView::mousePressEvent(QMouseEvent* e)
 {
-    //material->setAlpha(0.7f);
+    // material->setAlpha(0.7f);
 
     rotationEnabled = e->button() == Qt::RightButton ? false : true;
     // Save mouse press position
@@ -924,30 +1109,31 @@ void CNome3DView::mousePressEvent(QMouseEvent* e)
     mousePressEnabled = true;
 }
 
-
 void CNome3DView::mouseMoveEvent(QMouseEvent* e)
 {
-    if (mousePressEnabled) {
+    if (mousePressEnabled)
+    {
         // Mouse release position - mouse press position
         secondPosition = QVector2D(e->localPos());
         QVector2D diff = secondPosition - firstPosition;
         if (!rotationEnabled)
         {
             objectX = diff.x() / 100 + objectX;
-            objectY = - diff.y() / 100 + objectY;
+            objectY = -diff.y() / 100 + objectY;
             sphereTransform->setTranslation(QVector3D(objectX, objectY, objectZ));
-
-        } else {
+        }
+        else
+        {
             QVector2D firstPoint = GetProjectionPoint(firstPosition);
             QVector2D secondPoint = GetProjectionPoint(secondPosition);
             double projectedRadius = sqrt(qPow(zPos, 2) - 1) / zPos;
 
             if (firstPoint.length() > projectedRadius || secondPoint.length() > projectedRadius)
             {
-                float angle =
-                    qRadiansToDegrees(qAsin(
-                        QVector3D::crossProduct(QVector3D(firstPoint, 0).normalized()
-                                                    , QVector3D(secondPoint, 0).normalized()).z()));
+                float angle = qRadiansToDegrees(
+                    qAsin(QVector3D::crossProduct(QVector3D(firstPoint, 0).normalized(),
+                                                  QVector3D(secondPoint, 0).normalized())
+                              .z()));
                 rotation = QQuaternion::fromAxisAndAngle(0, 0, 1, angle) * rotation;
             }
             else
@@ -970,13 +1156,13 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
 
 void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
 {
-    //material->setAlpha(0.0f);
+    // material->setAlpha(0.0f);
 
     mousePressEnabled = false;
     rotationEnabled = true;
 }
 
-void CNome3DView::wheelEvent(QWheelEvent *ev)
+void CNome3DView::wheelEvent(QWheelEvent* ev)
 {
     if (rotationEnabled)
     {
@@ -999,21 +1185,24 @@ void CNome3DView::wheelEvent(QWheelEvent *ev)
     }
 }
 
-void CNome3DView::keyPressEvent(QKeyEvent *ev)
+void CNome3DView::keyPressEvent(QKeyEvent* ev)
 {
     switch (ev->key())
     {
     case Qt::Key_Tab:
-        //material->setAlpha(rotationEnabled * 0.1);
+        // material->setAlpha(rotationEnabled * 0.1);
 
         break;
     case Qt::Key_Shift:
         vertexSelectionEnabled = true;
         break;
     case Qt::Key_Space:
-        if (animationEnabled) {
+        if (animationEnabled)
+        {
             sphereRotateTransformAnimation->pause();
-        }   else {
+        }
+        else
+        {
             sphereRotateTransformAnimation->start();
         }
         animationEnabled = !animationEnabled;
@@ -1021,12 +1210,13 @@ void CNome3DView::keyPressEvent(QKeyEvent *ev)
     }
 }
 
-
 bool CNome3DView::eventFilter(QObject* obj, QEvent* event)
 {
-    if (event->type() == QEvent::KeyRelease) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if (keyEvent->key() == Qt::Key_Shift) {
+    if (event->type() == QEvent::KeyRelease)
+    {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Shift)
+        {
             return true;
         }
         else
@@ -1035,14 +1225,15 @@ bool CNome3DView::eventFilter(QObject* obj, QEvent* event)
     return false;
 }
 
-QVector2D CNome3DView::GetProjectionPoint(QVector2D originalPosition) {
+QVector2D CNome3DView::GetProjectionPoint(QVector2D originalPosition)
+{
     double xRatio = (originalPosition.x() - this->width() / 2.0) / (this->width() / 2.0);
     double yRatio = (this->height() / 2.0 - originalPosition.y()) / (this->height() / 2.0);
     // Calculate the x ratio according to the screen ratio
     double tempX = xRatio * this->width() / this->height();
     // Calculate the equivalent y by the radius
     double tempY = sqrt(qPow(tempX, 2) + qPow(yRatio, 2));
-    //Calculate the camera view angle according to the picked point
+    // Calculate the camera view angle according to the picked point
     double theta = qAtan(tempY * qTan(qDegreesToRadians(45.0 / 2.0)));
 
     double temp = 1 + qPow(qTan(theta), 2);
@@ -1056,33 +1247,36 @@ QVector2D CNome3DView::GetProjectionPoint(QVector2D originalPosition) {
     return QVector2D(xRatio * projectedWidth, yRatio * projectedHeight);
 }
 
-QVector3D CNome3DView::GetCrystalPoint(QVector2D originalPoint) {
+QVector3D CNome3DView::GetCrystalPoint(QVector2D originalPoint)
+{
     double z = sqrt(1 - qPow(originalPoint.x(), 2) - qPow(originalPoint.y(), 2));
     return QVector3D(originalPoint, z);
 }
 
-void CNome3DView::rotateRay(tc::Ray& ray) {
-    QVector3D origin = QVector3D(ray.Origin.x, ray.Origin.y, ray.Origin.z) - QVector3D(objectX, objectY, objectZ);;
+void CNome3DView::rotateRay(tc::Ray& ray)
+{
+    QVector3D origin =
+        QVector3D(ray.Origin.x, ray.Origin.y, ray.Origin.z) - QVector3D(objectX, objectY, objectZ);
+    ;
     origin = rotation.inverted().rotatedVector(origin);
-    QVector3D direction = rotation.inverted().rotatedVector(QVector3D(ray.Direction.x, ray.Direction.y, ray.Direction.z));
+    QVector3D direction = rotation.inverted().rotatedVector(
+        QVector3D(ray.Direction.x, ray.Direction.y, ray.Direction.z));
 
     ray.Direction = tc::Vector3(direction.x(), direction.y(), direction.z());
     ray.Origin = tc::Vector3(origin.x(), origin.y(), origin.z());
 }
-void CNome3DView::FreeVertexSelection() {
-    vertexSelectionEnabled = false;
-}
-float CNome3DView::InputSharpness() {
+void CNome3DView::FreeVertexSelection() { vertexSelectionEnabled = false; }
+float CNome3DView::InputSharpness()
+{
     bool ok;
 
-    float sharpness = QInputDialog::getDouble(GFrtCtx->MainWindow, tr("Set the sharpness"),
-                                                         tr("Sharpness:"), 0, 0, 10, 1, &ok,
-                                                         Qt::WindowFlags(), 1);
+    float sharpness =
+        QInputDialog::getDouble(GFrtCtx->MainWindow, tr("Set the sharpness"), tr("Sharpness:"), 0,
+                                0, 10, 1, &ok, Qt::WindowFlags(), 1);
     if (ok)
         return sharpness;
     else
         return -1;
-
 }
 
 }

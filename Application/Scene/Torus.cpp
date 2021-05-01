@@ -117,9 +117,9 @@ void CTorus::UpdateEntity()
     // Create faces
     if (thetaMax == 360)
     {
-        for (int k = 0; k < thetaSegs + 1; k++)
+        for (int k = 0; k < thetaSegs; k++)
         {
-            for (int i = 0; i < phiSegs + 1; i++)
+            for (int i = 0; i < phiSegs; i++)
             {
                 // CCW winding
                 int next = (i + 1) % (phiSegs + 1);

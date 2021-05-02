@@ -1,0 +1,81 @@
+## 03/13/2021
+
+bank b
+    set speed 0.5 0 1 0.01
+endbank
+
+                        ##### COORDINATE AXES #####
+point o (0 0 0) endpoint
+point pX (1 0 0) endpoint
+point pY (0 1 0) endpoint
+point pZ (0 0 1) endpoint
+
+polyline xAxis (o pX) endpolyline
+polyline yAxis (o pY) endpolyline
+polyline zAxis (o pZ) endpolyline
+
+#instance xAxis_inst xAxis endinstance
+#instance yAxis_inst yAxis endinstance
+#instance zAxis_inst zAxis endinstance
+
+                        ##### TRIANGLE POINTS #####
+point p1 (1 0 0.57735) endpoint      # 1, 0, sqrt(3)/3
+point p2 (0 0 -1.1547) endpoint      # 0, 0, -2*sqrt(3)/3
+point p3 (-1 0 0.57735) endpoint
+
+
+                        ##### TRIANGLE MESHES #####
+mesh tri_mesh
+    face tri_face (p1 p2 p3) endface
+endmesh
+
+#rotated 180degrees for triangles rotating in opposite direction
+group tri_mesh_opp
+    instance tri_mesh_inst tri_mesh rotate (0 1 0) (180) endinstance
+endgroup
+
+                        ##### TRIANGLES, animated #####
+group tri_anim
+    instance tri_mesh_inst tri_mesh
+        rotate (0 1 0) (60 * sin(0.1 * $b.speed * $frame))
+        translate (0 {expr 0.4082 * cos(0.2 * $b.speed * $frame) + 0.4082} 0)
+    endinstance
+endgroup
+
+group tri_anim_opp
+    instance tri_opp_inst tri_mesh_opp
+        rotate (0 1 0) (-(60 * sin(0.1 * $b.speed * $frame)))
+        translate (0 {expr 0.4082 * cos(0.2 * $b.speed * $frame) + 0.4082} 0)
+    endinstance
+endgroup
+
+                    ##### TRIANGLES, rotated and translated #####
+group tri_rt
+    instance tri_anim_inst tri_anim
+        rotate (1 0 0) (125.2645)            # (360 - 109.471) / 2 = 125.2645
+        translate (0 -0.4714 0.667)
+    endinstance
+endgroup
+
+group tri_rt_opp
+    instance tri_anim_opp_inst tri_anim_opp
+        rotate (1 0 0) (54.7355)
+        translate (0 0.4714 0.667)
+    endinstance
+endgroup
+
+                ##### TRIANGLE PAIRS: animated, rotated, & translated #####
+group tri_pair
+    instance tri_rt_inst tri_rt endinstance
+    instance tri_rt_opp_inst tri_rt_opp endinstance
+endgroup
+
+group tri_pair_opp
+    instance tri_pair_inst tri_pair rotate (0 0 1) (180) endinstance
+endgroup
+
+                            ##### INSTANCES #####
+instance tri_pair_inst1 tri_pair endinstance
+instance tri_pair_inst2 tri_pair_opp rotate (0 1 0) (90) endinstance
+instance tri_pair_inst1 tri_pair rotate (0 1 0) (180) endinstance
+instance tri_pair_inst2 tri_pair_opp rotate (0 1 0) (270) endinstance

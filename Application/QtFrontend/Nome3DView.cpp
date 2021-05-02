@@ -935,7 +935,7 @@ int LineLineIntersect(tc::Vector3 p1, tc::Vector3 p2, tc::Vector3 p3, tc::Vector
     {
         std::cout << "LineLine does not intersect 43: " << abs(p43.x) << " " << abs(p43.x) << " "
                   << abs(p43.z) << std::endl;
-        return (FALSE);
+        return (false);
     }
     p21.x = p2.x - p1.x;
     p21.y = p2.y - p1.y;
@@ -944,7 +944,7 @@ int LineLineIntersect(tc::Vector3 p1, tc::Vector3 p2, tc::Vector3 p3, tc::Vector
     {
         std::cout << "LineLine does not intersect 21: " << abs(p21.x) << " " << abs(p21.x) << " "
                   << abs(p21.z) << std::endl;
-        return (FALSE);
+        return (false);
     }
 
     d1343 = p13.x * p43.x + p13.y * p43.y + p13.z * p43.z;
@@ -960,7 +960,7 @@ int LineLineIntersect(tc::Vector3 p1, tc::Vector3 p2, tc::Vector3 p3, tc::Vector
         std::cout << "LineLine does not intersect denom: " << abs(denom) << " " << d2121 * d4343
                 << "-" 
                 << d4321 * d4321 << "  " << d2121 << " " << d4343 << " " << d4321 << " " << d4321 << std::endl;
-        return (FALSE);
+        return (false);
     }
     numer = d1343 * d4321 - d1321 * d4343;
 
@@ -974,7 +974,7 @@ int LineLineIntersect(tc::Vector3 p1, tc::Vector3 p2, tc::Vector3 p3, tc::Vector
     pb->y = p3.y + *mub * p43.y;
     pb->z = p3.z + *mub * p43.z;
 
-    return (TRUE);
+    return (true);
 }
 
 // Creates ray OR adds hit point on ray

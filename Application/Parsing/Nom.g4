@@ -66,6 +66,7 @@ argAzimuth : 'azimuth' expression ;
 argTwist : 'twist' expression ;
 argReverse : 'reverse' ;
 argMintorsion : 'mintorsion' ;
+argFunc : 'func' ident ;
 
 command
    : open='point' name=ident LPAREN expression expression expression RPAREN end='endpoint' # CmdExprListOne
@@ -89,9 +90,9 @@ command
    | open='tunnel' name=ident LPAREN expression expression expression expression RPAREN end='endtunnel' # CmdExprListOne
    | open='torusknot' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorusknot' # CmdExprListOne
    | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
-   | open='gencartesiansurf' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endgencartesiansurf' # CmdExprListOne
-   | open='genparametricsurf' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endgenparametricsurf' # CmdExprListOne
-   | open='genimplicitsurf' name=ident LPAREN expression expression expression expression expression expression expression expression expression RPAREN end='endgenimplicitsurf' # CmdExprListOne
+   | open='gencartesiansurf' name=ident argFunc LPAREN expression expression expression expression expression expression RPAREN end='endgencartesiansurf' # CmdGeneral
+   | open='genparametricsurf' name=ident argFunc LPAREN expression expression expression expression expression expression RPAREN end='endgenparametricsurf' # CmdGeneral
+   | open='genimplicitsurf' name=ident argFunc LPAREN expression expression expression expression expression expression expression expression expression RPAREN end='endgenimplicitsurf' # CmdGeneral
    | open='beziercurve' name=ident idList argSegs* end='endbeziercurve' # CmdIdListOne
    | open='bspline' name=ident argOrder* idList argSegs* end='endbspline' # CmdIdListOne
    | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance

@@ -16,16 +16,19 @@ class CGenParametricSurf : public CMesh
 public:
     DECLARE_META_CLASS(CGenParametricSurf, CMesh);
     CGenParametricSurf() = default;
-    CGenParametricSurf(const std::string& name)
+    CGenParametricSurf(const std::string& name, const std::string& func)
         : CMesh(std::move(name))
+        , Func(std::move(func))
     {
     }
 
+    const std::string& GetFunc() const { return Func; }
     void UpdateEntity() override;
 
 
 private:
     //..
+    std::string Func;
 };
 
 }

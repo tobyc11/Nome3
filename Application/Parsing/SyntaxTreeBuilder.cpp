@@ -247,6 +247,21 @@ antlrcpp::Any CFileBuilder::visitCmdExprListOne(NomParser::CmdExprListOneContext
     return cmd;
 }
 
+
+// Brandon's shape gen
+antlrcpp::Any CFileBuilder::visitCmdGeneral(NomParser::CmdGeneralContext* context)
+{
+    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
+    cmd->PushPositionalArgument(visit(context->name));
+    cmd->AddNamedArgument(visit(context->argFunc()));
+    auto* list = new AST::AVector(ConvertToken(context->LPAREN()), ConvertToken(context->RPAREN()));
+    for (auto* expr : context->expression())
+        list->AddChild(visit(expr).as<AST::AExpr*>());
+    cmd->PushPositionalArgument(list);
+    return cmd;
+}
+
+
 antlrcpp::Any CFileBuilder::visitArgLightColor(NomParser::ArgLightColorContext* ctx)
 {
     auto* arg = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
@@ -259,6 +274,14 @@ antlrcpp::Any CFileBuilder::visitArgLightType(NomParser::ArgLightTypeContext* ct
     auto* result = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
     result->AddChild(visit(ctx->ident()).as<AST::AExpr*>());
     return result;
+}
+
+// Brandon's gen shape generator
+antlrcpp::Any CFileBuilder::visitArgFunc(NomParser::ArgFuncContext* ctx)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
+    arg->AddChild(visit(ctx->ident()).as<AST::AExpr*>());
+    return arg;
 }
 
 antlrcpp::Any CFileBuilder::visitArgCameraProjection(NomParser::ArgCameraProjectionContext *ctx) {
@@ -313,6 +336,7 @@ antlrcpp::Any CFileBuilder::visitCmdIdListOne(NomParser::CmdIdListOneContext* co
         cmd->AddNamedArgument(visit(arg));
     return cmd;
 }
+
 
 antlrcpp::Any CFileBuilder::visitCmdNamedArgs(NomParser::CmdNamedArgsContext* context)
 {

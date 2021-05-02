@@ -37,9 +37,10 @@ void CGenParametricSurf::UpdateEntity()
     double uSegs = (double)u_segs.GetValue(0.0f);
     double vSegs = (double)v_segs.GetValue(0.0f);
 
-    std::string funcConcat = this->GetName(); // ex. funcConcat := x(u,v)|y(u,v)|z(u,v) = "cos(u)*sin(v)|sin(u)*sin(v)|cos(v)"
+    std::string funcConcat = this->GetFunc(); // ex. funcConcat := x(u,v)|y(u,v)|z(u,v) = "cos(u)*sin(v)|sin(u)*sin(v)|cos(v)"
     funcConcat.erase(std::remove(funcConcat.begin(), funcConcat.end(), '"'), funcConcat.end());
     size_t numFuncsInString = std::count(funcConcat.begin(), funcConcat.end(), '|');
+
     if (numFuncsInString != 2) {
         try
         {

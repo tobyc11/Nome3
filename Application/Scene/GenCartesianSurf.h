@@ -16,16 +16,20 @@ class CGenCartesianSurf : public CMesh
 public:
     DECLARE_META_CLASS(CGenCartesianSurf, CMesh);
     CGenCartesianSurf() = default;
-    CGenCartesianSurf(const std::string& name)
+    CGenCartesianSurf(const std::string& name, const std::string& func)
         : CMesh(std::move(name))
+        , Func(std::move(func))
     {
     }
+
+    const std::string& GetFunc() const { return Func; }
 
     void UpdateEntity() override;
 
 
 private:
     //..
+    std::string Func;
 };
 
 }

@@ -93,15 +93,6 @@ point rd  ( 0.05 -0.05 0 ) endpoint
 
 polyline s_crosssection ( ra rb rc rd) endpolyline
 
-sweep s0
-    crosssection s_crosssection endcap endcrosssection
-    path bs1 azimuth {expr $p.fish_sweep_azimuth} twist {expr $p.fish_sweep_twist} mintorsion endpath
-endsweep 
-
-sweep s1
-    crosssection s_crosssection endcap endcrosssection
-    path bs2 azimuth {expr $p.fish_sweep_azimuth} twist {expr $p.fish_sweep_twist} mintorsion endpath
-endsweep 
 
 group g
     instance b1 bs1 scale (4 4 4) surface O endinstance
@@ -113,8 +104,6 @@ group g
     instance b5 bs3 scale (6 6 6) translate (-1 1.5 -2) surface K endinstance
     instance b6 bs4 scale (6 6 6) translate (-1 2.5 -2) surface J endinstance
 
-    instance sw s0 translate (0 -1.5 -2) scale (3 3 3) surface Z endinstance
-    instance sw s1 translate (0 -1.3 -2) scale (3 3 3) surface J endinstance
 endgroup 
 
 instance i1 g endinstance

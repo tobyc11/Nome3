@@ -88,12 +88,12 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "include", ECommandKind::DocEdit },
     { "spiral", ECommandKind::Entity },
     { "sharp", ECommandKind::Entity },
+    { "camera", ECommandKind::Entity },
+    { "light", ECommandKind::Entity },
+    { "viewport", ECommandKind::Entity },
     { "gencartesiansurf", ECommandKind::Entity },
     { "genparametricsurf", ECommandKind::Entity },
-    { "camera", ECommandKind::Entity },
-    { "genimplicitsurf", ECommandKind::Entity },
-    { "light", ECommandKind::Entity },
-    { "viewport", ECommandKind::Entity }
+    { "genimplicitsurf", ECommandKind::Entity }
 
 };
 

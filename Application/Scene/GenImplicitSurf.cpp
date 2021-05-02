@@ -67,17 +67,6 @@ void CGenImplicitSurf::UpdateEntity()
     parser_t parser;
     parser.compile(funcStr, this->expression);
 
-    std::cout << funcStr;
-    std ::cout << "\n" << xStart;
-    std ::cout << "\n" << xEnd;
-    std ::cout << "\n" << yStart;
-    std ::cout << "\n" << yEnd;
-    std ::cout << "\n" << zStart;
-    std ::cout << "\n" << zEnd;
-    std ::cout << "\n" << numSegsX;
-    std ::cout << "\n" << numSegsY;
-    std ::cout << "\n" << numSegsZ;
-
     // runs marching cube algo and then creates vertices & faces
     runMarchingCubes(numSegsX, numSegsY, numSegsZ, xStart, yStart, zStart, xEnd, yEnd, zEnd);
 }

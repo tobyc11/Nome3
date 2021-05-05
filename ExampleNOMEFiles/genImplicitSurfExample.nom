@@ -1,35 +1,46 @@
-#genimplicitsurf "(x^4)+(y^4)+(z^4)+(-5)*((x^2)+(y^2)+(z^2))+11.8" (-3 3 -3 3 -3 3 50 50 50) endgenimplicitsurf
-#instance goursatTangle "(x^4)+(y^4)+(z^4)+(-5)*((x^2)+(y^2)+(z^2))+11.8" endinstance
+### Implicit General Shape Generator Example File ###
+#
+# To display shapes uncomment the pairs of lines under the 'Example Shapes' section below.
+# Uncomment only one pair at a time to avoid shapes intersecting each other.
+#
+# Shapes make take a while to load into scene.
 
-#genimplicitsurf "x^4+y^4+z^4-x^2-y^2-z^2+0.5" (-1.5 1.5 -1.5 1.5 -1.5 1.5 60 60 60) endgenimplicitsurf
-#instance chubbs "x^4+y^4+z^4-x^2-y^2-z^2+0.5" endinstance
 
-#genimplicitsurf "((x^2+y^2-0.852)^2+(z^2-1)^2)*((y^2+z^2-0.852)^2+(x^2-1)^2)*((z^2+x^2-0.852)^2+(y^2-1)^2)-0.01" (-2 2 -2 2 -2 2 60 60 60) endgenimplicitsurf
-#instance bc6 "((x^2+y^2-0.852)^2+(z^2-1)^2)*((y^2+z^2-0.852)^2+(x^2-1)^2)*((z^2+x^2-0.852)^2+(y^2-1)^2)-0.01" endinstance
+surface R color (0.7 0.2 0  ) endsurface # Red
+surface G color (0   0.7 0.2) endsurface # Green
+surface B color (0   0.2 0.7) endsurface # Blue
 
-#genimplicitsurf "400*(x^2*y^2+y^2*z^2+x^2*z^2)-(1-x^2-y^2-z^2)^3" (-1 1 -1 1 -1 1 30 30 30) endgenimplicitsurf
-#instance entzensbergerStar "400*(x^2*y^2+y^2*z^2+x^2*z^2)-(1-x^2-y^2-z^2)^3" endinstance
 
-#genimplicitsurf "400*(x^2*y^2+y^2*z^2+x^2*z^2)-(1-x^2-y^2-z^2)^3-1" (-1.25 1.25 -1.25 1.25 -1.25 1.25 30 30 30) endgenimplicitsurf
-#instance entzensbergerStar_2 "400*(x^2*y^2+y^2*z^2+x^2*z^2)-(1-x^2-y^2-z^2)^3-1" endinstance
+############################ Example Shapes ############################
+#genimplicitsurf goursatTangle func "(x^4)+(y^4)+(z^4)+(-5)*((x^2)+(y^2)+(z^2))+11.8" (-3 3 -3 3 -3 3 50 50 50) endgenimplicitsurf
+#instance s0 goursatTangle surface R endinstance
 
-#genimplicitsurf  "(2.92*(x-1)*x^2*(x+1)+1.7*y^2)^2*(z^2-0.88)^2+(2.92*(y-1)*y^2*(y+1)+1.7*z^2)^2*(x^2-0.88)^2+(2.92*(z-1)*z^2*(z+1)+1.7*x^2)^2*(y^2-0.88)^2-0.07" (-1.5 1.5 -1.5 1.5 -1.5 1.5 40 40 40) endgenimplicitsurf
-#instance bc8_1 "(2.92*(x-1)*x^2*(x+1)+1.7*y^2)^2*(z^2-0.88)^2+(2.92*(y-1)*y^2*(y+1)+1.7*z^2)^2*(x^2-0.88)^2+(2.92*(z-1)*z^2*(z+1)+1.7*x^2)^2*(y^2-0.88)^2-0.07" endinstance
+#genimplicitsurf chubbs func "x^4+y^4+z^4-x^2-y^2-z^2+0.5" (-1.5 1.5 -1.5 1.5 -1.5 1.5 60 60 60) endgenimplicitsurf
+#instance s1 chubbs surface G endinstance
 
-#genimplicitsurf  "(2.92*(x-1)*x^2*(x+1)+1.7*y^2)^2*(z^2-0.88)^2+(2.92*(y-1)*y^2*(y+1)+1.7*z^2)^2*(x^2-0.88)^2+(2.92*(z-1)*z^2*(z+1)+1.7*x^2)^2*(y^2-0.88)^2-0.31" (-1.5 1.5 -1.5 1.5 -1.5 1.5 40 40 40) endgenimplicitsurf
-#instance bc8_2 "(2.92*(x-1)*x^2*(x+1)+1.7*y^2)^2*(z^2-0.88)^2+(2.92*(y-1)*y^2*(y+1)+1.7*z^2)^2*(x^2-0.88)^2+(2.92*(z-1)*z^2*(z+1)+1.7*x^2)^2*(y^2-0.88)^2-0.31" endinstance
+#genimplicitsurf bc6 func "((x^2+y^2-0.852)^2+(z^2-1)^2)*((y^2+z^2-0.852)^2+(x^2-1)^2)*((z^2+x^2-0.852)^2+(y^2-1)^2)-0.01" (-2 2 -2 2 -2 2 60 60 60) endgenimplicitsurf
+#instance s2 bc6 surface B endinstance
 
-#genimplicitsurf "cos(x)+cos(y)+cos(z)" (-6.5 6.5 -6.5 6.5 -6.5 6.5 30 30 30) endgenimplicitsurf
-#instance cosineSegs "cos(x)+cos(y)+cos(z)" scale (0.4 0.4 0.4) endinstance
+#genimplicitsurf entzensbergerStar func "400*(x^2*y^2+y^2*z^2+x^2*z^2)-(1-x^2-y^2-z^2)^3" (-1 1 -1 1 -1 1 30 30 30) endgenimplicitsurf
+#instance s3 entzensbergerStar surface R endinstance
 
-#genimplicitsurf "sin(x*y)+sin(y*z)+sin(z*x)" (-4 4 -4 4 -4 4 50 50 50) endgenimplicitsurf
-#instance waves "sin(x*y)+sin(y*z)+sin(z*x)" endinstance
+#genimplicitsurf bc8_1 func "(2.92*(x-1)*x^2*(x+1)+1.7*y^2)^2*(z^2-0.88)^2+(2.92*(y-1)*y^2*(y+1)+1.7*z^2)^2*(x^2-0.88)^2+(2.92*(z-1)*z^2*(z+1)+1.7*x^2)^2*(y^2-0.88)^2-0.07" (-1.5 1.5 -1.5 1.5 -1.5 1.5 40 40 40) endgenimplicitsurf
+#instance s4 bc8_1 surface G endinstance
 
-genimplicitsurf "if((x^2+y^2+z^2<35),2-(cos(x+(1+sqrt(5))/2*y)+cos(x-(1+sqrt(5))/2*y)+cos(y+(1+sqrt(5))/2*z)+cos(y-(1+sqrt(5))/2*z)+cos(z-(1+sqrt(5))/2*x)+cos(z+(1+sqrt(5))/2*x)),1)" (-5.5 5.5 -5.5 5.5 -5.5 5.5 60 60 60) endgenimplicitsurf
-instance wow "if((x^2+y^2+z^2<35),2-(cos(x+(1+sqrt(5))/2*y)+cos(x-(1+sqrt(5))/2*y)+cos(y+(1+sqrt(5))/2*z)+cos(y-(1+sqrt(5))/2*z)+cos(z-(1+sqrt(5))/2*x)+cos(z+(1+sqrt(5))/2*x)),1)" endinstance
+#genimplicitsurf bc8_2 func "(2.92*(x-1)*x^2*(x+1)+1.7*y^2)^2*(z^2-0.88)^2+(2.92*(y-1)*y^2*(y+1)+1.7*z^2)^2*(x^2-0.88)^2+(2.92*(z-1)*z^2*(z+1)+1.7*x^2)^2*(y^2-0.88)^2-0.31" (-1.5 1.5 -1.5 1.5 -1.5 1.5 40 40 40) endgenimplicitsurf
+#instance s5 bc8_2 surface B endinstance
 
-#genimplicitsurf "if((x^2+y^2>0.05)and(x+y+z>-1),(x^8+y^30+z^8-(x^4+y^50+z^4-0.3))*(x^2+y^2+z^2-0.5),1)" (-2 2 -2 2 -2 2 50 50 50) endgenimplicitsurf
-#instance altar "if((x^2+y^2>0.05)and(x+y+z>-1),(x^8+y^30+z^8-(x^4+y^50+z^4-0.3))*(x^2+y^2+z^2-0.5),1)" endinstance
+#genimplicitsurf cosineSegs func "cos(x)+cos(y)+cos(z)" (-6.5 6.5 -6.5 6.5 -6.5 6.5 30 30 30) endgenimplicitsurf
+#instance s6 cosineSegs scale (0.4 0.4 0.4) surface R endinstance
 
-#genimplicitsurf "if(x>1,x^2+y^2+z^2-16,if(x>-1,x^2+y^2+z^2-9,x^2+y^2+z^2-4))" (-4 4 -4 4 -4 4 60 60 60) endgenimplicitsurf
-#instance nestedcircles "if(x>1,x^2+y^2+z^2-16,if(x>-1,x^2+y^2+z^2-9,x^2+y^2+z^2-4))" endinstance
+#genimplicitsurf waves func "sin(x*y)+sin(y*z)+sin(z*x)" (-4 4 -4 4 -4 4 50 50 50) endgenimplicitsurf
+#instance s7 waves surface G endinstance
+
+#genimplicitsurf wow func "if((x^2+y^2+z^2<35),2-(cos(x+(1+sqrt(5))/2*y)+cos(x-(1+sqrt(5))/2*y)+cos(y+(1+sqrt(5))/2*z)+cos(y-(1+sqrt(5))/2*z)+cos(z-(1+sqrt(5))/2*x)+cos(z+(1+sqrt(5))/2*x)),1)" (-5.5 5.5 -5.5 5.5 -5.5 5.5 60 60 60) endgenimplicitsurf
+#instance s8 wow surface B endinstance
+
+#genimplicitsurf altar func "if((x^2+y^2>0.05)and(x+y+z>-1),(x^8+y^30+z^8-(x^4+y^50+z^4-0.3))*(x^2+y^2+z^2-0.5),1)" (-2 2 -2 2 -2 2 50 50 50) endgenimplicitsurf
+#instance s9 altar surface R endinstance
+
+#genimplicitsurf nestedcircles func "if(x>1,x^2+y^2+z^2-16,if(x>-1,x^2+y^2+z^2-9,x^2+y^2+z^2-4))" (-4 4 -4 4 -4 4 60 60 60) endgenimplicitsurf
+#instance s10 nestedcircles surface G endinstance

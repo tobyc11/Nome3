@@ -48,7 +48,7 @@ void COffsetRefiner::Refine(float height, float width)
     bool needGrid = (width > 0);
     bool needOffset = (height > 0);
 
-    auto vertSize = currMesh.vertList.size(); 
+    auto vertSize = currMesh.vertList.size();
 
     for (int i = 0; i < vertSize; i++) // Randy perhaps vertList is changing size wrong
     {
@@ -78,6 +78,7 @@ void COffsetRefiner::Refine(float height, float width)
     currMesh.computeNormals();
 }
 
+
 void COffsetRefiner::generateNewVertices(Vertex* vertex, float height)
 {
     Vector3 point = vertex->position; // getPosition(vertex);
@@ -95,17 +96,35 @@ void COffsetRefiner::generateNewVertices(Vertex* vertex, float height)
 
     if (vertexEdges[vertex->ID] > 2)
     {
+        std::cout << "vert edges is > 2" << std::endl;
         auto edges = currMesh.randyedgeTable[vertex];
-        for (auto edge : edges) 
+        for (auto edge : edges)
         {
             sumEdges += getEdgeVector(edge, vertex).Normalized();
         }
     }
     else
     {
+        std::cout << "vert edges is <= 2" << std::endl;
         std::vector<Edge*> edges = currMesh.randyedgeTable[vertex]; // vertex.edges().to_vector();
-        Vector3 edge1 = getEdgeVector(edges[0], vertex);
-        Vector3 edge2 = getEdgeVector(edges[1], vertex);
+
+        Vector3 edge1;
+        Vector3 edge2;
+        bool forwardDir = (edges[1]->edge_ID - edges[0]->edge_ID) == 1;
+        if (forwardDir)
+        {
+            std::cout << "1st edge of vert: " << edges[0]->edge_ID << std::endl;
+            std::cout << "2nd edge of this vert: " << edges[1]->edge_ID << std::endl;
+            edge1 = getEdgeVector(edges[0], vertex);
+            edge2 = getEdgeVector(edges[1], vertex);
+        }
+        else // beginning vertex. need to reverse order to get same cross product direction
+        {
+            std::cout << "1st edge of vert: " << edges[1]->edge_ID << std::endl;
+            std::cout << "2nd edge of this vert: " << edges[0]->edge_ID << std::endl;
+            edge1 = getEdgeVector(edges[1], vertex);
+            edge2 = getEdgeVector(edges[0], vertex);
+        }
 
         sumEdges = crossProduct(edge1, edge2);
     }
@@ -114,12 +133,12 @@ void COffsetRefiner::generateNewVertices(Vertex* vertex, float height)
 
     Vector3 newPoint1 = point - sumEdges;
     Vector3 newPoint2 = point + sumEdges;
-
     Vertex* newVert1 = addPoint(newPoint1);
     Vertex* newVert2 = addPoint(newPoint2);
     int size = offsetVertices.size();
     newVertices[vertex->ID] = OffsetVerticesInfo { newVert1, size - 2, newVert2, size - 1 };
 }
+
 
 void COffsetRefiner::generateNewFaceVertices(Face* face, float width, float height)
 {
@@ -224,8 +243,8 @@ void COffsetRefiner::generateNewFaces(Face* face, bool needGrid, bool needOffset
         Vertex* vertex2Top = newVertices[vertex2Id].topVert;
         Vertex* vertex2TopInside = newFaceVertices[faceId][vertex2Id].topVert;
 
-        //std::vector<int> faceIndexList;
-        //faceIndexList = {
+        // std::vector<int> faceIndexList;
+        // faceIndexList = {
         //    vertex1TopInsideIndex,
         //    vertex1TopIndex, // Randy the bug is here, for some reason always 0
         //    vertex2TopIndex, // Randy the bug is here, for some reason always 0
@@ -234,7 +253,8 @@ void COffsetRefiner::generateNewFaces(Face* face, bool needGrid, bool needOffset
         // offsetFaces.push_back(faceIndexList);
 
         // Randy below line to hopefully replace above lines
-        Face* offsetFaceTop = currMesh.addFace({vertex1TopInside, vertex1Top, vertex2Top, vertex2TopInside});
+        Face* offsetFaceTop =
+            currMesh.addFace({ vertex1TopInside, vertex1Top, vertex2Top, vertex2TopInside });
         offsetFaces.push_back(offsetFaceTop);
 
         // Mesh.add_face(newVertexList[vertex1TopInsideIndex],
@@ -248,11 +268,14 @@ void COffsetRefiner::generateNewFaces(Face* face, bool needGrid, bool needOffset
             Vertex* vertex2Bottom = newVertices[vertex2Id].bottomVert;
             Vertex* vertex2BottomInside = newFaceVertices[faceId][vertex2Id].bottomVert;
 
-            Face* offsetFaceBotTop = currMesh.addFace({vertex1BottomInside, vertex1TopInside, vertex2TopInside, vertex2BottomInside});
+            Face* offsetFaceBotTop = currMesh.addFace(
+                { vertex1BottomInside, vertex1TopInside, vertex2TopInside, vertex2BottomInside });
             offsetFaces.push_back(offsetFaceBotTop);
 
-            Face* offsetFaceBot = currMesh.addFace( { vertex1Bottom, vertex1BottomInside, vertex2BottomInside, vertex2Bottom }); // TODO // randy check if the two BottomInside is a typo or
-                                    // should i switch to it
+            Face* offsetFaceBot =
+                currMesh.addFace({ vertex1Bottom, vertex1BottomInside, vertex2BottomInside,
+                                   vertex2Bottom }); // TODO // randy check if the two BottomInside
+                                                     // is a typo or should i switch to it
             offsetFaces.push_back(offsetFaceBot);
         }
     }
@@ -285,7 +308,7 @@ void COffsetRefiner::closeFace(Face* face)
         // check to see if the vertex is on an edge that is on a boundary.. In openMesh,
         // is_boundary() checked if a vertex is adjacent to a boundary edge
 
-        std::vector<Vertex*> verts = { vertex1Top, vertex1Bottom, vertex2Top, vertex2Bottom }; 
+        std::vector<Vertex*> verts = { vertex1Top, vertex1Bottom, vertex2Top, vertex2Bottom };
         std::vector<Edge*> boundaryList = currMesh.boundaryEdgeList();
         bool allOnBoundary = true;
         for (auto vert : verts)
@@ -314,7 +337,8 @@ void COffsetRefiner::closeFace(Face* face)
             // offsetFaces.push_back(faceIndexList);
 
             // Randy added below to replace above lines
-            Face* offsetFaceClose = currMesh.addFace({ vertex1Top, vertex1Bottom, vertex2Bottom, vertex2Top });
+            Face* offsetFaceClose =
+                currMesh.addFace({ vertex1Top, vertex1Bottom, vertex2Bottom, vertex2Top });
             offsetFaces.push_back(offsetFaceClose);
         }
         // if (vertex1Top.is_boundary() && vertex1Bottom.is_boundary() && vertex2Top.is_boundary()

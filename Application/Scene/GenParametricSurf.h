@@ -28,7 +28,7 @@ public:
 
 private:
     //..
-    std::string Func;
+    std::string Func; 
 };
 
 }

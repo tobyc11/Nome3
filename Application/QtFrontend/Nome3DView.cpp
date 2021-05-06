@@ -428,7 +428,7 @@ void CNome3DView::ClearSelectedVertices()
     });
 }
 
-// Randy added on 10/14 to clear face selection
+// Randy added on 10/14 to clear face selection. Only used with "Remove face", which isn't implemented yet.
 void CNome3DView::ClearSelectedFaces()
 {
     SelectedFaces.clear();

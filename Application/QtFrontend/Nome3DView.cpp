@@ -869,6 +869,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
                 if (position == SelectedVertices.end())
                 { // if this vertex has not been selected before
                     SelectedVertices.push_back(vertName); // add vertex to selected vertices
+                    meshInst->MarkVertAsSelected({ vertName }, InputSharpness());
                     GFrtCtx->MainWindow->statusBar()->showMessage(
                         QString::fromStdString("Selected " + vertName));
                 }
@@ -887,7 +888,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
                     const auto& [dist, meshInst, overlapvertName] = hits[i];
                     if (round(dist * 100) == selected_dist)
                     {
-                        meshInst->MarkVertAsSelected({ overlapvertName }, InputSharpness());
+                        meshInst->MarkVertAsSelected({ overlapvertName }, -1); // TODO: Fix this -1 sharpness logic. Should overlapping vertices have the same sharpness?
                     }
                 }
             }
@@ -1101,7 +1102,6 @@ void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
 // Xinyu add on Oct 8 for rotation
 void CNome3DView::mousePressEvent(QMouseEvent* e)
 {
-    std::cout << "PRESSED " << std::endl;
     // material->setAlpha(0.7f);
 
     rotationEnabled = e->button() == Qt::RightButton ? false : true;
@@ -1158,7 +1158,6 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
 void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
 {
     // material->setAlpha(0.0f);
-    std::cout << "RELEASED " << std::endl;
     mousePressEnabled = false;
     rotationEnabled = true;
 }

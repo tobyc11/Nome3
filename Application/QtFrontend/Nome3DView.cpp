@@ -1101,6 +1101,7 @@ void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
 // Xinyu add on Oct 8 for rotation
 void CNome3DView::mousePressEvent(QMouseEvent* e)
 {
+    std::cout << "PRESSED " << std::endl;
     // material->setAlpha(0.7f);
 
     rotationEnabled = e->button() == Qt::RightButton ? false : true;
@@ -1157,7 +1158,7 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
 void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
 {
     // material->setAlpha(0.0f);
-
+    std::cout << "RELEASED " << std::endl;
     mousePressEnabled = false;
     rotationEnabled = true;
 }

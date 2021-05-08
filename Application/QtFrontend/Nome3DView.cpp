@@ -428,7 +428,7 @@ void CNome3DView::ClearSelectedVertices()
     });
 }
 
-// Randy added on 10/14 to clear face selection
+// Randy added on 10/14 to clear face selection. Only used with "Remove face", which isn't implemented yet.
 void CNome3DView::ClearSelectedFaces()
 {
     SelectedFaces.clear();
@@ -869,6 +869,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
                 if (position == SelectedVertices.end())
                 { // if this vertex has not been selected before
                     SelectedVertices.push_back(vertName); // add vertex to selected vertices
+                    meshInst->MarkVertAsSelected({ vertName }, InputSharpness());
                     GFrtCtx->MainWindow->statusBar()->showMessage(
                         QString::fromStdString("Selected " + vertName));
                 }
@@ -887,7 +888,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
                     const auto& [dist, meshInst, overlapvertName] = hits[i];
                     if (round(dist * 100) == selected_dist)
                     {
-                        meshInst->MarkVertAsSelected({ overlapvertName }, InputSharpness());
+                        meshInst->MarkVertAsSelected({ overlapvertName }, -1); // TODO: Fix this -1 sharpness logic. Should overlapping vertices have the same sharpness?
                     }
                 }
             }
@@ -1157,7 +1158,6 @@ void CNome3DView::mouseMoveEvent(QMouseEvent* e)
 void CNome3DView::mouseReleaseEvent(QMouseEvent* e)
 {
     // material->setAlpha(0.0f);
-
     mousePressEnabled = false;
     rotationEnabled = true;
 }

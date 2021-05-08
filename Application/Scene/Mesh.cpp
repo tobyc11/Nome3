@@ -528,8 +528,7 @@ void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, b
                 } while (currEdge != firstEdge);
             }
         }
-
-        else
+        else // if already selected, deselect (face returns to original color)
         {
             currFace->selected = false;   
         }
@@ -669,7 +668,17 @@ void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames, f
 
 void CMeshInstance::DeselectAll()
 {
-//    for (const auto& name : CurrSelectedVertNames)
+    for (auto vert : currMesh.vertList) {
+        vert->selected = false;
+        GetSceneTreeNode()->SetEntityUpdated(true);
+    }
+
+    for (auto face : currMesh.faceList) {
+        face->selected = false;
+        GetSceneTreeNode()->SetEntityUpdated(true);
+    }
+    
+    //    for (const auto& name : CurrSelectedVertNames)
 //    {
 //        auto handle = NameToVert[name];
 //        Mesh.set_color(handle, { VERT_COLOR });

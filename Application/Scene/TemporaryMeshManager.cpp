@@ -15,7 +15,6 @@ namespace Nome::Scene
 
 std::string CTemporaryMeshManager::AddPoint(std::vector<std::string> pos)
 {
-    std::cout << pos[0] << " " <<  pos[1] << " " << pos[2] << "TempMesh AddPoint DEBUG" << std::endl;
     std::string pointName = "__tempPoint" + std::to_string(num_points);                     
     AST::ACommand* pointCmd =
         new AST::ACommand(new AST::CToken("point", 0, 1), new AST::CToken("endpoint", 0, 1));
@@ -175,7 +174,6 @@ void CTemporaryMeshManager::SelectOrDeselectPolyline(const std::vector<std::stri
     std::string removeName;
     for (auto name : AddedTempPolylineNodeNames)
     {
-        std::cout << "name: " + name << std::endl;
         if (searchpoint0.find(name) != std::string::npos
             && searchpoint1.find(name) != std::string::npos)
         {
@@ -194,7 +192,6 @@ void CTemporaryMeshManager::SelectOrDeselectPolyline(const std::vector<std::stri
         Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
             if (node->GetOwner()->GetName() == removeName)
             { // removeName includes the "inst" as prefix
-                std::cout << removeName << std::endl;
                 node->GetOwner()->SetEntity(nullptr);
             }
         });
@@ -209,7 +206,6 @@ void CTemporaryMeshManager::SelectOrDeselectPolyline(const std::vector<std::stri
                      // points  start w/ ".cube1.front.p1.cube1.front.p4" and end with ._
         Scene->AddEntity(tc::static_pointer_cast<CEntity>(polyline));
         auto sceneNode = Scene->GetRootNode()->CreateChildNode("inst" + polyName);
-        std::cout << "inst" + polyName << std::endl;
         AddedTempPolylineNodeNames.push_back("inst" + polyName);
         auto entity = Scene->FindEntity(polyName);
         sceneNode->SetEntity(entity);

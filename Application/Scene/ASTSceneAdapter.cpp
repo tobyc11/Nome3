@@ -330,7 +330,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 }
                 else if (auto* point = dynamic_cast<CPoint*>(entity.Get()))
                 {
-                    mesh->Points.Connect(point->Point); // Randy added on 12/5
+                    mesh->Points.Connect(point->Point); // Randy added on 12/5 to allow points to be of a mesh
                 }
 
             // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one

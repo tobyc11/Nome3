@@ -631,11 +631,8 @@ void CNome3DView::PickFaceWorldRay(tc::Ray& ray)
 void CNome3DView::PickEdgeWorldRay(tc::Ray& ray)
 {
     rotateRay(ray);
-    std::vector<std::tuple<float, Scene::CMeshInstance*, std::vector<std::string>>>
-        hits; // note the string is a vector of strings
+    std::vector<std::tuple<float, Scene::CMeshInstance*, std::vector<std::string>>>hits;
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
-        std::cout << "Currently in NOME3DView's PickEdgeWorldRay. At node: " + node->GetPath()
-                  << std::endl;
         // Obtain either an instance entity or a shared entity from the scene node
         auto* entity = node->GetInstanceEntity();
         if (!entity)
@@ -719,8 +716,7 @@ void CNome3DView::PickPolylineWorldRay(tc::Ray& ray)
         {
             const auto& l2w = node->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
             auto localRay = ray.Transformed(l2w.Inverse());
-            localRay.Direction =
-                localRay.Direction
+            localRay.Direction = localRay.Direction
                     .Normalized(); // Normalize to fix "scale" error caused by l2w.Inverse()
 
             auto* meshInst = dynamic_cast<Scene::CMeshInstance*>(entity);
@@ -862,8 +858,8 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
             auto sel = table->selectedItems();
             if (!sel.empty())
             {
-                int row = sel[0]->row();
-                const auto& [dist, meshInst, vertName] = hits[row];
+                int rowNum = sel[0]->row();
+                const auto& [dist, meshInst, vertName] = hits[rowNum];
                 std::vector<std::string>::iterator position =
                     std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
                 if (position == SelectedVertices.end())
@@ -885,10 +881,17 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
                 // mark all those that share the same location
                 for (int i = 0; i < hits.size(); i++)
                 {
-                    const auto& [dist, meshInst, overlapvertName] = hits[i];
-                    if (round(dist * 100) == selected_dist)
+                    if (i != rowNum)
                     {
-                        meshInst->MarkVertAsSelected({ overlapvertName }, -1); // TODO: Fix this -1 sharpness logic. Should overlapping vertices have the same sharpness?
+                        const auto& [dist, meshInst, overlapvertName] = hits[i];
+                        if (round(dist * 100) == selected_dist)
+                        {
+                            std::cout << "mark overlap vert: " << overlapvertName << std::endl;
+                            meshInst->MarkVertAsSelected(
+                                { overlapvertName },
+                                -1); // TODO: Fix this -1 sharpness logic. Should overlapping
+                                     // vertices have the same sharpness?
+                        }
                     }
                 }
             }
@@ -981,14 +984,10 @@ int LineLineIntersect(tc::Vector3 p1, tc::Vector3 p2, tc::Vector3 p3, tc::Vector
 // Creates ray OR adds hit point on ray
 void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
 {
-    std::cout << "Inside RenderRay" << std::endl;
     rotateRay(ray);
 
     if (RayVertPositions.size() == 0) // Create Ray Mode
     {
-        std::cout << "CREATE RAY MODE: current Ray Origin" << ray.Origin.x << " " << ray.Origin.y
-                  << " " << ray.Origin.z << "   CREATE RAY MODE: Ray Dir" << ray.Direction.x << " "
-                  << ray.Direction.y << " " << ray.Direction.z << std::endl;
         std::vector<std::tuple<float, Scene::CMeshInstance*, tc::Vector3>> hits;
         Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
             // Obtain either an instance entity or a shared entity from the scene node
@@ -1104,10 +1103,11 @@ void CNome3DView::mousePressEvent(QMouseEvent* e)
 {
     // material->setAlpha(0.7f);
 
-    rotationEnabled = e->button() == Qt::RightButton ? false : true;
+    // Clicking with left button enables rotation
+    rotationEnabled = e->button() == Qt::RightButton ? false : true; 
     // Save mouse press position
     firstPosition = QVector2D(e->localPos());
-    mousePressEnabled = true;
+    mousePressEnabled = true; // TODO: this is the Windowsbug. It's not being turned off when we click on a vertex.
 }
 
 void CNome3DView::mouseMoveEvent(QMouseEvent* e)
@@ -1268,6 +1268,7 @@ void CNome3DView::rotateRay(tc::Ray& ray)
 void CNome3DView::FreeVertexSelection() { vertexSelectionEnabled = false; }
 float CNome3DView::InputSharpness()
 {
+    mousePressEnabled = false; // Randy added this to fix annoying Windows bug where mousePressEvent is not triggered when clicking on a pop-up NOME window (e.g., sharpness)
     bool ok;
 
     float sharpness =

@@ -93,7 +93,7 @@ private:
     QVector2D GetProjectionPoint(QVector2D originalPosition);
     static QVector3D GetCrystalPoint(QVector2D originalPoint);
     void rotateRay(tc::Ray& ray);
-    static float InputSharpness();
+    float InputSharpness(); // Randy removed static
 
 private:
     Qt3DCore::QEntity* Root;

@@ -117,7 +117,7 @@ CDataStructureMeshToQGeometry::CDataStructureMeshToQGeometry(
                  // the 4th vert and beyond, we send to builder again, creating another triangle.
             {
                 // Note: this is how we "triangulate" the meshes. It's just a visual triangulation.
-                // The half edge data structure was created for the added face, not the triangulated
+                // The winged data structure was used for the added face, not the triangulated
                 // one passed into the shader.
                 const auto& posVec = currVert->position;
                 vCurr.Pos = { posVec.x, posVec.y, posVec.z };

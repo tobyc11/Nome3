@@ -591,21 +591,15 @@ void CMainWindow::PostloadSetup()
         // Randy added this on 11/5 for edge selection
         if (!Nome3DView->GetSelectedEdgeVertices().empty())
         {
-            std::cout << "Here are the edge vertex names right before creating poly: "
-                    + Nome3DView->GetSelectedEdgeVertices()[0] + " "
-                    + Nome3DView->GetSelectedEdgeVertices()[1]
-                      << std::endl;
             TemporaryMeshManager->SelectOrDeselectPolyline(Nome3DView->GetSelectedEdgeVertices());
             Nome3DView->ClearSelectedEdges(); // TODO: This is assuming can only add one edge a time
         }
         if (Nome3DView->RayCasted) {
-            std::cout << "DISPLAY RAY" << std::endl;
             displayRay(); // Display the ray in GUI
             Nome3DView->RayCasted = false;
         }
         if (Nome3DView->GetInteractivePoint().size() != 0)
         {
-            std::cout << "GET INTER" << std::endl;
             displayPoint(); // and hides ray
         }
         Scene->SetTime((float) elapsedRender->elapsed() / 1000);

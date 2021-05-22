@@ -29,29 +29,16 @@ public:
 
     void InsertText(size_t globalOffset, const std::string& text);
     void RemoveText(size_t globalOffset, size_t length);
-    void ReportErros(std::string code);
+    void ReportErros(std::string code); 
     bool balancedbracket(std::string expr);
-    std::vector<std::string> CheckStatement(std::vector<std::vector<std::string>> parsedcode,
-                                            std::unordered_map<std::string, std::string> idmap,
-                                            std::string endstatement, int i, int j,
-                                            std::unordered_map<std::string, std::string> shapemap);
-    std::vector<std::string> CheckInstance(std::vector<std::vector<std::string>> parsedcode,
-                                           std::unordered_map<std::string, std::string> idmap,
-                                           int i, int j,
-                                           std::unordered_map<std::string, std::string> shapemap);
-    std::vector<std::string> CheckGroup(std::vector<std::vector<std::string>> parsedcode,
-                                        std::unordered_map<std::string, std::string>& idmap, int i,
-                                        int j,
-                                        std::unordered_map<std::string, std::string> shapemap);
-    std::vector<std::string> CheckBank(std::vector<std::vector<std::string>> parsedcode,
-                                       std::unordered_map<std::string, std::string>& referencemap,
-                                       std::unordered_map<std::string, std::string>& idmap, int i,
-                                       int j,
-                                       std::unordered_map<std::string, std::string> shapemap);
-    std::vector<std::string>
-    CheckSubdivision(std::vector<std::vector<std::string>> parsedcode,
-                     std::unordered_map<std::string, std::string>& idmap, int i, int j,
-                     std::unordered_map<std::string, std::string> shapemap);
+    bool ParameterCheck(std::string code, int numparams);
+    std::vector<std::string> CheckStatement(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> idmap, std::string endstatement, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckInstance(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckGroup(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string>& idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckBank(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &referencemap, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckSubdivision(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckMesh(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::string RemoveSpecials(std::string str);
     bool isNumber(std::string s);
     int checkcount(std::string str, char letter);
     [[nodiscard]] std::string CollectText() const;

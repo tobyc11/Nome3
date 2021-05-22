@@ -34,7 +34,8 @@ void CGenCartesianSurf::UpdateEntity()
     double ySegs = (double)y_segs.GetValue(0.0f);
 
     std::string funcZ = this->GetFunc(); // ex. funcZ := z(x,y) = "(4*x)+(3*sin(y))"
-    funcZ.erase(std::remove(funcZ.begin(), funcZ.end(), '"'), funcZ.end());
+    funcZ.erase(std::remove(funcZ.begin(), funcZ.end(), '['), funcZ.end());
+    funcZ.erase(std::remove(funcZ.begin(), funcZ.end(), ']'), funcZ.end());
 
     typedef exprtk::symbol_table<double> symbol_table_t;
     typedef exprtk::expression<double>     expression_t;

@@ -54,7 +54,8 @@ void CGenImplicitSurf::UpdateEntity()
 
     std::string funcStr = this->GetFunc(); // ex. funcStr := z(x,y) =
                                            // "(x^4)+(y^4)+(z^4)+(-5)*((x^2)+(y^2)+(z^2))+11.8"
-    funcStr.erase(std::remove(funcStr.begin(), funcStr.end(), '"'), funcStr.end());
+    funcStr.erase(std::remove(funcStr.begin(), funcStr.end(), '['), funcStr.end());
+    funcStr.erase(std::remove(funcStr.begin(), funcStr.end(), ']'), funcStr.end());
 
     // Register symbols with the symbol_table
     this->symbol_table.add_constants();

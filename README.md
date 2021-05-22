@@ -10,7 +10,7 @@ This is a quick setup for new students working on Nome3 on Mac. If the below ins
 
 Go to your desired repository in your terminal and run the following command to add all the Nome3 files and required submodules.
 ```
-git clone --recursive https://github.com/randyfan/NOME3
+git clone --recursive https://github.com/JIPCAD/NOME3
 ```
 
 Nome3 requires the most recent version of its dependencies so run:

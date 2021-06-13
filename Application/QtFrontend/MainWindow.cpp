@@ -423,7 +423,6 @@ void CMainWindow::on_actionToggleVertexSelection_triggered()
         if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
             mesh->MarkDirty();
     });
-    std::cout << "at end of toggle vert" << std::endl;
 }
 
 

@@ -347,7 +347,7 @@ void CMainWindow::displayRay()
     Nome3DView->ClearSelectedEdges(); ////TODO: CHANGE THSI.  Commented out. Only clear points after point has been selected
 }
 
-
+// used for adding a point into the scene
 void CMainWindow::displayPoint()
 {
     std::vector<std::string> allPointNames;
@@ -423,6 +423,7 @@ void CMainWindow::on_actionToggleVertexSelection_triggered()
         if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
             mesh->MarkDirty();
     });
+    std::cout << "at end of toggle vert" << std::endl;
 }
 
 

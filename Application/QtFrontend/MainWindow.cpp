@@ -368,7 +368,7 @@ void CMainWindow::displayPoint()
 
 
 
-// Toggle on/off Ray Rendering
+// Toggle on/off Ray Rendering. Works, but the saving point mechanism is buggy.
 void CMainWindow::on_actionToggleRenderRay_triggered()
 {
     Nome3DView->RenderRayBool = !Nome3DView->RenderRayBool;
@@ -414,6 +414,23 @@ void CMainWindow::on_actionShowFacets_triggered()
 void CMainWindow::on_actionToggleVertexSelection_triggered()
 {
     Nome3DView->PickVertexBool = !Nome3DView->PickVertexBool;
+    Nome3DView->VertexSharpnessBool = false; // ensure vertex sharpness is not on
+    // mark all mesh instances dirty. Added on 11/26
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+
+        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+            mesh->MarkDirty();
+    });
+}
+
+// Toggle on/off Vertex selection
+void CMainWindow::on_actionToggleSharpVertexSelection_triggered()
+{
+    Nome3DView->PickVertexBool = !Nome3DView->PickVertexBool;
+    Nome3DView->VertexSharpnessBool = !Nome3DView->VertexSharpnessBool; // ensure vertex sharpness is not on
     // mark all mesh instances dirty. Added on 11/26
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         auto* entity = node->GetInstanceEntity();

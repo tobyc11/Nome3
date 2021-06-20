@@ -770,7 +770,7 @@ void CNome3DView::PickPolylineWorldRay(tc::Ray& ray)
             "No edge hit or more than one edge hit. Please select again");
 }
 
-void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
+void CNome3DView::PickVertexWorldRay(tc::Ray& ray, bool sharpSelection)
 {
     rotateRay(ray);
     std::vector<std::tuple<float, Scene::CMeshInstance*, std::string>> hits;
@@ -800,6 +800,8 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
 
     if (hits.size() == 1)
     {
+        mousePressEnabled = false; // Randy added this to fix annoying Windows bug where mousePressEvent is not
+                   // triggered when clicking on a pop-up NOME window (e.g., sharpness)
         const auto& [dist, meshInst, vertName] = hits[0];
         auto position = std::find(SelectedVertices.begin(), SelectedVertices.end(), vertName);
         if (position == SelectedVertices.end()) // if this vertex has not been selected before
@@ -814,11 +816,19 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
             GFrtCtx->MainWindow->statusBar()->showMessage(
                 QString::fromStdString("Deselected " + vertName));
         }
-
-        meshInst->MarkVertAsSelected({ vertName }, InputSharpness());
+        if (sharpSelection)
+        {
+            meshInst->MarkVertAsSelected({ vertName }, InputSharpness());
+        }
+        else
+        {
+            meshInst->MarkVertAsSelected({ vertName }, 0);
+        }
     }
-    else if (!hits.empty())
+    else if (hits.size() > 1)
     {
+        mousePressEnabled = false; // Randy added this to fix annoying Windows bug where mousePressEvent is not
+                   // triggered when clicking on a pop-up NOME window (e.g., sharpness)
         // Show a dialog for the user to choose one vertex
         auto* dialog = new QDialog(GFrtCtx->MainWindow);
         dialog->setModal(true);
@@ -854,7 +864,7 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
         auto* layout2 = new QVBoxLayout();
         auto* btnOk = new QPushButton();
         btnOk->setText("OK");
-        connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits]() {
+        connect(btnOk, &QPushButton::clicked, [this, dialog, table, hits, sharpSelection]() {
             auto sel = table->selectedItems();
             if (!sel.empty())
             {
@@ -865,11 +875,18 @@ void CNome3DView::PickVertexWorldRay(tc::Ray& ray)
                 if (position == SelectedVertices.end())
                 { // if this vertex has not been selected before
                     SelectedVertices.push_back(vertName); // add vertex to selected vertices
-                    meshInst->MarkVertAsSelected({ vertName }, InputSharpness());
+                    if (sharpSelection)
+                    {
+                        meshInst->MarkVertAsSelected({ vertName }, InputSharpness());
+                    }
+                    else
+                    {
+                        meshInst->MarkVertAsSelected({ vertName }, 0);
+                    }
                     GFrtCtx->MainWindow->statusBar()->showMessage(
                         QString::fromStdString("Selected " + vertName));
                 }
-                else // else, this vertex has been selected previously
+                else // else, this vertex has been selected previously, so we deselect it
                 {
                     SelectedVertices.erase(position);
                     GFrtCtx->MainWindow->statusBar()->showMessage(
@@ -1268,7 +1285,6 @@ void CNome3DView::rotateRay(tc::Ray& ray)
 void CNome3DView::FreeVertexSelection() { vertexSelectionEnabled = false; }
 float CNome3DView::InputSharpness()
 {
-    mousePressEnabled = false; // Randy added this to fix annoying Windows bug where mousePressEvent is not triggered when clicking on a pop-up NOME window (e.g., sharpness)
     bool ok;
 
     float sharpness =

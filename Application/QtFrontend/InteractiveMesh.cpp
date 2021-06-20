@@ -223,7 +223,9 @@ void CInteractiveMesh::InitInteractions()
             if (GFrtCtx->NomeView->RenderRayBool)
                 GFrtCtx->NomeView->RenderRay(ray, wi); // Randy added this on 2/26
             if (GFrtCtx->NomeView->PickVertexBool)
-                GFrtCtx->NomeView->PickVertexWorldRay(ray);
+            {
+                GFrtCtx->NomeView->PickVertexWorldRay(ray, GFrtCtx->NomeView->VertexSharpnessBool);
+            }
             if (GFrtCtx->NomeView->PickEdgeBool)
                 GFrtCtx->NomeView->PickEdgeWorldRay(ray);
             if (GFrtCtx->NomeView->PickFaceBool)

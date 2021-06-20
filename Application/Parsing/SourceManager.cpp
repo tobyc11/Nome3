@@ -8,6 +8,9 @@
 #include <stack>
 #include <unordered_map>
 #include <utility>
+#include <ctype.h>
+#include <regex>
+
 
 namespace Nome
 {
@@ -109,28 +112,67 @@ bool CSourceManager::balancedbracket(std::string codeline) {
     return (stk.empty()); 
 }
 
-bool CSourceManager::ParameterCheck(std::string code, int numparams) {
+std::vector<std::string> removeDupWord(std::string str) {
+    std::string word = "";
+    std::vector<std::string> parsedcode;
+    for (auto x : str) {
+        if (x == ' ') {
+            parsedcode.push_back(word);
+            word = "";
+        }
+        else {
+            word = word + x;
+        }
+    }
+    parsedcode.push_back(word);
+    return parsedcode;
+}
+
+bool CSourceManager::ParameterCheck(std::vector<std::string> code, std::string type, int numparams) {
     int start; 
     int end;
-    for (int i = 0; i < code.length(); i++) {
-        if (code[i] == '(') {
+    std::string concatstr = "";
+    for (int i = 0; i < code.size(); i++) {
+        concatstr += RemoveSpecials(code[i]);
+        concatstr += " ";
+    }
+    for (int i = 0; i < concatstr.length(); i++) {
+        if (concatstr[i] == '(') {
             start = i;
-        } else if (code[i] == ')') {
+        }
+        if (concatstr[i] == ')') {
             end = i; 
         }
     }
-    std::string parenthesiscode = code.substr(start, end);
-    std::string space_delimiter = " ";
+    std::string parenthesiscode = concatstr.substr(start + 1, end-start - 1);
+    // std::string space_delimiter = " ";
     std::vector<std::string> words{};
-    size_t pos = 0;
-    while ((pos = parenthesiscode.find(space_delimiter)) != std::string::npos) {
-        words.push_back(parenthesiscode.substr(0, pos));
-        parenthesiscode.erase(0, pos + space_delimiter.length());
+    // size_t pos = 0;
+    // std::string backup = "";
+    // while ((pos = parenthesiscode.find(space_delimiter)) != std::string::npos) {
+    //     words.push_back(parenthesiscode.substr(0, pos));
+    //     backup = parenthesiscode;
+    //     parenthesiscode.erase(0, pos + space_delimiter.length());
+    // }
+    // words.push_back(backup);
+    words = removeDupWord(parenthesiscode);
+    std::cout << words.size() << std::endl; 
+    
+    if (words.size() != numparams) {
+        return false;
     }
-    if (words.size() == numparams) {
-        return true;
+    if (type == "circle") {
+        for (int i = 0; i < words.size(); i++) {
+            std::cout << words[i] << std::endl;
+            // if (!isNumber(words[i])) {
+            //     std::cout << "Well sth happend here" << std::endl;
+            //     std::cout << isNumber(words[i]) << std::endl;
+            //     std::cout << words[i] << std::endl;
+            //     return false;
+            // }
+        }
     }
-    return false; 
+    return true; 
 }
 void CSourceManager::ReportErros(std::string code) {
     size_t pos = 0; 
@@ -237,7 +279,18 @@ void CSourceManager::ReportErros(std::string code) {
                 auto cast = shapemap.find(element);
                 std::string endval = cast -> second;
                 std::vector<std::string> result;
-                if (element == "group") {
+                if (element == "circle") {
+                    if (j == line.size() - 1) {
+                        result = CheckCircle(parsedcode, idmap, i + 1, 0, shapemap);
+                    } else {
+                        result = CheckCircle(parsedcode, idmap, i, j + 1, shapemap);
+                    }
+                    if (result[0] == "error") {
+                        return;
+                    }
+                    i = std::stoi(result[0]);
+                    j = std::stoi(result[1]);
+                } else if (element == "group") {
                     if (j == line.size() - 1) {
                         result = CheckGroup(parsedcode, idmap, i + 1, 0, shapemap);
                     } else {
@@ -714,6 +767,67 @@ std::vector<std::string> CSourceManager::CheckMesh(std::vector<std::vector<std::
         }
     }
     std::cout << "Error at Line " + std::to_string(i + 1) + ": endmesh expected" << std::endl;
+    return {std::to_string(global_k), std::to_string(global_l)};
+}
+
+std::vector<std::string> CSourceManager::CheckCircle(std::vector<std::vector<std::string>> parsedcode,
+                                                        std::unordered_map<std::string, std::string> &idmap,
+                                                        int i, int j,
+                                                        std::unordered_map<std::string, std::string> shapemap) {
+    bool first_time = true;
+    std::string id;
+    int global_k;
+    int global_l;
+    int cnt = 1;
+    for (int k = 0; k < parsedcode.size(); k++) {
+        if (first_time == true) {
+            k = i;
+        }
+        std::vector<std::string> line = parsedcode.at(k);
+        for (int l = 0; l < line.size(); l++) {
+            if (first_time == true) {
+                l = j;
+                first_time = false;
+                id = RemoveSpecials(line.at(l));
+                if ((idmap.find(id))!= idmap.end()) {
+                    std::cout << "Error at Line " + std::to_string(i + 1) + ": " + id + " is already being used." << std::endl;
+                    return {"error"};
+                }
+                idmap[id] = "TRUE";
+                cnt++; 
+                continue;
+            }
+            global_k = k;
+            global_l = l;
+            std::vector<std::string> result;
+            std::string element = RemoveSpecials(line.at(l));
+            if (cnt == 2 && element.find('(') != std::string::npos) {
+                if (!ParameterCheck(line, "circle", 2)) {
+                    std::cout << "Error at Line " + std::to_string(i + 1) + ": Invalid Parameters for type circle." << std::endl;
+                    return {"error"};
+                }
+                continue; 
+
+            } else if (element == "endcircle") {
+                std::vector<std::string> ret;
+                if (l == line.size() - 1) {
+                    ret = {std::to_string(k), std::to_string(l)};
+                } else {
+                    ret = {std::to_string(k), std::to_string(l)};
+                }
+                return ret;
+            } else {
+                std::cout << "Error at Line " + std::to_string(k + 1) + ": Invalid expressions for type circle." << std::endl;
+                return {"error"};
+            }
+            k = std::stoi(result[0]);
+            l = std::stoi(result[1]);
+            std::string elemid = result[2];
+            idmap[elemid] = "TRUE";
+            cnt++;
+        }
+    }
+    std::cout << "Error at Line " + std::to_string(i + 1) + ": endcircle expected" << std::endl;
     return {std::to_string(global_k), std::to_string(global_l)};
 }
 

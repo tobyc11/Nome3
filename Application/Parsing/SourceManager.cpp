@@ -129,20 +129,26 @@ std::vector<std::string> removeDupWord(std::string str) {
 }
 
 bool CSourceManager::ParameterCheck(std::vector<std::string> code, std::string type, int numparams) {
-    int start; 
-    int end;
+    int start = 0; 
+    int end = 0;
     std::string concatstr = "";
     for (int i = 0; i < code.size(); i++) {
         concatstr += RemoveSpecials(code[i]);
         concatstr += " ";
     }
     for (int i = 0; i < concatstr.length(); i++) {
+        if (concatstr[i] == '#') {
+            break;
+        }
         if (concatstr[i] == '(') {
             start = i;
         }
         if (concatstr[i] == ')') {
             end = i; 
         }
+    }
+    if (start == 0 || end == 0) {
+        return false;
     }
     std::string parenthesiscode = concatstr.substr(start + 1, end-start - 1);
     // std::string space_delimiter = " ";
@@ -156,20 +162,12 @@ bool CSourceManager::ParameterCheck(std::vector<std::string> code, std::string t
     // }
     // words.push_back(backup);
     words = removeDupWord(parenthesiscode);
-    std::cout << words.size() << std::endl; 
     
     if (words.size() != numparams) {
         return false;
     }
-    if (type == "circle") {
+    if (type == "circle" || type == "point") {
         for (int i = 0; i < words.size(); i++) {
-            std::cout << words[i] << std::endl;
-            // if (!isNumber(words[i])) {
-            //     std::cout << "Well sth happend here" << std::endl;
-            //     std::cout << isNumber(words[i]) << std::endl;
-            //     std::cout << words[i] << std::endl;
-            //     return false;
-            // }
         }
     }
     return true; 
@@ -284,6 +282,17 @@ void CSourceManager::ReportErros(std::string code) {
                         result = CheckCircle(parsedcode, idmap, i + 1, 0, shapemap);
                     } else {
                         result = CheckCircle(parsedcode, idmap, i, j + 1, shapemap);
+                    }
+                    if (result[0] == "error") {
+                        return;
+                    }
+                    i = std::stoi(result[0]);
+                    j = std::stoi(result[1]);
+                } else if (element == "point") {
+                    if (j == line.size() - 1) {
+                        result = CheckPoint(parsedcode, idmap, i + 1, 0, shapemap);
+                    } else {
+                        result = CheckPoint(parsedcode, idmap, i, j + 1, shapemap);
                     }
                     if (result[0] == "error") {
                         return;
@@ -801,9 +810,8 @@ std::vector<std::string> CSourceManager::CheckCircle(std::vector<std::vector<std
             global_l = l;
             std::vector<std::string> result;
             std::string element = RemoveSpecials(line.at(l));
-            std::cout << element <<std::endl;
-            if (cnt > 5) {
-                std::cout << "Error at Line " + std::to_string(k + 1) + ": Invalid expressions for type circle." << std::endl;
+            if (cnt > 4) {
+                std::cout << "Error at Line " + std::to_string(k + 1) + ": endcircle expected." << std::endl;
                 return {"error"};
             }
             if (cnt == 2 && element.find('(') != std::string::npos) {
@@ -832,6 +840,70 @@ std::vector<std::string> CSourceManager::CheckCircle(std::vector<std::vector<std
         }
     }
     std::cout << "Error at Line " + std::to_string(i + 1) + ": endcircle expected" << std::endl;
+    return {std::to_string(global_k), std::to_string(global_l)};
+}
+
+std::vector<std::string> CSourceManager::CheckPoint(std::vector<std::vector<std::string>> parsedcode,
+                                                        std::unordered_map<std::string, std::string> &idmap,
+                                                        int i, int j,
+                                                        std::unordered_map<std::string, std::string> shapemap) {
+    bool first_time = true;
+    std::string id;
+    int global_k;
+    int global_l;
+    int cnt = 1;
+    for (int k = 0; k < parsedcode.size(); k++) {
+        if (first_time == true) {
+            k = i;
+        }
+        std::vector<std::string> line = parsedcode.at(k);
+        for (int l = 0; l < line.size(); l++) {
+            if (first_time == true) {
+                l = j;
+                first_time = false;
+                id = RemoveSpecials(line.at(l));
+                if ((idmap.find(id))!= idmap.end()) {
+                    std::cout << "Error at Line " + std::to_string(i + 1) + ": " + id + " is already being used." << std::endl;
+                    return {"error"};
+                }
+                idmap[id] = "TRUE";
+                cnt++; 
+                continue;
+            }
+            global_k = k;
+            global_l = l;
+            std::vector<std::string> result;
+            std::string element = RemoveSpecials(line.at(l));
+            if (cnt > 5) {
+                std::cout << "Error at Line " + std::to_string(i + 1) + ": endpoint expected" << std::endl;
+                return {"error"};
+            }
+            if (cnt == 2 && element.find('(') != std::string::npos) {
+                if (!ParameterCheck(line, "point", 3)) {
+                    std::cout << "Error at Line " + std::to_string(i + 1) + ": Invalid Parameters for type point." << std::endl;
+                    return {"error"};
+                }
+                continue; 
+
+            } else if (element == "endpoint") {
+                std::vector<std::string> ret;
+                if (l == line.size() - 1) {
+                    ret = {std::to_string(k), std::to_string(l)};
+                } else {
+                    ret = {std::to_string(k), std::to_string(l)};
+                }
+                return ret;
+            } else {
+                continue;
+            }
+            k = std::stoi(result[0]);
+            l = std::stoi(result[1]);
+            std::string elemid = result[2];
+            idmap[elemid] = "TRUE";
+            cnt++;
+        }
+    }
+    std::cout << "Error at Line " + std::to_string(i + 1) + ": endpoint expected" << std::endl;
     return {std::to_string(global_k), std::to_string(global_l)};
 }
 

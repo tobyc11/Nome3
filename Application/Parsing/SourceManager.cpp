@@ -801,6 +801,11 @@ std::vector<std::string> CSourceManager::CheckCircle(std::vector<std::vector<std
             global_l = l;
             std::vector<std::string> result;
             std::string element = RemoveSpecials(line.at(l));
+            std::cout << element <<std::endl;
+            if (cnt > 5) {
+                std::cout << "Error at Line " + std::to_string(k + 1) + ": Invalid expressions for type circle." << std::endl;
+                return {"error"};
+            }
             if (cnt == 2 && element.find('(') != std::string::npos) {
                 if (!ParameterCheck(line, "circle", 2)) {
                     std::cout << "Error at Line " + std::to_string(i + 1) + ": Invalid Parameters for type circle." << std::endl;
@@ -817,8 +822,7 @@ std::vector<std::string> CSourceManager::CheckCircle(std::vector<std::vector<std
                 }
                 return ret;
             } else {
-                std::cout << "Error at Line " + std::to_string(k + 1) + ": Invalid expressions for type circle." << std::endl;
-                return {"error"};
+                continue;
             }
             k = std::stoi(result[0]);
             l = std::stoi(result[1]);

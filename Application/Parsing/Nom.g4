@@ -67,6 +67,8 @@ argTwist : 'twist' expression ;
 argReverse : 'reverse' ;
 argMintorsion : 'mintorsion' ;
 argFunc : 'func' ident ;
+argBotCap : 'botcap' ;
+argTopCap : 'topcap' ;
 
 command
    : open='point' name=ident LPAREN expression expression expression RPAREN end='endpoint' # CmdExprListOne
@@ -81,7 +83,7 @@ command
    | open='spiral' name=ident LPAREN expression expression expression RPAREN end='endspiral' # CmdExprListOne
    | open='sphere' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endsphere' # CmdExprListOne
    | open='ellipsoid' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endellipsoid' # CmdExprListOne
-   | open='cylinder' name=ident LPAREN expression expression expression expression RPAREN end='endcylinder' # CmdExprListOne
+   | open='cylinder' name=ident LPAREN expression expression expression expression (argBotCap | argTopCap)* RPAREN end='endcylinder' # CmdExprListOne
    | open='hyperboloid' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endhyperboloid' # CmdExprListOne
    | open='dupin' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='enddupin' # CmdExprListOne
    | open='mobiusstrip' name=ident LPAREN expression expression expression expression RPAREN end='endmobiusstrip' # CmdExprListOne

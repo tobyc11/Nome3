@@ -220,6 +220,18 @@ antlrcpp::Any CFileBuilder::visitArgColor(NomParser::ArgColorContext* context)
     return result;
 }
 
+antlrcpp::Any CFileBuilder::visitArgBotCap(NomParser::ArgBotCapContext* context)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    return arg;
+}
+
+antlrcpp::Any CFileBuilder::visitArgTopCap(NomParser::ArgTopCapContext* context)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(context->getStart()));
+    return arg;
+}
+
 antlrcpp::Any CFileBuilder::visitIdList(NomParser::IdListContext *context)
 {
     auto* list = new AST::AVector(ConvertToken(context->LPAREN()), ConvertToken(context->RPAREN()));
@@ -244,6 +256,12 @@ antlrcpp::Any CFileBuilder::visitCmdExprListOne(NomParser::CmdExprListOneContext
     for (auto* expr : context->expression())
         list->AddChild(visit(expr).as<AST::AExpr*>());
     cmd->PushPositionalArgument(list);
+
+    for (auto* arg : context->argBotCap())
+        cmd->AddNamedArgument(visit(arg));
+    for (auto* arg : context->argTopCap())
+        cmd->AddNamedArgument(visit(arg));
+
     return cmd;
 }
 

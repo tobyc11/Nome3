@@ -279,6 +279,20 @@ antlrcpp::Any CFileBuilder::visitCmdGeneral(NomParser::CmdGeneralContext* contex
     return cmd;
 }
 
+antlrcpp::Any CFileBuilder::visitCmdGeneralParametric(NomParser::CmdGeneralParametricContext* context)
+{
+    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
+    cmd->PushPositionalArgument(visit(context->name));
+    cmd->AddNamedArgument(visit(context->argFuncX()));
+    cmd->AddNamedArgument(visit(context->argFuncY()));
+    cmd->AddNamedArgument(visit(context->argFuncZ()));
+    auto* list = new AST::AVector(ConvertToken(context->LPAREN()), ConvertToken(context->RPAREN()));
+    for (auto* expr : context->expression())
+        list->AddChild(visit(expr).as<AST::AExpr*>());
+    cmd->PushPositionalArgument(list);
+    return cmd;
+}
+
 
 antlrcpp::Any CFileBuilder::visitArgLightColor(NomParser::ArgLightColorContext* ctx)
 {
@@ -296,6 +310,30 @@ antlrcpp::Any CFileBuilder::visitArgLightType(NomParser::ArgLightTypeContext* ct
 
 // Brandon's gen shape generator
 antlrcpp::Any CFileBuilder::visitArgFunc(NomParser::ArgFuncContext* ctx)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
+    arg->AddChild(visit(ctx->ident()).as<AST::AExpr*>());
+    return arg;
+}
+
+// Brandon's gen parametric shape generator
+antlrcpp::Any CFileBuilder::visitArgFuncX(NomParser::ArgFuncXContext* ctx)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
+    arg->AddChild(visit(ctx->ident()).as<AST::AExpr*>());
+    return arg;
+}
+
+// Brandon's gen parametric shape generator
+antlrcpp::Any CFileBuilder::visitArgFuncY(NomParser::ArgFuncYContext* ctx)
+{
+    AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
+    arg->AddChild(visit(ctx->ident()).as<AST::AExpr*>());
+    return arg;
+}
+
+// Brandon's gen parametric shape generator
+antlrcpp::Any CFileBuilder::visitArgFuncZ(NomParser::ArgFuncZContext* ctx)
 {
     AST::ANamedArgument* arg = new AST::ANamedArgument(ConvertToken(ctx->getStart()));
     arg->AddChild(visit(ctx->ident()).as<AST::AExpr*>());

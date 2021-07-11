@@ -85,31 +85,30 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             GeometryRenderer->setGeometry(Geometry);
             GeometryRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Triangles);
             this->addComponent(GeometryRenderer); // adding geometry data to interactive mesh
-
-            if (showVertBox) {
+            std::string xmlPath = "";
+            if (showVertBox)
+            {
                 /// TODO: alow the debug draw
-                std::string xmlPath = "";
-                if (!showVertBox)
-                    xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
-                else
-                    xmlPath = CResourceMgr::Get().Find("DebugDrawLineWITHVERTBOX.xml");
-
-                // May need to optimize this in the future. Cause we're parsing the file everytime the node is marked dirty, even though we could keep the material the same if that was not changed
-                PointEntity = new Qt3DCore::QEntity(this);
-                auto *lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
-                PointMaterial = lineMat;
-                PointMaterial->setParent(this);
-                PointEntity->addComponent(PointMaterial);
-
-                // PointGeometry = meshToQGeometry.GetPointGeometry();
-                PointGeometry = DSmeshToQGeometry.GetPointGeometry();
-                PointGeometry->setParent(PointEntity);
-                PointRenderer = new Qt3DRender::QGeometryRenderer(PointEntity);
-                PointRenderer->setGeometry(PointGeometry);
-                PointRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
-                PointEntity->addComponent(PointRenderer);
+                xmlPath = CResourceMgr::Get().Find("DebugDrawLineWITHVERTBOX.xml");
             }
+            else if (!showVertBox)
+            {
+                xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
+            }
+            // May need to optimize this in the future. Cause we're parsing the file everytime the node is marked dirty, even though we could keep the material the same if that was not changed
+            PointEntity = new Qt3DCore::QEntity(this);
+            auto *lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
+            PointMaterial = lineMat;
+            PointMaterial->setParent(this);
+            PointEntity->addComponent(PointMaterial);
 
+            // PointGeometry = meshToQGeometry.GetPointGeometry();
+            PointGeometry = DSmeshToQGeometry.GetPointGeometry();
+            PointGeometry->setParent(PointEntity);
+            PointRenderer = new Qt3DRender::QGeometryRenderer(PointEntity);
+            PointRenderer->setGeometry(PointGeometry);
+            PointRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Points);
+            PointEntity->addComponent(PointRenderer);
         }
         else
         {
@@ -224,7 +223,9 @@ void CInteractiveMesh::InitInteractions()
             if (GFrtCtx->NomeView->RenderRayBool)
                 GFrtCtx->NomeView->RenderRay(ray, wi); // Randy added this on 2/26
             if (GFrtCtx->NomeView->PickVertexBool)
-                GFrtCtx->NomeView->PickVertexWorldRay(ray);
+            {
+                GFrtCtx->NomeView->PickVertexWorldRay(ray, GFrtCtx->NomeView->VertexSharpnessBool);
+            }
             if (GFrtCtx->NomeView->PickEdgeBool)
                 GFrtCtx->NomeView->PickEdgeWorldRay(ray);
             if (GFrtCtx->NomeView->PickFaceBool)

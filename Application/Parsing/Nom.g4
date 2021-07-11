@@ -67,6 +67,9 @@ argTwist : 'twist' expression ;
 argReverse : 'reverse' ;
 argMintorsion : 'mintorsion' ;
 argFunc : 'func' ident ;
+argFuncX : 'funcX' ident ;
+argFuncY : 'funcY' ident ;
+argFuncZ : 'funcZ' ident ;
 argBotCap : 'botcap' ;
 argTopCap : 'topcap' ;
 
@@ -93,7 +96,7 @@ command
    | open='torusknot' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorusknot' # CmdExprListOne
    | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
    | open='gencartesiansurf' name=ident argFunc LPAREN expression expression expression expression expression expression RPAREN end='endgencartesiansurf' # CmdGeneral
-   | open='genparametricsurf' name=ident argFunc LPAREN expression expression expression expression expression expression RPAREN end='endgenparametricsurf' # CmdGeneral
+   | open='genparametricsurf' name=ident argFuncX argFuncY argFuncZ LPAREN expression expression expression expression expression expression RPAREN end='endgenparametricsurf' # CmdGeneralParametric
    | open='genimplicitsurf' name=ident argFunc LPAREN expression expression expression expression expression expression expression expression expression RPAREN end='endgenimplicitsurf' # CmdGeneral
    | open='beziercurve' name=ident idList argSegs* end='endbeziercurve' # CmdIdListOne
    | open='bspline' name=ident argOrder* idList argSegs* end='endbspline' # CmdIdListOne
@@ -123,11 +126,12 @@ set : open='set' ident expression expression expression expression;
 
 deleteFace : open='face' ident end='endface' ;
 
-IDENT : VALID_ID_START VALID_ID_CHAR* | QUOTE VALID_ID_FUNC* QUOTE ;
+IDENT : VALID_ID_START VALID_ID_CHAR* | OPENBRACKET VALID_ID_FUNC* CLOSEBRACKET ;
 fragment VALID_ID_START : ('a' .. 'z') | ('A' .. 'Z') | '_' | '.' ;
 fragment VALID_ID_CHAR : VALID_ID_START | ('0' .. '9') ;
 fragment VALID_ID_FUNC : VALID_ID_CHAR | '(' | ')' | '*' | '/' | '+' | '!' | '%' | '=' | '^' | '-' | '|' | ',' | '<' | '>' ;
-fragment QUOTE : '"' ;
+fragment OPENBRACKET : '[' ;
+fragment CLOSEBRACKET : ']' ;
 
 //The NUMBER part gets its potential sign from "(PLUS | MINUS)* atom" in the expression rule
 SCIENTIFIC_NUMBER : NUMBER (E SIGN? UNSIGNED_INTEGER)? ;

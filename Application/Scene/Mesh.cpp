@@ -636,8 +636,6 @@ void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames, f
         auto DSvert = iter->second;
         if (std::find(CurrSelectedVertNamesWithPrefix.begin(), CurrSelectedVertNamesWithPrefix.end(), name) == CurrSelectedVertNamesWithPrefix.end())
         { // if hasn't been selected before
-            std::cout << "setting vert to selected" + iter->first << std::endl;
-
             if (sharpness >= 0)
                 DSvert->sharpness = sharpness;
             DSvert->selected = true;
@@ -647,7 +645,6 @@ void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames, f
         }
         else // it has already been selected, then reset to default color
         {
-            std::cout << "deselecting vert" + iter->first << std::endl;
             DSvert->selected = false;
             auto iter1 = std::find(CurrSelectedVertNames.begin(), CurrSelectedVertNames.end(),
                                     name.substr(prefixLen));

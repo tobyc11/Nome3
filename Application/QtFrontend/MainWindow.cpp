@@ -347,7 +347,7 @@ void CMainWindow::displayRay()
     Nome3DView->ClearSelectedEdges(); ////TODO: CHANGE THSI.  Commented out. Only clear points after point has been selected
 }
 
-
+// used for adding a point into the scene
 void CMainWindow::displayPoint()
 {
     std::vector<std::string> allPointNames;
@@ -368,7 +368,7 @@ void CMainWindow::displayPoint()
 
 
 
-// Toggle on/off Ray Rendering
+// Toggle on/off Ray Rendering. Works, but the saving point mechanism is buggy.
 void CMainWindow::on_actionToggleRenderRay_triggered()
 {
     Nome3DView->RenderRayBool = !Nome3DView->RenderRayBool;
@@ -414,6 +414,23 @@ void CMainWindow::on_actionShowFacets_triggered()
 void CMainWindow::on_actionToggleVertexSelection_triggered()
 {
     Nome3DView->PickVertexBool = !Nome3DView->PickVertexBool;
+    Nome3DView->VertexSharpnessBool = false; // ensure vertex sharpness is not on
+    // mark all mesh instances dirty. Added on 11/26
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+
+        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+            mesh->MarkDirty();
+    });
+}
+
+// Toggle on/off Vertex selection
+void CMainWindow::on_actionToggleSharpVertexSelection_triggered()
+{
+    Nome3DView->PickVertexBool = !Nome3DView->PickVertexBool;
+    Nome3DView->VertexSharpnessBool = !Nome3DView->VertexSharpnessBool; // ensure vertex sharpness is not on
     // mark all mesh instances dirty. Added on 11/26
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         auto* entity = node->GetInstanceEntity();
@@ -591,21 +608,15 @@ void CMainWindow::PostloadSetup()
         // Randy added this on 11/5 for edge selection
         if (!Nome3DView->GetSelectedEdgeVertices().empty())
         {
-            std::cout << "Here are the edge vertex names right before creating poly: "
-                    + Nome3DView->GetSelectedEdgeVertices()[0] + " "
-                    + Nome3DView->GetSelectedEdgeVertices()[1]
-                      << std::endl;
             TemporaryMeshManager->SelectOrDeselectPolyline(Nome3DView->GetSelectedEdgeVertices());
             Nome3DView->ClearSelectedEdges(); // TODO: This is assuming can only add one edge a time
         }
         if (Nome3DView->RayCasted) {
-            std::cout << "DISPLAY RAY" << std::endl;
             displayRay(); // Display the ray in GUI
             Nome3DView->RayCasted = false;
         }
         if (Nome3DView->GetInteractivePoint().size() != 0)
         {
-            std::cout << "GET INTER" << std::endl;
             displayPoint(); // and hides ray
         }
         Scene->SetTime((float) elapsedRender->elapsed() / 1000);

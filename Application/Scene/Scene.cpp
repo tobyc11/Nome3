@@ -106,38 +106,59 @@ TAutoPtr<CSceneNode> CScene::FindGroup(const std::string& name) const
 
 Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) const
 {
-    // The for loop below is used to determine if a point is a referencing a mesh point vs a global
-    // point
-    // Make sure there is not a mesh point with the same name. Inefficient O(n) lookup. Optimize in
-    // the future. Randy added on 12/9
-    for (const auto& NameEntity : EntityLibrary)
-    {
-        auto idWithPeriod = "." + id;
-        auto entityName = NameEntity.first;
-        auto entity = NameEntity.second;
-        if (entity.Get()->GetMetaObject().ClassName() == "CPoint")
-        {
-            if (entityName.find(idWithPeriod)
-                != std::string::npos) // meshName.pointName is the convention for mesh points //
-                                      // TODO : bug is meshName.faceName is the convention for
-                                      // meshFaces.
-            {
-                auto meshName = entityName.substr(0, entityName.find(idWithPeriod));
+    /* Find the point that is being referenced using the following naming convetions:
+    Case #1. .pointID = global point
+    Case #2. pointID  = mesh point in the mesh command we're currently constructing
+    Case #3. meshID.pointID =  mesh point in the mesh command w/ the ID "meshName". If the ID refers
+    to the current mesh, it works but is redudant w/ Case #2. 
+    Case #4. instanceID.pointID = point in a mesh/polyline-related instance with the ID "instanceID".
+    */
+   
 
-                // Check if the mesh has already been fully visited. If it HASN'T, then we are
-                // currently in the process of visiting its subcommands so we would use the mesh's
-                // point
-                if (std::find(orderedMeshNames.begin(), orderedMeshNames.end(), meshName)
-                    == orderedMeshNames.end())
+    // Handle case #2. This handles the case where "pointName" should refer to a point in a mesh we're currently parsing
+    // If the id does not have a period, it is not a global point nor a different mesh's point
+    if (id.find('.') == std::string::npos)
+    { 
+        for (const auto& NameEntity : EntityLibrary)
+        {
+            // Recall all entities were named EntityNamePrefix + cmd->GetName() in ASTSceneAdapter.cpp
+            // e.g., most shape generators (including global points/faces) are simply named after their
+            // ID e.g, points defined within a mesh construct are named meshID.pointID e.g., faces
+            // defined within a mesh construct are named meshID.faceID
+            std::string idWithPeriod = "." + id;
+            auto entity = NameEntity.second;
+            if (entity.Get()->GetMetaObject().ClassName() == "CPoint")
+            {
+                std::string pointName = NameEntity.first; // entity is guaranteed to be a point entity
+                // if pointName has ".id" suffix (this implies the pointName is located in a mesh)
+                if (pointName.find(idWithPeriod) != std::string::npos)
                 {
-                    return FindPointOutput(
-                        entityName); // Find point output using the desired mesh point
+                    // Extract from meshName from meshName.pointName
+                    std::string meshName = pointName.substr(0, pointName.find(idWithPeriod));
+
+                    // if the mesh is not previously defined, then the pointName is defined in a mesh
+                    // we're currently visiting (haven't visited all its subcommands yet)! We need to treat
+                    // this special case because the id parameter is currently just "ID", when we really
+                    // want the point named "meshID.pointID". side note: if the mesh is previosly
+                    // defined, then the below BFS will find the correct point for us
+                    if (std::find(orderedMeshNames.begin(), orderedMeshNames.end(), meshName)
+                        == orderedMeshNames.end())
+                    {
+                        // we've now figured out the id argument is actually referring to meshID.pointID
+                        // for a mesh we haven't finished parsing yet.
+                        return FindPointOutput(pointName);
+                    }
                 }
             }
         }
     }
 
-    auto iter = EntityLibrary.find(id);
+    size_t charsToIgnore = 0;
+    if (id[0] == '.')
+        charsToIgnore = 1;
+
+    // Handle case #1, #2, #3
+    auto iter = EntityLibrary.find(id.substr(charsToIgnore, id.size()));
 
     if (iter != EntityLibrary.end())
     {
@@ -147,17 +168,14 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
         {
             return &point->Point;
         }
-        TAutoPtr<CSweepControlPoint> controlPoint =
-            dynamic_cast<CSweepControlPoint*>(ent.Get());
+        TAutoPtr<CSweepControlPoint> controlPoint = dynamic_cast<CSweepControlPoint*>(ent.Get());
         if (controlPoint)
         {
             return &controlPoint->SweepControlPoint;
         }
     }
 
-    size_t charsToIgnore = 0;
-    if (id[0] == '.')
-        charsToIgnore = 1;
+    // Handle case #4 (also the specific case #4 where the pointID refers to a mesh point)
     // Descend down the scene tree starting from the root
     CSceneTreeNode* currNode = *RootNode->GetTreeNodes().begin();
     while (true)
@@ -167,26 +185,41 @@ Flow::TOutput<CVertexInfo*>* CScene::FindPointOutput(const std::string& id) cons
         size_t nextDot = id.find('.', charsToIgnore);
         if (nextDot != std::string::npos)
         {
+            // nextSeg = instance node name
             std::string nextSeg = id.substr(charsToIgnore, nextDot - charsToIgnore);
-            //cout << "curr nextSeg: " + nextSeg << endl;
-            nextNode = currNode->FindChild(nextSeg);
+            nextNode = currNode->FindChild(nextSeg); 
         }
-
         if (!nextNode)
         {
             if (auto* meshInstance = dynamic_cast<CMeshInstance*>(currNode->GetInstanceEntity()))
             {
                 std::string idTurnedVertName = id;
                 std::replace(idTurnedVertName.begin(), idTurnedVertName.end(), '.', '_');
-                //cout << "curr idTurnedVertName: " + idTurnedVertName << endl;
-                //cout << charsToIgnore << endl;
-                auto* point =
-                    meshInstance->CreateVertexSelector(id.substr(charsToIgnore), idTurnedVertName);
+                // Handle special case #4 that references a mesh point. e.g., instanceID.pointID where pointID should refer to meshID.pointID entity.
+                for (const auto& NameEntity : EntityLibrary)
+                {
+                    auto name = NameEntity.first;
+                    auto entity = NameEntity.second;
+                    // Check if adding this entity's name creates a valid name (e.g., mesh2.meshPointID). If so, we find the point correspoding to this combined name
+                    auto potentialMeshPointName = name + "." + id.substr(charsToIgnore);
+                    if (EntityLibrary.count(potentialMeshPointName) != 0)
+                    {
+                        // Handle case #4 that uses a mesh point in the mesh command
+                        if (NameEntity.first.find(id.substr(charsToIgnore)))
+                        {
+                            TAutoPtr<CEntity> ent = EntityLibrary.at(potentialMeshPointName);
+                            TAutoPtr<CPoint> point = dynamic_cast<CPoint*>(ent.Get());
+                            if (point)
+                            {
+                                return &point->Point;
+                            }
+                        }
+                    }
+        
+                }
+                auto* point = meshInstance->CreateVertexSelector(id.substr(charsToIgnore), idTurnedVertName);
                 if (point)
                 {
-                    //cout << meshInstance->GetName() << endl;
-                    //cout << "congrats, found point: " + idTurnedVertName << endl;
-                    //cout << "aka " + id.substr(charsToIgnore) << endl;
                     return &point->Point;
                 }
                 else

@@ -60,7 +60,7 @@ public:
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
-    void PickVertexWorldRay(tc::Ray& ray);
+    void PickVertexWorldRay(tc::Ray& ray, bool sharpSelection);
     void PickFaceWorldRay(tc::Ray& ray); // Randy added on 10/10
     void PickEdgeWorldRay(tc::Ray& ray); // Randy added on 10/29
     void PickPolylineWorldRay(tc::Ray& ray); // Randy added on 12/22
@@ -72,11 +72,12 @@ public:
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
 
-    bool PickVertexBool = false; // Randy added on 11/5
-    bool PickFaceBool = false; // Randy added on 11/5
-    bool PickEdgeBool = false; // Randy added on 11/5
-    bool PickPolylineBool = false; // Randy added on 12/22
-    bool RenderRayBool = false; // Randy added on 2/26
+    bool PickVertexBool = false; // Randy added on 11/5/20
+    bool VertexSharpnessBool = false; // Randy added on 6/20/21
+    bool PickFaceBool = false; // Randy added on 11/5/20
+    bool PickEdgeBool = false; // Randy added on 11/5/20
+    bool PickPolylineBool = false; // Randy added on 12/22/20
+    bool RenderRayBool = false; // Randy added on 2/26/20
     bool RayCasted = false;
     std::unordered_set<CInteractiveLight*> InteractiveLights;
 
@@ -93,7 +94,7 @@ private:
     QVector2D GetProjectionPoint(QVector2D originalPosition);
     static QVector3D GetCrystalPoint(QVector2D originalPoint);
     void rotateRay(tc::Ray& ray);
-    static float InputSharpness();
+    float InputSharpness(); // Randy removed static
 
 private:
     Qt3DCore::QEntity* Root;

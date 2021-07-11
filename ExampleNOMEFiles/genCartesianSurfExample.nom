@@ -12,14 +12,14 @@ surface B color (0   0.2 0.7) endsurface # Blue
 
 
 ############################ Example Shapes ############################
-#gencartesiansurf example0 func "(7*x*y)/exp((x^2)+(y^2))" (-2 2 -2 2 40 40) endgencartesiansurf
-#instance s0 example0 surface R endinstance
+gencartesiansurf example0 func [(7*x*y)/exp((x^2)+(y^2))] (-2 2 -2 2 40 40) endgencartesiansurf
+instance s0 example0 surface R endinstance
 
-#gencartesiansurf example1 func "((y^2)/1.5)-((x^2)/2)" (-3 3 -3 3 40 40) endgencartesiansurf
+#gencartesiansurf example1 func [((y^2)/1.5)-((x^2)/2)] (-3 3 -3 3 40 40) endgencartesiansurf
 #instance s1 example1 surface G endinstance
 
-#gencartesiansurf example2 func "sin(10(x^2+y^2))/10" (-3 3 -3 3 30 30) endgencartesiansurf
+#gencartesiansurf example2 func [sin(10(x^2+y^2))/10] (-3 3 -3 3 30 30) endgencartesiansurf
 #instance s2 example2 surface B endinstance
 
-#gencartesiansurf example3 func "sin(5x)*cos(5y)/5" (-3 3 -3 3 30 30) endgencartesiansurf
+#gencartesiansurf example3 func [sin(5x)*cos(5y)/5] (-3 3 -3 3 30 30) endgencartesiansurf
 #instance s3 example3 surface R endinstance

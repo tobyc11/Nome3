@@ -96,7 +96,6 @@ void COffsetRefiner::generateNewVertices(Vertex* vertex, float height)
 
     if (vertexEdges[vertex->ID] > 2)
     {
-        std::cout << "vert edges is > 2" << std::endl;
         auto edges = currMesh.randyedgeTable[vertex];
         for (auto edge : edges)
         {
@@ -105,7 +104,6 @@ void COffsetRefiner::generateNewVertices(Vertex* vertex, float height)
     }
     else
     {
-        std::cout << "vert edges is <= 2" << std::endl;
         std::vector<Edge*> edges = currMesh.randyedgeTable[vertex]; // vertex.edges().to_vector();
 
         Vector3 edge1;

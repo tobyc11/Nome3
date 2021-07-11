@@ -64,7 +64,7 @@ private slots:
     void on_actionAddFace_triggered();
     void on_actionAddPolyline_triggered(); 
 
-     void on_actionRemoveFace_triggered(); // Randy added this
+     void on_actionRemoveFace_triggered(); // Randy added this. Buggy implementation.
     // void on_actionSharpenFace_triggered(); // Randy added this. Not currently used.
 
     /* Randy temporarily commenting out due to temporarymeshmanager changes
@@ -78,6 +78,7 @@ private slots:
 
     void on_actionShowFacets_triggered(); // Randy added this
     void on_actionToggleVertexSelection_triggered(); // Randy added this on 11/5
+    void on_actionToggleSharpVertexSelection_triggered(); // Randy added this on 6/20/2021
     void on_actionToggleEdgeSelection_triggered(); // Randy added this on 11/5
     void on_actionTogglePolylineSelection_triggered(); // Randy added this on 12/22
     void on_actionToggleFaceSelection_triggered(); // Randy added this on 11/5

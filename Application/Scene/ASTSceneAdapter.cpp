@@ -271,11 +271,19 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
             }
             else if (cmd->GetCommand() == "genparametricsurf")
             {
-                auto func = cmd->GetNamedArgument("func")->GetArgument(
+                auto funcX = cmd->GetNamedArgument("funcX")->GetArgument(
                     0)[0]; // Returns a casted AExpr that was an AIdent before casting
-                std::string funcIdentifier =
-                    static_cast<AST::AIdent*>(&func)->ToString(); // Downcast it back to an AIdent
-                entity = new CGenParametricSurf(EntityNamePrefix + cmd->GetName(), funcIdentifier);
+                std::string funcIdentifierX =
+                    static_cast<AST::AIdent*>(&funcX)->ToString(); // Downcast it back to an AIdent
+                auto funcY = cmd->GetNamedArgument("funcY")->GetArgument(
+                    0)[0]; // Returns a casted AExpr that was an AIdent before casting
+                std::string funcIdentifierY =
+                    static_cast<AST::AIdent*>(&funcY)->ToString(); // Downcast it back to an AIdent
+                auto funcZ = cmd->GetNamedArgument("funcZ")->GetArgument(
+                    0)[0]; // Returns a casted AExpr that was an AIdent before casting
+                std::string funcIdentifierZ =
+                    static_cast<AST::AIdent*>(&funcZ)->ToString(); // Downcast it back to an AIdent
+                entity = new CGenParametricSurf(EntityNamePrefix + cmd->GetName(), funcIdentifierX, funcIdentifierY, funcIdentifierZ);
             }
             else if (cmd->GetCommand() == "genimplicitsurf")
             {
@@ -330,7 +338,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 }
                 else if (auto* point = dynamic_cast<CPoint*>(entity.Get()))
                 {
-                    mesh->Points.Connect(point->Point); // Randy added on 12/5
+                    mesh->Points.Connect(point->Point); // Randy added on 12/5 to allow points to be of a mesh
                 }
 
             // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one

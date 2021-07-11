@@ -118,7 +118,6 @@ void CSweep::drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
         // make rotations
         Vector3 point = bReverse ^ shouldReverse ?
                         crossSection[crossSection.size() - i - 1] : crossSection[i];
-        std::cout << rotateAngle <<  " rotateAngleSweepDebug" << std::endl;
         float x = point.x * controlScale.x * cosf(rotateAngle) -
                   point.y * controlScale.y * sinf(rotateAngle);
         float y = point.x * controlScale.x * sinf(rotateAngle) +
@@ -370,7 +369,6 @@ void CSweep::UpdateEntity()
     for (size_t i = 1; i < numPoints; i++)
     {
         shouldFlip ^= controlReverses[i];
-        std::cout << "shouldFlip: " << shouldFlip << " " << controlReverses[i] << std::endl;
         if (i == numPoints - 1)
         {
             if (isClosed)

@@ -13,13 +13,13 @@ DEFINE_META_OBJECT(CSweep)
     BindPositionalArgument(&CSweep::Path, 2, 0);
     BindNamedArgument(&CSweep::Azimuth, "azimuth", 0);
     BindNamedArgument(&CSweep::Twist, "twist", 0);
-    BindNamedArgument(&CSweep::bStartCap, "startcap", 0);
+    BindNamedArgument(&CSweep::bBeginCap, "begincap", 0);
     BindNamedArgument(&CSweep::bEndCap, "endcap", 0);
     BindNamedArgument(&CSweep::bReverse, "reverse", 0);
     BindNamedArgument(&CSweep::bMintorsion, "mintorsion", 0);
 }
 
-// do cross pruduct with vectorA and vectorB
+// do cross product with vectorA and vectorB
 Vector3 CSweepMath::crossProduct(Vector3 vectorA, Vector3 vectorB)
 {
     return Vector3(vectorA.y * vectorB.z - vectorA.z * vectorB.y,
@@ -77,7 +77,7 @@ float CSweepMath::calculateRotateAngle(Vector3 vectorA, Vector3 vectorB, Vector3
 
 Vector3 CSweepMath::getDefaultN(Vector3 T)
 {
-    if (T.Normalized() != Vector3(1, 0, 0))
+    if (T.Normalized() != Vector3(1, 0, 0) && T.Normalized() != Vector3(-1, 0, 0))
         return crossProduct(T, Vector3(1, 0, 0));
     else
         return crossProduct(T, Vector3(0, 1, 0));
@@ -123,7 +123,7 @@ void CSweep::drawCrossSection(std::vector<Vector3> crossSection, Vector3 center,
                   point.y * controlScale.y * sinf(rotateAngle);
         float y = point.x * controlScale.x * sinf(rotateAngle) +
                   point.y * controlScale.y *cosf(rotateAngle);
-        // do thransform
+        // do transform
         Vector3 transformVector = N * x * scaleN + B * y ;
         // add offset
         Vector3 curVertex = center + transformVector;
@@ -180,7 +180,7 @@ void CSweep::UpdateEntity()
     size_t numPoints = pathInfo->Positions.size();
     // if the number of points cannot build a model, exit
     if ((!isClosed && numPoints < 2) || (isClosed && numPoints < 3) ||
-        crossSectionInfo->Positions.size() < 3) { return; }
+        crossSectionInfo->Positions.size() < 2) { return; }
 
     std::vector<Vector3> points;
     // Normal vectors of each paths
@@ -462,13 +462,14 @@ void CSweep::UpdateEntity()
                 };
             }
             AddFace("f" + std::to_string(k) + "_" + std::to_string(i), upperFace);
+            std::cout <<  "Face Added Debug" << std::endl;
         }
     }
 
     // Create caps
     // Cannot create caps when the path is closed
     if (isClosed) { return; }
-    if (bStartCap) { drawCap(crossSections[0], 1, segmentCount++ - 1, true); }
+    if (bBeginCap) { drawCap(crossSections[0], 1, segmentCount++ - 1, true); }
     if (bEndCap)
     {
         int index = crossSections.size() - 1;

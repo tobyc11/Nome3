@@ -44,7 +44,7 @@ private:
     void drawCap(std::vector<Vector3> crossSection, int crossIndex,
                  int faceIndex, bool shouldFlip);
     CSweepMath Math = CSweepMath();
-    bool bStartCap = false;
+    bool bBeginCap = false;
     bool bEndCap = false;
     bool bMintorsion = false;
     bool bReverse = false;

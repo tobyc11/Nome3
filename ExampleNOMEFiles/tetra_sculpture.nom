@@ -104,7 +104,7 @@ endgroup
 
 instance pair0 edge_pair endinstance
 instance pair1 edge_pair rotate (1 -1 1) (120) endinstance
-instance pair1 edge_pair rotate (1 -1 -1) (120) endinstance
+instance pair2 edge_pair rotate (1 -1 -1) (120) endinstance
 
 instance plateA hex_plate rotate (1 -1 1) (120) endinstance
 instance plateB hex_plate rotate (-1 1 -1) (120) endinstance

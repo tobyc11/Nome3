@@ -140,8 +140,6 @@ void CSweep::drawCap(std::vector<Vector3> crossSection, int crossIndex,
 {
     size_t size = crossSection.size();
     std::vector<std::string> capFace;
-    // not a closed cross-section
-    if (crossSection[0] != crossSection[size - 1]) { size++; }
 
     for (size_t i = 0; i < size; i++) {
         if (shouldFlip)
@@ -460,7 +458,6 @@ void CSweep::UpdateEntity()
                 };
             }
             AddFace("f" + std::to_string(k) + "_" + std::to_string(i), upperFace);
-            std::cout <<  "Face Added Debug" << std::endl;
         }
     }
 

@@ -25,7 +25,7 @@ CInteractiveMesh::CInteractiveMesh(Scene::CSceneTreeNode* node)
     , PointGeometry {}
     , PointRenderer {}
 {
-    InstanceColor = { 95.0 / 255.0, 75.0 / 255.0, 139.0 / 255.0 };
+    InstanceColor = { 255.0 / 255.0, 165.0 / 255.0, 0.0 }; // Prof prefers orange
     UpdateTransform();
     UpdateMaterial(false); // false = don't show facets by default
     UpdateGeometry(false); // false = don't show vert boxes by default
@@ -41,7 +41,6 @@ void CInteractiveMesh::UpdateTransform()
     }
     const auto& tf = SceneTreeNode->L2WTransform.GetValue(tc::Matrix3x4::IDENTITY);
     QMatrix4x4 qtf { tf.ToMatrix4().Data() };
-
     Transform->setMatrix(qtf);
 }
 
@@ -88,13 +87,11 @@ void CInteractiveMesh::UpdateGeometry(bool showVertBox)
             this->addComponent(GeometryRenderer); // adding geometry data to interactive mesh
 
             if (showVertBox) {
-                /// TODO: alow the debug draw
                 std::string xmlPath = "";
                 if (!showVertBox)
                     xmlPath = CResourceMgr::Get().Find("DebugDrawLine.xml");
                 else
                     xmlPath = CResourceMgr::Get().Find("DebugDrawLineWITHVERTBOX.xml");
-
                 // May need to optimize this in the future. Cause we're parsing the file everytime the node is marked dirty, even though we could keep the material the same if that was not changed
                 PointEntity = new Qt3DCore::QEntity(this);
                 auto *lineMat = new CXMLMaterial(QString::fromStdString(xmlPath));
@@ -222,16 +219,12 @@ void CInteractiveMesh::InitInteractions()
 
             tc::Ray ray({ origin.x(), origin.y(), origin.z() }, { dir.x(), dir.y(), dir.z() });
 
-
-            // Randy's Render Ray
             if (GFrtCtx->NomeView->RenderRayBool)
-            {
-                std::cout << "Ray was just cast-> click on Render Ray button to visualize it"<< std::endl;
                 GFrtCtx->NomeView->RenderRay(ray, wi); // Randy added this on 2/26
-            }
-
             if (GFrtCtx->NomeView->PickVertexBool)
-                GFrtCtx->NomeView->PickVertexWorldRay(ray);
+            {
+                GFrtCtx->NomeView->PickVertexWorldRay(ray, GFrtCtx->NomeView->VertexSharpnessBool);
+            }
             if (GFrtCtx->NomeView->PickEdgeBool)
                 GFrtCtx->NomeView->PickEdgeWorldRay(ray);
             if (GFrtCtx->NomeView->PickFaceBool)
@@ -345,5 +338,4 @@ void CInteractiveMesh::SetDebugDraw(const CDebugDraw* debugDraw)
     lineRenderer->setPrimitiveType(Qt3DRender::QGeometryRenderer::Lines);
     lineEntity->addComponent(lineRenderer);
 }
-
 }

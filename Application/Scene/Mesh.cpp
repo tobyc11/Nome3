@@ -316,7 +316,7 @@ std::vector<std::pair<float, std::string>> CMeshInstance::PickFaces(const tc::Ra
         auto minDist = *std::min_element(hitDistances.begin(), hitDistances.end());
         std::cout << "Triangle hit distance:  " + std::to_string(minDist) << std::endl;
         auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-        if (minDist < 10)
+        if (minDist < 100) // minDist of 10 did not work for cases where we zoom away from the scene
         {
             result.emplace_back(minDist, instPrefix + currFace->name);
         }
@@ -360,19 +360,19 @@ std::vector<std::pair<float, Vector3>> CMeshInstance::GetHitPoint(const tc::Ray&
         // Now that we're checking intersection with triangulation of the face, see if it
         // intersected any triangle
         auto minDist = *std::min_element(hitDistances.begin(), hitDistances.end());
-        std::cout << "Triangle hit distance:  " + std::to_string(minDist) << std::endl;
+        //std::cout << "Triangle hit distance:  " + std::to_string(minDist) << std::endl;
         auto instPrefix = GetSceneTreeNode()->GetPath() + ".";
-        if (minDist < 10)
+        if (minDist < 100)
         {
             result.emplace_back(minDist, distToHitPoint[minDist]);
         }
     }
     // std::sort(result.begin(), result.end());
-    for (const auto& sel : result)
-    {
-        std::cout << "Get HitPoint" << std::endl;
-        printf("t=%.3f\n", sel.first);
-    }
+ //   for (const auto& sel : result)
+ //   {
+       //std::cout << "Get HitPoint" << std::endl;
+       // printf("t=%.3f\n", sel.first);
+ //   }
     return result;
 }
 
@@ -528,8 +528,7 @@ void CMeshInstance::MarkFaceAsSelected(const std::set<std::string>& faceNames, b
                 } while (currEdge != firstEdge);
             }
         }
-
-        else
+        else // if already selected, deselect (face returns to original color)
         {
             currFace->selected = false;   
         }
@@ -637,8 +636,6 @@ void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames, f
         auto DSvert = iter->second;
         if (std::find(CurrSelectedVertNamesWithPrefix.begin(), CurrSelectedVertNamesWithPrefix.end(), name) == CurrSelectedVertNamesWithPrefix.end())
         { // if hasn't been selected before
-            std::cout << "setting vert to selected" + iter->first << std::endl;
-
             if (sharpness >= 0)
                 DSvert->sharpness = sharpness;
             DSvert->selected = true;
@@ -648,7 +645,6 @@ void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames, f
         }
         else // it has already been selected, then reset to default color
         {
-            std::cout << "deselecting vert" + iter->first << std::endl;
             DSvert->selected = false;
             auto iter1 = std::find(CurrSelectedVertNames.begin(), CurrSelectedVertNames.end(),
                                     name.substr(prefixLen));
@@ -669,7 +665,17 @@ void CMeshInstance::MarkVertAsSelected(const std::set<std::string>& vertNames, f
 
 void CMeshInstance::DeselectAll()
 {
-//    for (const auto& name : CurrSelectedVertNames)
+    for (auto vert : currMesh.vertList) {
+        vert->selected = false;
+        GetSceneTreeNode()->SetEntityUpdated(true);
+    }
+
+    for (auto face : currMesh.faceList) {
+        face->selected = false;
+        GetSceneTreeNode()->SetEntityUpdated(true);
+    }
+    
+    //    for (const auto& name : CurrSelectedVertNames)
 //    {
 //        auto handle = NameToVert[name];
 //        Mesh.set_color(handle, { VERT_COLOR });

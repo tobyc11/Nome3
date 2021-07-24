@@ -47,14 +47,20 @@ public:
         return RayVertPositions;
     }
 
+    [[nodiscard]] const std::vector<tc::Vector3>&  GetInteractivePoint() const
+    {
+        return RayInteractivePoint;
+    }
+
     void ClearSelectedVertices(); // Randy added on 9/27
     void ClearSelectedFaces(); // Randy added on 10/14 for deselecting faces
     void ClearSelectedEdges(); // Randy added on 11/5 for deselecting edges
     void ClearRenderedRay(); // Randy added on 2/26 for deselecting ray
+    void ClearInteractivePoint();
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
-    void PickVertexWorldRay(tc::Ray& ray);
+    void PickVertexWorldRay(tc::Ray& ray, bool sharpSelection);
     void PickFaceWorldRay(tc::Ray& ray); // Randy added on 10/10
     void PickEdgeWorldRay(tc::Ray& ray); // Randy added on 10/29
     void PickPolylineWorldRay(tc::Ray& ray); // Randy added on 12/22
@@ -67,11 +73,14 @@ public:
 
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
 
-    bool PickVertexBool = false; // Randy added on 11/5
-    bool PickFaceBool = false; // Randy added on 11/5
-    bool PickEdgeBool = false; // Randy added on 11/5
-    bool PickPolylineBool = false; // Randy added on 12/22
-    bool RenderRayBool = false; // Randy added on 2/26
+
+    bool PickVertexBool = false; // Randy added on 11/5/20
+    bool VertexSharpnessBool = false; // Randy added on 6/20/21
+    bool PickFaceBool = false; // Randy added on 11/5/20
+    bool PickEdgeBool = false; // Randy added on 11/5/20
+    bool PickPolylineBool = false; // Randy added on 12/22/20
+    bool RenderRayBool = false; // Randy added on 2/26/20
+    bool RayCasted = false;
     std::unordered_set<CInteractiveLight*> InteractiveLights;
     std::unordered_set<CInteractiveCamera*> InteractiveCameras;
 
@@ -88,7 +97,7 @@ private:
     QVector2D GetProjectionPoint(QVector2D originalPosition);
     static QVector3D GetCrystalPoint(QVector2D originalPoint);
     void rotateRay(tc::Ray& ray);
-    static float InputSharpness();
+    float InputSharpness();
 private:
     Qt3DCore::QEntity* Root;
     Qt3DCore::QEntity* Base;
@@ -97,9 +106,11 @@ private:
     std::unordered_map<Scene::CEntity*, CDebugDraw*> EntityDrawData;
     std::vector<std::string> SelectedVertices;
     std::vector<tc::Vector3> RayVertPositions; // Randy added on 2/26 for adding vertices via a Ray
+    std::vector<tc::Vector3> RayInteractivePoint; // Randy added on 2/26 for adding vertices via a Ray
     std::vector<std::string> SelectedFaces; // Randy added on 10/10
     std::vector<std::string> SelectedEdgeVertices; // Randy added on 11/5
-    // std::vector<const & std::vector<std::string>> SelectedEdgeVertPositions; // There are no edge "names" right now TODO: Introduce Edge names and handles
+    // std::vector<const & std::vector<std::string>> SelectedEdgeVertPositions; // There are no edge
+    // "names" right now TODO: Introduce Edge names and handles    bool vertexSelectionEnabled;
     bool vertexSelectionEnabled;
 
     // Xinyu added on Oct 8 for rotation
@@ -139,5 +150,4 @@ private:
     Qt3DRender::QClearBuffers* clearBuffers;
     Qt3DRender::QRenderSurfaceSelector* ss;
 };
-
 }

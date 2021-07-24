@@ -37,29 +37,16 @@ void CGenParametricSurf::UpdateEntity()
     double uSegs = (double)u_segs.GetValue(0.0f);
     double vSegs = (double)v_segs.GetValue(0.0f);
 
-    std::string funcConcat = this->GetName(); // ex. funcConcat := x(u,v)|y(u,v)|z(u,v) = "cos(u)*sin(v)|sin(u)*sin(v)|cos(v)"
-    funcConcat.erase(std::remove(funcConcat.begin(), funcConcat.end(), '"'), funcConcat.end());
-    size_t numFuncsInString = std::count(funcConcat.begin(), funcConcat.end(), '|');
-    if (numFuncsInString != 2) {
-        try
-        {
-            throw 20;
-        }
-        catch (int e)
-        {
-            std::cout << "Wrong number of parametric functions specified in Parametric generator!";
-        }
-    }
+    std::string funcX = this->GetFuncX(); // ex. funcConcat := x(u,v)
+    std::string funcY = this->GetFuncY(); // ex. funcConcat := y(u,v)
+    std::string funcZ = this->GetFuncZ(); // ex. funcConcat := z(u,v)
 
-    std::vector<std::string> tokens;
-    std::string token;
-    std::istringstream tokenStream(funcConcat);
-    while (std::getline(tokenStream, token, '|')) {
-        tokens.push_back(token);
-    }
-    std::string funcX = tokens[0];
-    std::string funcY = tokens[1];
-    std::string funcZ = tokens[2];
+    funcX.erase(std::remove(funcX.begin(), funcX.end(), '['), funcX.end());
+    funcX.erase(std::remove(funcX.begin(), funcX.end(), ']'), funcX.end());
+    funcY.erase(std::remove(funcY.begin(), funcY.end(), '['), funcY.end());
+    funcY.erase(std::remove(funcY.begin(), funcY.end(), ']'), funcY.end());
+    funcZ.erase(std::remove(funcZ.begin(), funcZ.end(), '['), funcZ.end());
+    funcZ.erase(std::remove(funcZ.begin(), funcZ.end(), ']'), funcZ.end());
 
 
     typedef exprtk::symbol_table<double> symbol_table_t;

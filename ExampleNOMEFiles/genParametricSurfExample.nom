@@ -1,14 +1,28 @@
-genparametricsurf "(0.5*(0.4-1*cos(u)*cos(v))+0.96*cos(u))/(1-0.4*cos(u)*cos(v))|(0.98*sin(u)*(1-0.5*cos(v)))/(1-0.4*cos(u)*cos(v))|(0.98*sin(v)*(0.4*cos(u)-0.5))/(1-0.48*cos(u)*cos(v))" (0 6.28318 0 6.28318 60 60) endgenparametricsurf
-instance dupin1 "(0.5*(0.4-1*cos(u)*cos(v))+0.96*cos(u))/(1-0.4*cos(u)*cos(v))|(0.98*sin(u)*(1-0.5*cos(v)))/(1-0.4*cos(u)*cos(v))|(0.98*sin(v)*(0.4*cos(u)-0.5))/(1-0.48*cos(u)*cos(v))" translate (6 0 0) endinstance
+### Parametric General Shape Generator Example File ###
+#
+# To display shapes uncomment the pairs of lines under the 'Example Shapes' section below.
+# Uncomment only one pair at a time to avoid shapes intersecting each other.
+#
+# Shapes make take a while to load into scene.
 
-genparametricsurf "(sin(5*u)*cos(5*v)+4)*(cos(u)*sin(v)/4)|(sin(5*u)*cos(5*v)+4)*(sin(u)*sin(v))/4|(sin(5*u)*cos(5*v)+4)*(cos(v)/4)" (-3.14159 3.14159 -3.14159 0 100 100) endgenparametricsurf
-instance lumpysphere "(sin(5*u)*cos(5*v)+4)*(cos(u)*sin(v)/4)|(sin(5*u)*cos(5*v)+4)*(sin(u)*sin(v))/4|(sin(5*u)*cos(5*v)+4)*(cos(v)/4)" translate (-6 0 0) endinstance
 
-genparametricsurf "sin(v)*(2+cos(3*u))*cos(2*u)|sin(v)*(2+cos(3*u))*sin(2*u)|sin(v)*cos(v)*(sin(3*u))" (0 6.28318 0 1.0472 60 20) endgenparametricsurf
-instance tknot23 "sin(v)*(2+cos(3*u))*cos(2*u)|sin(v)*(2+cos(3*u))*sin(2*u)|sin(v)*cos(v)*(sin(3*u))" translate (0 -6 0) endinstance
+surface R color (0.7 0.2 0  ) endsurface # Red
+surface G color (0   0.7 0.2) endsurface # Green
+surface B color (0   0.2 0.7) endsurface # Blue
 
-genparametricsurf "-((5/4)*(1-(v/6.28318530718))*cos(2*v)*(1+cos(u))+cos(2*v))|-((5/4)*(1-(v/6.28318530718))*sin(2*v)*(1+cos(u))+sin(2*v))|-(((10*v)/6.28318530718)+(5/4)*(1-(v/6.28318530718))*sin(u)+15)" (0 6.28318 -6.28318 6.28318 50 50) endgenparametricsurf
-instance seashell "-((5/4)*(1-(v/6.28318530718))*cos(2*v)*(1+cos(u))+cos(2*v))|-((5/4)*(1-(v/6.28318530718))*sin(2*v)*(1+cos(u))+sin(2*v))|-(((10*v)/6.28318530718)+(5/4)*(1-(v/6.28318530718))*sin(u)+15)" endinstance
 
-genparametricsurf "-0.4*cosh(u)*cos(v)|-0.6*cosh(u)*sin(v)|-1.2*sinh(u)" (-2 2 -3.14159 3.14159 60 60) endgenparametricsurf
-instance h1 "-0.4*cosh(u)*cos(v)|-0.6*cosh(u)*sin(v)|-1.2*sinh(u)" translate (12 0 0) endinstance
+############################ Example Shapes ############################
+genparametricsurf dupin1 funcX [(0.5*(0.4-1*cos(u)*cos(v))+0.96*cos(u))/(1-0.4*cos(u)*cos(v))] funcY [(0.98*sin(u)*(1-0.5*cos(v)))/(1-0.4*cos(u)*cos(v))] funcZ [(0.98*sin(v)*(0.4*cos(u)-0.5))/(1-0.48*cos(u)*cos(v))] (0 6.28318 0 6.28318 60 60) endgenparametricsurf
+instance s0 dupin1 surface R endinstance
+
+#genparametricsurf lumpysphere funcX [(sin(5*u)*cos(5*v)+4)*(cos(u)*sin(v)/4)] funcY [(sin(5*u)*cos(5*v)+4)*(sin(u)*sin(v))/4] funcZ [(sin(5*u)*cos(5*v)+4)*(cos(v)/4)] (-3.14159 3.14159 -3.14159 0 100 100) endgenparametricsurf
+#instance s1 lumpysphere surface G endinstance
+
+#genparametricsurf tknot23 funcX [sin(v)*(2+cos(3*u))*cos(2*u)] funcY [sin(v)*(2+cos(3*u))*sin(2*u)] funcZ [sin(v)*cos(v)*(sin(3*u))] (0 6.28318 0 1.0472 60 20) endgenparametricsurf
+#instance s2 tknot23 surface B endinstance
+
+#genparametricsurf seashell funcX [-((5/4)*(1-(v/6.28318530718))*cos(2*v)*(1+cos(u))+cos(2*v))] funcY [-((5/4)*(1-(v/6.28318530718))*sin(2*v)*(1+cos(u))+sin(2*v))] funcZ [-(((10*v)/6.28318530718)+(5/4)*(1-(v/6.28318530718))*sin(u)+15)] (0 6.28318 -6.28318 6.28318 50 50) endgenparametricsurf
+#instance s3 seashell surface R endinstance
+
+#genparametricsurf h1 funcX [-0.4*cosh(u)*cos(v)] funcY [-0.6*cosh(u)*sin(v)] funcZ [-1.2*sinh(u)] (-2 2 -3.14159 3.14159 60 60) endgenparametricsurf
+#instance s4 h1 surface G endinstance

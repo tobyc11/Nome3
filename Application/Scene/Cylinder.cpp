@@ -11,6 +11,8 @@ DEFINE_META_OBJECT(CCylinder)
     BindPositionalArgument(&CCylinder::Height, 1, 1);
     BindPositionalArgument(&CCylinder::ThetaMax, 1, 2);
     BindPositionalArgument(&CCylinder::ThetaSegs, 1, 3);
+    BindNamedArgument(&CCylinder::bBotCap, "botcap", 0);
+    BindNamedArgument(&CCylinder::bTopCap, "topcap", 0);
 }
 
 void CCylinder::UpdateEntity()
@@ -77,27 +79,31 @@ void CCylinder::UpdateEntity()
       AddFace("wedge2", face2);
     }
 
+    // add top face
+    if (bTopCap) {
+        int j = 0;
+        std::vector<std::string> face = {};
+        if (maxTheta != 360) {
+            face.push_back("top-center");
+        }
+        for (int i = numSegs - 1; i >= 0; i--) {
+            face.push_back("v" + std::to_string(j) + "-" + std::to_string(i));
+        }
+        AddFace("cap-face" + std::to_string(j), face);
+    }
 
-    // add top and bottom faces
-    int j = 0;
-    std::vector<std::string> face = {};
-    if (maxTheta != 360) {
-      face.push_back("top-center");
+    // add bottom face
+    if (bBotCap) {
+        int j = 1;
+        std::vector<std::string> face = {};
+        if (maxTheta != 360) {
+            face.push_back("bottom-center");
+        }
+        for (int i = 0; i < numSegs; i++) {
+            face.push_back("v" + std::to_string(j) + "-" + std::to_string(i));
+        }
+        AddFace("cap-face" + std::to_string(j), face);
     }
-    for (int i = numSegs - 1; i >= 0; i--) {
-      face.push_back("v" + std::to_string(j) + "-" + std::to_string(i));
-    }
-    AddFace("cap-face" + std::to_string(j), face);
-
-    j = 1;
-    face = {};
-    if (maxTheta != 360) {
-      face.push_back("bottom-center");
-    }
-    for (int i = 0; i < numSegs; i++) {
-        face.push_back("v" + std::to_string(j) + "-" + std::to_string(i));
-    }
-    AddFace("cap-face" + std::to_string(j), face);
 
 
 }

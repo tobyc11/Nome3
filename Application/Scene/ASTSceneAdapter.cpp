@@ -1,5 +1,6 @@
 #include "ASTSceneAdapter.h"
 #include "BSpline.h"
+#include "Window.h"
 #include "BezierSpline.h"
 #include "Camera.h"
 #include "Circle.h"
@@ -28,7 +29,6 @@
 #include "TorusKnot.h"
 #include "Tunnel.h"
 #include "Viewport.h"
-#include "Window.h"
 #include <StringPrintf.h>
 #include <unordered_map>
 
@@ -48,29 +48,52 @@ namespace Nome::Scene
  */
 
 static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
-    { "point", ECommandKind::Entity },       { "polyline", ECommandKind::Entity },
-    { "sweep", ECommandKind::Entity },       { "controlpoint", ECommandKind::Entity },
-    { "face", ECommandKind::Entity },        { "object", ECommandKind::Entity },
-    { "mesh", ECommandKind::Entity },        { "group", ECommandKind::Instance },
-    { "circle", ECommandKind::Entity },      { "sphere", ECommandKind::Entity },
-    { "cylinder", ECommandKind::Entity },    { "funnel", ECommandKind::Entity },
-    { "hyperboloid", ECommandKind::Entity }, { "dupin", ECommandKind::Entity },
-    { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
-    { "torusknot", ECommandKind::Entity },   { "torus", ECommandKind::Entity },
-    { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
-    { "surface", ECommandKind::Entity },     { "window", ECommandKind::Entity },
-    { "foreground", ECommandKind::Dummy },   { "insidefaces", ECommandKind::Dummy },
-    { "outsidefaces", ECommandKind::Dummy }, { "offsetfaces", ECommandKind::Dummy },
-    { "frontfaces", ECommandKind::Dummy },   { "backfaces", ECommandKind::Dummy },
-    { "rimfaces", ECommandKind::Dummy },     { "bank", ECommandKind::BankSet },
-    { "set", ECommandKind::BankSet },        { "delete", ECommandKind::Instance },
-    { "subdivision", ECommandKind::Instance },  { "offset", ECommandKind::Instance },
-    { "mobiusstrip", ECommandKind::Entity }, { "helix", ECommandKind::Entity },
-    { "ellipsoid", ECommandKind::Entity },   { "include", ECommandKind::DocEdit },
-    { "spiral", ECommandKind::Entity },      { "sharp", ECommandKind::Entity },
-    { "gencartesiansurf", ECommandKind::Entity },    { "genparametricsurf", ECommandKind::Entity },
-    { "camera", ECommandKind::Entity }, { "genimplicitsurf", ECommandKind::Entity },
-    { "light", ECommandKind::Entity }, { "viewport", ECommandKind::Entity }
+    { "point", ECommandKind::Entity },
+    { "polyline", ECommandKind::Entity },
+    { "sweep", ECommandKind::Entity },
+    { "controlpoint", ECommandKind::Entity },
+    { "face", ECommandKind::Entity },
+    { "object", ECommandKind::Entity },
+    { "mesh", ECommandKind::Entity },
+    { "group", ECommandKind::Instance },
+    { "circle", ECommandKind::Entity },
+    { "sphere", ECommandKind::Entity },
+    { "cylinder", ECommandKind::Entity },
+    { "funnel", ECommandKind::Entity },
+    { "hyperboloid", ECommandKind::Entity },
+    { "dupin", ECommandKind::Entity },
+    { "tunnel", ECommandKind::Entity },
+    { "beziercurve", ECommandKind::Entity },
+    { "torusknot", ECommandKind::Entity },
+    { "torus", ECommandKind::Entity },
+    { "bspline", ECommandKind::Entity },
+    { "instance", ECommandKind::Instance },
+    { "surface", ECommandKind::Entity },
+    { "background", ECommandKind::Entity },
+    { "foreground", ECommandKind::Dummy },
+    { "insidefaces", ECommandKind::Dummy },
+    { "outsidefaces", ECommandKind::Dummy },
+    { "offsetfaces", ECommandKind::Dummy },
+    { "frontfaces", ECommandKind::Dummy },
+    { "backfaces", ECommandKind::Dummy },
+    { "rimfaces", ECommandKind::Dummy },
+    { "bank", ECommandKind::BankSet },
+    { "set", ECommandKind::BankSet },
+    { "delete", ECommandKind::Instance },
+    { "subdivision", ECommandKind::Instance },
+    { "offset", ECommandKind::Instance },
+    { "mobiusstrip", ECommandKind::Entity },
+    { "helix", ECommandKind::Entity },
+    { "ellipsoid", ECommandKind::Entity },
+    { "include", ECommandKind::DocEdit },
+    { "spiral", ECommandKind::Entity },
+    { "sharp", ECommandKind::Entity },
+    { "camera", ECommandKind::Entity },
+    { "light", ECommandKind::Entity },
+    { "viewport", ECommandKind::Entity },
+    { "gencartesiansurf", ECommandKind::Entity },
+    { "genparametricsurf", ECommandKind::Entity },
+    { "genimplicitsurf", ECommandKind::Entity }
 
 };
 
@@ -125,22 +148,14 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CDupin(name);
     else if (cmd == "spiral")
         return new SSpiral(name);
-    else if (cmd == "gencartesiansurf")
-        return new CGenCartesianSurf(name);
-    else if (cmd == "genparametricsurf")
-        return new CGenParametricSurf(name);
     else if (cmd == "light")
         return new CLight(name);
     else if (cmd == "window")
         return new CWindow(name);
     else if (cmd == "camera")
         return new CCamera(name);
-    else if (cmd == "genimplicitsurf")
-        return new CGenImplicitSurf(name);
     else if (cmd == "viewport")
         return new CViewport(name);
-
-
 
     return nullptr;
 }
@@ -213,9 +228,8 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
     CmdTraverseStack.pop_back();
 }
 
-
-
-void CASTSceneAdapter::IterateSharpness(AST::ACommand* cmd, CScene& scene) const {
+void CASTSceneAdapter::IterateSharpness(AST::ACommand* cmd, CScene& scene) const
+{
     TAutoPtr<CEntity> entity = new CSharp();
     entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
     GEnv.Scene->AddEntity(entity);
@@ -224,8 +238,6 @@ void CASTSceneAdapter::IterateSharpness(AST::ACommand* cmd, CScene& scene) const
         if (auto* points = dynamic_cast<CSharp*>(entity.Get()))
             mesh->SharpPoints.Connect(points->SharpPoints);
 }
-
-
 
 void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, bool insubMesh)
 {
@@ -238,16 +250,51 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (kind == ECommandKind::Entity)
     {
-        if (cmd->GetCommand() == "sharp") {
+        if (cmd->GetCommand() == "sharp")
+        {
             for (auto* sub : cmd->GetSubCommands())
             {
                 sub->PushPositionalArgument(cmd->GetLevel());
                 IterateSharpness(sub, scene);
             }
         }
-        else {
-            TAutoPtr<CEntity> entity =
-                MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
+        else
+        {
+            TAutoPtr<CEntity> entity;
+            if (cmd->GetCommand() == "gencartesiansurf")
+            {
+                auto func = cmd->GetNamedArgument("func")->GetArgument(
+                    0)[0]; // Returns a casted AExpr that was an AIdent before casting
+                std::string funcIdentifier =
+                    static_cast<AST::AIdent*>(&func)->ToString(); // Downcast it back to an AIdent
+                entity = new CGenCartesianSurf(EntityNamePrefix + cmd->GetName(), funcIdentifier);
+            }
+            else if (cmd->GetCommand() == "genparametricsurf")
+            {
+                auto funcX = cmd->GetNamedArgument("funcX")->GetArgument(
+                    0)[0]; // Returns a casted AExpr that was an AIdent before casting
+                std::string funcIdentifierX =
+                    static_cast<AST::AIdent*>(&funcX)->ToString(); // Downcast it back to an AIdent
+                auto funcY = cmd->GetNamedArgument("funcY")->GetArgument(
+                    0)[0]; // Returns a casted AExpr that was an AIdent before casting
+                std::string funcIdentifierY =
+                    static_cast<AST::AIdent*>(&funcY)->ToString(); // Downcast it back to an AIdent
+                auto funcZ = cmd->GetNamedArgument("funcZ")->GetArgument(
+                    0)[0]; // Returns a casted AExpr that was an AIdent before casting
+                std::string funcIdentifierZ =
+                    static_cast<AST::AIdent*>(&funcZ)->ToString(); // Downcast it back to an AIdent
+                entity = new CGenParametricSurf(EntityNamePrefix + cmd->GetName(), funcIdentifierX, funcIdentifierY, funcIdentifierZ);
+            }
+            else if (cmd->GetCommand() == "genimplicitsurf")
+            {
+                auto func = cmd->GetNamedArgument("func")->GetArgument(0)[0]; // Returns a casted AExpr that was an AIdent before casting
+                std::string funcIdentifier = static_cast<AST::AIdent*>(&func)->ToString(); // Downcast it back to an AIdent
+                entity = new CGenImplicitSurf(EntityNamePrefix + cmd->GetName(), funcIdentifier);
+            }
+            else
+            {
+                entity = MakeEntity(cmd->GetCommand(), EntityNamePrefix + cmd->GetName());
+            }
 
             entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
             if (auto* light = dynamic_cast<CLight*>(entity.Get())) {
@@ -278,15 +325,16 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                     viewport->cameraId = static_cast<const AST::AIdent*>(expr)->ToString();
             }
 
-
             // All entities are added to the EntityLibrary dictionary
             GEnv.Scene->AddEntity(entity);
             if (auto* mesh = dynamic_cast<CMesh*>(ParentEntity))
-                if (auto* face = dynamic_cast<CFace*>(entity.Get())) {
+                if (auto* face = dynamic_cast<CFace*>(entity.Get()))
+                {
                     mesh->Faces.Connect(face->Face);
                 }
-                else if (auto* point = dynamic_cast<CPoint*>(entity.Get())) {
-                    mesh->Points.Connect(point->Point); // Randy added on 12/5
+                else if (auto* point = dynamic_cast<CPoint*>(entity.Get()))
+                {
+                    mesh->Points.Connect(point->Point); // Randy added on 12/5 to allow points to be of a mesh
                 }
 
             // Added insubMesh bool to allow Meshes to process multiple subcommands (more than one
@@ -321,21 +369,25 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     }
     else if (cmd->GetCommand() == "instance")
     {
-        // CreateChildNode() adds a node to the scene graph IF it hasn't been added already, and always adds a node to the scene tree
-        // This means ONE sceneNode could correspond to multiple scene tree nodes, which is how we want to represent the scene
+        // CreateChildNode() adds a node to the scene graph IF it hasn't been added already, and
+        // always adds a node to the scene tree This means ONE sceneNode could correspond to
+        // multiple scene tree nodes, which is how we want to represent the scene
         auto* sceneNode = InstanciateUnder->CreateChildNode(cmd->GetName());
         // To perform rotation
         sceneNode->SyncFromAST(cmd, scene);
         // TODO: move the following logic into SyncFromAST
 
-        // Check to see if there is a surface color associated with this instance or group scene node. If the surface
-        // argument exists, then set it to be the scene node's surface. Surface color for group vs
-        // mesh instance logic is handled in InteractiveMesh.cpp (at the rendering stage).
+        // Check to see if there is a surface color associated with this instance or group scene
+        // node. If the surface argument exists, then set it to be the scene node's surface. Surface
+        // color for group vs mesh instance logic is handled in InteractiveMesh.cpp (at the
+        // rendering stage).
         auto surface = cmd->GetNamedArgument("surface");
         if (surface)
         {
-            auto surfaceEntityNameExpr = surface->GetArgument(0)[0]; // Returns a casted AExpr that was an AIdent before casting
-            auto surfaceIdentifier = static_cast<AST::AIdent*>(&surfaceEntityNameExpr)->ToString(); // Downcast it back to an AIdent
+            auto surfaceEntityNameExpr = surface->GetArgument(
+                0)[0]; // Returns a casted AExpr that was an AIdent before casting
+            auto surfaceIdentifier = static_cast<AST::AIdent*>(&surfaceEntityNameExpr)
+                                         ->ToString(); // Downcast it back to an AIdent
             auto surfaceEntity = GEnv.Scene->FindEntity(surfaceIdentifier);
             if (surfaceEntity)
                 sceneNode->SetSurface(dynamic_cast<CSurface*>(surfaceEntity.Get()));
@@ -343,10 +395,16 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         auto entityName = cmd->GetPositionalIdentAsString(1);
         auto entity = GEnv.Scene->FindEntity(entityName);
 
+        // <CMeshInstance> entity . check to see if this cast works
+        // use the casted object, which is successfully casted as a CMesh instance
+        // so now just do dsMesh = entity.GetDSMesh()
+        // dsMesh.faces, dsMesh.edgeList,
+
         if (entity)
             sceneNode->SetEntity(entity); // This line is very important. It attaches an entity
                                           // (e.g. mesh) to the scene node
-        else if (auto group = GEnv.Scene->FindGroup(entityName)) // If the entityName is a group identifier
+        else if (auto group =
+                     GEnv.Scene->FindGroup(entityName)) // If the entityName is a group identifier
             group->AddParent(sceneNode);
         else
             throw AST::CSemanticError(
@@ -365,9 +423,10 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
     else if (cmd->GetCommand() == "subdivision" || cmd->GetCommand() == "offset")
     {
         // 1.read all instances to a merged mesh
-        InstanciateUnder = GEnv.Scene->CreateMerge(cmd->GetName()); // Conceptually similar to CreateGroup, here we create a "Merge" node containing all meshes we need to merge
+        InstanciateUnder = GEnv.Scene->CreateMerge(
+            cmd->GetName()); // Conceptually similar to CreateGroup, here we create a "Merge" node
+                             // containing all meshes we need to merge
         InstanciateUnder->SyncFromAST(cmd, scene);
-
 
         for (auto* sub : cmd->GetSubCommands())
             VisitCommandSyncScene(sub, scene, false);
@@ -381,13 +440,15 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
         auto flag = cmd->GetNamedArgument("sd_type");
         if (flag)
         {
-            auto flagName = flag->GetArgument(
-                0)[0]; // Returns a casted AExpr that was an AIdent before casting
-            auto flagIdentifier = static_cast<AST::AIdent*>(&flagName)->ToString(); // Downcast it back to an AIdent
+            auto flagName =
+                flag->GetArgument(0)[0]; // Returns a casted AExpr that was an AIdent before casting
+            auto flagIdentifier =
+                static_cast<AST::AIdent*>(&flagName)->ToString(); // Downcast it back to an AIdent
             if (flagIdentifier == "NOME_SD_CC_sharp")
                 merger->SetSharp(true);
             else
                 merger->SetSharp(false);
+
         }
         else
         {
@@ -405,8 +466,14 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
             }
         }
 
-        scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(merger)); // Merger now has all the vertices set, so we can add it into the scene as a new entity
-        auto* sn = scene.GetRootNode()->FindOrCreateChildNode(cmd->GetName()); //Add it into the Scene Tree by creating a new node called globalMergeNode. Notice, this is the same name everytime you Merge. This means you can only have one merger mesh each time. It will override previous merger meshes with the new vertices.
+        scene.AddEntity(tc::static_pointer_cast<Scene::CEntity>(
+            merger)); // Merger now has all the vertices set, so we can add it into the scene as a
+                      // new entity
+        auto* sn = scene.GetRootNode()->FindOrCreateChildNode(
+            cmd->GetName()); // Add it into the Scene Tree by creating a new node called
+                             // globalMergeNode. Notice, this is the same name everytime you Merge.
+                             // This means you can only have one merger mesh each time. It will
+                             // override previous merger meshes with the new vertices.
         sn->SetEntity(merger.Get()); // Set sn, which is the scene node, to point to entity merger
     }
     CmdTraverseStack.pop_back();
@@ -443,5 +510,4 @@ CTransform* CASTSceneAdapter::ConvertASTTransform(AST::ANamedArgument* namedArg)
     }
     return nullptr;
 }
-
 }

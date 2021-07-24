@@ -26,6 +26,8 @@ public:
     antlrcpp::Any visitArgOrder(NomParser::ArgOrderContext* context) override;
     antlrcpp::Any visitArgTransformTwo(NomParser::ArgTransformTwoContext* context) override;
     antlrcpp::Any visitArgTransformOne(NomParser::ArgTransformOneContext* context) override;
+    antlrcpp::Any visitArgTranslate(NomParser::ArgTranslateContext* context) override;
+    antlrcpp::Any visitArgRotate(NomParser::ArgRotateContext* context) override;
     antlrcpp::Any visitArgColor(NomParser::ArgColorContext* context) override;
     antlrcpp::Any visitArgControlRotate(NomParser::ArgControlRotateContext* context) override;
     antlrcpp::Any visitArgControlScale(NomParser::ArgControlScaleContext* context) override;
@@ -37,6 +39,10 @@ public:
     antlrcpp::Any visitArgSdLevel(NomParser::ArgSdLevelContext* ctx) override;
     antlrcpp::Any visitArgSdFlag(NomParser::ArgSdFlagContext* ctx) override;
     antlrcpp::Any visitArgLightType(NomParser::ArgLightTypeContext* ctx) override;
+    antlrcpp::Any visitArgFunc(NomParser::ArgFuncContext* ctx) override; // Brandon's gen shape generator
+    antlrcpp::Any visitArgFuncX(NomParser::ArgFuncXContext* ctx) override; // Brandon's gen shape generator
+    antlrcpp::Any visitArgFuncY(NomParser::ArgFuncYContext* ctx) override; // Brandon's gen shape generator
+    antlrcpp::Any visitArgFuncZ(NomParser::ArgFuncZContext* ctx) override; // Brandon's gen shape generator
     antlrcpp::Any visitArgLightColor(NomParser::ArgLightColorContext* ctx) override;
     antlrcpp::Any visitArgOffsetFlag(NomParser::ArgOffsetFlagContext* ctx) override;
     antlrcpp::Any visitArgHeight(NomParser::ArgHeightContext* ctx) override;
@@ -44,12 +50,14 @@ public:
     antlrcpp::Any visitArgCameraProjection(NomParser::ArgCameraProjectionContext* ctx) override;
     antlrcpp::Any visitArgCameraFrustum(NomParser::ArgCameraFrustumContext* ctx) override;
     antlrcpp::Any visitArgCameraID(NomParser::ArgCameraIDContext* ctx) override;
-    antlrcpp::Any visitArgOrigin(NomParser::ArgOriginContext* context) override;
-    antlrcpp::Any visitArgSize(NomParser::ArgSizeContext* context) override;
-    antlrcpp::Any visitArgBackground(NomParser::ArgBackgroundContext* context) override;
+
+    antlrcpp::Any visitArgBotCap(NomParser::ArgBotCapContext* context) override;
+    antlrcpp::Any visitArgTopCap(NomParser::ArgTopCapContext* context) override;
 
 
     antlrcpp::Any visitCmdExprListOne(NomParser::CmdExprListOneContext* context) override;
+    antlrcpp::Any visitCmdGeneral(NomParser::CmdGeneralContext* context) override; // Brandon's gen shape generator
+    antlrcpp::Any visitCmdGeneralParametric(NomParser::CmdGeneralParametricContext* context) override; // Brandon's gen parametric shape generator
     antlrcpp::Any visitCmdLight(NomParser::CmdLightContext* context) override;
     antlrcpp::Any visitCmdIdListOne(NomParser::CmdIdListOneContext* context) override;
     antlrcpp::Any visitCmdNamedArgs(NomParser::CmdNamedArgsContext* context) override;

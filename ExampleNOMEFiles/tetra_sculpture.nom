@@ -1,0 +1,116 @@
+bank b
+    set twist_slider 180 0 720 180
+    set azimuth_slider 0 0 600 1
+    set hex_rotation 0 0 120 1
+    set x_val 0 -1 1 0.1
+    set y_val 0 -1 1 0.1
+    set z_val 0 -1 1 0.1
+    set plateX 1 0 3 0.1
+    set plateY 1 0 3 0.1
+    set plate_size 0.4 0 1 0.01
+    set plate_distance 1.25 0 3 0.01
+    set edge_length 0.82 0 2 0.01
+    set edge_width 2 0 3 0.01
+    set edge_curve 1 0 2 0.01
+endbank
+
+#================================= Points ======================================
+point pOrigin (0 0 0) endpoint
+
+# Sweep Path
+point nX (-1*$b.edge_length 0 0) endpoint
+point pX (1*$b.edge_length 0 0) endpoint
+point p1 (0 -0.5*$b.edge_length*$b.edge_curve 0) endpoint
+point p2 (0 0.5*$b.edge_length*$b.edge_curve 0) endpoint
+
+beziercurve edge_path (nX p1 pX) endbeziercurve
+beziercurve edge_path2 (nX p2 pX) endbeziercurve
+
+# Guidelines for Tetrahedron
+point pA (-1 -1 1) endpoint
+point pB (1 -1 -1) endpoint
+point pC (1 1 1) endpoint
+point pD (-1 1 -1) endpoint
+polyline guideline1 (pA pB) endpolyline
+polyline guideline2 (pA pC) endpolyline
+polyline guideline3 (pA pD) endpolyline
+polyline guideline4 (pB pC) endpolyline
+polyline guideline5 (pB pD) endpolyline
+polyline guideline6 (pC pD) endpolyline
+#instance testingline1 guideline1 endinstance
+#instance testingline2 guideline2 endinstance
+#instance testingline3 guideline3 endinstance
+#instance testingline4 guideline4 endinstance
+#instance testingline5 guideline5 endinstance
+#instance testingline6 guideline6 endinstance
+
+# Sweep Cross Section
+point c1 (0 -0.1*$b.edge_width 0) endpoint
+point c2 (0 0.1*$b.edge_width 0) endpoint
+
+polyline cs (c1 c2) endpolyline
+polyline cs2 (c2 c1) endpolyline
+
+# Hexagon Plates
+point h1 (0.5*$b.plateX*$b.plate_size 0.866*$b.plateY*$b.plate_size 0) endpoint
+point h2 (-0.5*$b.plateX*$b.plate_size 0.866*$b.plateY*$b.plate_size 0) endpoint
+point h3 (-0.75*$b.plate_size 0.433*$b.plate_size 0) endpoint
+point h4 (0.75*$b.plate_size 0.433*$b.plate_size 0) endpoint
+
+
+#============================== Meshes/Sweeps/Groups ===========================
+mesh hex_third_mesh
+    face hex_third_face (h1 h2 h3 pOrigin h4) endface
+endmesh
+
+group hexagon
+    instance hex1 hex_third_mesh endinstance
+    instance hex2 hex_third_mesh rotate (0 0 1) (120) endinstance
+    instance hex3 hex_third_mesh rotate (0 0 1) (240) endinstance
+endgroup
+
+group hex_rotated
+    instance hexagon_inst hexagon rotate (1 0 0) (-90) endinstance
+endgroup
+
+group hex_translated
+    instance hex_rotated_inst hex_rotated rotate (0 1 0) (45) translate (0 $b.plate_distance 0) endinstance
+endgroup
+
+group hex_plate
+    instance hex_plate1 hex_translated rotate (1 0 -1) (54.7356) endinstance
+endgroup
+
+sweep sweep_edge
+    crosssection cs2 endcrosssection
+    path edge_path2 mintorsion azimuth ($b.azimuth_slider) twist ($b.twist_slider) endpath
+endsweep
+
+sweep sweep_edge_opp
+    crosssection cs endcrosssection
+    path edge_path mintorsion azimuth ($b.azimuth_slider + 180) twist ($b.twist_slider) endpath
+endsweep
+
+group edge_pair
+    instance edge_inst0 sweep_edge_opp rotate (0 1 0) (45) translate (0 -1 0) endinstance
+    instance edge_inst1 sweep_edge rotate (0 1 0) (-45) translate (0 1 0) endinstance
+endgroup
+
+#============================== Instances ======================================
+# offset offset_tetra
+# NOME_OFFSET_DEFAULT
+# height 0.1
+# width 0.1
+
+instance pair0 edge_pair endinstance
+instance pair1 edge_pair rotate (1 -1 1) (120) endinstance
+instance pair2 edge_pair rotate (1 -1 -1) (120) endinstance
+
+instance plateA hex_plate rotate (1 -1 1) (120) endinstance
+instance plateB hex_plate rotate (-1 1 -1) (120) endinstance
+instance plateC hex_plate endinstance
+instance plateD hex_plate rotate (-1 1 1) (120) endinstance
+
+# endoffset
+
+# Merge and Subdivide in UI

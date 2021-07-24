@@ -74,7 +74,6 @@
     <!--<addaction name="actionResetTempMesh"/>-->
      <addaction name="actionCommitChanges"/>
      <addaction name="actionShowFacets"/>
-     <addaction name="actionRenderRay"/> 
    </widget>
 
 
@@ -83,6 +82,7 @@
         <string>&amp;Selection Config</string>
       </property>
       <addaction name="actionToggleVertexSelection"/>
+      <addaction name="actionToggleSharpVertexSelection"/>
       <addaction name="actionToggleEdgeSelection"/>
       <addaction name="actionToggleFaceSelection"/>
 	  <addaction name="actionTogglePolylineSelection"/>
@@ -100,7 +100,6 @@
         <string>&amp;Add Point Config</string>
       </property>
       <addaction name="actionToggleRenderRay"/>
-      <addaction name="actionRenderRay"/>
       <!--<addaction name="actionAddPoint"/> Steven's add point-->
     </widget>
 
@@ -180,12 +179,6 @@
      </property>
    </action>
 
-   <!-- Randy's Render Ray-->
-   <action name="actionRenderRay">
-     <property name="text">
-       <string>&amp;Draw Added Points</string>
-     </property>
-   </action>
 <!--  <action name="actionPoint">
    <property name="text">
     <string>&amp;Point</string>
@@ -263,6 +256,14 @@
    <action name="actionToggleVertexSelection">
      <property name="text">
        <string>Enable Vertex Selection</string>
+     </property>
+     <property name ="checkable">
+       <bool>true</bool>
+     </property>
+   </action>
+   <action name="actionToggleSharpVertexSelection">
+     <property name="text">
+       <string>Enable Sharp Vertex Selection</string>
      </property>
      <property name ="checkable">
        <bool>true</bool>

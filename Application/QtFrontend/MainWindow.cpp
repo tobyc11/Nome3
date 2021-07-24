@@ -314,8 +314,8 @@ void CMainWindow::on_actionRemoveFace_triggered()
 //void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->ResetTemporaryMesh(); }
 
 
-// Randy added on 2/26 for adding vertices via a ray
-void CMainWindow::on_actionRenderRay_triggered()
+// Randy added on 2/26 for adding vertices via a ray    
+void CMainWindow::displayRay()
 {
     std::vector<std::string> allPointNames;
     const auto& vertPositions =Nome3DView->GetRayVertPositions(); //  vector containing vector of string positions
@@ -331,21 +331,44 @@ void CMainWindow::on_actionRenderRay_triggered()
     allPointNames.push_back(originName);
 
     std::vector<tc::Vector3> pointsInBtwn;
-    for (float i = 0.1; i < 1; i+=0.1) {
+    int numPoints = 10;
+    for (float i = 0.1; i < 1; i+=1.0f/numPoints) {
         tc::Vector3 vecInBtwn = {origin.x +i*(hitPoint.x-origin.x), origin.y +i*(hitPoint.y-origin.y), origin.z +i*(hitPoint.z-origin.z)}; //https://math.stackexchange.com/questions/428766/how-do-i-find-out-the-coordinates-of-every-point-between-two-points
         std::vector<std::string> vecInBtwnString { std::to_string(vecInBtwn.x), std::to_string(vecInBtwn.y), std::to_string(vecInBtwn.z)};
-        std::string vecInBtwnName = TemporaryMeshManager->AddPoint(vecInBtwnString);
+        //std::string vecInBtwnName = TemporaryMeshManager->AddPoint(vecInBtwnString);
         //allPointNames.push_back(vecInBtwnName);
     }
 
     allPointNames.push_back(intersectionName);
 
-    TemporaryMeshManager->AddPolyline(allPointNames);
-    Nome3DView->PickVertexBool = !Nome3DView->PickVertexBool; // fix this later
-    Nome3DView->ClearRenderedRay();
+    TemporaryMeshManager->AddInteractivePolyline(allPointNames); // add selectable polyline (a polyline used to interactively add points)
+   
+    //Nome3DView->PickVertexBool = !Nome3DView->PickVertexBool; // fix this later
+    Nome3DView->ClearSelectedEdges(); ////TODO: CHANGE THSI.  Commented out. Only clear points after point has been selected
 }
 
-// Toggle on/off Ray Rendering
+// used for adding a point into the scene
+void CMainWindow::displayPoint()
+{
+    std::vector<std::string> allPointNames;
+    const auto& vertPosition =
+        Nome3DView->GetInteractivePoint(); //  vector containing vector of string positions
+    auto point = vertPosition[0];
+
+    std::vector<std::string> pointString = { std::to_string(point.x), std::to_string(point.y),
+                                              std::to_string(point.z) };
+
+
+    std::string pointName = TemporaryMeshManager->AddPoint(pointString);
+    std::cout << "DONE DISPLAYING POINT" << std::endl;
+    Nome3DView->PickVertexBool = !Nome3DView->PickVertexBool; // TODO: weird logic to show point. This is NOT GOOD. because messes up vertex selection button
+    Nome3DView->ClearInteractivePoint(); // No longer need added point
+    Nome3DView->ClearRenderedRay();  // No longer need origin and direction points
+}
+
+
+
+// Toggle on/off Ray Rendering. Works, but the saving point mechanism is buggy.
 void CMainWindow::on_actionToggleRenderRay_triggered()
 {
     Nome3DView->RenderRayBool = !Nome3DView->RenderRayBool;
@@ -391,6 +414,23 @@ void CMainWindow::on_actionShowFacets_triggered()
 void CMainWindow::on_actionToggleVertexSelection_triggered()
 {
     Nome3DView->PickVertexBool = !Nome3DView->PickVertexBool;
+    Nome3DView->VertexSharpnessBool = false; // ensure vertex sharpness is not on
+    // mark all mesh instances dirty. Added on 11/26
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        auto* entity = node->GetInstanceEntity();
+        if (!entity)
+            entity = node->GetOwner()->GetEntity();
+
+        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+            mesh->MarkDirty();
+    });
+}
+
+// Toggle on/off Vertex selection
+void CMainWindow::on_actionToggleSharpVertexSelection_triggered()
+{
+    Nome3DView->PickVertexBool = !Nome3DView->PickVertexBool;
+    Nome3DView->VertexSharpnessBool = !Nome3DView->VertexSharpnessBool; // ensure vertex sharpness is not on
     // mark all mesh instances dirty. Added on 11/26
     Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
         auto* entity = node->GetInstanceEntity();
@@ -568,12 +608,16 @@ void CMainWindow::PostloadSetup()
         // Randy added this on 11/5 for edge selection
         if (!Nome3DView->GetSelectedEdgeVertices().empty())
         {
-            std::cout << "Here are the edge vertex names right before creating poly: "
-                    + Nome3DView->GetSelectedEdgeVertices()[0] + " "
-                    + Nome3DView->GetSelectedEdgeVertices()[1]
-                      << std::endl;
             TemporaryMeshManager->SelectOrDeselectPolyline(Nome3DView->GetSelectedEdgeVertices());
             Nome3DView->ClearSelectedEdges(); // TODO: This is assuming can only add one edge a time
+        }
+        if (Nome3DView->RayCasted) {
+            displayRay(); // Display the ray in GUI
+            Nome3DView->RayCasted = false;
+        }
+        if (Nome3DView->GetInteractivePoint().size() != 0)
+        {
+            displayPoint(); // and hides ray
         }
         Scene->SetTime((float) elapsedRender->elapsed() / 1000);
         Scene->SetFrame(1);

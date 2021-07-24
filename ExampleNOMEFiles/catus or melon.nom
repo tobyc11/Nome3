@@ -1,17 +1,17 @@
 bank slider
   set num_slices 10 1 100 1
-  set width 1 1 100 1
-  set height 1 1 100 1
+  set mwidth 1 1 100 1
+  set mheight 1 1 100 1
 endbank
 
-point p1 (-1*{expr $slider.width} 0 0) endpoint
-point p2 (-2*{expr $slider.width} 2*{expr $slider.height} 0) endpoint
-point p3 (-1*{expr $slider.width} 4*{expr $slider.height} 0) endpoint
-point p4 (1*{expr $slider.width} 4*{expr $slider.height} 0) endpoint
-point p5 (2*{expr $slider.width} 2*{expr $slider.height} 0) endpoint
-point p6 (1*{expr $slider.width} 0 0) endpoint
+point p1 (-1*{expr $slider.mwidth} 0 0) endpoint
+point p2 (-2*{expr $slider.mwidth} 2*{expr $slider.mheight} 0) endpoint
+point p3 (-1*{expr $slider.mwidth} 4*{expr $slider.mheight} 0) endpoint
+point p4 (1*{expr $slider.mwidth} 4*{expr $slider.mheight} 0) endpoint
+point p5 (2*{expr $slider.mwidth} 2*{expr $slider.mheight} 0) endpoint
+point p6 (1*{expr $slider.mwidth} 0 0) endpoint
 
-beziercurve b_curve (p1 p2 p3 p4 p5 p6) slices {expr $slider.num_slices} endbeziercurve
+beziercurve b_curve (p1 p2 p3 p4 p5 p6) segs {expr $slider.num_slices} endbeziercurve
 
 instance bc b_curve endinstance
 instance bc b_curve rotate (0 1 0) (30) endinstance

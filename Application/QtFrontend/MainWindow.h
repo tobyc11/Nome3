@@ -64,19 +64,21 @@ private slots:
     void on_actionAddFace_triggered();
     void on_actionAddPolyline_triggered(); 
 
-     void on_actionRemoveFace_triggered(); // Randy added this
+     void on_actionRemoveFace_triggered(); // Randy added this. Buggy implementation.
     // void on_actionSharpenFace_triggered(); // Randy added this. Not currently used.
 
     /* Randy temporarily commenting out due to temporarymeshmanager changes
     void on_actionResetTempMesh_triggered(); */
 
-    void on_actionRenderRay_triggered(); // Randy added this on 2/26
+    void displayRay(); // Randy added this on 2/26
+    void displayPoint(); // Randy added this on 3/20
     void on_actionToggleRenderRay_triggered(); // Randy added this on 2/26 for adding points via ray
 
     void on_actionCommitChanges_triggered();
 
     void on_actionShowFacets_triggered(); // Randy added this
     void on_actionToggleVertexSelection_triggered(); // Randy added this on 11/5
+    void on_actionToggleSharpVertexSelection_triggered(); // Randy added this on 6/20/2021
     void on_actionToggleEdgeSelection_triggered(); // Randy added this on 11/5
     void on_actionTogglePolylineSelection_triggered(); // Randy added this on 12/22
     void on_actionToggleFaceSelection_triggered(); // Randy added this on 11/5

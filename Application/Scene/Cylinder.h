@@ -20,6 +20,10 @@ public:
     }
 
     void UpdateEntity() override;
+
+private:
+    bool bBotCap = false;
+    bool bTopCap = false;
 };
 
 }

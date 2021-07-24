@@ -1,0 +1,87 @@
+bank b
+    set speed 0.00 0 1 0.01
+endbank
+
+                        ##### COORDINATE AXES #####
+point o (0 0 0) endpoint
+point pX (1 0 0) endpoint
+point pY (0 1 0) endpoint
+point pZ (0 0 1) endpoint
+
+polyline xAxis (o pX) endpolyline
+polyline yAxis (o pY) endpolyline
+polyline zAxis (o pZ) endpolyline
+
+#instance xAxis_inst xAxis endinstance
+#instance yAxis_inst yAxis endinstance
+#instance zAxis_inst zAxis endinstance
+
+                            ##### POINTS #####
+point p1 (1 0 -0.57735) endpoint      # 1, 0, -sqrt(3)/3
+point p2 (0 0 1.1547) endpoint      # 0, 0, 2*sqrt(3)/3
+point p3 (-1 0 -0.57735) endpoint
+
+point sq1 (1 1 0) endpoint
+point sq2 (-1 1 0) endpoint
+point sq3 (-1 -1 0) endpoint
+point sq4 (1 -1 0) endpoint
+
+                            ##### MESHES #####
+mesh tri_mesh
+    face tri_face (p1 p2 p3) endface
+endmesh
+
+mesh square_mesh
+    face square_face (sq1 sq2 sq3 sq4) endface
+endmesh
+
+                        ##### ROTATING TRIANGLES #####
+group tri_anim
+    instance tri_mesh_inst tri_mesh
+        rotate (0 1 0) (60 * sin(0.1 * $b.speed * $frame))
+        translate (0 {expr -0.45778 * cos(0.2 * $b.speed * $frame) - 0.45778} 0)    #offset = 0.915554
+    endinstance
+endgroup
+
+group square_anim
+    instance square_mesh_inst square_mesh
+        rotate (0 0 1) (45 * sin(0.1 * $b.speed * $frame))
+        translate (0 0 {expr 0.5 * cos(0.2 * $b.speed * $frame) + 0.5})
+    endinstance
+endgroup
+
+                        ##### TRIANGLES, rotated and translated (rt) #####
+group tri_rt
+    instance tri_anim_inst tri_anim
+        rotate (1 0 0) (-125.2645)            # (360 - 109.471) / 2 = 125.2645
+        translate (0 0.9428 1.333)
+    endinstance
+endgroup
+
+group tri_rt2
+    instance tri_rt_inst tri_rt rotate (0 1 0) (90) endinstance
+endgroup
+
+group square_rt
+    instance square_anim_inst square_anim
+        rotate (0 1 0) (45)
+        translate (1 0 1)
+    endinstance
+endgroup
+
+                    ##### ROTATING SHAPE GROUPS #####
+group tri_sq_group
+    instance square_rt_inst square_rt endinstance
+    instance tri_rt_inst0 tri_rt endinstance
+    instance tri_rt_inst1 tri_rt2 endinstance
+endgroup
+
+group cubocta_half
+    instance square_rt_inst square_rt rotate (1 0 -1) (-90) endinstance
+    instance tri_sq_group_inst0 tri_sq_group endinstance
+    instance tri_sq_group_inst1 tri_sq_group rotate (0 1 0) (180) endinstance
+endgroup
+
+                            ##### INSTANCES #####
+instance cubocta_half_inst0 cubocta_half endinstance
+instance cubocta_half_inst1 cubocta_half rotate (1 0 0) (180) endinstance

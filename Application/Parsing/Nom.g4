@@ -56,6 +56,8 @@ argTransform
    | 'translate' LPAREN expression expression expression RPAREN # argTransformOne
    ;
 
+argRotate : 'crotate' LPAREN exp1=expression exp2=expression exp3=expression RPAREN LPAREN exp4=expression RPAREN;
+argTranslate : 'ctranslate' LPAREN expression expression expression RPAREN;
 argColor : 'color' LPAREN expression expression expression RPAREN ;
 argControlRotate : 'rotate' vector3 ;
 argControlScale : 'scale' vector3 ;
@@ -67,6 +69,12 @@ argMintorsion : 'mintorsion' ;
 argOrigin : 'origin' LPAREN expression expression RPAREN;
 argSize : 'size' LPAREN expression expression RPAREN;
 argBackground : 'background' LPAREN expression expression expression RPAREN;
+argFunc : 'func' ident ;
+argFuncX : 'funcX' ident ;
+argFuncY : 'funcY' ident ;
+argFuncZ : 'funcZ' ident ;
+argBotCap : 'botcap' ;
+argTopCap : 'topcap' ;
 
 command
    : open='point' name=ident LPAREN expression expression expression RPAREN end='endpoint' # CmdExprListOne
@@ -81,7 +89,7 @@ command
    | open='spiral' name=ident LPAREN expression expression expression RPAREN end='endspiral' # CmdExprListOne
    | open='sphere' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endsphere' # CmdExprListOne
    | open='ellipsoid' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endellipsoid' # CmdExprListOne
-   | open='cylinder' name=ident LPAREN expression expression expression expression RPAREN end='endcylinder' # CmdExprListOne
+   | open='cylinder' name=ident LPAREN expression expression expression expression (argBotCap | argTopCap)* RPAREN end='endcylinder' # CmdExprListOne
    | open='hyperboloid' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endhyperboloid' # CmdExprListOne
    | open='dupin' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='enddupin' # CmdExprListOne
    | open='mobiusstrip' name=ident LPAREN expression expression expression expression RPAREN end='endmobiusstrip' # CmdExprListOne
@@ -90,9 +98,9 @@ command
    | open='tunnel' name=ident LPAREN expression expression expression expression RPAREN end='endtunnel' # CmdExprListOne
    | open='torusknot' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorusknot' # CmdExprListOne
    | open='torus' name=ident LPAREN expression expression expression expression expression expression expression RPAREN end='endtorus' # CmdExprListOne
-   | open='gencartesiansurf' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endgencartesiansurf' # CmdExprListOne
-   | open='genparametricsurf' name=ident LPAREN expression expression expression expression expression expression RPAREN end='endgenparametricsurf' # CmdExprListOne
-   | open='genimplicitsurf' name=ident LPAREN expression expression expression expression expression expression expression expression expression RPAREN end='endgenimplicitsurf' # CmdExprListOne
+   | open='gencartesiansurf' name=ident argFunc LPAREN expression expression expression expression expression expression RPAREN end='endgencartesiansurf' # CmdGeneral
+   | open='genparametricsurf' name=ident argFuncX argFuncY argFuncZ LPAREN expression expression expression expression expression expression RPAREN end='endgenparametricsurf' # CmdGeneralParametric
+   | open='genimplicitsurf' name=ident argFunc LPAREN expression expression expression expression expression expression expression expression expression RPAREN end='endgenimplicitsurf' # CmdGeneral
    | open='beziercurve' name=ident idList argSegs* end='endbeziercurve' # CmdIdListOne
    | open='bspline' name=ident argOrder* idList argSegs* end='endbspline' # CmdIdListOne
    | open='instance' name=ident entity=ident (argSurface | argTransform | argHidden)* end='endinstance' # CmdInstance
@@ -121,11 +129,12 @@ set : open='set' ident expression expression expression expression;
 
 deleteFace : open='face' ident end='endface' ;
 
-IDENT : VALID_ID_START VALID_ID_CHAR* | QUOTE VALID_ID_FUNC* QUOTE ;
+IDENT : VALID_ID_START VALID_ID_CHAR* | OPENBRACKET VALID_ID_FUNC* CLOSEBRACKET ;
 fragment VALID_ID_START : ('a' .. 'z') | ('A' .. 'Z') | '_' | '.' ;
 fragment VALID_ID_CHAR : VALID_ID_START | ('0' .. '9') ;
 fragment VALID_ID_FUNC : VALID_ID_CHAR | '(' | ')' | '*' | '/' | '+' | '!' | '%' | '=' | '^' | '-' | '|' | ',' | '<' | '>' ;
-fragment QUOTE : '"' ;
+fragment OPENBRACKET : '[' ;
+fragment CLOSEBRACKET : ']' ;
 
 //The NUMBER part gets its potential sign from "(PLUS | MINUS)* atom" in the expression rule
 SCIENTIFIC_NUMBER : NUMBER (E SIGN? UNSIGNED_INTEGER)? ;

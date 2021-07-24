@@ -282,6 +282,7 @@ bool TBindingTranslator<Flow::TInputArray<CVertexInfo*>>::FromASTToValue(
     return true;
 }
 
+
 template <>
 bool TBindingTranslator<Flow::TInput<CSweepPathInfo*>>::FromASTToValue(
     AST::ACommand* command, const CCommandSubpart& subpart, Flow::TInput<CSweepPathInfo*>& value)

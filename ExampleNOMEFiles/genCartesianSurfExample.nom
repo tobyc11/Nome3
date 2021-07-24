@@ -1,11 +1,25 @@
-gencartesiansurf "(7*x*y)/exp((x^2)+(y^2))" (-2 2 -2 2 40 40) endgencartesiansurf
-instance example1 "(7*x*y)/exp((x^2)+(y^2))" endinstance
+### Cartesian General Shape Generator Example File ###
+#
+# To display shapes uncomment the pairs of lines under the 'Example Shapes' section below.
+# Uncomment only one pair at a time to avoid shapes intersecting each other.
+#
+# Shapes make take a while to load into scene.
 
-gencartesiansurf "((y^2)/1.5)-((x^2)/2)" (-3 3 -3 3 40 40) endgencartesiansurf
-instance example2 "((y^2)/1.5)-((x^2)/2)" translate (12 0 0) endinstance
 
-gencartesiansurf "sin(10(x^2+y^2))/10" (-3 3 -3 3 30 30) endgencartesiansurf
-instance example3 "sin(10(x^2+y^2))/10" translate (-12 0 0) endinstance
+surface R color (0.7 0.2 0  ) endsurface # Red
+surface G color (0   0.7 0.2) endsurface # Green
+surface B color (0   0.2 0.7) endsurface # Blue
 
-gencartesiansurf "sin(5x)*cos(5y)/5" (-3 3 -3 3 30 30) endgencartesiansurf
-instance example4 "sin(5x)*cos(5y)/5" translate (0 -12 0) endinstance
+
+############################ Example Shapes ############################
+gencartesiansurf example0 func [(7*x*y)/exp((x^2)+(y^2))] (-2 2 -2 2 40 40) endgencartesiansurf
+instance s0 example0 surface R endinstance
+
+#gencartesiansurf example1 func [((y^2)/1.5)-((x^2)/2)] (-3 3 -3 3 40 40) endgencartesiansurf
+#instance s1 example1 surface G endinstance
+
+#gencartesiansurf example2 func [sin(10(x^2+y^2))/10] (-3 3 -3 3 30 30) endgencartesiansurf
+#instance s2 example2 surface B endinstance
+
+#gencartesiansurf example3 func [sin(5x)*cos(5y)/5] (-3 3 -3 3 30 30) endgencartesiansurf
+#instance s3 example3 surface R endinstance

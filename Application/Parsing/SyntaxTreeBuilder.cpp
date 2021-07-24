@@ -475,6 +475,7 @@ antlrcpp::Any CFileBuilder::visitCmdCamera(NomParser::CmdCameraContext *context)
     // Handle arguments other than name
     cmd->AddNamedArgument(visit(context->argCameraProjection()));
     cmd->AddNamedArgument(visit(context->argCameraFrustum()));
+    return cmd;
 }
 
 antlrcpp::Any CFileBuilder::visitCmdWindow(NomParser::CmdWindowContext* context)

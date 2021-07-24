@@ -221,7 +221,7 @@ void CNome3DView::PostSceneUpdate()
             if (!entity->IsMesh()){
                 if (entity->renderType == Scene::CEntity::LIGHT) {
                     /// add and update light
-                    CInteractiveLight* light = nullptr;
+                    CInteractiveLight* light;
                     // Check for existing InteractiveMesh
                     auto iter = sceneLightAssoc.find(node);
                     if (iter != sceneLightAssoc.end())

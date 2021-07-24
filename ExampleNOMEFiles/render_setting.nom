@@ -54,7 +54,8 @@ endgroup
 
 camera cam  ## camera type
   projection NOME_PERSPECTIVE ### NOTICE: SLF_PERSPECTIVE->NOME_PERSPECTIVE
-  frustum ( -0.2 -0.2 -4 0.2 0.2 -0.01 ) ### NOTICE: NO BRACKETS( -0.2 -0.2 -4 ) ( 0.2 0.2 -0.01 )
+  frustum ( -0.2 0.2  -0.2 0.2 -4 -0.01 ) ### NOTICE: NO BRACKETS( -0.2 -0.2 -4 ) ( 0.2 0.2 -0.01 )
+                                          ### ORDER left right bottom top nearPlane farPlane
 endcamera
 
 group gCam  ## the cameras used
@@ -72,27 +73,25 @@ endgroup
 
 
 window display  ## select a part of the computer screen
-  origin (0.1 0.3)
-  size (1 0.5)
+  origin (0 0)
+  size (1 1)
   background (0.l 0.8 0.9)  ## a light blue
 endwindow
 
 viewport rightview  ## select the left half of the display window
+  cameraID cam
   origin (0 0)
   size (0.5 1)
 endviewport
 
 viewport leftview  ## select the right half of the display window
+  cameraID cam
   origin (0.5 0)
   size (0.5 1)
 endviewport
 
 
-render rightview  ## rendering for the right camera ### TODO: not supported
-  gCam.righteye.cam world
-  light world.left_sun.sun
-  light world.main_amb.amb
-endrender
+
 
 
 

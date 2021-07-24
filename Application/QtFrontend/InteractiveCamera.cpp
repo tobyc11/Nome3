@@ -33,10 +33,10 @@ void CInteractiveCamera::UpdateCamera()
     {
         auto CameraInstance = dynamic_cast<Scene::CCamera*>(entity)->GetCamera();
         name = entity->GetNameWithoutPrefix();
+        if (!Camera)
+            Camera = new Qt3DRender::QCamera();
+        if (CameraInstance.type == "NOME_ORTHOGONAL") {
 
-        if (CameraInstance.type == "NOME_PERSPECTIVE") {
-            if (!Camera)
-                Camera = new Qt3DRender::QCamera();
             Camera->lens()->setOrthographicProjection(CameraInstance.para[0],
                                                       CameraInstance.para[1],
                                                       CameraInstance.para[2],
@@ -46,6 +46,7 @@ void CInteractiveCamera::UpdateCamera()
 
             type = Perspective;
         } else if (CameraInstance.type == "NOME_FRUSTUM") {
+
             Camera->lens()->setFrustumProjection(CameraInstance.para[0],
                                                  CameraInstance.para[1],
                                                  CameraInstance.para[2],

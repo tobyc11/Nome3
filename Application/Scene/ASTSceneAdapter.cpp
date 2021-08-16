@@ -1,6 +1,6 @@
 #include "ASTSceneAdapter.h"
 #include "BSpline.h"
-#include "Background.h"
+#include "Window.h"
 #include "BezierSpline.h"
 #include "Camera.h"
 #include "Circle.h"
@@ -150,8 +150,8 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new SSpiral(name);
     else if (cmd == "light")
         return new CLight(name);
-    else if (cmd == "background")
-        return new CBackground(name);
+    else if (cmd == "window")
+        return new CWindow(name);
     else if (cmd == "camera")
         return new CCamera(name);
     else if (cmd == "viewport")
@@ -297,29 +297,25 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
             }
 
             entity->GetMetaObject().DeserializeFromAST(*cmd, *entity);
-            if (auto* light = dynamic_cast<CLight*>(entity.Get()))
-            {
+            if (auto* light = dynamic_cast<CLight*>(entity.Get())) {
                 auto* typeinfo = cmd->GetNamedArgument("type");
                 auto* expr = typeinfo->GetArgument(0);
                 // Just return if the corresponding element is not found in the AST
                 if (!expr)
-                    std::cout << "Haven't detected the light type, use ambient light as default"
-                              << std::endl;
+                    std::cout << "Haven't detected the light type, use ambient light as default" << std::endl;
                 else
                     light->GetLight().type = static_cast<const AST::AIdent*>(expr)->ToString();
             }
-            if (auto* camera = dynamic_cast<CCamera*>(entity.Get()))
-            {
+            if (auto* camera = dynamic_cast<CCamera*>(entity.Get())) {
                 auto* typeinfo = cmd->GetNamedArgument("projection");
                 auto* expr = typeinfo->GetArgument(0);
                 // Just return if the corresponding element is not found in the AST
                 if (!expr)
                     std::cout << "Haven't detected the camera projection type" << std::endl;
                 else
-                    camera->projectionType = static_cast<const AST::AIdent*>(expr)->ToString();
+                    camera->GetCamera().type = static_cast<const AST::AIdent*>(expr)->ToString();
             }
-            if (auto* viewport = dynamic_cast<CViewport*>(entity.Get()))
-            {
+            if (auto* viewport = dynamic_cast<CViewport*>(entity.Get())) {
                 auto* cameraId = cmd->GetNamedArgument("cameraID");
                 auto* expr = cameraId->GetArgument(0);
                 // Just return if the corresponding element is not found in the AST
@@ -452,6 +448,7 @@ void CASTSceneAdapter::VisitCommandSyncScene(AST::ACommand* cmd, CScene& scene, 
                 merger->SetSharp(true);
             else
                 merger->SetSharp(false);
+
         }
         else
         {
@@ -513,5 +510,4 @@ CTransform* CASTSceneAdapter::ConvertASTTransform(AST::ANamedArgument* namedArg)
     }
     return nullptr;
 }
-
 }

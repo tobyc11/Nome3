@@ -62,6 +62,8 @@ CNome3DView::CNome3DView()
     sphereRotateTransformAnimation->setLoopCount(-1);
 
     Root->addComponent(sphereTransform);
+    mainView = new Qt3DRender::QViewport(ss);
+    clearBuffers = new Qt3DRender::QClearBuffers(mainView);
 }
 
 CNome3DView::~CNome3DView() { UnloadScene(); }
@@ -78,41 +80,39 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
         {
             entity = node->GetOwner()->GetEntity();
         }
-
         if (entity)
         {
             printf("Generating the entity    %s\n", entity->GetName().c_str());
             if (!entity->IsMesh())
             {
-                if (entity->renderType == Scene::CEntity::LIGHT)
-                {
+                if (entity->renderType == Scene::CEntity::LIGHT) {
                     // Create an InteractiveLight from the scene node
-                    auto* light = new CInteractiveLight(node);
+                    auto *light = new CInteractiveLight(node);
                     light->setParent(this->Root);
                     InteractiveLights.insert(light);
                     node->SetEntityUpdated(false);
-                }
-                else if (entity->renderType == Scene::CEntity::BACKGROUND)
-                {
-                    auto* background = dynamic_cast<Scene::CBackground*>(entity);
-                    this->defaultFrameGraph()->setClearColor(background->background);
+                } else if (entity->renderType == Scene::CEntity::WINDOW) {
+                    auto* window = dynamic_cast<Scene::CWindow*>(entity);
+                    auto &w = window->window;
+                    int m_w = this->maximumWidth();
+                    int m_h = this->maximumHeight();
+                    QRect adapt_w = QRect(w.x() * m_w, w.y() * m_h,
+                                          w.width() * m_w, w.height() * m_h);
+                    this->setGeometry(adapt_w);
+                    this->defaultFrameGraph()->setClearColor(window->Background);
+                    clearBuffers->setClearColor(window->Background);
                     node->SetEntityUpdated(false);
-                }
-                else if (entity->renderType == Scene::CEntity::VIEWPORT)
-                {
+                } else if (entity->renderType == Scene::CEntity::VIEWPORT) {
                     auto* viewport = dynamic_cast<Scene::CViewport*>(entity);
-                    if (this->activeFrameGraph() == this->defaultFrameGraph())
-                    {
+                    if (this->activeFrameGraph() == this->defaultFrameGraph()) {
                         this->setActiveFrameGraph(ss);
                         this->renderSettings()->setActiveFrameGraph(ss);
-                        mainView = new Qt3DRender::QViewport(ss);
                         mainView->setNormalizedRect(QRectF(0, 0, 1, 1));
-                        clearBuffers = new Qt3DRender::QClearBuffers(mainView);
                         clearBuffers->setBuffers(Qt3DRender::QClearBuffers::ColorDepthBuffer);
                         clearBuffers->setClearColor(QColor(QRgb(0x4d4d4f)));
-                        auto* noDraw = new Qt3DRender::QNoDraw(clearBuffers);
-                        // auto* mainCamSelector = new Qt3DRender::QCameraSelector(mainView);
-                        // mainCamSelector->setCamera(mainCamera);
+                        auto *noDraw = new Qt3DRender::QNoDraw(clearBuffers);
+                        //auto* mainCamSelector = new Qt3DRender::QCameraSelector(mainView);
+                        //mainCamSelector->setCamera(mainCamera);
                     }
                     auto* vp = new Qt3DRender::QViewport(mainView);
                     vp->setNormalizedRect(QRectF(viewport->viewport));
@@ -129,39 +129,16 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
         {
             entity = node->GetOwner()->GetEntity();
         }
-
         if (entity)
         {
             printf("Generating the entity    %s\n", entity->GetName().c_str());
             if (!entity->IsMesh())
             {
-                if (entity->renderType == Scene::CEntity::CAMERA)
-                {
-                    auto* camera = dynamic_cast<Scene::CCamera*>(entity);
-                    auto para = camera->para;
-                    Qt3DRender::QCamera* cam;
-                    for (auto camMap : camViewMap)
-                    {
-                        if (camMap.first == camera->GetNameWithoutPrefix())
-                        {
-                            cam = new Qt3DRender::QCamera;
-                            camMap.second->setCamera(cam);
-                            cameraSet.emplace(camMap.first, cam);
-                        }
-                    }
-                    cam->setPosition(camera->translation);
-                    cam->setUpVector(QVector3D(0, 0, 1));
-                    cam->setViewCenter(QVector3D(0, 0, 0));
-                    cam->rotateAboutViewCenter(camera->rotation);
-                    if (camera->projectionType == "NOME_ORTHOGRAPHIC")
-                        cam->lens()->setOrthographicProjection(para[0], para[1], para[2], para[3],
-                                                               para[4], para[5]);
-                    else if (camera->projectionType == "NOME_PERSPECTIVE")
-                        cam->lens()->setPerspectiveProjection(para[0], para[1], para[2], para[3]);
-                    else if (camera->projectionType == "NOME_FRUSTUM")
-                        cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3],
-                                                          para[4], para[5]);
-
+                if (entity->renderType == Scene::CEntity::CAMERA) {
+                    // Create an InteractiveLight from the scene node
+                    auto *camera = new CInteractiveCamera(node);
+                    camera->setParent(this->Root);
+                    InteractiveCameras.insert(camera);
                     node->SetEntityUpdated(false);
                 }
             }
@@ -186,7 +163,6 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
     });
     PostSceneUpdate();
 }
-
 void CNome3DView::UnloadScene()
 {
     for (auto* m : InteractiveMeshes)
@@ -194,7 +170,11 @@ void CNome3DView::UnloadScene()
     InteractiveMeshes.clear();
     for (auto* l : InteractiveLights)
         delete l;
+    for (auto* c : InteractiveCameras)
+        delete c;
     InteractiveLights.clear();
+    InteractiveCameras.clear();
+    this->renderSettings()->setActiveFrameGraph(this->defaultFrameGraph());
     Scene = nullptr;
 }
 
@@ -204,14 +184,18 @@ void CNome3DView::PostSceneUpdate()
     bool bUpdateScene = false;
     std::unordered_map<CSceneTreeNode*, CInteractiveMesh*> sceneMeshAssoc;
     std::unordered_map<CSceneTreeNode*, CInteractiveLight*> sceneLightAssoc;
+    std::unordered_map<CSceneTreeNode*, CInteractiveCamera*> sceneCameraAssoc;
 
     std::unordered_set<CInteractiveMesh*> aliveSetMesh;
     std::unordered_set<CInteractiveLight*> aliveSetLight;
+    std::unordered_set<CInteractiveCamera*> aliveSetCamera;
     std::unordered_map<Scene::CEntity*, CDebugDraw*> aliveEntityDrawData;
     for (auto* m : InteractiveMeshes)
         sceneMeshAssoc.emplace(m->GetSceneTreeNode(), m);
     for (auto* l : InteractiveLights)
         sceneLightAssoc.emplace(l->GetSceneTreeNode(), l);
+    for (auto* c : InteractiveCameras)
+        sceneCameraAssoc.emplace(c->GetSceneTreeNode(), c);
 
     Scene->ForEachSceneTreeNode([&](CSceneTreeNode* node) {
         // Obtain either an instance entity or a shared entity from the scene node
@@ -222,12 +206,10 @@ void CNome3DView::PostSceneUpdate()
         }
         if (entity)
         {
-            if (!entity->IsMesh())
-            {
-                if (entity->renderType == Scene::CEntity::LIGHT)
-                {
+            if (!entity->IsMesh()){
+                if (entity->renderType == Scene::CEntity::LIGHT) {
                     /// add and update light
-                    CInteractiveLight* light = nullptr;
+                    CInteractiveLight* light;
                     // Check for existing InteractiveMesh
                     auto iter = sceneLightAssoc.find(node);
                     if (iter != sceneLightAssoc.end())
@@ -240,8 +222,7 @@ void CNome3DView::PostSceneUpdate()
                         {
                             light->UpdateLight();
                             bUpdateScene = true;
-                            printf("Delivering the rendering light of the scene %s\n",
-                                   node->GetPath().c_str());
+                            printf("Delivering the rendering light of the scene %s\n", node->GetPath().c_str());
                             node->SetEntityUpdated(false);
                         }
                     }
@@ -252,50 +233,54 @@ void CNome3DView::PostSceneUpdate()
                         aliveSetLight.insert(light);
                         InteractiveLights.insert(light);
                     }
-                }
-                else if (entity->renderType == Scene::CEntity::BACKGROUND)
-                {
+                } else if (entity->renderType == Scene::CEntity::WINDOW) {
                     if (node->WasEntityUpdated())
                     {
-                        auto* background = dynamic_cast<Scene::CBackground*>(entity);
-                        this->defaultFrameGraph()->setClearColor(background->background);
+                        auto* window = dynamic_cast<Scene::CWindow*>(entity);
+                        /// auto*
+                        this->defaultFrameGraph()->setClearColor(window->Background);
+                        clearBuffers->setClearColor(window->Background);
                         node->SetEntityUpdated(false);
+
                     }
-                }
-                else if (entity->renderType == Scene::CEntity::CAMERA)
-                {
-                    if (node->WasEntityUpdated())
+                } else if (entity->renderType == Scene::CEntity::CAMERA) {
+                    /// add and update camera
+                    CInteractiveCamera* camera;
+                    // Check for existing InteractiveMesh
+                    auto iter = sceneCameraAssoc.find(node);
+                    if (iter != sceneCameraAssoc.end())
                     {
-                        auto* camera = dynamic_cast<Scene::CCamera*>(entity);
-                        auto para = camera->para;
-                        Qt3DRender::QCamera* cam;
-                        for (const auto& camMap : cameraSet)
+                        // Found existing InteractiveMesh, mark as alive
+                        camera = iter->second;
+                        aliveSetCamera.insert(camera);
+                        camera->UpdateTransform();
+                        if (node->WasEntityUpdated())
                         {
-                            if (camMap.first == camera->GetNameWithoutPrefix())
-                            {
-                                cam = camMap.second;
+                            camera->UpdateCamera();
+                            bUpdateScene = true;
+                            printf("Delivering the rendering camera of the scene %s\n", node->GetPath().c_str());
+                            node->SetEntityUpdated(false);
+                            for (auto camMap : camViewMap)  {
+                                if (camMap.first == camera->name)
+                                {
+                                    camera->Camera = new Qt3DRender::QCamera;
+                                    camMap.second->setCamera(camera->Camera);
+                                    cameraSet.emplace(camMap.first, camera->Camera);
+                                }
                             }
                         }
-                        if (camera->projectionType == "NOME_ORTHOGRAPHIC")
-                            cam->lens()->setOrthographicProjection(para[0], para[1], para[2],
-                                                                   para[3], para[4], para[5]);
-                        else if (camera->projectionType == "NOME_PERSPECTIVE")
-                            cam->lens()->setPerspectiveProjection(para[0], para[1], para[2],
-                                                                  para[3]);
-                        else if (camera->projectionType == "NOME_FRUSTUM")
-                            cam->lens()->setFrustumProjection(para[0], para[1], para[2], para[3],
-                                                              para[4], para[5]);
-                        cam->setPosition(camera->translation);
-                        cam->setUpVector(QVector3D(0, 0, 1));
-                        cam->setViewCenter(QVector3D(0, 0, 0));
-                        cam->rotateAboutViewCenter(camera->rotation);
-                        node->SetEntityUpdated(false);
                     }
-                }
-                else if (entity->renderType == Scene::CEntity::VIEWPORT)
-                {
+                    else
+                    {
+                        camera = new CInteractiveCamera(node);
+                        camera->setParent(this->Root);
+                        aliveSetCamera.insert(camera);
+                        InteractiveCameras.insert(camera);
+                    }
+                } else if (entity->renderType == Scene::CEntity::VIEWPORT) {
                     // TODO:may add the viewport change capability
                 }
+
             }
         }
     });
@@ -318,20 +303,16 @@ void CNome3DView::PostSceneUpdate()
                 {
                     // Found existing InteractiveMesh, mark as alive
                     mesh = iter->second;
-                    if (entity->isMerged)
-                    {
+                    if (entity->isMerged) {
                         auto iterr = aliveSetMesh.find(mesh);
                         if (iterr != aliveSetMesh.end())
                         {
                             aliveSetMesh.erase(iterr);
                         }
-                    }
-                    else
-                    {
+                    } else {
                         aliveSetMesh.insert(mesh);
                         mesh->UpdateTransform();
-                        if (node->WasEntityUpdated() || bUpdateScene)
-                        {
+                        if (node->WasEntityUpdated() || bUpdateScene) {
                             printf("Geom regen for %s\n", node->GetPath().c_str());
                             mesh->UpdateMaterial(WireFrameMode);
                             mesh->UpdateGeometry(PickVertexBool);
@@ -346,19 +327,15 @@ void CNome3DView::PostSceneUpdate()
                     aliveSetMesh.insert(mesh);
                     InteractiveMeshes.insert(mesh);
                 }
-                if (!entity->isMerged)
-                {
+                if (!entity->isMerged) {
                     // Create a DebugDraw for the CEntity if not already
                     auto eIter = EntityDrawData.find(entity);
-                    if (eIter == EntityDrawData.end())
-                    {
-                        auto* debugDraw = new CDebugDraw(Root);
+                    if (eIter == EntityDrawData.end()) {
+                        auto *debugDraw = new CDebugDraw(Root);
                         aliveEntityDrawData[entity] = debugDraw;
                         // TODO: somehow uncommenting this line leads to a crash in Qt3D
                         // mesh->SetDebugDraw(debugDraw);
-                    }
-                    else
-                    {
+                    } else {
                         aliveEntityDrawData[entity] = eIter->second;
                         mesh->SetDebugDraw(eIter->second);
                     }
@@ -391,6 +368,17 @@ void CNome3DView::PostSceneUpdate()
         }
     }
     InteractiveLights = std::move(aliveSetLight);
+
+    for (auto* c : InteractiveCameras)
+    {
+        auto iter = aliveSetCamera.find(c);
+        if (iter == aliveSetCamera.end())
+        {
+            // Not in aliveSetMesh
+            delete c;
+        }
+    }
+    InteractiveCameras = std::move(aliveSetCamera);
 
     // Kill all entity debug draws that are not alive
     for (auto& iter : EntityDrawData)
@@ -979,7 +967,7 @@ int LineLineIntersect(tc::Vector3 p1, tc::Vector3 p2, tc::Vector3 p3, tc::Vector
     {
 
         std::cout << "LineLine does not intersect denom: " << abs(denom) << " " << d2121 * d4343
-                << "-" 
+                << "-"
                 << d4321 * d4321 << "  " << d2121 << " " << d4343 << " " << d4321 << " " << d4321 << std::endl;
         return (false);
     }
@@ -1068,7 +1056,7 @@ void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
         double mub;
 
 
-      
+
 
         auto interBool =
             LineLineIntersect(RayVertPositions[0], RayVertPositions[1], ray.Origin, ray.Origin+5*ray.Direction,
@@ -1077,7 +1065,7 @@ void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
         std::cout << "interBool " << interBool << std::endl;
         if (interBool == 0) {
             std::cout << "Warning did not find intersection" << std::endl;
-        } 
+        }
         else
         {
             std::cout << "Found intersection" << std::endl;
@@ -1086,7 +1074,7 @@ void CNome3DView::RenderRay(tc::Ray& ray, QVector3D intersection)
         std::cout << "closestPoint on initial castRay: " << closestPoint.x << " " << closestPoint.y
                   << " " << closestPoint.z << std::endl;
         RayInteractivePoint.push_back(closestPoint); // single interactive point
-   
+
         RayVertPositions.clear();
         RayVertPositions.push_back(ray.Origin);
         RayVertPositions.push_back(ray.Origin + 5 * ray.Direction); // closestPoint);
@@ -1121,7 +1109,7 @@ void CNome3DView::mousePressEvent(QMouseEvent* e)
     // material->setAlpha(0.7f);
 
     // Clicking with left button enables rotation
-    rotationEnabled = e->button() == Qt::RightButton ? false : true; 
+    rotationEnabled = e->button() == Qt::RightButton ? false : true;
     // Save mouse press position
     firstPosition = QVector2D(e->localPos());
     mousePressEnabled = true; // TODO: this is the Windowsbug. It's not being turned off when we click on a vertex.
@@ -1295,5 +1283,4 @@ float CNome3DView::InputSharpness()
     else
         return -1;
 }
-
 }

@@ -1,9 +1,10 @@
 #pragma once
 #include "DebugDraw.h"
+#include "InteractiveCamera.h"
 #include "InteractiveLight.h"
 #include "InteractiveMesh.h"
 #include "OrbitTransformController.h"
-#include "Scene/Background.h"
+#include "Scene/Window.h"
 #include <Ray.h>
 #include <Scene/Scene.h>
 
@@ -12,9 +13,9 @@
 #include <unordered_map>
 #include <unordered_set>
 
-// TODO: enable multiple view ports
-#include <QRenderSurfaceSelector>
+//TODO: enable multiple view ports
 #include <QViewport>
+#include <QRenderSurfaceSelector>
 
 namespace Nome
 {
@@ -31,7 +32,7 @@ public:
         return SelectedVertices;
     }
 
-    // Randy added on 10/14 for face selection
+     // Randy added on 10/14 for face selection
     [[nodiscard]] const std::vector<std::string>& GetSelectedFaces() const { return SelectedFaces; }
 
     // Randy added on 11/5 for edge selection
@@ -46,7 +47,6 @@ public:
         return RayVertPositions;
     }
 
-
     [[nodiscard]] const std::vector<tc::Vector3>&  GetInteractivePoint() const
     {
         return RayInteractivePoint;
@@ -56,7 +56,7 @@ public:
     void ClearSelectedFaces(); // Randy added on 10/14 for deselecting faces
     void ClearSelectedEdges(); // Randy added on 11/5 for deselecting edges
     void ClearRenderedRay(); // Randy added on 2/26 for deselecting ray
-    void ClearInteractivePoint(); 
+    void ClearInteractivePoint();
     void TakeScene(const tc::TAutoPtr<Scene::CScene>& scene);
     void UnloadScene();
     void PostSceneUpdate();
@@ -70,7 +70,9 @@ public:
 
     void FreeVertexSelection();
 
+
     static Qt3DCore::QEntity* MakeGridEntity(Qt3DCore::QEntity* parent);
+
 
     bool PickVertexBool = false; // Randy added on 11/5/20
     bool VertexSharpnessBool = false; // Randy added on 6/20/21
@@ -80,22 +82,22 @@ public:
     bool RenderRayBool = false; // Randy added on 2/26/20
     bool RayCasted = false;
     std::unordered_set<CInteractiveLight*> InteractiveLights;
+    std::unordered_set<CInteractiveCamera*> InteractiveCameras;
 
 protected:
     // Xinyu added on Oct 8 for rotation
     void mouseMoveEvent(QMouseEvent* e) override;
     void mousePressEvent(QMouseEvent* e) override;
     void mouseReleaseEvent(QMouseEvent* e) override;
-    void wheelEvent(QWheelEvent* ev) override;
-    void keyPressEvent(QKeyEvent* ev) override;
-    bool eventFilter(QObject* obj, QEvent* event) override;
+    void wheelEvent(QWheelEvent *ev) override;
+    void keyPressEvent(QKeyEvent *ev) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     QVector2D GetProjectionPoint(QVector2D originalPosition);
     static QVector3D GetCrystalPoint(QVector2D originalPoint);
     void rotateRay(tc::Ray& ray);
-    float InputSharpness(); // Randy removed static
-
+    float InputSharpness();
 private:
     Qt3DCore::QEntity* Root;
     Qt3DCore::QEntity* Base;
@@ -108,7 +110,7 @@ private:
     std::vector<std::string> SelectedFaces; // Randy added on 10/10
     std::vector<std::string> SelectedEdgeVertices; // Randy added on 11/5
     // std::vector<const & std::vector<std::string>> SelectedEdgeVertPositions; // There are no edge
-    // "names" right now TODO: Introduce Edge names and handles
+    // "names" right now TODO: Introduce Edge names and handles    bool vertexSelectionEnabled;
     bool vertexSelectionEnabled;
 
     // Xinyu added on Oct 8 for rotation
@@ -130,16 +132,17 @@ private:
     float objectY;
     float objectZ;
 
+
     // For the animation
-    Qt3DCore::QTransform* sphereTransform;
+    Qt3DCore::QTransform *sphereTransform;
 
-    OrbitTransformController* controller;
-    QPropertyAnimation* sphereRotateTransformAnimation;
-    Qt3DCore::QEntity* torus;
+    OrbitTransformController *controller;
+    QPropertyAnimation *sphereRotateTransformAnimation;
+    Qt3DCore::QEntity *torus;
 
-    Qt3DExtras::QPhongAlphaMaterial* material;
+    Qt3DExtras::QPhongAlphaMaterial *material;
 
-    // TODO: configure viewport
+    //TODO: configure viewport
     std::map<std::string, Qt3DRender::QCameraSelector*> camViewMap;
     std::map<std::string, Qt3DRender::QCamera*> cameraSet;
 
@@ -147,5 +150,4 @@ private:
     Qt3DRender::QClearBuffers* clearBuffers;
     Qt3DRender::QRenderSurfaceSelector* ss;
 };
-
 }

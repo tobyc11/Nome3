@@ -544,28 +544,27 @@ antlrcpp::Any CFileBuilder::visitCmdCamera(NomParser::CmdCameraContext *context)
     // Handle arguments other than name
     cmd->AddNamedArgument(visit(context->argCameraProjection()));
     cmd->AddNamedArgument(visit(context->argCameraFrustum()));
-    for (auto* arg : context->argTranslate())
-        cmd->AddNamedArgument(visit(arg));
-    for (auto* arg : context->argRotate())
-        cmd->AddNamedArgument(visit(arg));
-
-
     return cmd;
 }
+antlrcpp::Any CFileBuilder::visitCmdWindow(NomParser::CmdWindowContext* context)
+{
+    auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
+    cmd->PushPositionalArgument(visit(context->name));
+    // Handle arguments other than name
+    cmd->AddNamedArgument(visit(context->argOrigin()));
+    cmd->AddNamedArgument(visit(context->argSize()));
+    cmd->AddNamedArgument(visit(context->argBackground()));
+    return cmd;
+}
+
 
 antlrcpp::Any CFileBuilder::visitCmdViewport(NomParser::CmdViewportContext *context) {
     auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
     cmd->PushPositionalArgument(visit(context->name));
     // Handle arguments other than name
-
-
     cmd->AddNamedArgument(visit(context->argCameraID()));
-
-    auto* list = new AST::AVector(ConvertToken(context->LPAREN()), ConvertToken(context->RPAREN()));
-    for (auto* expr : context->expression())
-        list->AddChild(visit(expr).as<AST::AExpr*>());
-    cmd->PushPositionalArgument(list);
-
+    cmd->AddNamedArgument(visit(context->argOrigin()));
+    cmd->AddNamedArgument(visit(context->argSize()));
     return cmd;
 }
 

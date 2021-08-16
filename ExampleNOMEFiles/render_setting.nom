@@ -1,0 +1,105 @@
+##  Example of SLIDE stereo viewing set-up
+
+## For explanations of "window" and "viewport" see:
+     https://people.eecs.berkeley.edu/~ug/slide/docs/slide/spec/
+
+#  CHS 2021/3/12
+
+#####################################################################
+
+group assembly
+## a complex definition of the object to be viewed
+endgroup
+
+## controls to manipulate the object of interest:
+bank par
+    set    objscale   1.4     0.5    2    0.1    ##  size
+    set    objxrot    0     -60     60    1      ##  up-down
+    set    objyrot    0     -60     60    1      ##  left-right
+
+    set    camangle   2       0      4    0.1    ##  divergence between the two cameras
+endbank
+
+
+####################################################################################
+# A generic setup for viewing SLIDE objects
+###########################################
+
+light amb
+  type NOME_AMBIENT ### NOTICE:SLF_AMBIENT->NOME_AMBIENT
+  color (0.3 0.3 0.3)
+endlight
+
+light sun
+  type NOME_DIRECTIONAL ### NOTICE:SLF_DIRECTIONAL->NOME_DIRECTIONAL
+  color (0.7 0.7 0.7)
+endlight
+
+
+group world
+
+  instance assembly  scale ({expr $par_objscale} {expr $par_objscale} {expr $par_objscale} )
+                      rotate(1 0 0)({expr $par_objxrot})  rotate(0 1 0)({expr $par_objyrot})   endinstance
+  instance amb
+    id main_amb
+  endinstance
+
+  instance sun
+    id left_sun
+    rotate (0 1 0) (-45)
+    rotate (0 0 1) (-60)
+  endinstance
+endgroup
+
+
+camera cam  ## camera type
+  projection NOME_PERSPECTIVE ### NOTICE: SLF_PERSPECTIVE->NOME_PERSPECTIVE
+  frustum ( -0.2 0.2  -0.2 0.2 -4 -0.01 ) ### NOTICE: NO BRACKETS( -0.2 -0.2 -4 ) ( 0.2 0.2 -0.01 )
+                                          ### ORDER left right bottom top nearPlane farPlane
+endcamera
+
+group gCam  ## the cameras used
+  instance cam
+    id righteye
+    rotate (0 1 0)({expr $sw_camangle})
+    translate ( 0.0 0.0 1.00 )  # NOTICE: camera specific rotate and translate
+  endinstance
+
+  instance cam
+    id lefteye
+    translate ( 0.0 0.0 1.00 )   rotate(0 1 0)({expr -$sw_camangle})
+  endinstance
+endgroup
+
+
+window display  ## select a part of the computer screen
+  origin (0 0)
+  size (1 1)
+  background (0.l 0.8 0.9)  ## a light blue
+endwindow
+
+viewport rightview  ## select the left half of the display window
+  cameraID cam
+  origin (0 0)
+  size (0.5 1)
+endviewport
+
+viewport leftview  ## select the right half of the display window
+  cameraID cam
+  origin (0.5 0)
+  size (0.5 1)
+endviewport
+
+
+
+
+
+
+## Both these cameras have their own crystal ball interface.
+##   They could be manipulated individually.
+## For natural stereo viewing, they should be coupled:
+##   any operation in one viewport should also be applied to the other one.
+
+
+
+

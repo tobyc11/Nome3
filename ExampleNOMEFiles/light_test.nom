@@ -17,11 +17,12 @@ bank slider
   set DIR2_RGB 0 0 1 0.1
   set DIR1_control 0 0 180 1
   set DIR2_control 0 0 180 1
-  set cam_fieldOfView 45.0 30 90 1
-  set cam_aspect 1.77 1 2 0.01
-  set cam_nearPlane 0.1 -100 100 1
-  set cam_farPlane 1000.0 1 2000 10
-  set camangle 2  -4   4    0.1
+  set cam_left -10 -100 0 1
+  set cam_right 10 0 100 1
+  set cam_bottom -10 -100 0 1
+  set cam_top 10 0 100 1
+  set cam_near -1 -100 100 0.1
+  set cam_far 10 -1 100 0.1
 endbank
 
 light amb
@@ -41,25 +42,27 @@ endlight
 
 
 camera cam1
- projection NOME_PERSPECTIVE
- frustum ({expr $slider.cam_fieldOfView} {expr $slider.cam_aspect} {expr $slider.cam_nearPlane} {expr $slider.cam_farPlane}  )
-  ctranslate ( 0.0 0.0 1.00 )  crotate (0 1 0)({expr $slider.camangle})
+ projection NOME_FRUSTUM
+ frustum ({expr $slider.cam_left} {expr $slider.cam_right} {expr $slider.cam_bottom} {expr $slider.cam_top} {expr $slider.cam_near} {expr $slider.cam_far})
 endcamera
 
 camera cam2
- projection NOME_PERSPECTIVE
- frustum ({expr $slider.cam_fieldOfView} {expr $slider.cam_aspect} {expr $slider.cam_nearPlane} {expr $slider.cam_farPlane}  )
- ctranslate ( 0.0 0.0 1.00 )  crotate (0 1 0)({expr -$slider.camangle})
+ projection NOME_ORTHOGONAL
+ frustum ({expr $slider.cam_left} {expr $slider.cam_right} {expr $slider.cam_bottom} {expr $slider.cam_top} {expr $slider.cam_near} {expr $slider.cam_far})
 endcamera
+
+
 
 viewport vp1
  cameraID cam1
- (0 0 0.5 1)
+ origin (0 0)
+ size (0.5 1)
 endviewport
 
 viewport vp2
  cameraID cam2
- (0.5 0 0.5 1)
+ origin (0.5 0)
+ size (0.5 1)
 endviewport
 
 
@@ -79,7 +82,11 @@ point ayc (-1  1 -1) endpoint
 point abz (-1 -1  1) endpoint
 point abc (-1 -1 -1) endpoint
 
-background bg ({expr $slider.BGG} {expr $slider.BGG} {expr $slider.BGG}) endbackground
+window bg
+    origin (0 0)
+    size (1 1)
+    background (100 100 100)
+endwindow
 
 mesh cube
   face ftop (xyz ayz abz xbz)  surface M  endface   ## We plan to make color specifications on individual faces allowable. ##
@@ -104,7 +111,6 @@ endsubdivision
 
 
 
-
 instance sunn sun1 rotate (0 0 1) ({expr $slider.DIR1_control})   endinstance
 
 instance sunn sun2 rotate (1 0 0) ({expr $slider.DIR2_control})   endinstance
@@ -119,6 +125,7 @@ instance camm cam2 endinstance
 
 instance vpp1 vp1 endinstance
 instance vpp2 vp2 endinstance
+
 
 
 

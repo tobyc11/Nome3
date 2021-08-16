@@ -4,27 +4,29 @@
 
 #include <Qt3DCore/QEntity>
 #include <Qt3DCore/QTransform>
-#include <QDirectionalLight>
+#include <QCamera>
 
-enum LightType { SpotLight, AmbientLight, DirectionalLight, PointLight };
+enum CameraType { Perspective, FRUSTUM };
+
 
 namespace Nome
 {
 
-class CInteractiveLight : public Qt3DCore::QEntity
+class CInteractiveCamera : public Qt3DCore::QEntity
 {
 public:
-    explicit CInteractiveLight(Scene::CSceneTreeNode* node);
+    explicit CInteractiveCamera(Scene::CSceneTreeNode* node);
 
     [[nodiscard]] Scene::CSceneTreeNode* GetSceneTreeNode() const { return SceneTreeNode; }
 
     void UpdateTransform();
-    void UpdateLight();
+    void UpdateCamera();
 
 public:
-    Qt3DRender::QAbstractLight* Light = nullptr;
-    LightType type;
-    QColor Color;
+    Qt3DRender::QCamera* Camera = nullptr;
+    CameraType type;
+    std::string name;
+
 
 private:
     Scene::CSceneTreeNode* SceneTreeNode = nullptr;

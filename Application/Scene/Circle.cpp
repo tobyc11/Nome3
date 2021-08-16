@@ -11,6 +11,15 @@ DEFINE_META_OBJECT(CCircle)
     BindPositionalArgument(&CCircle::Segments, 1, 1);
 }
 
+void CCircle::MarkDirty()
+{
+    // Mark this entity dirty
+    Super::MarkDirty();
+
+    // And also mark the Face output dirty
+    Circle.MarkDirty();
+}
+
 void CCircle::UpdateEntity()
 {
     if (!IsDirty())
@@ -21,27 +30,27 @@ void CCircle::UpdateEntity()
     float radius = Radius.GetValue(1.0f);
 
     std::vector<Vertex*> handles;
+    std::vector<CVertexInfo *> positions;
     for (int i = 0; i < n; i++)
     {
         float theta = (float)i / n * 2.f * (float)tc::M_PI;
         Vector3 pos = Vector3(radius * cosf(theta), radius * sinf(theta), 0.0f);
         handles.push_back(AddVertex("v" + std::to_string(i), pos));
-        CVertexInfo point;
-        point.Position = pos;
-        points.push_back(point);
+        CVertexInfo *point = new CVertexInfo();
+        point->Position = pos;
+        positions.push_back(point);
     }
-    points.push_back(points[0]);
+    positions.push_back(positions[0]);
     handles.push_back(handles[0]);
 
-    std::vector<CVertexInfo *> positions;
-    for (int i = 0; i < n + 1; i++)
-        positions.push_back(&points[i]);
     AddLineStrip("circle", handles);
 
+    // Sweep path info
     SI.Positions = positions;
     SI.IsClosed = true;
     SI.Name = GetName();
     Circle.UpdateValue(&SI);
+    SetValid(true);
 }
 
 }

@@ -7,7 +7,7 @@ namespace Nome::Scene
 
 struct CSweepControlPointInfo : public CVertexInfo
 {
-    Vector3 Scale;
+    Vector3 Scale = Vector3(1.0f, 1.0f, 1.0f);
     Vector3 Rotate;
     bool Reverse;
     CSweepPathInfo *CrossSection;

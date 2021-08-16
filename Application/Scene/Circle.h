@@ -15,14 +15,13 @@ public:
     DECLARE_META_CLASS(CCircle, CSweepPath);
     CCircle() = default;
     CCircle(const std::string& name)
-        : CSweepPath(std::move(name))
+        : CSweepPath(name)
     {
     }
 
     void UpdateEntity() override;
+    void MarkDirty() override;
 
-private:
-    std::vector<CVertexInfo> points;
 };
 
 }

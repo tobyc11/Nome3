@@ -1,4 +1,5 @@
 #include "BezierSpline.h"
+#include "SweepControlPoint.h"
 
 namespace Nome::Scene
 {
@@ -34,17 +35,26 @@ void CBezierCurveMath::DeCasteljauInPlace(float t, std::vector<Vector3>& inputOu
     }
 }
 
-std::vector<Vector3> CBezierCurveMath::CalcPositions()
+std::vector<Vector3> CBezierCurveMath::CalcValues(std::vector<Vector3> input)
 {
     std::vector<Vector3> result;
     auto knots = GetDefaultKnots();
     for (float t : knots)
     {
-        std::vector<Vector3> temp = ControlPoints;
+        std::vector<Vector3> temp = input;
         DeCasteljauInPlace(t, temp);
         result.push_back(temp[0]);
     }
     return result;
+}
+
+void CBezierSpline::MarkDirty()
+{
+    // Mark this entity dirty
+    Super::MarkDirty();
+
+    // And also mark the Face output dirty
+    BezierSpline.MarkDirty();
 }
 
 void CBezierSpline::UpdateEntity()
@@ -57,29 +67,44 @@ void CBezierSpline::UpdateEntity()
     int n = (int)Segments.GetValue(8.0f);
 
     Math.ControlPoints.clear();
+    Math.Scales.clear();
+    Math.Rotates.clear();
+
     size_t cpn = ControlPoints.GetSize();
     for (size_t i = 0; i < cpn; i++)
     {
         Math.ControlPoints.push_back(ControlPoints.GetValue(i, nullptr)->Position);
+        if (dynamic_cast<CSweepControlPointInfo*>(ControlPoints.GetValue(i, nullptr))) {
+            Math.Scales.push_back(dynamic_cast<CSweepControlPointInfo*>(ControlPoints.GetValue(i, nullptr))->Scale);
+            Math.Rotates.push_back(dynamic_cast<CSweepControlPointInfo*>(ControlPoints.GetValue(i, nullptr))->Rotate);
+        } else {
+            Math.Scales.push_back({1, 1, 1});
+            Math.Rotates.push_back({0, 0, 0});
+        }
     }
     Math.Segments = n;
-    std::vector<Vector3> positions = Math.CalcPositions();
+    std::vector<Vector3> positions = Math.CalcValues(Math.ControlPoints);
+    std::vector<Vector3> scales = Math.CalcValues(Math.Scales);
+    std::vector<Vector3> rotates = Math.CalcValues(Math.Rotates);
     assert(positions.size() == n + 1);
 
     std::vector<Vertex*> handles;
+    std::vector<CVertexInfo *> Positions;
     for (int i = 0; i < n + 1; i++)
     {
         handles.push_back(AddVertex("v" + std::to_string(i), positions[i]));
-        CVertexInfo point;
-        point.Position = positions[i];
-        points.push_back(point);
+        CSweepControlPointInfo *point = new CSweepControlPointInfo();
+        point->Position = positions[i];
+        point->Scale = scales[i];
+        point->Rotate = rotates[i];
+        Positions.push_back(point);
     }
-    std::vector<CVertexInfo *> Positions;
-    for (int i = 0; i < n + 1; i++)
-        Positions.push_back(&points[i]);
+
+    // Sweep path info
     SI.Positions = Positions;
     SI.Name = GetName();
     BezierSpline.UpdateValue(&SI);
+    SetValid(true);
 
     AddLineStrip("curve", handles);
 }

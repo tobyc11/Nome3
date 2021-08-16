@@ -24,9 +24,11 @@ public:
     Matrix3 FrenetFrameAt(float t) override;
     std::vector<float> GetDefaultKnots() override;
     void DeCasteljauInPlace(float t, std::vector<Vector3>& inputOutput);
-    std::vector<Vector3> CalcPositions();
+    std::vector<Vector3> CalcValues(std::vector<Vector3> input);
 
     std::vector<Vector3> ControlPoints;
+    std::vector<Vector3> Scales;
+    std::vector<Vector3> Rotates;
     int Segments;
 };
 
@@ -45,16 +47,16 @@ class CBezierSpline : public CSweepPath
 public:
     DECLARE_META_CLASS(CBezierSpline, CSweepPath);
     CBezierSpline() = default;
-    CBezierSpline(const std::string& name)
-        : CSweepPath(std::move(name))
+    explicit CBezierSpline(const std::string& name)
+        : CSweepPath(name)
     {
     }
 
     void UpdateEntity() override;
+    void MarkDirty() override;
 
 private:
     CBezierCurveMath Math;
-    std::vector<CVertexInfo> points;
 };
 
 }

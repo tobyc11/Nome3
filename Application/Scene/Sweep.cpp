@@ -249,7 +249,7 @@ void CSweep::UpdateEntity()
                 if (i == 2) { Ns.push_back(prevPerpendicular); }
                 // calculate the rotation angle of each joint
                 angles.push_back(Math.calculateRotateAngle(Ns[i - 2], prevPerpendicular,
-                                                      points[i - 1] - points[i - 2]) + twist);
+                                                      points[i - 1] - points[i - 2]));
                 // set the current normal vector
                 Ns.push_back(curPerpendicular);
             }
@@ -297,6 +297,8 @@ void CSweep::UpdateEntity()
 
     // get the result rotation angles
     for (size_t i = numPoints - 2; i >= 1; i--) { angles[i - 1] += angles[i]; }
+    //add twist to angles
+    for (size_t i = 1; i < numPoints; i++) { angles[i] += (i - 1) * twist; }
     // add rotation
     for (size_t i = 0; i < numPoints; i++)
     {
@@ -338,7 +340,7 @@ void CSweep::UpdateEntity()
         N = Ns[0];
 
         // generate points in a circle perpendicular to the curve at the current point
-        drawCrossSection(crossSections[0], points[0], T, N, angles[0], 0,
+        drawCrossSection(crossSections[0], points[0], T, N, angles[0] - twist, 0,
                          controlScales[0], ++segmentCount, shouldFlip);
     }
     else
@@ -360,13 +362,14 @@ void CSweep::UpdateEntity()
             angle = Math.getAngle(prevVector, curVector);
         }
 
-        drawCrossSection(crossSections[0], points[0], T, N, angles[0], angle,
+        drawCrossSection(crossSections[0], points[0], T, N, angles[0] - twist, angle,
                          controlScales[0], ++segmentCount, shouldFlip);
     }
 
     for (size_t i = 1; i < numPoints; i++)
     {
         shouldFlip ^= controlReverses[i];
+        // last point
         if (i == numPoints - 1)
         {
             if (isClosed)
@@ -397,7 +400,7 @@ void CSweep::UpdateEntity()
                 T = points[i] - points[i - 1];
                 // add twist
                 drawCrossSection(crossSections[i], points[i], T, Ns[i - 1],
-                                 angles[i] - twist, 0, controlScales[i],
+                                 angles[i],0, controlScales[i],
                                  ++segmentCount, shouldFlip);
             }
         }

@@ -399,9 +399,11 @@ antlrcpp::Any CFileBuilder::visitCmdNamedArgs(NomParser::CmdNamedArgsContext* co
     auto* cmd = new AST::ACommand(ConvertToken(context->open), ConvertToken(context->end));
     cmd->PushPositionalArgument(visit(context->name));
     cmd->AddNamedArgument(visit(context->argPoint()));
-    cmd->AddNamedArgument(visit(context->argControlScale()));
-    cmd->AddNamedArgument(visit(context->argControlRotate()));
 
+    for (auto* arg : context->argControlScale())
+        cmd->AddNamedArgument(visit(arg));
+    for (auto* arg : context->argControlRotate())
+        cmd->AddNamedArgument(visit(arg));
     for (auto* arg : context->argCross())
         cmd->AddNamedArgument(visit(arg));
     for (auto* arg : context->argReverse())

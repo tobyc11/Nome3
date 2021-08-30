@@ -80,7 +80,7 @@ command
    : open='point' name=ident LPAREN expression expression expression RPAREN end='endpoint' # CmdExprListOne
    | open='polyline' name=ident idList argClosed* end='endpolyline' # CmdIdListOne
    | open='sweep' name=ident 'crosssection' crossId=ident (argBeginCap | argEndCap | argReverse)* 'endcrosssection' 'path' pathId=ident (argAzimuth | argTwist | argMintorsion)* 'endpath'  end='endsweep' # CmdSweep
-   | open='controlpoint' name=ident argPoint argControlScale argControlRotate (argCross | argReverse)* end='endcontrolpoint' # CmdNamedArgs
+   | open='controlpoint' name=ident argPoint (argControlScale | argControlRotate | argCross | argReverse)* end='endcontrolpoint' # CmdNamedArgs
    | open='face' name=ident idList argSurface* end='endface' # CmdIdListOne
    | open='object' name=ident idList end='endobject' # CmdIdListOne
    | open='mesh' name=ident command* end='endmesh' # CmdSubCmds

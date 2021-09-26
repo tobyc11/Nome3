@@ -41,6 +41,8 @@ public:
     std::vector<std::string> CheckCircle(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
     std::vector<std::string> CheckPoint(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
     std::vector<std::string> CheckFace(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckPolyline(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
+    std::vector<std::string> CheckSurface(std::vector<std::vector<std::string>> parsedcode, std::unordered_map<std::string, std::string> &idmap, int i, int j, std::unordered_map<std::string, std::string> shapemap);
     std::string RemoveSpecials(std::string str);
     bool isNumber(std::string s);
     int checkcount(std::string str, char letter);

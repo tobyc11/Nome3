@@ -48,6 +48,7 @@ public:
     void AddSlider(const std::string& name, AST::ACommand* cmd, float value, float min, float max,
                    float step);
     CSlider* GetSlider(const std::string& name);
+    void AddToSliderList(const std::string name);
 
     // An observer is typically the GUI that is responsible for displaying the sliders
     void AddObserver(ISliderObserver* observer);
@@ -56,6 +57,10 @@ public:
 private:
     std::map<std::string, tc::TAutoPtr<CSlider>> Sliders;
     std::set<ISliderObserver*> Observers;
+
+    // Contains subset of sliders in user-defined order
+    std::vector<std::string> SliderNameList;
+    std::vector<tc::TAutoPtr<CSlider>> SliderList;
 };
 
 }

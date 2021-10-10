@@ -504,6 +504,7 @@ antlrcpp::Any CFileBuilder::visitCmdBank(NomParser::CmdBankContext* context)
     cmd->PushPositionalArgument(visit(context->name));
     for (auto* set : context->set())
         cmd->AddSubCommand(visit(set));
+    cmd->AddSubCommand(visit(context->list()));
     return cmd;
 }
 
@@ -576,6 +577,13 @@ antlrcpp::Any CFileBuilder::visitSet(NomParser::SetContext* context)
     cmd->PushPositionalArgument(visit(context->ident()));
     for (auto* expr : context->expression())
         cmd->PushPositionalArgument(visit(expr));
+    return cmd;
+}
+
+antlrcpp::Any CFileBuilder::visitList(NomParser::ListContext* context)
+{
+    auto* cmd = new AST::ACommand(ConvertToken(context->open), nullptr);
+    cmd->PushPositionalArgument(visit(context->idList()));
     return cmd;
 }
 

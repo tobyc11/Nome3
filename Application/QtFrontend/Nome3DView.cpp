@@ -131,7 +131,6 @@ void CNome3DView::TakeScene(const tc::TAutoPtr<Scene::CScene>& scene)
         }
         if (entity)
         {
-            printf("Generating the entity    %s\n", entity->GetName().c_str());
             if (!entity->IsMesh())
             {
                 if (entity->renderType == Scene::CEntity::CAMERA) {
@@ -313,7 +312,6 @@ void CNome3DView::PostSceneUpdate()
                         aliveSetMesh.insert(mesh);
                         mesh->UpdateTransform();
                         if (node->WasEntityUpdated() || bUpdateScene) {
-                            printf("Geom regen for %s\n", node->GetPath().c_str());
                             mesh->UpdateMaterial(WireFrameMode);
                             mesh->UpdateGeometry(PickVertexBool);
                             node->SetEntityUpdated(false);

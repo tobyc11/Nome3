@@ -137,19 +137,33 @@ void CMainWindow::on_actionSave_triggered()
     this->setWindowModified(false);
 }
 
-/* 10/1 Commenting out to avoid annoying error message on open
+// 21.10.11 Xinyu add save to stl capability
+/*
 void CMainWindow::on_actionSceneAsObj_triggered()
 {
     QMessageBox::information(this, tr("Sorry"), tr("This feature is in the works"));
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Scene as Obj"), "",
                                                     tr("Obj Files (*.obj);;All Files (*)"));
 }
+ */
 
-void CMainWindow::on_actionSceneAsStl_triggered()
+void CMainWindow::on_actionExportAsStl_triggered()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Scene as Stl"), "",
                                                     tr("Stl Files (*.stl);;All Files (*)"));
-}*/
+    // One shot merging, and add a new entity and its corresponding node
+    Scene->Update();
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        if (node->GetOwner()->GetName() == "globalMergeNode")
+        {
+            auto* entity = node->GetOwner()->GetEntity();
+            if (auto* mesh = dynamic_cast<Scene::CMeshMerger*>(entity))
+            {
+                mesh->ExportAsStl(fileName);
+            }
+        }
+    });
+}
 
 
 void CMainWindow::on_actionMerge_triggered()
@@ -219,11 +233,9 @@ void CMainWindow::on_actionSubdivide_triggered()
                     mesh->setSubLevel(3);
                 mesh->Catmull(); // TODO: pass in level argument
                 mesh->MarkDirty();
-
             }
         }
     });
-
 }
 
 /* Randy temporarily commenting out. Point and Instance don't work.

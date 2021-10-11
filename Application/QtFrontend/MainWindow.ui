@@ -1,311 +1,317 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>1280</width>
-    <height>720</height>
-   </rect>
-  </property>
-  <widget class="QWidget" name="centralwidget"/>
-  <widget class="QMenuBar" name="menubar">
-    <property name="font" >
-      <font>
-        <pointsize>13</pointsize>
-      </font>
-    </property>
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1280</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuFile">
-     <property name="font" >
-       <font>
-         <pointsize>13</pointsize>
-       </font>
-     </property>
-    <property name="title">
-     <string>&amp;File</string>
-    </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionReload"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionExit"/>
-   </widget>
-<!--   <widget class="QMenu" name="menuAbout">
-    <property name="title">
-     <string>&amp;About</string>
-    </property>
-    <addaction name="actionAbout"/>
-    <addaction name="actionAboutQt"/>
-   </widget>-->
-    
-   <!--<widget class="QMenu" name="menuAdd">
-    <property name="title">
-     <string>&amp;Add</string>
-    </property>
-    <addaction name="actionPoint"/>
-    <addaction name="actionInstance"/>
-   </widget>-->
-   <widget class="QMenu" name="menuEdit">
-     <property name="font" >
-       <font>
-         <pointsize>13</pointsize>
-       </font>
-     </property>
-    <property name="title">
-     <string>&amp;Edit</string>
-    </property>
-    <addaction name="actionMerge"/>
-    <addaction name="actionSubdivide"/>
-    <addaction name="separator"/>
-    <addaction name="actionAddFace"/>
-    <addaction name="actionAddPolyline"/>
-     <addaction name="actionRemoveFace"/>
-     <!-- <addaction name="actionSharpenFace"/>-->
-    <!--<addaction name="actionResetTempMesh"/>-->
-     <addaction name="actionCommitChanges"/>
-     <addaction name="actionShowFacets"/>
-   </widget>
+    <class>MainWindow</class>
+    <widget class="QMainWindow" name="MainWindow">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>1280</width>
+                <height>720</height>
+            </rect>
+        </property>
+        <widget class="QWidget" name="centralwidget"/>
+        <widget class="QMenuBar" name="menubar">
+            <property name="font">
+                <font>
+                    <pointsize>13</pointsize>
+                </font>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>1280</width>
+                    <height>22</height>
+                </rect>
+            </property>
+            <widget class="QMenu" name="menuFile">
+                <property name="font">
+                    <font>
+                        <pointsize>13</pointsize>
+                    </font>
+                </property>
+                <property name="title">
+                    <string>&amp;File</string>
+                </property>
+                <addaction name="actionNew"/>
+                <addaction name="actionOpen"/>
+                <addaction name="actionReload"/>
+                <addaction name="actionSave"/>
+                <addaction name="actionExportAsStl"/>
+                <addaction name="actionExit"/>
+            </widget>
+            <!--   <widget class="QMenu" name="menuAbout">
+                <property name="title">
+                 <string>&amp;About</string>
+                </property>
+                <addaction name="actionAbout"/>
+                <addaction name="actionAboutQt"/>
+               </widget>-->
+
+            <!--<widget class="QMenu" name="menuAdd">
+             <property name="title">
+              <string>&amp;Add</string>
+             </property>
+             <addaction name="actionPoint"/>
+             <addaction name="actionInstance"/>
+            </widget>-->
+            <widget class="QMenu" name="menuEdit">
+                <property name="font">
+                    <font>
+                        <pointsize>13</pointsize>
+                    </font>
+                </property>
+                <property name="title">
+                    <string>&amp;Edit</string>
+                </property>
+                <addaction name="actionMerge"/>
+                <addaction name="actionSubdivide"/>
+                <addaction name="separator"/>
+                <addaction name="actionAddFace"/>
+                <addaction name="actionAddPolyline"/>
+                <addaction name="actionRemoveFace"/>
+                <!-- <addaction name="actionSharpenFace"/>-->
+                <!--<addaction name="actionResetTempMesh"/>-->
+                <addaction name="actionCommitChanges"/>
+                <addaction name="actionShowFacets"/>
+            </widget>
 
 
-    <widget class="QMenu" name="menuSelect">
-      <property name="title">
-        <string>&amp;Selection Config</string>
-      </property>
-      <addaction name="actionToggleVertexSelection"/>
-      <addaction name="actionToggleSharpVertexSelection"/>
-      <addaction name="actionToggleEdgeSelection"/>
-      <addaction name="actionToggleFaceSelection"/>
-	  <addaction name="actionTogglePolylineSelection"/>
+            <widget class="QMenu" name="menuSelect">
+                <property name="title">
+                    <string>&amp;Selection Config</string>
+                </property>
+                <addaction name="actionToggleVertexSelection"/>
+                <addaction name="actionToggleSharpVertexSelection"/>
+                <addaction name="actionToggleEdgeSelection"/>
+                <addaction name="actionToggleFaceSelection"/>
+                <addaction name="actionTogglePolylineSelection"/>
+            </widget>
+
+            <widget class="QMenu" name="menuModifySelected">
+                <property name="title">
+                    <string>&amp;Modify Selected</string>
+                </property>
+                <addaction name="actionRemoveFace"/>
+            </widget>
+
+            <widget class="QMenu" name="menuAddPointConfig">
+                <property name="title">
+                    <string>&amp;Add Point Config</string>
+                </property>
+                <addaction name="actionToggleRenderRay"/>
+                <!--<addaction name="actionAddPoint"/> Steven's add point-->
+            </widget>
+
+            <addaction name="menuFile"/>
+            <!--<addaction name="menuAdd"/>-->
+            <addaction name="menuEdit"/>
+            <!--<addaction name="menuAbout"/>-->
+            <addaction name="menuSelect"/>
+            <addaction name="menuModifySelected"/>
+            <addaction name="menuAddPointConfig"/>
+        </widget>
+        <widget class="QStatusBar" name="statusbar"/>
+        <widget class="QToolBar" name="toolBar">
+            <property name="font">
+                <font>
+                    <pointsize>13</pointsize>
+                </font>
+            </property>
+            <property name="windowTitle">
+                <string>toolBar</string>
+            </property>
+            <attribute name="toolBarArea">
+                <enum>TopToolBarArea</enum>
+            </attribute>
+            <attribute name="toolBarBreak">
+                <bool>false</bool>
+            </attribute>
+            <addaction name="actionAddFace"/>
+            <addaction name="actionAddPolyline"/>
+            <!--<addaction name="actionRemoveFace"/>-->
+            <!--<addaction name="actionResetTempMesh"/>
+            <addaction name="separator"/>-->
+            <addaction name="actionCommitChanges"/>
+            <!--<addaction name="actionShowFacets"/>-->
+        </widget>
+        <action name="actionNew">
+            <property name="text">
+                <string>&amp;New</string>
+            </property>
+            <property name="shortcut">
+                <string>Ctrl+N</string>
+            </property>
+        </action>
+        <action name="actionOpen">
+            <property name="text">
+                <string>&amp;Open</string>
+            </property>
+            <property name="shortcut">
+                <string>Ctrl+O</string>
+            </property>
+        </action>
+        <action name="actionSave">
+            <property name="text">
+                <string>&amp;Save</string>
+            </property>
+            <property name="shortcut">
+                <string>Ctrl+S</string>
+            </property>
+        </action>
+        <action name="actionExportAsStl">
+            <property name="text">
+                <string>&amp;ExportAsStl</string>
+            </property>
+        </action>
+        <action name="actionExit">
+            <property name="text">
+                <string>E&amp;xit</string>
+            </property>
+            <property name="shortcut">
+                <string>Ctrl+Q</string>
+            </property>
+        </action>
+        <action name="actionAbout">
+            <property name="text">
+                <string>About</string>
+            </property>
+        </action>
+        <!-- Steven's Add Point-->
+        <action name="actionAddPoint">
+            <property name="text">
+                <string>&amp;Add Point</string>
+            </property>
+        </action>
+
+        <!--  <action name="actionPoint">
+           <property name="text">
+            <string>&amp;Point</string>
+           </property>
+          </action>
+          <action name="actionInstance">
+           <property name="text">
+            <string>&amp;Instance</string>
+           </property>
+          </action>-->
+        <action name="actionReload">
+            <property name="text">
+                <string>&amp;Reload</string>
+            </property>
+        </action>
+        <!--  <action name="actionAboutQt">
+           <property name="text">
+            <string>About Qt</string>
+           </property>
+          </action>-->
+        <action name="actionMerge">
+            <property name="text">
+                <string>&amp;Merge</string>
+            </property>
+        </action>
+        <action name="actionSubdivide">
+            <property name="text">
+                <string>&amp;Subdivide</string>
+            </property>
+        </action>
+        <action name="actionAddFace">
+            <property name="text">
+                <string>Add Face</string>
+            </property>
+        </action>
+        <action name="actionAddPolyline">
+            <property name="text">
+                <string>Add Polyline</string>
+            </property>
+        </action>
+        <action name="actionRemoveFace">
+            <property name="text">
+                <string>Remove Face</string>
+            </property>
+        </action>
+        <!--   <action name="actionSharpenFace">
+          <property name="text">
+            <string>Set Face as "Sharp"</string>
+          </property>
+        </action>-->
+        <!--  <action name="actionResetTempMesh">
+           <property name="text">
+            <string>Reset Temp Mesh</string>
+           </property>
+          </action>-->
+        <action name="actionCommitChanges">
+            <property name="text">
+                <string>Commit Changes</string>
+            </property>
+        </action>
+
+        <!-- Steven's Add Point-->
+        <action name="actionCommitTempPoint">
+            <property name="text">
+                <string>Commit Point</string>
+            </property>
+        </action>
+
+        <action name="actionShowFacets">
+            <property name="text">
+                <string>Show Facets</string>
+            </property>
+        </action>
+
+        <action name="actionToggleVertexSelection">
+            <property name="text">
+                <string>Enable Vertex Selection</string>
+            </property>
+            <property name="checkable">
+                <bool>true</bool>
+            </property>
+        </action>
+        <action name="actionToggleSharpVertexSelection">
+            <property name="text">
+                <string>Enable Sharp Vertex Selection</string>
+            </property>
+            <property name="checkable">
+                <bool>true</bool>
+            </property>
+        </action>
+        <action name="actionToggleEdgeSelection">
+            <property name="text">
+                <string>Enable Edge Selection</string>
+            </property>
+            <property name="checkable">
+                <bool>true</bool>
+            </property>
+        </action>
+        <action name="actionToggleFaceSelection">
+            <property name="text">
+                <string>Enable Face Selection</string>
+            </property>
+            <property name="checkable">
+                <bool>true</bool>
+            </property>
+        </action>
+
+        <action name="actionTogglePolylineSelection">
+            <property name="text">
+                <string>Enable Polyline Selection</string>
+            </property>
+            <property name="checkable">
+                <bool>true</bool>
+            </property>
+        </action>
+
+        <!-- Randy's Render Ray-->
+        <action name="actionToggleRenderRay">
+            <property name="text">
+                <string>Enable Add Point</string>
+            </property>
+            <property name="checkable">
+                <bool>true</bool>
+            </property>
+        </action>
+
     </widget>
-
-    <widget class="QMenu" name="menuModifySelected">
-      <property name="title">
-        <string>&amp;Modify Selected</string>
-      </property>
-      <addaction name="actionRemoveFace"/>
-    </widget>
-
-    <widget class="QMenu" name="menuAddPointConfig">
-      <property name="title">
-        <string>&amp;Add Point Config</string>
-      </property>
-      <addaction name="actionToggleRenderRay"/>
-      <!--<addaction name="actionAddPoint"/> Steven's add point-->
-    </widget>
-
-    <addaction name="menuFile"/>
-   <!--<addaction name="menuAdd"/>-->
-   <addaction name="menuEdit"/>
-    <!--<addaction name="menuAbout"/>-->
-    <addaction name="menuSelect"/>
-    <addaction name="menuModifySelected"/>
-    <addaction name="menuAddPointConfig"/>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
-    <property name="font" >
-      <font>
-        <pointsize>13</pointsize>
-      </font>
-    </property>
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="actionAddFace"/>
-   <addaction name="actionAddPolyline"/>
-   <!--<addaction name="actionRemoveFace"/>-->
-   <!--<addaction name="actionResetTempMesh"/>
-   <addaction name="separator"/>-->
-   <addaction name="actionCommitChanges"/>
-    <!--<addaction name="actionShowFacets"/>-->
-  </widget>
-  <action name="actionNew">
-   <property name="text">
-    <string>&amp;New</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+N</string>
-   </property>
-  </action>
-  <action name="actionOpen">
-   <property name="text">
-    <string>&amp;Open</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+O</string>
-   </property>
-  </action>
-  <action name="actionSave">
-   <property name="text">
-    <string>&amp;Save</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionExit">
-   <property name="text">
-    <string>E&amp;xit</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Q</string>
-   </property>
-  </action>
-  <action name="actionAbout">
-   <property name="text">
-    <string>About</string>
-   </property>
-  </action>
-   <!-- Steven's Add Point-->
-   <action name="actionAddPoint">
-     <property name="text">
-       <string>&amp;Add Point</string>
-     </property>
-   </action>
-
-<!--  <action name="actionPoint">
-   <property name="text">
-    <string>&amp;Point</string>
-   </property>
-  </action>
-  <action name="actionInstance">
-   <property name="text">
-    <string>&amp;Instance</string>
-   </property>
-  </action>-->
-  <action name="actionReload">
-   <property name="text">
-    <string>&amp;Reload</string>
-   </property>
-  </action>
-<!--  <action name="actionAboutQt">
-   <property name="text">
-    <string>About Qt</string>
-   </property>
-  </action>-->
-  <action name="actionMerge">
-   <property name="text">
-    <string>&amp;Merge</string>
-   </property>
-  </action>
-  <action name="actionSubdivide">
-    <property name="text">
-      <string>&amp;Subdivide</string>
-    </property>
-  </action>
-  <action name="actionAddFace">
-   <property name="text">
-    <string>Add Face</string>
-   </property>
-  </action>
-  <action name="actionAddPolyline">
-    <property name="text">
-      <string>Add Polyline</string>
-    </property>
-  </action>
-  <action name="actionRemoveFace">
-    <property name="text">
-      <string>Remove Face</string>
-    </property>
-  </action>
-   <!--   <action name="actionSharpenFace">
-     <property name="text">
-       <string>Set Face as "Sharp"</string>
-     </property>
-   </action>-->
-<!--  <action name="actionResetTempMesh">
-   <property name="text">
-    <string>Reset Temp Mesh</string>
-   </property>
-  </action>-->
-  <action name="actionCommitChanges">
-   <property name="text">
-    <string>Commit Changes</string>
-   </property>
-  </action>
-
-   <!-- Steven's Add Point-->
-   <action name="actionCommitTempPoint">
-     <property name="text">
-       <string>Commit Point</string>
-     </property>
-   </action>
-
-   <action name="actionShowFacets">
-     <property name="text">
-       <string>Show Facets</string>
-     </property>
-   </action>
-
-   <action name="actionToggleVertexSelection">
-     <property name="text">
-       <string>Enable Vertex Selection</string>
-     </property>
-     <property name ="checkable">
-       <bool>true</bool>
-     </property>
-   </action>
-   <action name="actionToggleSharpVertexSelection">
-     <property name="text">
-       <string>Enable Sharp Vertex Selection</string>
-     </property>
-     <property name ="checkable">
-       <bool>true</bool>
-     </property>
-   </action>
-   <action name="actionToggleEdgeSelection">
-     <property name="text">
-       <string>Enable Edge Selection</string>
-     </property>
-     <property name ="checkable">
-       <bool>true</bool>
-     </property>
-   </action>
-   <action name="actionToggleFaceSelection">
-     <property name="text">
-       <string>Enable Face Selection</string>
-     </property>
-     <property name ="checkable">
-       <bool>true</bool>
-     </property>
-   </action>
-	 
-	<action name="actionTogglePolylineSelection">
-		<property name="text">
-			<string>Enable Polyline Selection</string>
-		</property>
-		<property name ="checkable">
-			<bool>true</bool>
-		</property>
-	</action>
-
-   <!-- Randy's Render Ray-->
-   <action name="actionToggleRenderRay">
-     <property name="text">
-       <string>Enable Add Point </string>
-     </property>
-     <property name ="checkable">
-       <bool>true</bool>
-     </property>
-   </action>
-   
- </widget>
- <resources/>
- <connections/>
+    <resources/>
+    <connections/>
 </ui>

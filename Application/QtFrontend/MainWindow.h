@@ -45,11 +45,12 @@ private slots:
     void on_actionOpen_triggered();
     void on_actionReload_triggered();
     void on_actionSave_triggered();
+    void on_actionExportAsStl_triggered();
 
-    /* 10/1 Randy commenting out to avoid annoying error message when opening executable
-    void on_actionSceneAsObj_triggered();
-    void on_actionSceneAsStl_triggered();
-    */
+    // 10/11 Xinyu to add save to stl capability
+    // void on_actionSceneAsObj_triggered();
+
+
     void on_actionMerge_triggered();
     void on_actionSubdivide_triggered();
 

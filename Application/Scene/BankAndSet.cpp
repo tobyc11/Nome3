@@ -19,9 +19,10 @@ void CSlider::SetValue(float value)
 
 CBankAndSet::~CBankAndSet()
 {
-    for (const auto& nameSlider : Sliders)
+    int sliderIndex = 0;
+    for (const auto& nameSlider : SliderList)
         for (auto* observer : Observers)
-            observer->OnSliderRemoving(*nameSlider.second, nameSlider.first);
+            observer->OnSliderRemoving(*nameSlider, SliderNameList.at(sliderIndex++));
 }
 
 void CBankAndSet::AddSlider(const std::string& name, AST::ACommand* cmd, float value, float min, float max, float step)
@@ -34,6 +35,12 @@ void CBankAndSet::AddSlider(const std::string& name, AST::ACommand* cmd, float v
 
     for (auto* observer : Observers)
         observer->OnSliderAdded(*slider, name);
+}
+
+void CBankAndSet::AddToSliderList(const std::string name)
+{
+    SliderNameList.push_back(name);
+    SliderList.push_back(Sliders.at(name));
 }
 
 CSlider* CBankAndSet::GetSlider(const std::string& name)
@@ -51,8 +58,9 @@ CSlider* CBankAndSet::GetSlider(const std::string& name)
 
 void CBankAndSet::AddObserver(ISliderObserver* observer)
 {
-    for (const auto& nameSlider : Sliders)
-        observer->OnSliderAdded(*nameSlider.second, nameSlider.first);
+    int sliderIndex = 0;
+    for (const auto& nameSlider : SliderList)
+        observer->OnSliderAdded(*nameSlider, SliderNameList.at(sliderIndex++));
     Observers.insert(observer);
 }
 

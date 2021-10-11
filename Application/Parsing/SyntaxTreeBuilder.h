@@ -50,10 +50,8 @@ public:
     antlrcpp::Any visitArgCameraProjection(NomParser::ArgCameraProjectionContext* ctx) override;
     antlrcpp::Any visitArgCameraFrustum(NomParser::ArgCameraFrustumContext* ctx) override;
     antlrcpp::Any visitArgCameraID(NomParser::ArgCameraIDContext* ctx) override;
-
     antlrcpp::Any visitArgBotCap(NomParser::ArgBotCapContext* context) override;
     antlrcpp::Any visitArgTopCap(NomParser::ArgTopCapContext* context) override;
-
 
     antlrcpp::Any visitCmdExprListOne(NomParser::CmdExprListOneContext* context) override;
     antlrcpp::Any visitCmdGeneral(NomParser::CmdGeneralContext* context) override; // Brandon's gen shape generator
@@ -72,6 +70,7 @@ public:
     antlrcpp::Any visitCmdWindow(NomParser::CmdWindowContext* context) override;
     antlrcpp::Any visitCmdViewport(NomParser::CmdViewportContext* context) override;
     antlrcpp::Any visitSet(NomParser::SetContext* context) override;
+    antlrcpp::Any visitList(NomParser::ListContext* context) override;
     antlrcpp::Any visitDeleteFace(NomParser::DeleteFaceContext* context) override;
 
     antlrcpp::Any visitCmdInclude(NomParser::CmdIncludeContext* context) override; // Randy added this on 12/1 for include files. Look at the # after the command in Nom.g4 to determine which gets visited

@@ -79,6 +79,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "rimfaces", ECommandKind::Dummy },
     { "bank", ECommandKind::BankSet },
     { "set", ECommandKind::BankSet },
+    { "list", ECommandKind::BankSet},
     { "delete", ECommandKind::Instance },
     { "subdivision", ECommandKind::Instance },
     { "offset", ECommandKind::Instance },
@@ -221,6 +222,18 @@ void CASTSceneAdapter::VisitCommandBankSet(AST::ACommand* cmd, CScene& scene)
         };
         auto name = bank + "." + cmd->GetName();
         scene.GetBankAndSet().AddSlider(name, cmd, evalArg(1), evalArg(2), evalArg(3), evalArg(4));
+    }
+    if (kind == ECommandKind::BankSet && cmd->GetCommand() == "list")
+    {
+        if (CmdTraverseStack.rbegin()[1]->GetCommand() != "bank")
+            throw AST::CSemanticError("List command is not under bank", cmd);
+        auto bank = CmdTraverseStack.rbegin()[1]->GetName();
+        auto bankList = (static_cast<AST::AVector*>(cmd->GetPositionalArgument(0)))->GetItems();
+        for (auto expr : bankList)
+        {
+            auto name = static_cast<AST::AIdent*>(expr)->ToString();
+            scene.GetBankAndSet().AddToSliderList(bank + "." + name);
+        }
     }
 
     for (auto* sub : cmd->GetSubCommands())

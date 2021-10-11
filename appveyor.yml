@@ -1,5 +1,5 @@
 version: 3.0.{build}
-image: Visual Studio 2019
+image: Previous Visual Studio 2019
 
 install:
   - cd %APPVEYOR_BUILD_FOLDER%

@@ -3,6 +3,8 @@
 #include "Subdivision.h"
 
 #include <unordered_map>
+using namespace std;
+
 
 namespace Nome::Scene
 {
@@ -25,6 +27,71 @@ void CMeshMerger::UpdateEntity()
     // Update is manual, so this entity has a dummy update method
 
     SetValid(true);
+}
+
+void CMeshMerger::ExportAsStl(QString filename) {
+    ofstream file;
+    file.open (filename.toStdString());
+    file << "solid\n";
+    vector<Face*>::iterator fIt;
+    for(fIt = currMesh.faceList.begin(); fIt < currMesh.faceList.end(); fIt++) {
+        Face * currFace = (*fIt);
+        Edge * firstEdge = currFace -> oneEdge;
+        Edge * currEdge;
+        if(firstEdge == NULL) {
+            cout<<"ERROR: This face does not have a sideEdge."<<endl;
+            exit(0);
+        }
+        Vertex * v0, * v1, * v2;
+        if(currFace == firstEdge -> fa) {
+            v0 = firstEdge -> va;
+            currEdge = firstEdge -> nextVbFa;
+        } else {
+            if(firstEdge -> mobius) {
+                v0 = firstEdge -> va;
+                currEdge = firstEdge -> nextVbFb;
+            } else {
+                v0 = firstEdge -> vb;
+                currEdge = firstEdge -> nextVaFb;
+            }
+        }
+        tc::Vector3 p0 = v0 -> position;
+        if(currEdge == NULL) {
+            cout<<"ERROR: This face contains only one edge and can not be drawn."<<endl;
+        }
+        do {
+            Edge * nextEdge;
+            if(currFace == currEdge -> fa) {
+                v1 = currEdge -> va;
+                v2 = currEdge -> vb;
+                nextEdge = currEdge -> nextVbFa;
+            } else {
+                if(currEdge -> mobius) {
+                    v1 = currEdge -> va;
+                    v2 = currEdge -> vb;
+                    nextEdge = currEdge -> nextVbFb;
+                } else {
+                    v1 = currEdge -> vb;
+                    v2 = currEdge -> va;
+                    nextEdge = currEdge -> nextVaFb;
+                }
+            }
+            if(v2 != v0) {
+                tc::Vector3 faceNormal = getNormal3Vertex(v0->position, v1->position, v2->position);
+                file << "  facet normal "<<faceNormal.x<<" "<<faceNormal.y<<" "<<faceNormal.z<<"\n";
+                file << "    outer loop\n";
+                tc::Vector3 p1 = v1 -> position;
+                tc::Vector3 p2 = v2 -> position;
+                file << "      vertex " << p0.x << " "<< p0.y << " " << p0.z<<"\n";
+                file << "      vertex " << p1.x << " "<< p1.y << " " << p1.z<<"\n";
+                file << "      vertex " << p2.x << " "<< p2.y << " " << p2.z<<"\n";
+                file << "    endloop\n";
+                file << "  endfacet\n";
+            }
+            currEdge = nextEdge;
+        } while (currEdge != firstEdge);
+    }
+    file << "endsolid\n";
 }
 
 void CMeshMerger::Catmull()

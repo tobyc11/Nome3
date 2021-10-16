@@ -4,6 +4,7 @@ bank p
 	set fish_sweep_azimuth 0        0.1     360   1
     set jelly_slices 10 1 100 1
     set jelly_height 1 1 100 1
+    list (fish_slices fish_sweep_twist fish_sweep_azimuth jelly_slices jelly_height)
 endbank
 
 surface O  color  (({expr cos($time)})   0.6  0.8 ) endsurface

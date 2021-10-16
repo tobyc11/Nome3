@@ -1,5 +1,6 @@
 bank param
   set sharpness 2 0 10 0.5
+  list (sharpness)
 endbank
 
 
@@ -10,6 +11,7 @@ point p4 (-1 1 1) endpoint
 
 bank sub_level
   set level 2 0 5 1
+  list (level)
 endbank
 
 mesh one_face

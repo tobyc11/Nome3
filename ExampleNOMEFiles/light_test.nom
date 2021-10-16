@@ -3,7 +3,7 @@
 ##
 ##  CHS 2020/12/2
 ######################################################
-
+## 2021/10/15 Does not compile
 
 bank slider
   set sublevel 3 0 5 1
@@ -23,6 +23,12 @@ bank slider
   set cam_top 10 0 100 1
   set cam_near -1 -100 100 0.1
   set cam_far 10 -1 100 0.1
+  list (    sublevel
+            upper_sharpness lower_sharpness
+            AMB_RR AMB_GG AMB_BB
+            BGG
+            DIR1_RGB DIR2_RGB DIR1_control DIR2_control
+            cam_left cam_right cam_bottom cam_top cam_near cam_far      )
 endbank
 
 light amb

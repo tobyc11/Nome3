@@ -1,5 +1,6 @@
 bank slider
 	set speed 1 0 5 0.1
+	list (speed)
 endbank
 
 torus tor (12 4 360 0 360 12 12) endtorus

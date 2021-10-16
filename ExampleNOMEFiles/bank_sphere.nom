@@ -1,9 +1,10 @@
 bank funnel_slider
   set num_sides 50 5 100 1
   set radius 3 1 100 1
+  list (num_sides radius)
 endbank
 
-funnel f ({expr $funnel_slider.num_sides} {expr $funnel_slider.radius} 0 2) endfunnel
+funnel f (  $funnel_slider.radius     0       2       $funnel_slider.num_sides  ) endfunnel
 
 group testsphere
   instance f1 f endinstance

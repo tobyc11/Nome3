@@ -1,6 +1,7 @@
 bank b
 	set s_twist 0 0.1 360 1
 	set s_azimuth 0 0.1 360 1
+	list (s_twist s_azimuth)
 endbank
 
 

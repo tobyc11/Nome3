@@ -1,0 +1,72 @@
+##################################################
+##      Blooming Flower Time-Dependent Scene    ##
+##                                              ##
+##              M Tang - 12/2020                ##
+##################################################
+
+
+################## BANK & COLORS #################
+bank b
+    set speed 0.3 0 1 0.01
+    list (speed)
+endbank
+
+surface G color (88/255 138/255 89/255) endsurface
+surface Y color (1 198/255 54/255) endsurface
+surface dynamic color (1 {expr 0.7 * sin(0.3 * $b.speed * $frame) + 1} {expr 0.7 * sin(0.3 * $b.speed * $frame) + 1}) endsurface
+
+#################### PETALS #####################
+point p0 (-0.5 0 0) endpoint
+point p1 (1.5 0.5 1) endpoint
+point pY (0 3 {expr 0.2 * sin(0.3 * $b.speed * $frame)}) endpoint
+point p2 (1.5 0.5 -1) endpoint
+
+bspline petal order 4 (p0 p1 pY p2 p0 p1 pY p2) segs 20 endbspline
+
+group petal_dynamic
+    instance petal_d petal rotate (0 0 1) ({expr 30 * sin(0.3 * $b.speed * $frame) - 30}) surface dynamic endinstance
+endgroup
+
+################### STAMEN ######################
+point o (0 0 0) endpoint
+point s1 (0 0.5 0.5) endpoint
+point s2 (0 1 0.5) endpoint
+
+bspline stamen order 3 (o s1 s2) segs 6 endbspline
+
+group stamen_ring
+    instance stamen_inst1_1 stamen endinstance
+    instance stamen_inst1_2 stamen rotate (0 1 0) (60) endinstance
+    instance stamen_inst1_3 stamen rotate (0 1 0) (120) endinstance
+    instance stamen_inst1_4 stamen rotate (0 1 0) (180) endinstance
+    instance stamen_inst1_5 stamen rotate (0 1 0) (240) endinstance
+    instance stamen_inst1_6 stamen rotate (0 1 0) (300) endinstance
+endgroup
+
+group stamina
+    instance ring_inst_inner stamen_ring scale (0.5 1.15 0.5) surface Y endinstance
+    instance ring_inst2 stamen_ring rotate (0 1 0) (30) scale (0.75 1 0.75) surface Y endinstance
+    instance ring_inst3 stamen_ring scale (1 0.8 1) surface Y endinstance
+    instance ring_inst_outer stamen_ring rotate (0 1 0) (30) scale (1.25 0.75 1.25) surface Y endinstance
+endgroup
+
+#################### LILYPAD ####################
+cylinder lilypad_cylinder (2.5 0.1 340 20 topcap botcap)  endcylinder
+
+group lilypad
+    instance lilypad1 lilypad_cylinder rotate (1 0 0) (90) translate (0.3 -0.4 0) surface G endinstance
+endgroup
+
+instance lilypad_inst lilypad rotate (0 1 0) (0.3 * $frame) endinstance
+
+#################### FLOWER #####################
+group flower
+    instance petal1 petal_dynamic endinstance
+    instance petal2 petal_dynamic rotate (0 1 0) (72) endinstance
+    instance petal3 petal_dynamic rotate (0 1 0) (144) endinstance
+    instance petal4 petal_dynamic rotate (0 1 0) (216) endinstance
+    instance petal5 petal_dynamic rotate (0 1 0) (288) endinstance
+    instance stamina_inst stamina endinstance
+endgroup
+
+instance flower_inst flower rotate (0 1 0) (3 * $b.speed * $frame) endinstance

@@ -50,7 +50,8 @@ endgroup
 ############  Some Parameters  ##########################
 bank p
     set step      1     0.2     4     0.1   
-    set rotZ    -90   -90     360    30    
+    set rotZ    -90   -90     360    30
+    list (  step    rotZ    )
 endbank
 
 #################  basic column element  ####################################

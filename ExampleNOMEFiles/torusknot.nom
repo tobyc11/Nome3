@@ -6,6 +6,7 @@ bank knot_slider
   set tube_rad 1 0 2 0.05
   set circ_segs 30 10 100 5
   set sweep_segs 30 10 100 5
+  list (symm turns maj_rad min_rad tube_rad circ_segs sweep_segs)
 endbank
 
 

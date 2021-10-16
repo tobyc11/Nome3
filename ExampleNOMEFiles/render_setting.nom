@@ -1,7 +1,8 @@
+##  2021/10/15 File does not compile
+
 ##  Example of SLIDE stereo viewing set-up
 
-## For explanations of "window" and "viewport" see:
-     https://people.eecs.berkeley.edu/~ug/slide/docs/slide/spec/
+## For explanations of "window" and "viewport" see: https://people.eecs.berkeley.edu/~ug/slide/docs/slide/spec/
 
 #  CHS 2021/3/12
 
@@ -18,6 +19,8 @@ bank par
     set    objyrot    0     -60     60    1      ##  left-right
 
     set    camangle   2       0      4    0.1    ##  divergence between the two cameras
+
+    list   (    objscale    objxrot     objyrot     camangle    )
 endbank
 
 

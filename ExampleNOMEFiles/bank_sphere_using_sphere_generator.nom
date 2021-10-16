@@ -5,7 +5,7 @@ bank slider
   set max_phi 90 -90 90 5
   set theta_segs 30 5 100 5
   set phi_segs 30 5 100 5
-
+  list (radius max_theta min_phi max_phi theta_segs phi_segs)
 endbank
 
 sphere s ({expr $slider.radius} {expr $slider.max_theta} {expr $slider.min_phi} {expr $slider.max_phi} {expr $slider.theta_segs} {expr $slider.phi_segs}) endsphere

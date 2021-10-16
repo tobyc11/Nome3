@@ -8,6 +8,7 @@ bank slider
   set sublevel 3 0 5 1
   set upper_sharpness 9 0 10 0.5
   set lower_sharpness 2 0 10 0.5
+  list (sublevel upper_sharpness lower_sharpness)
 endbank
 
 

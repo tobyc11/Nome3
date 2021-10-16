@@ -1,7 +1,10 @@
 ## 03/13/2021
+## Octahedron Jitterbug
+## M Tang
 
 bank b
     set speed 0.5 0 1 0.01
+    list (speed)
 endbank
 
                         ##### COORDINATE AXES #####

@@ -1,5 +1,11 @@
+#====================================
+#       Tetra Sculpture             #
+#                                   #
+#       M Tang - 07/2021            #
+#====================================
+
 bank b
-    set twist_slider 180 0 720 180
+    set twist_slider 180 -720 720 180
     set azimuth_slider 0 0 600 1
     set hex_rotation 0 0 120 1
     set x_val 0 -1 1 0.1
@@ -12,6 +18,7 @@ bank b
     set edge_length 0.82 0 2 0.01
     set edge_width 2 0 3 0.01
     set edge_curve 1 0 2 0.01
+    list (twist_slider edge_curve)
 endbank
 
 #================================= Points ======================================
@@ -97,10 +104,6 @@ group edge_pair
 endgroup
 
 #============================== Instances ======================================
-# offset offset_tetra
-# NOME_OFFSET_DEFAULT
-# height 0.1
-# width 0.1
 
 instance pair0 edge_pair endinstance
 instance pair1 edge_pair rotate (1 -1 1) (120) endinstance
@@ -111,6 +114,5 @@ instance plateB hex_plate rotate (-1 1 -1) (120) endinstance
 instance plateC hex_plate endinstance
 instance plateD hex_plate rotate (-1 1 1) (120) endinstance
 
-# endoffset
 
-# Merge and Subdivide in UI
+### Merge and Subdivide in GUI

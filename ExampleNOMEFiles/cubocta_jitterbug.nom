@@ -1,5 +1,12 @@
+###################################################
+##  Cuboctahedron jitterbug
+##
+##  M Tang 5/2021
+###################################################
+
 bank b
     set speed 0.00 0 1 0.01
+    list (speed)
 endbank
 
                         ##### COORDINATE AXES #####

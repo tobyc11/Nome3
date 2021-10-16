@@ -2,6 +2,7 @@ bank slider
   set num_slices 10 1 100 1
   set mwidth 1 1 100 1
   set mheight 1 1 100 1
+  list (num_slices mwidth mheight)
 endbank
 
 point p1 (-1*{expr $slider.mwidth} 0 0) endpoint

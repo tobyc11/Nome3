@@ -1,12 +1,13 @@
 bank trefoil_slider
-  set num_vert 18.00 3 80 1
-  set tube_radius 0.06 0.01 0.5 0.01
+  set num_vert 10.00 3 80 1
+  set tube_radius 0.5 0.01 1 0.01
   set num_seg 120.00 18 240 3
   set degree 320 0 360 1
   set speed 1.5 0 6 0.5
   set amp 4 0 15 1
   set phaseshift 1 -5 5 1
   set frequency 0.1 0 1 0.1
+  list (num_vert tube_radius num_seg degree speed amp phaseshift frequency)
 endbank
 
 torusknot $trefoil (3 2 3 2 {expr $trefoil_slider.tube_radius} {expr $trefoil_slider.num_vert} {expr $trefoil_slider.num_seg}) endtorusknot

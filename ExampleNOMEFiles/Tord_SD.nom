@@ -58,6 +58,7 @@ bank p
     set wfz     0.8     -2       2     0.1  
     set yrot    0     -180     180     1
     set slicesN 9       0       20     1
+    list (mrd msl wdx wdz wex wey wez wfx wfy wfz yrot slicesN)
 endbank
 
 point eaR ( 0.3   6   0 )  endpoint  

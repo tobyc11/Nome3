@@ -3,6 +3,7 @@ bank p
     set radius   1.2     1       5     0.1
 	set s_twist 0 0.1 360 1
 	set s_azimuth 0 0.1 360 1
+	list (  radius      s_twist     s_azimuth    )
 endbank
 
 # Cross Section

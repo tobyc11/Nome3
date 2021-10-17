@@ -23,25 +23,31 @@ brew install opensubdiv
 ```
 
 Note: After installing qt@5, make sure you have the correct version of QT (5.15.2) on your mac.
-Use the command: qmake --version
+Use the command: qmake --version <br>
 
-If brew installed a wrong version of QT, you need to install it manually. <br> <br>
+If brew installed a wrong version of QT, you need to install it manually. <br>
 
 1) Download qt-everywhere-src-5.15.2.tar.xz from here https://download.qt.io/official_releases/qt/5.15/5.15.2/single/qt-everywhere-src-5.15.2.tar.xz.mirrorlist <br>
-2) Go to your /tmp directory and place the downloaded file there <br>
+2) Go to your /tmp directory and place the qt-everywhere-src-5.15.2.tar.xz.mirrorlist there <br>
 3) Run the following commands: <br>
-gunzip qt-everywhere-src-5.15.2.tar.xz <br>
-tar xvf qt-everywhere-src-5.15.2.tar	 <br>
-cd qt-everywhere-src-5.15.2.tar <br>
-./configure <br>
-make (This will take a long time.) <br>
-sudo make -j1 install <br>
+```
+gunzip qt-everywhere-src-5.15.2.tar.xz
+tar xvf qt-everywhere-src-5.15.2.tar	 
+cd qt-everywhere-src-5.15.2.tar 
+./configure 
+make #This will take a long time. 
+sudo make -j1 install
+```
 4) The installation is complete. Your QT source files will be installed in your /usr/local/ directory. Now you have to set your path variable.  <br>
 - If you are using BASH <br>
-PATH=/usr/local/Qt-5.15.2/bin:$PATH <br>
-export PATH <br>
+```
+PATH=/usr/local/Qt-5.15.2/bin:$PATH 
+export PATH
+```
 - If your shell is csh or tcsh <br>
-setenv PATH /usr/local/Qt-5.15.2/bin:$PATH <br>
+```
+setenv PATH /usr/local/Qt-5.15.2/bin:$PATH 
+```
 5) If you already tried installing NOME3, delete the file and reclone from the repository. This is done to delete the installation cache. <br>
 6) From the newly cloned NOME3, build the program again. <br>
 

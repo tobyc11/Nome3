@@ -15,12 +15,37 @@ git clone --recursive https://github.com/JIPCAD/NOME3
 
 Nome3 requires the most recent version of its dependencies so run:
 ```
-brew install qt5
+brew install qt@5
 brew install open-mesh
 brew install pugixml
 brew install cmake
 brew install opensubdiv
 ```
+
+Note: After installing qt@5, make sure you have the correct version of QT (5.15.2) on your mac.
+Use the command: qmake --version
+
+If brew installed a wrong version of QT, you need to install it manually. <br> <br>
+
+1) Download qt-everywhere-src-5.15.2.tar.xz from here https://download.qt.io/official_releases/qt/5.15/5.15.2/single/qt-everywhere-src-5.15.2.tar.xz.mirrorlist <br>
+2) Go to your /tmp directory and place the downloaded file there <br>
+3) Run the following commands: <br>
+gunzip qt-everywhere-src-5.15.2.tar.xz <br>
+tar xvf qt-everywhere-src-5.15.2.tar	 <br>
+cd qt-everywhere-src-5.15.2.tar <br>
+./configure <br>
+make (This will take a long time.) <br>
+sudo make -j1 install <br>
+4) The installation is complete. Your QT source files will be installed in your /usr/local/ directory. Now you have to set your path variable.  <br>
+- If you are using BASH <br>
+PATH=/usr/local/Qt-5.15.2/bin:$PATH <br>
+export PATH <br>
+- If your shell is csh or tcsh <br>
+setenv PATH /usr/local/Qt-5.15.2/bin:$PATH <br>
+5) If you already tried installing NOME3, delete the file and reclone from the repository. This is done to delete the installation cache. <br>
+6) From the newly cloned NOME3, build the program again. <br>
+
+
 You'll also need to download: ANTLR parser generator (https://www.antlr.org/download/antlr-4.8-complete.jar). Zachary informed me you can just do brew install antlr, and that should work. Make sure to install Java as well.
 
 Finally, run the following commands:

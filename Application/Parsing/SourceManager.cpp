@@ -306,6 +306,10 @@ void CSourceManager::ReportErros(std::string code) {
                 j = line.size();
                 continue; 
             }
+            for(auto x : shapemap) {
+                std::cout << x.first << " " << x.second << "\n";
+            }
+            std::cout << element << std::endl;
             if (element == "group" || (shapemap.find(element))!= shapemap.end()) { //check for keywords here.
                 auto cast = shapemap.find(element);
                 std::string endval = cast -> second;

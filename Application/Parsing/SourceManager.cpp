@@ -57,7 +57,7 @@ bool CSourceManager::ParseMainSource()
     auto* tree = parser.file();
 
     CFileBuilder builder(ASTContext.get());
-    ASTRoot = builder.visitFile(tree);
+    ASTRoot = builder.visitFile(tree).as<AST::AFile*>();
     SetAstRoot(ASTRoot);
 
     std::cout << "====== Debug Print AST ======" << std::endl;

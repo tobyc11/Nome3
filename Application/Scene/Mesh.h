@@ -131,6 +131,7 @@ private:
     // CMeshMerger, CMeshRenderComponent needs to access CMeshImpl Mesh
     friend class CMeshMerger;
     friend class CMeshRenderComponent;
+    friend class CExportSTL;
 
     TAutoPtr<CMesh> MeshGenerator;
     /// A weak pointer to the owning scene tree node

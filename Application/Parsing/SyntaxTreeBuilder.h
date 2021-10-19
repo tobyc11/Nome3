@@ -1,21 +1,22 @@
 #pragma once
+#include "ASTContext.h"
 #include "NomBaseVisitor.h"
-#include "SyntaxTree.h"
 
 namespace Nome
 {
 
+/// CFileBuilder builds the AST from an ANTLR parse tree FileContext
 class CFileBuilder : public NomBaseVisitor
 {
 public:
-    // The CStringBuffer is used to generate source location references
-    CFileBuilder(CStringBuffer& srcStringBuffer)
-        : SrcStringBuffer(srcStringBuffer)
+    explicit CFileBuilder(AST::CASTContext* ctx)
+        : Ctx(ctx)
     {
     }
 
     antlrcpp::Any visitFile(NomParser::FileContext* context) override;
 
+    // Functions below return ANamedArg*
     antlrcpp::Any visitArgClosed(NomParser::ArgClosedContext* context) override;
     antlrcpp::Any visitArgHidden(NomParser::ArgHiddenContext* context) override;
     antlrcpp::Any visitArgSurface(NomParser::ArgSurfaceContext* context) override;
@@ -25,38 +26,34 @@ public:
     antlrcpp::Any visitArgTransformOne(NomParser::ArgTransformOneContext* context) override;
     antlrcpp::Any visitArgColor(NomParser::ArgColorContext* context) override;
 
-    antlrcpp::Any visitCmdExprListOne(NomParser::CmdExprListOneContext* context) override;
-    antlrcpp::Any visitCmdIdListOne(NomParser::CmdIdListOneContext* context) override;
-    antlrcpp::Any visitCmdSubCmds(NomParser::CmdSubCmdsContext* context) override;
-    antlrcpp::Any visitCmdInstance(NomParser::CmdInstanceContext* context) override;
-    antlrcpp::Any visitCmdSurface(NomParser::CmdSurfaceContext* context) override;
-    antlrcpp::Any visitCmdArgSurface(NomParser::CmdArgSurfaceContext* context) override;
-    antlrcpp::Any visitCmdBank(NomParser::CmdBankContext* context) override;
-    antlrcpp::Any visitCmdDelete(NomParser::CmdDeleteContext* context) override;
-    antlrcpp::Any visitCmdSubdivision(NomParser::CmdSubdivisionContext* context) override;
-    antlrcpp::Any visitCmdOffset(NomParser::CmdOffsetContext* context) override;
-    antlrcpp::Any visitSet(NomParser::SetContext* context) override;
-    antlrcpp::Any visitDeleteFace(NomParser::DeleteFaceContext* context) override;
+    // Return type is APositionalArg*
+    antlrcpp::Any visitPositionalArg(NomParser::PositionalArgContext* context) override;
+    // Return type is ANamedArg*
+    antlrcpp::Any visitNamedArg(NomParser::NamedArgContext* context) override;
+    // Return type is ANode*
+    antlrcpp::Any visitAnyArg(NomParser::AnyArgContext* context) override;
 
+    // Return type is ANode*
+    antlrcpp::Any visitSetCommand(NomParser::SetCommandContext* context) override;
+    antlrcpp::Any visitGeneralizedCommand(NomParser::GeneralizedCommandContext* context) override;
+
+    // They should all return AExpr*
     antlrcpp::Any visitCall(NomParser::CallContext* context) override;
     antlrcpp::Any visitUnaryOp(NomParser::UnaryOpContext* context) override;
     antlrcpp::Any visitSubExpParen(NomParser::SubExpParenContext* context) override;
     antlrcpp::Any visitSubExpCurly(NomParser::SubExpCurlyContext* context) override;
     antlrcpp::Any visitBinOp(NomParser::BinOpContext* context) override;
-    antlrcpp::Any visitAtom(NomParser::AtomContext* context) override
-    {
-        return visitChildren(context);
-    }
+    antlrcpp::Any visitAtom(NomParser::AtomContext* context) override { return visitChildren(context); }
     antlrcpp::Any visitScientific(NomParser::ScientificContext* context) override;
     antlrcpp::Any visitIdent(NomParser::IdentContext* context) override;
     antlrcpp::Any visitAtomExpr(NomParser::AtomExprContext* context) override;
-    antlrcpp::Any visitIdList(NomParser::IdListContext *context) override;
+    antlrcpp::Any visitVector(NomParser::VectorContext* context) override;
 
 private:
     AST::CToken* ConvertToken(antlr4::Token* token);
     AST::CToken* ConvertToken(antlr4::tree::TerminalNode* token);
 
-    CStringBuffer& SrcStringBuffer;
+    AST::CASTContext* Ctx;
 };
 
-}
+} // namespace Nome

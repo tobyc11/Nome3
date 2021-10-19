@@ -181,7 +181,6 @@ void CMainWindow::on_actionAddPolyline_triggered()
         return;
     }
     TemporaryMeshManager->AddPolyline(verts);
-    std::cout << "finished adding polyline in MainWindow" << std::endl;
 }
 
 void CMainWindow::on_actionResetTempMesh_triggered() { TemporaryMeshManager->ResetTemporaryMesh(); }
@@ -251,7 +250,7 @@ void CMainWindow::LoadNomeFile(const std::string& filePath)
     Scene::CASTSceneAdapter adapter;
     try
     {
-        adapter.TraverseFile(SourceMgr->GetASTContext().GetAstRoot(), *Scene);
+        adapter.TraverseFile(SourceMgr->GetAstRoot(), *Scene);
     }
     catch (const AST::CSemanticError& e)
     {
@@ -335,15 +334,15 @@ void CMainWindow::OnSliderAdded(Scene::CSlider& slider, const std::string& name)
         sliderDisplay->setText(QString::fromStdString(valueStr));
         slider.SetValue(fval);
         // Update AST for the new value
-        auto* argExpr = slider.GetASTNode()->GetPositionalArgument(1);
-        std::vector<AST::CToken*> tokenList;
-        argExpr->CollectTokens(tokenList);
+        auto* argValue = slider.GetASTNode()->GetPositionalArgument(1);
+        std::vector<AST::CToken*> tokenList = argValue->ToTokenList();
         size_t insertLocation = SourceMgr->RemoveTokens(tokenList).value();
 
-        auto* token = SourceMgr->GetASTContext().MakeToken(valueStr);
-        auto* expr = SourceMgr->GetASTContext().Make<AST::ANumber>(token);
-        slider.GetASTNode()->SetPositionalArgument(1, expr);
-        SourceMgr->InsertToken(insertLocation, token);
+        auto loc = SourceMgr->InsertText(insertLocation, valueStr);
+        auto* expr = new (SourceMgr->GetASTContext())
+            AST::ANumber(AST::CToken::Create(SourceMgr->GetASTContext(), loc, valueStr.length()));
+        argValue->ClearChildren();
+        argValue->AddChild(expr);
     });
 
     SliderLayout->addRow(sliderName, sliderLayout);

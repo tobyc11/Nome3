@@ -128,27 +128,6 @@ CEntity* CMesh::Instantiate(CSceneTreeNode* treeNode)
     return meshInst;
 }
 
-AST::ACommand* CMesh::SyncToAST(AST::CASTContext& ctx, bool createNewNode)
-{
-    if (!createNewNode)
-        throw "unimplemented";
-    auto* node = ctx.Make<AST::ACommand>(ctx.MakeToken("mesh"), ctx.MakeToken("endmesh"));
-    node->PushPositionalArgument(ctx.MakeIdent(GetName()));
-    size_t numFaces = Faces.GetSize();
-    for (size_t i = 0; i < numFaces; i++)
-    {
-        auto* pFace = Faces.GetValue(i, nullptr);
-        // Test whether the face is a sub-entity of mine
-        //   For any sub-entity, we also serialize their AST
-        //   Otherwise, this should have been an `object` command, which is unimplemented rn
-        if (!tc::FStringUtils::StartsWith(pFace->GetName(), this->GetName()))
-            throw std::runtime_error("Mesh's child faces corruption");
-
-        node->AddSubCommand(pFace->MakeCommandNode(ctx, node));
-    }
-    return node;
-}
-
 std::string CMeshInstancePoint::GetPointPath() const { return Owner->GetSceneTreeNode()->GetPath() + "." + GetName(); }
 
 CMeshInstance::CMeshInstance(CMesh* generator, CSceneTreeNode* stn)

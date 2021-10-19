@@ -20,6 +20,7 @@ class CASTSceneAdapter
 public:
     static ECommandKind ClassifyCommand(const std::string& cmd);
     static CEntity* MakeEntity(const std::string& cmd, const std::string& name);
+    /// Takes in any named argument, if it's a transform, we create a new CTransform out of it
     static CTransform* ConvertASTTransform(AST::ANamedArgument* namedArg);
 
     void TraverseFile(AST::AFile* astRoot, CScene& scene);

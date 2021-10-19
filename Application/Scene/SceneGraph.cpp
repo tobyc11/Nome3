@@ -245,46 +245,18 @@ void CSceneNode::SyncFromAST(AST::ACommand* cmd, CScene& scene)
         return;
 
     TAutoPtr<CTransform> lastTransform;
-    for (auto* namedArg : cmd->GetTransforms())
+    for (auto* namedArg : cmd->GetNamedArguments())
     {
         auto* transform = CASTSceneAdapter::ConvertASTTransform(namedArg);
+        // This argument is not a transform argument
+        if (!transform)
+            continue;
         if (lastTransform)
             transform->Input.Connect(lastTransform->Output);
         lastTransform = transform;
     }
     if (lastTransform)
         Transform.Connect(lastTransform->Output);
-}
-
-void CSceneNode::SyncToAST(AST::CASTContext& ctx)
-{
-    throw "don't use";
-}
-
-AST::ACommand* CSceneNode::BuildASTCommand(AST::CASTContext& ctx) const
-{
-    auto* node = ctx.Make<AST::ACommand>(ctx.MakeToken("instance"), ctx.MakeToken("endinstance"));
-    // There should be a way to map Type<->AST node easily?
-    //   name:String         0:ident
-    //   entity:EntityRef    1:ident
-    //   transform:???       transform:[rotate:vec vec, translate: vec]
-    //   surface:EntityRef   surface:ident
-    auto* zero = ctx.MakeIdent(GetName());
-    node->PushPositionalArgument(zero);
-    auto* one = ctx.MakeIdent(GetEntity()->GetName());
-    node->PushPositionalArgument(one);
-    if (GetSurface())
-    {
-        auto* child = ctx.MakeIdent(GetSurface()->GetName());
-        auto* surface = ctx.Make<AST::ANamedArgument>(ctx.MakeToken("surface"));
-        surface->AddChild(child);
-        node->AddNamedArgument(surface);
-    }
-    if (Transform.IsConnected())
-        throw std::runtime_error("Can't write transformations into AST yet");
-    std::cout << "Dumping newly generated instance command" << std::endl;
-    std::cout << *node << std::endl;
-    return node;
 }
 
 }

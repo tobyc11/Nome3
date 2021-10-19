@@ -9,6 +9,8 @@
 #include "Polyline.h"
 #include "Surface.h"
 #include "Sweep.h"
+#include "TorusKnot.h"
+#include "Torus.h"
 #include "SweepControlPoint.h"
 #include "Tunnel.h"
 #include <StringPrintf.h>
@@ -36,6 +38,7 @@ static const std::unordered_map<std::string, ECommandKind> CommandInfoMap = {
     { "mesh", ECommandKind::Entity },        { "group", ECommandKind::Instance },
     { "circle", ECommandKind::Entity },      { "funnel", ECommandKind::Entity },
     { "tunnel", ECommandKind::Entity },      { "beziercurve", ECommandKind::Entity },
+    { "torusknot", ECommandKind::Entity },   { "torus", ECommandKind::Entity },
     { "bspline", ECommandKind::Entity },     { "instance", ECommandKind::Instance },
     { "surface", ECommandKind::Entity },     { "background", ECommandKind::Dummy },
     { "foreground", ECommandKind::Dummy },   { "insidefaces", ECommandKind::Dummy },
@@ -77,6 +80,11 @@ CEntity* CASTSceneAdapter::MakeEntity(const std::string& cmd, const std::string&
         return new CSurface(name);
     else if (cmd == "tunnel")
         return new CTunnel(name);
+    else if (cmd == "torusknot")
+        return new CTorusKnot(name);
+    else if (cmd == "torus")
+        return new CTorus(name);
+    
     return nullptr;
 }
 

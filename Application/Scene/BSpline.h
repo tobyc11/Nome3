@@ -38,13 +38,9 @@ public:
     /// Set whether the bspline is a closed loop
     void SetClosed(bool closed);
     std::vector<float> GetDefKnots();
-    int GetKnotInt(float x, std::vector<float> knots);
-    Vector3 deBoor(int k , int degree, int i, double x, std::vector<float> knots);
     void UpdateEntity() override;
     void Draw(IDebugDraw* draw) override;
-    Vector3 deBoor1(int k,  double x, std::vector<float> knots, int p);
-    int NFactor(int i, int j, float t);
-    Vector3 FindPoint(int degree, float t);
+    float NFactor(int i, int j, float t);
 
 private:
     CBSplineMath Math;

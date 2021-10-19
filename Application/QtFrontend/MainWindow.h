@@ -39,8 +39,6 @@ private slots:
     void on_actionOpen_triggered();
     void on_actionReload_triggered();
     void on_actionSave_triggered();
-    void on_actionSceneAsObj_triggered();
-    void on_actionSceneAsStl_triggered();
     void on_actionMerge_triggered();
     void on_actionPoint_triggered();
     void on_actionInstance_triggered();

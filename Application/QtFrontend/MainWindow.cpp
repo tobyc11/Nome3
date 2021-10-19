@@ -111,19 +111,6 @@ void CMainWindow::on_actionSave_triggered()
     this->setWindowModified(false);
 }
 
-void CMainWindow::on_actionSceneAsObj_triggered()
-{
-    QMessageBox::information(this, tr("Sorry"), tr("This feature is in the works"));
-    QString fileName =
-        QFileDialog::getSaveFileName(this, tr("Save Scene as Obj"), "", tr("Obj Files (*.obj);;All Files (*)"));
-}
-
-void CMainWindow::on_actionSceneAsStl_triggered()
-{
-    QString fileName =
-        QFileDialog::getSaveFileName(this, tr("Save Scene as Stl"), "", tr("Stl Files (*.stl);;All Files (*)"));
-}
-
 void CMainWindow::on_actionMerge_triggered()
 {
     // One shot merging, and add a new entity and its corresponding node

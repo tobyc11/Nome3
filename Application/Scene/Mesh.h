@@ -217,6 +217,8 @@ public:
     void DeselectAll();
 
 private:
+    friend class CExportSTL;
+
     // Instance specific data
     TAutoPtr<CMesh> MeshGenerator;
     /// A weak pointer to the owning scene tree node

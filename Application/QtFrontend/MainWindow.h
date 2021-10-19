@@ -56,11 +56,9 @@ private slots:
 
     /*  10/1 Randy Commenting out because these are not fully implemented right now
     void on_actionPoint_triggered();
-    void on_actionInstance_triggered();
-    */
-    // void on_actionAbout_triggered(); commeting out with new developments
-
+    void on_actionInstance_triggered(); */
     void on_actionAddPoint_triggered(); // Steven's Add Point
+    void on_actionScene_as_STL_triggered();
 
     void on_actionAddFace_triggered();
     void on_actionAddPolyline_triggered(); 

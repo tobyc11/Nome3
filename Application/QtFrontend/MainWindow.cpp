@@ -5,7 +5,7 @@
 #include "ui_MainWindow.h"
 #include <Scene/ASTSceneAdapter.h>
 #include <Scene/Environment.h>
-
+#include <Scene/ExportSTL.h>
 
 #include <QDockWidget>
 #include <QScrollArea> // Randy added
@@ -289,6 +289,34 @@ void CMainWindow::on_actionAddPoint_triggered()
     dialog->show();
 }
 
+void CMainWindow::on_actionScene_as_STL_triggered()
+{
+    QString fileName =
+        QFileDialog::getSaveFileName(this, tr("Save Scene as STL"), "", tr("STL files (*.stl);;All Files (*)"));
+
+    // Do exporting
+    Scene->Update();
+    Scene::CExportSTL exporter;
+    Scene->ForEachSceneTreeNode([&](Scene::CSceneTreeNode* node) {
+        auto* entity = node->GetInstanceEntity();
+        if (auto* mesh = dynamic_cast<Scene::CMeshInstance*>(entity))
+        {
+            exporter.Process(*mesh);
+        }
+    });
+
+    // Write file
+    const std::vector<uint8_t> buffer = exporter.Take();
+
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly))
+    {
+        statusBar()->showMessage("Export failed: failed to open file for writing");
+        return;
+    }
+    file.write(reinterpret_cast<const char *>(buffer.data()), buffer.size());
+    file.close();
+}
 
 void CMainWindow::on_actionAddFace_triggered()
 {
